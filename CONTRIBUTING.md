@@ -30,6 +30,13 @@ apps/cli           the `tt` binary wiring everything together
 docs/wiki          player & contributor wiki (synced to the GitHub wiki)
 ```
 
+Inside each package, folders are organized by responsibility (e.g. `helpers/`,
+`stores/`, `services/`, `commands/`, `terminal/`, `render/`, `engine/`) — see the
+"Code structure" section of `CLAUDE.md`. KISS/SRP ceilings are enforced by ESLint
+(complexity ≤ 20, nesting ≤ 4, params ≤ 5, file length ≤ 400 lines) and duplication
+is watched by `pnpm check:dup` (jscpd). If a rule trips, split the module by
+responsibility — never add a lint-disable.
+
 ## Non-negotiable invariants
 
 Every PR is checked against these — by ESLint rules, CI scripts, and review:

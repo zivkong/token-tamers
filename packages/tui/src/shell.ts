@@ -7,12 +7,12 @@
  * fake time. All terminal output goes through one `Writer`.
  */
 
-import { Writer, type ColorMode, type OutputSink } from './ansi';
-import { FrameBuffer } from './buffer';
-import { HitRegistry } from './hit';
-import { decode, type InputEvent } from './input';
-import { computeLayout } from './layout';
-import { MENU_ITEMS, renderFrame, type FrameInput } from './render';
+import { Writer, type ColorMode, type OutputSink } from './terminal/ansi';
+import { FrameBuffer } from './render/buffer';
+import { HitRegistry } from './render/hit';
+import { decode, type InputEvent } from './terminal/input';
+import { computeLayout } from './render/layout';
+import { MENU_ITEMS, renderFrame, type FrameInput } from './render/frame';
 import type { PageId, PageUiState } from './pages/types';
 import { buildDexRows } from './pages/dex';
 import type { ContentPack, GameEffect, GameState } from '@token-tamers/core';
@@ -65,6 +65,15 @@ interface ShellRuntime {
   quit: boolean;
 }
 
+/** Resolved loop dependencies (injected once, passed as a unit). */
+interface LoopContext {
+  options: ShellOptions;
+  writer: Writer;
+  sizeFn: () => { cols: number; rows: number };
+  now: () => number;
+  frameMs: number;
+}
+
 function freshUi(): Record<PageId, PageUiState> {
   return {
     pet: { selected: 0, scroll: 0 },
@@ -104,7 +113,8 @@ export async function runShell(options: ShellOptions): Promise<void> {
 
   try {
     inputSource.start?.();
-    await loop(rt, options, writer, sizeFn, now, frameMs);
+    const ctx: LoopContext = { options, writer, sizeFn, now, frameMs };
+    await loop(rt, ctx);
   } finally {
     unsubscribe();
     inputSource.stop?.();
@@ -113,14 +123,8 @@ export async function runShell(options: ShellOptions): Promise<void> {
   }
 }
 
-async function loop(
-  rt: ShellRuntime,
-  options: ShellOptions,
-  writer: Writer,
-  sizeFn: () => { cols: number; rows: number },
-  now: () => number,
-  frameMs: number,
-): Promise<void> {
+async function loop(rt: ShellRuntime, ctx: LoopContext): Promise<void> {
+  const { options, writer, sizeFn, now, frameMs } = ctx;
   const host = options.host;
   let last = now();
   let renderAcc = 0;

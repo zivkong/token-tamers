@@ -3,10 +3,10 @@
  * grade badge, and the last grade-roll odds line.
  */
 
-import { hexToRgb, mix, type Rgb } from '../ansi';
-import { buildPalette, drawSprite, auraOverlay, GRADE_BADGE } from '../sprite';
-import { findSpecies, findSprite, habitatSpriteId, houseTint } from '../lookup';
-import { renderGradeOddsLine } from '../status';
+import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
+import { buildPalette, drawSprite, auraOverlay, GRADE_BADGE } from '../render/sprite';
+import { findSpecies, findSprite, habitatSpriteId, houseTint } from '../helpers/lookup';
+import { renderGradeOddsLine } from '../helpers/status';
 import type { RenderContext } from './types';
 
 const DIM: Rgb = { r: 90, g: 96, b: 120 };
@@ -32,7 +32,7 @@ export function renderPetPage(ctx: RenderContext): void {
     // Idle bob: drift up/down 1 cell on a slow cycle.
     const bob = Math.sin(frame * 0.2) > 0.5 ? -1 : 0;
     const py = canvasY + Math.floor((canvasRows - spriteCellH) / 2) + bob;
-    drawSprite(buf, sprite, px, py, pal, { frame, mode });
+    drawSprite(buf, sprite, pal, { x: px, y: py, frame, mode });
 
     // S-grade particle aura.
     if (pet.grade === 'S') {
@@ -74,7 +74,7 @@ function drawBackdrop(ctx: RenderContext): void {
     const h = Math.ceil(habSprite.height / 2);
     const bx = canvasX + Math.floor((canvasCols - w) / 2);
     const by = canvasY + Math.floor((canvasRows - h) / 2);
-    drawSprite(buf, habSprite, bx, by, pal, { frame: 0, mode });
+    drawSprite(buf, habSprite, pal, { x: bx, y: by, frame: 0, mode });
     return;
   }
 

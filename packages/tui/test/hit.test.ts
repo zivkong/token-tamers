@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { HitRegistry } from '../src/hit';
+import { HitRegistry } from '../src/render/hit';
 
 describe('HitRegistry', () => {
   it('resolves a click inside a region', () => {

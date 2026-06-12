@@ -1,0 +1,15 @@
+{
+  "threshold": 3,
+  "minTokens": 70,
+  "reporters": ["consoleFull"],
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/out/**",
+    "**/fixtures/**",
+    "**/__snapshots__/**",
+    "**/content/**",
+    "**/*.test.ts"
+  ],
+  "absolute": true
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeLayout, MIN_COLS, MIN_ROWS } from '../src/layout';
+import { computeLayout, MIN_COLS, MIN_ROWS } from '../src/render/layout';
 
 describe('computeLayout', () => {
   it('flags too-small terminals', () => {

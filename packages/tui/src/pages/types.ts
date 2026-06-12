@@ -4,10 +4,10 @@
  */
 
 import type { ContentPack, GameState } from '@token-tamers/core';
-import type { ColorMode } from '../ansi';
-import type { FrameBuffer } from '../buffer';
-import type { HitRegistry } from '../hit';
-import type { Layout } from '../layout';
+import type { ColorMode } from '../terminal/ansi';
+import type { FrameBuffer } from '../render/buffer';
+import type { HitRegistry } from '../render/hit';
+import type { Layout } from '../render/layout';
 
 export type PageId = 'pet' | 'dex' | 'archive';
 

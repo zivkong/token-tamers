@@ -9,7 +9,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
-import { claudeCodeAdapter } from '../src/claude-code';
+import { claudeCodeAdapter } from '../src/claude-code/index';
 import type { AdapterCheckpoint } from '../src/index';
 
 // ---------------------------------------------------------------------------

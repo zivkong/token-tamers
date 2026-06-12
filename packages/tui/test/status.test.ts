@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { progressBar, renderGradeOddsLine, renderStatusLine } from '../src/status';
+import { progressBar, renderGradeOddsLine, renderStatusLine } from '../src/helpers/status';
 import { makePack, makeState, makePet } from './fixtures';
 
 describe('status line', () => {

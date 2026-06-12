@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { renderFrameToString } from '../src/render';
-import type { FrameInput } from '../src/render';
+import { renderFrameToString } from '../src/render/frame';
+import type { FrameInput } from '../src/render/frame';
 import { makePack, makeState } from './fixtures';
 
 function input(over: Partial<FrameInput>): FrameInput {

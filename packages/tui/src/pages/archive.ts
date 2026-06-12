@@ -4,9 +4,9 @@
  */
 
 import type { ArchiveRecord, Stats } from '@token-tamers/core';
-import type { Rgb } from '../ansi';
-import { GRADE_BADGE } from '../sprite';
-import { findSpecies } from '../lookup';
+import type { Rgb } from '../terminal/ansi';
+import { GRADE_BADGE } from '../render/sprite';
+import { findSpecies } from '../helpers/lookup';
 import { clampScroll } from './dex';
 import type { RenderContext } from './types';
 

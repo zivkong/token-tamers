@@ -13,111 +13,27 @@
  * Global flags: --no-color, --yes.
  */
 
-import { runShell, type ColorMode } from '@token-tamers/tui';
+import { NotInitializedError } from './services/catchup';
+import { parseArgs, KNOWN_COMMANDS, HELP, type ParsedArgs } from './helpers/args';
 import {
-  adaptersCommand,
+  runInit,
+  statusCommand,
+  dexCommand,
   archiveCommand,
   completeCommand,
-  dexCommand,
-  statusCommand,
+  adaptersCommand,
   watchCommand,
+  runShellCommand,
 } from './commands';
-import { runInit } from './init';
-import { catchUp, NotInitializedError } from './catchup';
-import { createShellHost } from './shell-host';
+
+export { parseArgs, type ParsedArgs } from './helpers/args';
 
 /** Kept in sync with apps/cli/package.json "version". */
 export const VERSION = '0.1.0';
 
-export interface ParsedArgs {
-  command: string;
-  noColor: boolean;
-  yes: boolean;
-  help: boolean;
-  version: boolean;
-}
-
-const KNOWN_COMMANDS = new Set([
-  'init',
-  'watch',
-  'status',
-  'dex',
-  'archive',
-  'complete',
-  'adapters',
-  'shell',
-]);
-
-/** Hand-rolled arg parsing. First non-flag positional is the command. */
-export function parseArgs(argv: string[]): ParsedArgs {
-  let command = '';
-  let noColor = false;
-  let yes = false;
-  let help = false;
-  let version = false;
-
-  for (const arg of argv) {
-    if (arg === '--no-color') noColor = true;
-    else if (arg === '--yes' || arg === '-y') yes = true;
-    else if (arg === '--help' || arg === '-h') help = true;
-    else if (arg === '--version' || arg === '-v' || arg === '-V') version = true;
-    else if (arg.startsWith('-')) {
-      // Unknown flag — ignore for forward-compat.
-      continue;
-    } else if (command === '') {
-      command = arg;
-    }
-  }
-
-  if (command === '') command = 'shell';
-  return { command, noColor, yes, help, version };
-}
-
-const HELP = `tt — Token Tamers
-
-Usage: tt [command] [flags]
-
-Commands:
-  init        Set up Token Tamers (detect agents, plan, week anchor).
-  (none)      Open the interactive shell (Pet / Dex / Archive).
-  watch       Slim live status line (statusline-friendly).
-  status      One-shot text status.
-  dex         List discovered species.
-  archive     List past lives.
-  complete    Completion meter breakdown.
-  adapters    Adapter detection + paths.
-
-Flags:
-  --yes, -y       Take defaults non-interactively (for init).
-  --no-color      Disable ANSI color.
-  --version, -v   Print version.
-  --help, -h      Print this help.
-`;
-
 type Out = (s: string) => void;
 
 const NOT_INIT_MSG = 'Token Tamers is not set up yet. Run `tt init` first.\n';
-
-async function runShellCommand(noColor: boolean, out: Out): Promise<void> {
-  let caught;
-  try {
-    caught = await catchUp();
-  } catch (err) {
-    if (err instanceof NotInitializedError) {
-      out(NOT_INIT_MSG);
-      return;
-    }
-    throw err;
-  }
-  const { config, engine } = caught;
-  const { host, persist } = createShellHost(config, engine);
-  const color: ColorMode = noColor ? 'none' : 'truecolor';
-  try {
-    await runShell({ host, color });
-  } finally {
-    persist();
-  }
-}
 
 /** Dispatch a parsed command. Exported for tests. */
 export async function dispatch(

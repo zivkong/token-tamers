@@ -17,7 +17,8 @@
     "typecheck": "pnpm -r typecheck",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build",
     "check:network": "bash scripts/check-zero-network.sh",
-    "check:spoilers": "bash scripts/check-spoilers.sh"
+    "check:spoilers": "bash scripts/check-spoilers.sh",
+    "check:dup": "jscpd packages apps"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
@@ -25,6 +26,7 @@
     "@yao-pkg/pkg": "^6.3.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^9.1.0",
+    "jscpd": "4.0.5",
     "prettier": "^3.4.2",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",

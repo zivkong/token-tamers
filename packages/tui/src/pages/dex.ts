@@ -4,7 +4,7 @@
  * selectable; the selected row is highlighted.
  */
 
-import type { Rgb } from '../ansi';
+import type { Rgb } from '../terminal/ansi';
 import type { RenderContext } from './types';
 
 const OWNED: Rgb = { r: 220, g: 226, b: 240 };

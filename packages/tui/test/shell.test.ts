@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { runShell, type InputSource, type ShellHost } from '../src/shell';
-import { StringSink } from '../src/ansi';
-import type { InputEvent } from '../src/input';
+import { StringSink } from '../src/terminal/ansi';
+import type { InputEvent } from '../src/terminal/input';
 import { makePack, makeState } from './fixtures';
 import type { GameEffect } from '@token-tamers/core';
 

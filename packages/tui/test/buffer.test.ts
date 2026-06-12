@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { FrameBuffer } from '../src/buffer';
-import { StringSink, Writer } from '../src/ansi';
+import { FrameBuffer } from '../src/render/buffer';
+import { StringSink, Writer } from '../src/terminal/ansi';
 
 function makeWriter() {
   const sink = new StringSink();

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildPalette, drawSprite, indexToChar, resolveIndex } from '../src/sprite';
-import { FrameBuffer } from '../src/buffer';
+import { buildPalette, drawSprite, indexToChar, resolveIndex } from '../src/render/sprite';
+import { FrameBuffer } from '../src/render/buffer';
 import { TEST_SPRITE } from './fixtures';
 
 describe('palette beauty ladder', () => {
@@ -34,7 +34,7 @@ describe('half-block compositor', () => {
     const buf = new FrameBuffer(8, 4);
     buf.clear();
     const pal = buildPalette('#8a7cff', 'C');
-    drawSprite(buf, TEST_SPRITE, 0, 0, pal, { frame: 0, mode: 'truecolor' });
+    drawSprite(buf, TEST_SPRITE, pal, { x: 0, y: 0, frame: 0, mode: 'truecolor' });
     // The sprite center pixels are opaque, so the center cell is a half block.
     const center = buf.get(1, 0);
     expect(center.ch.codePointAt(0)).toBe(0x2580); // '▀' upper-half block
@@ -60,7 +60,7 @@ describe('half-block compositor', () => {
         ],
       ],
     };
-    drawSprite(buf, sprite, 0, 0, pal, { frame: 0, mode: 'truecolor' });
+    drawSprite(buf, sprite, pal, { x: 0, y: 0, frame: 0, mode: 'truecolor' });
     // Cell (0,0) is fully transparent -> the '#' underneath survives.
     expect(buf.get(0, 0).ch).toBe('#');
     // Cell (1,0) is opaque -> upper-half block, colored.
@@ -82,7 +82,7 @@ describe('--no-color degradation', () => {
     const buf = new FrameBuffer(8, 4);
     buf.clear();
     const pal = buildPalette('#8a7cff', 'C');
-    drawSprite(buf, TEST_SPRITE, 0, 0, pal, { frame: 0, mode: 'none' });
+    drawSprite(buf, TEST_SPRITE, pal, { x: 0, y: 0, frame: 0, mode: 'none' });
     const center = buf.get(1, 0);
     expect(center.fg).toBeNull();
     expect(center.bg).toBeNull();

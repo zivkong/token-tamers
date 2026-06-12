@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { decode } from '../src/input';
+import { decode } from '../src/terminal/input';
 
 const ESC = '\x1b';
 

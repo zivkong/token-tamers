@@ -2,9 +2,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { runInit } from '../src/init';
-import { statusCommand } from '../src/commands';
-import { loadConfig, loadState } from '../src/store';
+import { runInit } from '../src/commands/init';
+import { statusCommand } from '../src/commands/status';
+import { loadConfig } from '../src/stores/config';
+import { loadState } from '../src/stores/state';
 
 /**
  * End-to-end: set TOKENTAMERS_HOME + CLAUDE_CONFIG_DIR to temp dirs with a small

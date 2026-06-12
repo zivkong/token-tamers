@@ -1,0 +1,8 @@
+export { runInit, type InitOptions, type InitResult, nextMondayLocal } from './init';
+export { statusCommand } from './status';
+export { dexCommand } from './dex';
+export { archiveCommand } from './archive';
+export { completeCommand } from './complete';
+export { adaptersCommand } from './adapters';
+export { watchCommand } from './watch';
+export { runShellCommand } from './shell';

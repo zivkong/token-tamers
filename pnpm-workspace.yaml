@@ -10,3 +10,9 @@ packages:
 allowBuilds:
   esbuild: true
 minimumReleaseAge: 4320
+# Cooldown pins: these transitive deps' latest releases are inside the 3-day
+# minimumReleaseAge window, so they're pinned one mature release back.
+# Revisit/drop after the window passes (semver ~2026-06-13, bare-stream ~2026-06-15).
+overrides:
+  semver: 7.8.3
+  bare-stream: 2.13.1

@@ -43,6 +43,20 @@ export default tseslint.config(
     },
   },
   {
+    // KISS/SRP guardrails: generous ceilings that catch monoliths and deep
+    // nesting, not style. A file that trips these needs splitting by
+    // responsibility, not a lint-disable.
+    files: ['packages/*/src/**/*.ts', 'apps/*/src/**/*.ts'],
+    ignores: ['**/*.test.ts'],
+    rules: {
+      complexity: ['error', 20],
+      'max-depth': ['error', 4],
+      'max-params': ['error', 5],
+      'max-lines': ['error', { max: 400, skipBlankLines: true, skipComments: true }],
+      'no-duplicate-imports': 'error',
+    },
+  },
+  {
     // packages/core is pure and deterministic: no I/O, no other workspace
     // packages, no wall clock, no ambient randomness. Time and randomness
     // enter core only as data (timestamps on events, seeded RNG).

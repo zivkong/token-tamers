@@ -22,10 +22,10 @@ export {
   MENU_ITEMS,
   type FrameInput,
   type MenuItem,
-} from './render';
+} from './render/frame';
 
 // Status one-liners (tt watch / tt status).
-export { renderStatusLine, renderGradeOddsLine, progressBar } from './status';
+export { renderStatusLine, renderGradeOddsLine, progressBar } from './helpers/status';
 
 // ANSI / color.
 export {
@@ -42,10 +42,10 @@ export {
   mix,
   cursorTo,
   sgrReset,
-} from './ansi';
+} from './terminal/ansi';
 
 // Frame buffer.
-export { FrameBuffer, BLANK_CELL, type Cell } from './buffer';
+export { FrameBuffer, BLANK_CELL, type Cell } from './render/buffer';
 
 // Sprite compositor.
 export {
@@ -58,7 +58,7 @@ export {
   AURA_GLYPHS,
   type Palette,
   type DrawOptions,
-} from './sprite';
+} from './render/sprite';
 
 // Input decoding.
 export {
@@ -68,10 +68,10 @@ export {
   type MouseEvent,
   type KeyName,
   type MouseAction,
-} from './input';
+} from './terminal/input';
 
 // Hit regions.
-export { HitRegistry, type HitRegion } from './hit';
+export { HitRegistry, type HitRegion } from './render/hit';
 
 // Layout.
 export {
@@ -81,7 +81,7 @@ export {
   MIN_ROWS,
   MENU_ROWS,
   type Layout,
-} from './layout';
+} from './render/layout';
 
 // Pages.
 export { renderPetPage } from './pages/pet';
@@ -90,4 +90,4 @@ export { renderArchivePage } from './pages/archive';
 export type { PageId, PageUiState, RenderContext } from './pages/types';
 
 // Pack lookups (used by render + cli wiring).
-export { findSpecies, findSprite, habitatSpriteId, houseTint } from './lookup';
+export { findSpecies, findSprite, habitatSpriteId, houseTint } from './helpers/lookup';

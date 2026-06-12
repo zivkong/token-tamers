@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bgSgr, fgSgr, hexToRgb, rgbTo256, rgbTo8 } from '../src/ansi';
+import { bgSgr, fgSgr, hexToRgb, rgbTo256, rgbTo8 } from '../src/terminal/ansi';
 
 const E = '\x1b';
 

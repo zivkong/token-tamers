@@ -51,6 +51,30 @@ Key contracts live in `packages/core/src/types.ts`.
 - Run dev build: `pnpm --filter token-tamers dev` (or `node apps/cli/dist/tt.js`)
 - Zero-network / spoiler gates: `pnpm check:network` · `pnpm check:spoilers`
 
+## Code structure (KISS / DRY / SOLID — mechanically enforced)
+
+ESLint ceilings (error, never lint-disable around them — split responsibilities
+instead): complexity ≤ 20, max-depth ≤ 4, max-params ≤ 5 (group into an options
+object), max-lines ≤ 400 (excl. tests), no-duplicate-imports. Duplication: jscpd
+advisory via `pnpm check:dup`. Folders are by responsibility, max one level deep,
+thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.ts`
+— internal moves must keep its export surface identical.
+
+- `packages/core/src/` — `types.ts` (cross-package contracts, never move) ·
+  `helpers/` (rng) · `cycle/` (windows, static, dynamic) · `evaluation/`
+  (signals, traits, modifier) · `engine/` (state, houses, branches, grades,
+  rebirth, achievements, baseline, completion, constants, index)
+- `packages/tui/src/` — `terminal/` (ansi, input) · `render/` (buffer, sprite,
+  layout, hit, frame) · `pages/` · `helpers/` (status, lookup) · `shell.ts`
+- `packages/adapters/src/` — `index.ts` (contracts + registry) · `helpers/`
+  (jsonl incremental reading, shared by future adapters) · `<provider>/`
+  (index = detect/scan, parse = record→UsageEvent)
+- `packages/content/src/` — `index.ts` (pack assembly) · `validate.ts` ·
+  `models.ts`; JSON under `content/v1/`; generators under `tools/`
+- `apps/cli/src/` — `main.ts` (thin entry — tsup entry point, do not move) ·
+  `helpers/` (args) · `stores/` (atomic, config, state, checkpoints) ·
+  `services/` (catchup, shell-host) · `commands/` (one file per command)
+
 ## Conventions
 
 - TypeScript strict, ESM only, Node ≥ 20; moduleResolution Bundler (no `.js` import suffixes).

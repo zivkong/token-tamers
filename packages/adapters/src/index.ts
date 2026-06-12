@@ -1,5 +1,5 @@
 import type { UsageEvent } from '@token-tamers/core';
-import { claudeCodeAdapter } from './claude-code';
+import { claudeCodeAdapter } from './claude-code/index';
 
 /** Per-file scan bookkeeping so re-scans are incremental, never full re-reads. */
 export interface AdapterCheckpoint {

@@ -1,0 +1,50 @@
+/**
+ * Shared helpers for the on-disk store: data-dir resolution and atomic JSON writes.
+ *
+ * Data dir = $TOKENTAMERS_HOME || ~/.tokentamers.
+ * Writes are atomic (write to a temp file, then rename) so a crash mid-write
+ * never corrupts an existing file.
+ */
+
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+/** Resolve the Token Tamers data directory (honours TOKENTAMERS_HOME). */
+export function dataDir(): string {
+  const override = process.env['TOKENTAMERS_HOME'];
+  if (override && override.length > 0) return override;
+  return path.join(os.homedir(), '.tokentamers');
+}
+
+export function pathFor(file: string): string {
+  return path.join(dataDir(), file);
+}
+
+export function ensureDir(): void {
+  fs.mkdirSync(dataDir(), { recursive: true });
+}
+
+export function readJsonOrNull<T>(file: string): T | null {
+  const p = pathFor(file);
+  let raw: string;
+  try {
+    raw = fs.readFileSync(p, 'utf8');
+  } catch {
+    return null;
+  }
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+/** Atomic write: temp file in the same dir, then rename over the target. */
+export function writeJsonAtomic(file: string, value: unknown): void {
+  ensureDir();
+  const target = pathFor(file);
+  const tmp = `${target}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+  fs.renameSync(tmp, target);
+}
