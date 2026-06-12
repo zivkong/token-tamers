@@ -1,7 +1,32 @@
+# Dependencies & build outputs
 node_modules/
 dist/
 out/
 coverage/
 *.tsbuildinfo
-.DS_Store
+.eslintcache
+
+# Claude Code session artifacts (.claude/skills/ IS tracked — project skills)
+.claude/worktrees/
+.claude/settings.local.json
+
+# Logs & temp
 *.log
+*.tmp
+
+# Local env files (nothing in this project should ever need one — zero network)
+.env
+.env.*
+
+# OS cruft
+.DS_Store
+._*
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Packaging artifacts
+*.tgz

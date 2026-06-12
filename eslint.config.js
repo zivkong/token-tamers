@@ -17,7 +17,17 @@ const banNetworkImports = {
 };
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/out/**', '**/node_modules/**', 'coverage/**'] },
+  {
+    ignores: [
+      '**/dist/**',
+      '**/out/**',
+      '**/node_modules/**',
+      'coverage/**',
+      // Local Claude Code worktrees are full repo copies — lint them from
+      // inside the worktree, never from the parent checkout.
+      '.claude/worktrees/**',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettier,

@@ -1,7 +1,17 @@
+# Build outputs & dependencies
 node_modules/
 dist/
 out/
 coverage/
+
+# Local Claude Code worktrees — full repo copies; never format them from the parent
+.claude/worktrees/
+
+# Generated or byte-exact files (formatting would corrupt or churn them)
 pnpm-lock.yaml
-token-tamers-design.md
 packages/content/content/**/*.json
+packages/adapters/test/fixtures/
+**/__snapshots__/
+
+# Historical design baseline — kept verbatim, never reflowed
+token-tamers-design.md
