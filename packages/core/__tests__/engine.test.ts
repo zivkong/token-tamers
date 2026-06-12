@@ -78,6 +78,24 @@ describe('engine — egg fast-hatch', () => {
     expect(eng.state().pet.moltCount).toBe(1);
   });
 
+  it('a mid-week egg (init) hatches off its OWN first feeding, not old history', () => {
+    // The first egg is placed mid-week via startAt; usage from earlier in the
+    // same week (before the egg existed) must NOT define the hatch time.
+    const startAt = WEEK_ANCHOR + 3 * 24 * HOUR; // mid-week
+    const eng = createEngine(makePack(), { adapters: [dynamicAdapter()], startAt });
+    eng.ingest([
+      ev(HOUR), // day-0 history, days before the egg — must be ignored
+      ev(3 * 24 * HOUR + 30 * MIN), // first feeding 30 min after the egg is placed
+    ]);
+    // Before the egg's own first feeding + 10 min: still an egg.
+    eng.advanceTo(startAt + 35 * MIN);
+    expect(eng.state().pet.stage).toBe('egg');
+    // After it: hatched.
+    eng.advanceTo(startAt + 41 * MIN);
+    expect(eng.state().pet.stage).toBe('sprite');
+    expect(eng.state().pet.moltCount).toBe(1);
+  });
+
   it('is identical whether advanced in one big step or many small ones', () => {
     const events = [ev(0), ev(30 * MIN), ev(6 * HOUR), ev(7 * HOUR)];
 

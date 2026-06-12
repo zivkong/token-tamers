@@ -39,24 +39,33 @@ export function makeRebirth(weekStart: number): RebirthEvent {
 
 /**
  * Egg fast-hatch checkpoints: one extra `hatch` molt per used week, fired
- * EGG_HATCH_MS after that week's FIRST event, on top of the normal 5-h windows.
+ * EGG_HATCH_MS after that week's first event, on top of the normal 5-h windows.
  *
  * Every generation begins as an egg at a week boundary (rebirth), so one hatch
  * checkpoint per week covers every egg. These are ADDITIVE — they never alter
  * the normal window chain — and the engine only lets one ACT while the pet is
- * an egg (hatching it early); otherwise it is a no-op. Pure function of (events,
- * weekAnchor): deterministic under any advance granularity. An unhatched egg
- * implies no molt has consumed this week's events yet, so the buffer is intact
- * and the week's first event is always correctly identified.
+ * an egg (hatching it early); otherwise it is a no-op.
+ *
+ * `notBefore` floors the search at the current generation's placement
+ * (`pet.hatchedAt`): the egg hatches off its OWN first feeding, not off usage
+ * that predates it. This matters for the very first egg, placed mid-week at
+ * `tt init` — without the floor its week's "first event" is days-old history
+ * from before the egg existed, so the hatch lands before the egg and is filtered
+ * out. For later generations the week boundary already exceeds `hatchedAt`, so
+ * the floor is a no-op and per-week timing is unchanged. Deterministic:
+ * `hatchedAt` is persisted state, identical under any advance granularity, and
+ * an unhatched egg implies an intact buffer.
  */
 export function eggHatchMolts(
   events: readonly UsageEvent[],
   weekAnchor: number,
   after: number,
   now: number,
+  notBefore = -Infinity,
 ): MoltEvent[] {
   const firstByWeek = new Map<number, number>();
   for (const ev of events) {
+    if (ev.ts < notBefore) continue;
     const week = weekStartFor(ev.ts, weekAnchor);
     const prev = firstByWeek.get(week);
     if (prev === undefined || ev.ts < prev) firstByWeek.set(week, ev.ts);

@@ -161,8 +161,11 @@ class GameEngine implements Engine {
       for (const event of derived) cycles.push({ adapter: adapter.provider, event });
       // Additive egg-hatch checkpoints (one per week); each is a no-op unless the
       // pet is still an egg when replayed (see replayMolt). They never touch the
-      // normal 5-h window chain, so pending/determinism are unaffected.
-      for (const event of eggHatchMolts(adEvents, adapter.weekAnchor, after, now)) {
+      // normal 5-h window chain, so pending/determinism are unaffected. Floor the
+      // search at the generation's placement so the egg hatches off its own first
+      // feeding, not history predating it (the first egg is placed mid-week).
+      const hatchFloor = this.state_.pet.hatchedAt;
+      for (const event of eggHatchMolts(adEvents, adapter.weekAnchor, after, now, hatchFloor)) {
         cycles.push({ adapter: adapter.provider, event });
       }
     }
