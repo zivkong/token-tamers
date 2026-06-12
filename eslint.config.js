@@ -1,3 +1,4 @@
+import { defineConfig, globalIgnores } from 'eslint/config';
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
@@ -16,20 +17,18 @@ const banNetworkImports = {
   })),
 };
 
-export default tseslint.config(
-  {
-    ignores: [
-      '**/dist/**',
-      '**/out/**',
-      '**/node_modules/**',
-      'coverage/**',
-      // Local Claude Code worktrees are full repo copies — lint them from
-      // inside the worktree, never from the parent checkout.
-      '.claude/worktrees/**',
-    ],
-  },
+export default defineConfig(
+  globalIgnores([
+    '**/dist/**',
+    '**/out/**',
+    '**/node_modules/**',
+    'coverage/**',
+    // Local Claude Code worktrees are full repo copies — lint them from
+    // inside the worktree, never from the parent checkout.
+    '.claude/worktrees/**',
+  ]),
   js.configs.recommended,
-  ...tseslint.configs.recommended,
+  tseslint.configs.recommended,
   prettier,
   {
     // Plain Node scripts (hooks, tooling) — give them the Node globals.
