@@ -41,7 +41,8 @@ jobs:
           mv tt.cjs-macos-arm64    tt-macos-arm64
           mv tt.cjs-win-x64.exe    tt-windows-x64.exe
           cp ../apps/cli/dist/tt.js tt.js
-          shasum -a 256 tt-* tt.js > SHA256SUMS.txt
+          cp ../scripts/install.sh install.sh
+          shasum -a 256 tt-* tt.js install.sh > SHA256SUMS.txt
 
       - name: Attest build provenance (verifiable with `gh attestation verify`)
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
@@ -53,6 +54,7 @@ jobs:
             out/tt-macos-arm64
             out/tt-windows-x64.exe
             out/tt.js
+            out/install.sh
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
@@ -65,4 +67,5 @@ jobs:
             out/tt-macos-arm64
             out/tt-windows-x64.exe
             out/tt.js
+            out/install.sh
             out/SHA256SUMS.txt
