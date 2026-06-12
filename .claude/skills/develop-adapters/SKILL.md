@@ -22,19 +22,30 @@ drift in any provider = adapter patch, never an engine change.
 - Tolerate live files: skip malformed/partial trailing JSONL lines silently.
 - Windows: resolve homes via `os.homedir()` (%USERPROFILE%), honor env overrides.
 
-## Claude Code — SHIPPED (reference adapter, `src/claude-code.ts`)
+## Claude Code — SHIPPED (reference adapter, `src/claude-code/`)
 
-- Source: `~/.claude/projects/{encoded-path}/*.jsonl` (override: `CLAUDE_CONFIG_DIR`).
+- Source: `{config-root}/projects/{encoded-path}/*.jsonl`. Config roots vary by
+  version and sessions can be SPLIT across roots after a migration — probe ALL of:
+  `CLAUDE_CONFIG_DIR` (comma-separated multi-root) → `$XDG_CONFIG_HOME/claude`
+  (newer builds; `~/.config/claude` default) + `~/.claude` (legacy default).
   Assistant records carry `message.usage` (input_tokens, output_tokens,
   cache_creation_input_tokens → cacheWriteTokens, cache_read_input_tokens →
   cacheReadTokens) and `message.model` (full model ID). Auxiliary local sources
   (not yet ingested): `~/.claude/history.jsonl` (prompt index) and statusline
   snapshots.
+- **Dedup by `message.id` (verified June 2026).** One assistant message is logged
+  as one record PER CONTENT BLOCK; every record in the group repeats the same
+  `message.id` and IDENTICAL usage totals (measured: 57% of usage records are
+  duplicates → ~2.7x token inflation if counted per record; 8.7k duplicate groups,
+  zero with differing usage). Emit the first record per id; duplicates are almost
+  always adjacent, so a `lastMessageId` per file in the checkpoint extends the
+  dedup across incremental scan boundaries.
 - `{uuid}.jsonl` = main session; `agent-{uuid}.jsonl` = subagents → tag
   `isSubagent: true`.
 - Caveats: format unofficial and may change; **sessions auto-delete after ~30 days**
-  (incremental ingest + own store is the defense); plan rate-limit % is NOT available
-  locally — we infer windows ourselves.
+  (incremental ingest + own store is the defense; prune checkpoint entries for
+  deleted files); plan rate-limit % is NOT available locally — we infer windows
+  ourselves.
 
 ## Codex CLI — M2 (architecture-ready)
 

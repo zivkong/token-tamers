@@ -4,7 +4,12 @@ import { openCodeAdapter } from './opencode/index';
 
 /** Per-file scan bookkeeping so re-scans are incremental, never full re-reads. */
 export interface AdapterCheckpoint {
-  files: Record<string, { offset: number; mtimeMs: number }>;
+  /**
+   * `lastMessageId` (optional, additive) lets a scanner dedupe a record group
+   * that straddles a scan boundary — Claude Code writes one record per content
+   * block, all sharing a message id and repeating identical usage.
+   */
+  files: Record<string, { offset: number; mtimeMs: number; lastMessageId?: string }>;
 }
 
 export interface AdapterDetection {

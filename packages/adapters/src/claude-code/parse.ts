@@ -19,6 +19,7 @@ export interface RawRecord {
   cwd?: string;
   sessionId?: string;
   message?: {
+    id?: string;
     role?: string;
     model?: string;
     content?: unknown;
@@ -29,6 +30,18 @@ export interface RawRecord {
       cache_creation_input_tokens?: number;
     };
   };
+}
+
+/**
+ * Extract the API message id of a usage-bearing record, or undefined.
+ * Claude Code writes one JSONL record per content block of an assistant
+ * message; every record in the group repeats the SAME message id and the
+ * SAME usage totals, so tokens must be counted once per id, not per record.
+ */
+export function messageIdOf(raw: unknown): string | undefined {
+  if (raw === null || typeof raw !== 'object') return undefined;
+  const id = (raw as RawRecord).message?.id;
+  return typeof id === 'string' && id.length > 0 ? id : undefined;
 }
 
 // ---------------------------------------------------------------------------

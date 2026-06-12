@@ -1,7 +1,7 @@
 /**
  * Claude Code provider adapter.
  *
- * Reads ~/.claude/projects/{encoded-path}/*.jsonl (read-only, incremental).
+ * Reads {config-root}/projects/{encoded-path}/*.jsonl (read-only, incremental).
  * Never writes, never calls any API, never touches the network.
  */
 
@@ -11,18 +11,36 @@ import * as os from 'node:os';
 import type { UsageEvent } from '@token-tamers/core';
 import type { AdapterCheckpoint, AdapterDetection, ProviderAdapter, ScanResult } from '../index';
 import { readNewJsonlLines, safeJsonParse } from '../helpers/jsonl';
-import { ADAPTER_ID, isSubagentFile, parseRecord, sessionUuidFromFilename } from './parse';
+import {
+  ADAPTER_ID,
+  isSubagentFile,
+  messageIdOf,
+  parseRecord,
+  sessionUuidFromFilename,
+} from './parse';
 
 // ---------------------------------------------------------------------------
 // Config dir resolution
 // ---------------------------------------------------------------------------
 
 /**
- * Resolve the base Claude config dir.
- * Precedence: CLAUDE_CONFIG_DIR env var → ~/.claude (Unix) / %USERPROFILE%\.claude (Windows).
+ * Resolve candidate Claude config roots. Claude Code's data dir varies by
+ * version and platform, and after a version migration sessions can be SPLIT
+ * across roots — so every existing root is scanned, not just the first hit.
+ * Precedence: CLAUDE_CONFIG_DIR (comma-separated, multi-root) →
+ * $XDG_CONFIG_HOME/claude (newer builds; ~/.config/claude default) +
+ * ~/.claude (legacy default; %USERPROFILE%\.claude on Windows).
  */
-function resolveConfigDir(): string {
-  return process.env['CLAUDE_CONFIG_DIR'] ?? path.join(os.homedir(), '.claude');
+function resolveConfigRoots(): string[] {
+  const env = process.env['CLAUDE_CONFIG_DIR'];
+  if (env && env.trim().length > 0) {
+    return env
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+  }
+  const xdgBase = process.env['XDG_CONFIG_HOME'] ?? path.join(os.homedir(), '.config');
+  return [path.join(xdgBase, 'claude'), path.join(os.homedir(), '.claude')];
 }
 
 // ---------------------------------------------------------------------------
@@ -62,21 +80,47 @@ async function listProjectDirs(projectsRoot: string): Promise<string[]> {
 // Per-file scan
 // ---------------------------------------------------------------------------
 
-/** Parse all new events from a JSONL session file starting at `startOffset`. */
+interface ScanFileInput {
+  filePath: string;
+  startOffset: number;
+  sessionKey: string;
+  isSubagent: boolean;
+  /** Message id of the last usage record emitted by a previous scan of this file. */
+  lastMessageId?: string;
+}
+
+/**
+ * Parse all new events from a JSONL session file starting at `startOffset`.
+ *
+ * Dedup: Claude Code logs one record per content block of an assistant
+ * message; the whole group shares a message id and repeats IDENTICAL usage
+ * totals (verified June 2026: 8.7k duplicate groups, zero with differing
+ * usage — counting per record inflates tokens ~2.7x). Only the first record
+ * of each id is emitted; `lastMessageId` extends the dedup across scan
+ * boundaries, since a group can straddle two incremental reads.
+ */
 async function scanFile(
-  filePath: string,
-  startOffset: number,
-  sessionKey: string,
-  isSubagent: boolean,
-): Promise<{ events: UsageEvent[]; newOffset: number }> {
-  const { lines, newOffset } = await readNewJsonlLines(filePath, startOffset);
+  input: ScanFileInput,
+): Promise<{ events: UsageEvent[]; newOffset: number; lastMessageId?: string }> {
+  const { lines, newOffset } = await readNewJsonlLines(input.filePath, input.startOffset);
   const events: UsageEvent[] = [];
+  const seenIds = new Set<string>();
+  if (input.lastMessageId !== undefined) seenIds.add(input.lastMessageId);
+  let lastMessageId = input.lastMessageId;
+
   for (const line of lines) {
     const raw = safeJsonParse(line);
-    const event = parseRecord(raw, sessionKey, isSubagent);
-    if (event) events.push(event);
+    const event = parseRecord(raw, input.sessionKey, input.isSubagent);
+    if (!event) continue;
+    const id = messageIdOf(raw);
+    if (id !== undefined) {
+      if (seenIds.has(id)) continue;
+      seenIds.add(id);
+      lastMessageId = id;
+    }
+    events.push(event);
   }
-  return { events, newOffset };
+  return { events, newOffset, ...(lastMessageId !== undefined ? { lastMessageId } : {}) };
 }
 
 // ---------------------------------------------------------------------------
@@ -91,31 +135,32 @@ export const claudeCodeAdapter: ProviderAdapter & { defaultPlan: 'subscription' 
 
   async detect(): Promise<AdapterDetection> {
     const warnings: string[] = [];
-    const configDir = resolveConfigDir();
-    const projectsDir = path.join(configDir, 'projects');
+    const paths: string[] = [];
 
-    const projectsStat = await statOrNull(projectsDir);
-    if (!projectsStat) {
-      return { installed: false, paths: [], warnings };
+    for (const configDir of resolveConfigRoots()) {
+      const projectsDir = path.join(configDir, 'projects');
+      const projectsStat = await statOrNull(projectsDir);
+      if (!projectsStat) continue;
+
+      if (!projectsStat.isDirectory()) {
+        warnings.push(`Expected a directory at ${projectsDir} but found a file.`);
+        continue;
+      }
+
+      // Claude Code auto-deletes sessions older than ~30 days; warn if the
+      // projects folder appears completely empty (fresh install / all purged).
+      const projectDirs = await listProjectDirs(projectsDir);
+      if (projectDirs.length === 0) {
+        warnings.push(
+          `No project directories found under ${projectsDir}. ` +
+            'This may be a fresh install or all sessions may have been purged (sessions older than ~30 days are auto-deleted).',
+        );
+      }
+
+      paths.push(projectsDir);
     }
 
-    if (!projectsStat.isDirectory()) {
-      warnings.push(`Expected a directory at ${projectsDir} but found a file.`);
-      return { installed: false, paths: [], warnings };
-    }
-
-    const projectDirs = await listProjectDirs(projectsDir);
-
-    // Claude Code auto-deletes sessions older than ~30 days; warn if the projects
-    // folder appears completely empty (e.g. new install with no usage yet).
-    if (projectDirs.length === 0) {
-      warnings.push(
-        `No project directories found under ${projectsDir}. ` +
-          'This may be a fresh install or all sessions may have been purged (sessions older than ~30 days are auto-deleted).',
-      );
-    }
-
-    return { installed: true, paths: [projectsDir], warnings };
+    return { installed: paths.length > 0, paths, warnings };
   },
 
   async scan(paths: string[], checkpoint?: AdapterCheckpoint): Promise<ScanResult> {
@@ -123,7 +168,7 @@ export const claudeCodeAdapter: ProviderAdapter & { defaultPlan: 'subscription' 
     // Rebuilt from the files seen THIS scan: entries for sessions Claude Code
     // has since deleted (~30-day retention) drop out, keeping the checkpoint
     // map bounded instead of growing for the lifetime of the install.
-    const fileCheckpoints: Record<string, { offset: number; mtimeMs: number }> = {};
+    const fileCheckpoints: AdapterCheckpoint['files'] = {};
 
     const allEvents: UsageEvent[] = [];
 
@@ -142,18 +187,19 @@ export const claudeCodeAdapter: ProviderAdapter & { defaultPlan: 'subscription' 
             continue;
           }
 
-          const startOffset = prev?.offset ?? 0;
-          const sessionKey = sessionUuidFromFilename(filename);
-          const isSubagent = isSubagentFile(filename);
-
-          const { events, newOffset } = await scanFile(
+          const { events, newOffset, lastMessageId } = await scanFile({
             filePath,
-            startOffset,
-            sessionKey,
-            isSubagent,
-          );
+            startOffset: prev?.offset ?? 0,
+            sessionKey: sessionUuidFromFilename(filename),
+            isSubagent: isSubagentFile(filename),
+            ...(prev?.lastMessageId !== undefined ? { lastMessageId: prev.lastMessageId } : {}),
+          });
           allEvents.push(...events);
-          fileCheckpoints[filePath] = { offset: newOffset, mtimeMs: st.mtimeMs };
+          fileCheckpoints[filePath] = {
+            offset: newOffset,
+            mtimeMs: st.mtimeMs,
+            ...(lastMessageId !== undefined ? { lastMessageId } : {}),
+          };
         }
       }
     }

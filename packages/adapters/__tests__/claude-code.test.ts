@@ -627,3 +627,124 @@ describe('claudeCodeAdapter.scan() — checkpoint pruning', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Message-id dedup (one assistant message = N records with identical usage)
+// ---------------------------------------------------------------------------
+
+describe('claudeCodeAdapter.scan() — message-id dedup', () => {
+  const mkRecord = (msgId: string, content: string): string =>
+    JSON.stringify({
+      type: 'assistant',
+      message: {
+        id: msgId,
+        role: 'assistant',
+        content,
+        model: 'claude-sonnet-4-5-20250929',
+        usage: {
+          input_tokens: 100,
+          output_tokens: 200,
+          cache_read_input_tokens: 1000,
+          cache_creation_input_tokens: 50,
+        },
+      },
+      timestamp: '2024-05-03T10:00:00.000Z',
+      sessionId: 'cccc0000-1111-2222-3333-444455556666',
+      cwd: '/tmp/work',
+    }) + '\n';
+
+  it('emits one event per message id, not per record', async () => {
+    const session = 'cccc0000-1111-2222-3333-444455556666';
+    const { configDir, cleanup } = await makeTmpConfigDir({
+      [`proj-d/${session}.jsonl`]:
+        mkRecord('msg_aa', 'thinking block') +
+        mkRecord('msg_aa', 'text block') +
+        mkRecord('msg_aa', 'tool_use block') +
+        mkRecord('msg_bb', 'next message'),
+    });
+    try {
+      const result = await claudeCodeAdapter.scan([path.join(configDir, 'projects')]);
+      const evts = result.events.filter((ev) => ev.sessionKey === session);
+      expect(evts).toHaveLength(2);
+      expect(evts.reduce((n, ev) => n + ev.inputTokens, 0)).toBe(200); // 2 messages, not 4 records
+    } finally {
+      await cleanup();
+    }
+  });
+
+  it('dedupes a record group that straddles an incremental scan boundary', async () => {
+    const session = 'cccc0000-1111-2222-3333-444455556666';
+    const { configDir, cleanup } = await makeTmpConfigDir({
+      [`proj-d/${session}.jsonl`]: mkRecord('msg_aa', 'thinking block'),
+    });
+    const filePath = path.join(configDir, 'projects', 'proj-d', `${session}.jsonl`);
+    try {
+      const projectsDir = path.join(configDir, 'projects');
+      const first = await claudeCodeAdapter.scan([projectsDir]);
+      expect(first.events.filter((ev) => ev.sessionKey === session)).toHaveLength(1);
+
+      // The rest of the same message's records land after the first scan.
+      await fs.appendFile(
+        filePath,
+        mkRecord('msg_aa', 'text block') + mkRecord('msg_bb', 'next'),
+        'utf8',
+      );
+      const now = Date.now();
+      await fs.utimes(filePath, now / 1000, now / 1000 + 2);
+
+      const second = await claudeCodeAdapter.scan([projectsDir], first.checkpoint);
+      const evts = second.events.filter((ev) => ev.sessionKey === session);
+      expect(evts).toHaveLength(1); // only msg_bb — the msg_aa continuation is a duplicate
+    } finally {
+      await cleanup();
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Multi-root detection
+// ---------------------------------------------------------------------------
+
+describe('claudeCodeAdapter.detect() — multiple config roots', () => {
+  const savedConfig = process.env['CLAUDE_CONFIG_DIR'];
+
+  afterEach(() => {
+    if (savedConfig === undefined) delete process.env['CLAUDE_CONFIG_DIR'];
+    else process.env['CLAUDE_CONFIG_DIR'] = savedConfig;
+  });
+
+  it('scans every root from a comma-separated CLAUDE_CONFIG_DIR', async () => {
+    const a = await makeTmpConfigDir({ 'proj-a/aaaa.jsonl': '' });
+    const b = await makeTmpConfigDir({ 'proj-b/bbbb.jsonl': '' });
+    try {
+      process.env['CLAUDE_CONFIG_DIR'] = `${a.configDir}, ${b.configDir}`;
+      const result = await claudeCodeAdapter.detect();
+      expect(result.installed).toBe(true);
+      expect(result.paths).toEqual([
+        path.join(a.configDir, 'projects'),
+        path.join(b.configDir, 'projects'),
+      ]);
+    } finally {
+      await a.cleanup();
+      await b.cleanup();
+    }
+  });
+
+  it('probes $XDG_CONFIG_HOME/claude when CLAUDE_CONFIG_DIR is unset', async () => {
+    const savedXdg = process.env['XDG_CONFIG_HOME'];
+    const xdgRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'tt-xdg-'));
+    await fs.mkdir(path.join(xdgRoot, 'claude', 'projects', 'proj-x'), { recursive: true });
+    try {
+      delete process.env['CLAUDE_CONFIG_DIR'];
+      process.env['XDG_CONFIG_HOME'] = xdgRoot;
+      const result = await claudeCodeAdapter.detect();
+      expect(result.installed).toBe(true);
+      // ~/.claude may also exist on the host machine; assert membership only.
+      expect(result.paths).toContain(path.join(xdgRoot, 'claude', 'projects'));
+    } finally {
+      if (savedXdg === undefined) delete process.env['XDG_CONFIG_HOME'];
+      else process.env['XDG_CONFIG_HOME'] = savedXdg;
+      await fs.rm(xdgRoot, { recursive: true, force: true });
+    }
+  });
+});
