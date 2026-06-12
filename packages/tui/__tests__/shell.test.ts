@@ -106,6 +106,6 @@ describe('runShell loop', () => {
     input.push({ type: 'key', name: '2' }); // dex
     await done;
     // The dex header should appear in the captured output.
-    expect(sink.toString()).toContain('DEX');
+    expect(sink.toString()).toContain('☰ Dex');
   });
 });

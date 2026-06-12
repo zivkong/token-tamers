@@ -5,7 +5,7 @@
 
 import type { ArchiveRecord, Stats } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
-import { GRADE_BADGE } from '../render/sprite';
+import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
 import { findSpecies } from '../helpers/lookup';
 import { clampScroll } from './dex';
 import type { RenderContext } from './types';
@@ -15,8 +15,13 @@ const DIM: Rgb = { r: 96, g: 100, b: 120 };
 const SELECT_BG: Rgb = { r: 40, g: 48, b: 78 };
 const HEADER: Rgb = { r: 150, g: 200, b: 255 };
 
+const RULE: Rgb = { r: 52, g: 58, b: 80 };
+
+// Fixed column offsets (within the canvas): marker+#, name, grade, gen, stats.
+const COL = { num: 1, name: 8, grade: 25, gen: 31, stats: 37 } as const;
+
 function statsBrief(s: Stats): string {
-  return `${s.pwr}/${s.spd}/${s.wis}/${s.grt}`;
+  return `PWR ${String(s.pwr).padStart(2)}  SPD ${String(s.spd).padStart(2)}  WIS ${String(s.wis).padStart(2)}  GRT ${String(s.grt).padStart(2)}`;
 }
 
 export function renderArchivePage(ctx: RenderContext): void {
@@ -24,13 +29,27 @@ export function renderArchivePage(ctx: RenderContext): void {
   const { canvasX, canvasY, canvasCols, canvasRows } = layout;
   const records: readonly ArchiveRecord[] = state.archive;
 
-  buf.text(canvasX + 1, canvasY, 'ARCHIVE', HEADER, null);
-  // Column header.
-  const header = padRow('#', 'SPECIES', 'GR', 'GEN', 'PWR/SPD/WIS/GRT');
-  buf.text(canvasX + 1, canvasY + 1, header, DIM, null);
+  // Centered hall-of-fame header (design §12 mock).
+  const title = `◆ ARCHIVE — ${records.length} record${records.length === 1 ? '' : 's'} ◆`;
+  buf.text(
+    canvasX + Math.max(1, Math.floor((canvasCols - title.length) / 2)),
+    canvasY,
+    title,
+    HEADER,
+    null,
+  );
+  // Column header on its own rule line.
+  buf.text(canvasX + COL.num, canvasY + 1, '#', DIM, null);
+  buf.text(canvasX + COL.name, canvasY + 1, 'SPECIES', DIM, null);
+  buf.text(canvasX + COL.grade, canvasY + 1, 'GRADE', DIM, null);
+  buf.text(canvasX + COL.gen, canvasY + 1, 'GEN', DIM, null);
+  buf.text(canvasX + COL.stats, canvasY + 1, 'BEST STATS', DIM, null);
+  for (let x = 1; x < canvasCols - 1; x++) {
+    buf.set(canvasX + x, canvasY + 2, { ch: '─', fg: RULE, bg: null });
+  }
 
-  const listTop = canvasY + 2;
-  const visible = canvasRows - 3;
+  const listTop = canvasY + 3;
+  const visible = canvasRows - 4;
 
   if (records.length === 0) {
     buf.text(canvasX + 1, listTop, 'No records yet — your first rebirth writes here.', DIM, null);
@@ -50,18 +69,22 @@ export function renderArchivePage(ctx: RenderContext): void {
     const bg = selected ? SELECT_BG : null;
     const species = findSpecies(pack, rec.speciesId);
     const name = species?.name ?? rec.speciesId;
-    const badge = GRADE_BADGE[rec.grade];
-    const line = padRow(
-      String(rowIndex + 1),
-      name,
-      `${rec.grade}${badge}`,
-      `g${rec.generation}`,
-      statsBrief(rec.stats),
-    );
     for (let x = 0; x < canvasCols; x++) {
       buf.set(canvasX + x, y, { ch: ' ', fg: null, bg });
     }
-    buf.text(canvasX + 1, y, (selected ? '› ' : '  ') + line, TEXT, bg);
+    const marker = selected ? '› ' : '  ';
+    const numStr = `#${String(species?.num ?? rowIndex + 1).padStart(3, '0')}`;
+    buf.text(canvasX + COL.num, y, `${marker}${numStr}`, DIM, bg);
+    buf.text(canvasX + COL.name, y, name, TEXT, bg);
+    buf.text(
+      canvasX + COL.grade,
+      y,
+      `[${rec.grade}]${GRADE_BADGE[rec.grade]}`,
+      GRADE_ACCENT[rec.grade],
+      bg,
+    );
+    buf.text(canvasX + COL.gen, y, `g${rec.generation}`, DIM, bg);
+    buf.text(canvasX + COL.stats, y, statsBrief(rec.stats), TEXT, bg);
     hits.add(`archive:row:${rowIndex}`, canvasX, y, canvasCols, 1);
   }
 
@@ -72,8 +95,4 @@ export function renderArchivePage(ctx: RenderContext): void {
     DIM,
     null,
   );
-}
-
-function padRow(num: string, species: string, grade: string, gen: string, stats: string): string {
-  return num.padEnd(4) + species.slice(0, 16).padEnd(18) + grade.padEnd(4) + gen.padEnd(5) + stats;
 }

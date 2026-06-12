@@ -105,6 +105,8 @@ export interface DrawOptions {
   frame?: number;
   /** Color mode; in 'none' the index ramp is used instead of color. */
   mode?: ColorMode;
+  /** Optional clip rect (cells); pixels outside it are not drawn. */
+  clip?: { x: number; y: number; w: number; h: number };
 }
 
 /**
@@ -139,10 +141,18 @@ export function drawSprite(
       const top = resolveIndex(pal, topIdx);
       const bot = resolveIndex(pal, botIdx);
       if (top === null && bot === null) continue;
+      const tx = x + cx;
+      const ty = y + cy;
+      if (!insideClip(opts.clip, tx, ty)) continue;
       const cell = composeHalfBlock(top, bot, topIdx, botIdx, mode);
-      buf.set(x + cx, y + cy, cell);
+      buf.set(tx, ty, cell);
     }
   }
+}
+
+function insideClip(clip: DrawOptions['clip'], x: number, y: number): boolean {
+  if (!clip) return true;
+  return x >= clip.x && y >= clip.y && x < clip.x + clip.w && y < clip.y + clip.h;
 }
 
 /** ASCII ramp for --no-color: brighter palette index -> denser glyph. */
@@ -170,6 +180,14 @@ function composeHalfBlock(
   // fg = top pixel, bg = bottom pixel, glyph = upper-half block.
   return { ch: UPPER_HALF, fg: top, bg: bot };
 }
+
+/** Beauty-ladder accent per grade (design §13) — UI badge/highlight colors. */
+export const GRADE_ACCENT: Record<Grade, Rgb> = {
+  C: { r: 150, g: 152, b: 160 },
+  B: { r: 74, g: 222, b: 128 },
+  A: { r: 167, g: 139, b: 250 },
+  S: { r: 251, g: 191, b: 36 },
+};
 
 /** Grade badge glyphs used across pages: [S]★ [A]◆ [B]● [C]○. */
 export const GRADE_BADGE: Record<Grade, string> = {

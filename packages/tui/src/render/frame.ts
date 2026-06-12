@@ -14,10 +14,15 @@ import { renderArchivePage } from '../pages/archive';
 import type { PageId, PageUiState, RenderContext } from '../pages/types';
 import type { ContentPack, GameState } from '@token-tamers/core';
 
-const MENU_FG: Rgb = { r: 210, g: 216, b: 230 };
-const MENU_ACTIVE: Rgb = { r: 255, g: 234, b: 140 };
-const MENU_BG: Rgb = { r: 24, g: 28, b: 40 };
-const FLASH_FG: Rgb = { r: 255, g: 220, b: 120 };
+const MENU_FG: Rgb = { r: 196, g: 203, b: 220 };
+const MENU_DIM: Rgb = { r: 110, g: 117, b: 140 };
+const MENU_ACTIVE: Rgb = { r: 255, g: 224, b: 130 };
+const MENU_ACTIVE_BG: Rgb = { r: 56, g: 50, b: 18 };
+const MENU_BG: Rgb = { r: 22, g: 26, b: 38 };
+const FLASH_FG: Rgb = { r: 255, g: 226, b: 140 };
+const FLASH_BG: Rgb = { r: 56, g: 46, b: 12 };
+const BORDER: Rgb = { r: 58, g: 66, b: 92 };
+const METER_FILL: Rgb = { r: 240, g: 196, b: 80 };
 
 export interface MenuItem {
   id: PageId | 'quit';
@@ -81,14 +86,38 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
       break;
   }
 
-  // Transient flash banner just above the menu (e.g. gradeshift).
+  drawCanvasBorder(buf, layout);
+
+  // Transient flash toast, centered just above the menu (e.g. gradeshift).
   if (input.flash) {
     const row = layout.menuRow - 1;
-    buf.text(layout.canvasX + 1, row, input.flash, FLASH_FG, null);
+    const text = ` ${input.flash} `;
+    const x = Math.max(0, layout.canvasX + Math.floor((layout.canvasCols - text.length) / 2));
+    buf.text(x, row, text, FLASH_FG, FLASH_BG);
   }
 
   drawMenu(buf, hits, layout, input.page, input.completionPct);
   return layout;
+}
+
+/** Thin frame around the 4:3 canvas so the play area reads as a stage. */
+function drawCanvasBorder(buf: FrameBuffer, layout: Layout): void {
+  const x0 = layout.canvasX - 1;
+  const y0 = layout.canvasY - 1;
+  const x1 = layout.canvasX + layout.canvasCols;
+  const y1 = layout.canvasY + layout.canvasRows;
+  for (let x = layout.canvasX; x < x1; x++) {
+    buf.set(x, y0, { ch: '─', fg: BORDER, bg: null });
+    buf.set(x, y1, { ch: '─', fg: BORDER, bg: null });
+  }
+  for (let y = layout.canvasY; y < y1; y++) {
+    buf.set(x0, y, { ch: '│', fg: BORDER, bg: null });
+    buf.set(x1, y, { ch: '│', fg: BORDER, bg: null });
+  }
+  buf.set(x0, y0, { ch: '┌', fg: BORDER, bg: null });
+  buf.set(x1, y0, { ch: '┐', fg: BORDER, bg: null });
+  buf.set(x0, y1, { ch: '└', fg: BORDER, bg: null });
+  buf.set(x1, y1, { ch: '┘', fg: BORDER, bg: null });
 }
 
 function drawMenu(
@@ -105,17 +134,24 @@ function drawMenu(
   }
   let x = 1;
   for (const item of MENU_ITEMS) {
-    const text = `[${item.label}]`;
     const active = item.id === page;
-    buf.text(x, row, text, active ? MENU_ACTIVE : MENU_FG, MENU_BG);
-    hits.add(`menu:${item.id}`, x, row, text.length, 1);
-    x += text.length + 1;
+    const label = ` ${item.label} `;
+    const hint = `${item.hotkey} `;
+    const block = label.length + hint.length;
+    const bg = active ? MENU_ACTIVE_BG : MENU_BG;
+    buf.text(x, row, label, active ? MENU_ACTIVE : MENU_FG, bg);
+    buf.text(x + label.length, row, hint, active ? MENU_ACTIVE : MENU_DIM, bg);
+    hits.add(`menu:${item.id}`, x, row, block, 1);
+    x += block + 1;
   }
-  // Completion meter, right-aligned: 'NN.N%'.
+  // Completion meter, right-aligned: mini bar + 'NN.N%'.
   const pct = `${completionPct.toFixed(1)}%`;
-  const px = buf.cols - pct.length - 1;
-  if (px > x) {
-    buf.text(px, row, pct, MENU_FG, MENU_BG);
+  const filled = Math.max(0, Math.min(10, Math.round(completionPct / 10)));
+  const barX = buf.cols - pct.length - 13;
+  if (barX > x) {
+    buf.text(barX, row, '█'.repeat(filled), METER_FILL, MENU_BG);
+    buf.text(barX + filled, row, '░'.repeat(10 - filled), MENU_DIM, MENU_BG);
+    buf.text(buf.cols - pct.length - 1, row, pct, MENU_FG, MENU_BG);
   }
 }
 

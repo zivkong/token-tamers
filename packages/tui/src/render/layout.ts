@@ -14,6 +14,9 @@ export const MIN_ROWS = 24;
 /** Rows reserved at the very bottom for the menu bar. */
 export const MENU_ROWS = 1;
 
+/** Cells reserved on every side of the canvas for its stage frame border. */
+export const FRAME_MARGIN = 1;
+
 export interface Layout {
   /** Whole terminal size. */
   termCols: number;
@@ -47,8 +50,9 @@ export function computeLayout(cols: number, rows: number): Layout {
     };
   }
 
-  const availCols = cols;
-  const availRows = rows - MENU_ROWS;
+  // Reserve the menu row plus a 1-cell margin all around for the stage frame.
+  const availCols = cols - FRAME_MARGIN * 2;
+  const availRows = rows - MENU_ROWS - FRAME_MARGIN * 2;
 
   // Target cell aspect cols:rows = 8:3.
   // For each candidate, fit within (availCols, availRows).
@@ -62,8 +66,8 @@ export function computeLayout(cols: number, rows: number): Layout {
 
   const canvasCols = best.canvasCols;
   const canvasRows = best.canvasRows;
-  const canvasX = Math.floor((cols - canvasCols) / 2);
-  const canvasY = Math.floor((availRows - canvasRows) / 2);
+  const canvasX = FRAME_MARGIN + Math.floor((availCols - canvasCols) / 2);
+  const canvasY = FRAME_MARGIN + Math.floor((availRows - canvasRows) / 2);
 
   return {
     termCols: cols,

@@ -16,8 +16,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { GameState } from '@token-tamers/core';
-import { FrameBuffer, HitRegistry, renderFrame, type Rgb } from '@token-tamers/tui';
 import { contentPackV1 } from '@token-tamers/content';
+import { shellFrameToSvg } from './frame-svg';
 
 // --- demo state: S-grade Aurum apex, Vigil pattern, at home on the rooftop ------
 
@@ -60,110 +60,18 @@ const COLS = 118;
 const ROWS = 36;
 const FRAMES = 63; // ~seamless loop for the sin-based shimmer/glint/twinkle
 const FPS = 12;
-const CW = 9;
-const CH = 19;
-const PAD = 16;
-const BAR = 34;
-const TERM_BG = '#0e1118';
-const W = COLS * CW + PAD * 2;
-const H = ROWS * CH + PAD * 2 + BAR;
-const FONT =
-  "ui-monospace,SFMono-Regular,Menlo,Monaco,'Apple Symbols','Arial Unicode MS',monospace";
 
-const css = (c: Rgb | null, fallback: string): string =>
-  c ? `rgb(${c.r},${c.g},${c.b})` : fallback;
-const esc = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-function frameToSvg(frame: number): string {
-  const buf = new FrameBuffer(COLS, ROWS);
-  const hits = new HitRegistry();
-  renderFrame(buf, hits, {
+const frameToSvg = (frame: number): string =>
+  shellFrameToSvg({
     page: 'pet',
     state,
     pack: contentPackV1,
-    mode: 'truecolor',
     frame,
-    ui: { selected: 0, scroll: 0 },
+    cols: COLS,
+    rows: ROWS,
     completionPct: 38.4,
     flash: 'GRADESHIFT! Aurelion ascends to [S] Aurum ✦',
   });
-
-  const parts: string[] = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`,
-    `<rect width="${W}" height="${H}" rx="12" fill="#161b26"/>`,
-    `<rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="11" fill="none" stroke="#2c3445"/>`,
-    `<circle cx="22" cy="${BAR / 2}" r="6" fill="#ff5f57"/>`,
-    `<circle cx="42" cy="${BAR / 2}" r="6" fill="#febc2e"/>`,
-    `<circle cx="62" cy="${BAR / 2}" r="6" fill="#28c840"/>`,
-    `<text x="${W / 2}" y="${BAR / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#8b93a7">tt — Token Tamers</text>`,
-    `<rect x="${PAD - 6}" y="${BAR + PAD - 6}" width="${COLS * CW + 12}" height="${ROWS * CH + 12}" rx="6" fill="${TERM_BG}"/>`,
-  ];
-  const ox = PAD;
-  const oy = BAR + PAD;
-
-  // Pass 1: backgrounds; half-block cells become two crisp rects (no glyphs).
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
-      const cell = buf.get(x, y);
-      const px = ox + x * CW;
-      const py = oy + y * CH;
-      if (cell.ch === '▀') {
-        parts.push(
-          `<rect x="${px}" y="${py}" width="${CW}" height="${CH / 2}" fill="${css(cell.fg, TERM_BG)}"/>`,
-          `<rect x="${px}" y="${py + CH / 2}" width="${CW}" height="${CH / 2}" fill="${css(cell.bg, TERM_BG)}"/>`,
-        );
-      } else if (cell.bg) {
-        parts.push(
-          `<rect x="${px}" y="${py}" width="${CW}" height="${CH}" fill="${css(cell.bg, TERM_BG)}"/>`,
-        );
-      }
-    }
-  }
-
-  // Pass 2: text runs, coalesced per row by color.
-  for (let y = 0; y < ROWS; y++) {
-    let start = -1;
-    let fg = '';
-    let text = '';
-    const flush = () => {
-      if (start >= 0 && text.trim().length > 0) {
-        parts.push(
-          `<text x="${ox + start * CW}" y="${oy + y * CH + CH - 5}" font-family="${FONT}" font-size="14" xml:space="preserve" textLength="${text.length * CW}" lengthAdjust="spacingAndGlyphs" fill="${fg}">${esc(text)}</text>`,
-        );
-      }
-      start = -1;
-      text = '';
-    };
-    for (let x = 0; x < COLS; x++) {
-      const cell = buf.get(x, y);
-      if (cell.ch === '▀') {
-        flush();
-        continue;
-      }
-      const color = css(cell.fg, '#c9d1e3');
-      // Glyphs missing from magick's fontconfig fallback get lookalikes.
-      const GLYPH_SUBS: Record<string, string> = {
-        '☰': '≡',
-        '◆': '♦',
-        '⚙': '*',
-        '★': '*',
-        '✦': '+',
-      };
-      const ch = GLYPH_SUBS[cell.ch] ?? cell.ch;
-      if (start >= 0 && color !== fg) flush();
-      if (start < 0) {
-        start = x;
-        fg = color;
-      }
-      text += ch;
-    }
-    flush();
-  }
-
-  parts.push('</svg>');
-  return parts.join('\n');
-}
 
 // --- rasterize + encode -------------------------------------------------------------
 
@@ -190,4 +98,4 @@ execFileSync('ffmpeg', [
   out,
 ]);
 rmSync(tmp, { recursive: true, force: true });
-console.log(`wrote ${out} (${W}x${H}, ${FRAMES} frames @ ${FPS}fps)`);
+console.log(`wrote ${out} (${FRAMES} frames @ ${FPS}fps)`);

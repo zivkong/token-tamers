@@ -4,28 +4,32 @@
  * selectable; the selected row is highlighted.
  */
 
-import type { Rgb } from '../terminal/ansi';
+import { hexToRgb, type Rgb } from '../terminal/ansi';
+import { houseTint } from '../helpers/lookup';
+import type { House } from '@token-tamers/core';
 import type { RenderContext } from './types';
 
 const OWNED: Rgb = { r: 220, g: 226, b: 240 };
-const LOCKED: Rgb = { r: 96, g: 100, b: 120 };
+const LOCKED: Rgb = { r: 88, g: 92, b: 112 };
 const SELECT_BG: Rgb = { r: 40, g: 48, b: 78 };
 const HEADER: Rgb = { r: 150, g: 200, b: 255 };
+const RULE: Rgb = { r: 52, g: 58, b: 80 };
 
 export interface DexRow {
   num: number;
   owned: boolean;
   label: string;
   speciesId: string | null;
+  house: House | 'hybrid' | null;
 }
 
 /** Build the ordered Dex rows: every dex slot up to dexTotal, owned or '???'. */
 export function buildDexRows(ctx: RenderContext): DexRow[] {
   const { pack, state } = ctx;
   const owned = new Set(state.dexOwned);
-  const byNum = new Map<number, { id: string; name: string }>();
+  const byNum = new Map<number, { id: string; name: string; house: House | 'hybrid' }>();
   for (const sp of pack.species) {
-    if (!byNum.has(sp.num)) byNum.set(sp.num, { id: sp.id, name: sp.name });
+    if (!byNum.has(sp.num)) byNum.set(sp.num, { id: sp.id, name: sp.name, house: sp.house });
   }
   const total = Math.max(pack.dexTotal, byNum.size);
   const rows: DexRow[] = [];
@@ -37,6 +41,7 @@ export function buildDexRows(ctx: RenderContext): DexRow[] {
       owned: isOwned,
       label: isOwned && entry ? entry.name : '???',
       speciesId: isOwned && entry ? entry.id : null,
+      house: isOwned && entry ? entry.house : null,
     });
   }
   return rows;
@@ -47,7 +52,13 @@ export function renderDexPage(ctx: RenderContext): void {
   const { canvasX, canvasY, canvasCols, canvasRows } = layout;
   const rows = buildDexRows(ctx);
 
-  buf.text(canvasX + 1, canvasY, 'DEX', HEADER, null);
+  const ownedCount = rows.filter((r) => r.owned).length;
+  buf.text(canvasX + 1, canvasY, '☰ Dex', HEADER, null);
+  const count = `${ownedCount}/${rows.length} discovered`;
+  buf.text(canvasX + canvasCols - count.length - 1, canvasY, count, LOCKED, null);
+  for (let x = 1; x < canvasCols - 1; x++) {
+    buf.set(canvasX + x, canvasY + 1, { ch: '─', fg: RULE, bg: null });
+  }
   const listTop = canvasY + 2;
   const visible = canvasRows - 3;
 
@@ -66,13 +77,33 @@ export function renderDexPage(ctx: RenderContext): void {
     const bg = selected ? SELECT_BG : null;
     const numStr = String(row.num).padStart(3, '0');
     const marker = selected ? '›' : ' ';
-    const line = `${marker} #${numStr} ${row.label}`;
     // Paint full-width selection bar.
     for (let x = 0; x < canvasCols; x++) {
       buf.set(canvasX + x, y, { ch: ' ', fg: null, bg });
     }
-    buf.text(canvasX + 1, y, line, fg, bg);
+    buf.text(canvasX + 1, y, `${marker} #${numStr}`, selected ? OWNED : LOCKED, bg);
+    // House-tinted identity dot for discovered species.
+    const dot = row.owned ? '●' : '·';
+    const dotFg =
+      row.owned && row.house && row.house !== 'hybrid' && row.house !== 'wild'
+        ? hexToRgb(houseTint(ctx.pack, row.house))
+        : LOCKED;
+    buf.text(canvasX + 9, y, dot, dotFg, bg);
+    buf.text(canvasX + 11, y, row.label, fg, bg);
     hits.add(`dex:row:${rowIndex}`, canvasX, y, canvasCols, 1);
+  }
+
+  // Scrollbar track on the canvas's right edge when the list overflows.
+  if (rows.length > visible) {
+    const trackX = canvasX + canvasCols - 1;
+    const thumbLen = Math.max(1, Math.round((visible / rows.length) * visible));
+    const thumbTop =
+      listTop + Math.round((scroll / Math.max(1, rows.length - visible)) * (visible - thumbLen));
+    for (let i = 0; i < visible; i++) {
+      const yy = listTop + i;
+      const isThumb = yy >= thumbTop && yy < thumbTop + thumbLen;
+      buf.set(trackX, yy, { ch: isThumb ? '█' : '│', fg: isThumb ? LOCKED : RULE, bg: null });
+    }
   }
 
   // Footer hint.

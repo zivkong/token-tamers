@@ -4,7 +4,7 @@
  */
 
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
-import { buildPalette, drawSprite, auraOverlay, GRADE_BADGE } from '../render/sprite';
+import { buildPalette, drawSprite, auraOverlay, GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
 import { findHabitat, findSpecies, findSprite, houseTint } from '../helpers/lookup';
 import { renderGradeOddsLine } from '../helpers/status';
 import type { RenderContext } from './types';
@@ -42,16 +42,33 @@ export function renderPetPage(ctx: RenderContext): void {
     }
   }
 
-  // Badge line: name [G]glyph at the top of the canvas.
+  // Title strip: name + grade-colored badge left, lineage info right.
   const name = species?.name ?? '???';
-  const badge = GRADE_BADGE[pet.grade];
+  const badge = `[${pet.grade}]${GRADE_BADGE[pet.grade]}`;
   const stageLabel = pet.calibrating ? 'calibrating' : pet.stage;
-  const title = `${name}  [${pet.grade}]${badge}  ${stageLabel}`;
-  buf.text(canvasX + 1, canvasY, title, BRIGHT, null);
+  buf.text(canvasX + 1, canvasY, name, BRIGHT, null);
+  buf.text(canvasX + 1 + name.length + 1, canvasY, badge, GRADE_ACCENT[pet.grade], null);
+  buf.text(canvasX + 1 + name.length + badge.length + 2, canvasY, stageLabel, DIM, null);
+  const info = `gen ${pet.generation} · molt ${pet.moltCount}`;
+  buf.text(canvasX + canvasCols - info.length - 1, canvasY, info, DIM, null);
 
-  // Odds line at the bottom of the canvas.
+  // Identity line: pattern + traits, dimmed under the title.
+  const identity = [
+    pet.pattern ? `${pet.pattern[0]?.toUpperCase()}${pet.pattern.slice(1)} pattern` : null,
+    pet.traits.length > 0 ? pet.traits.join(' · ') : null,
+  ]
+    .filter(Boolean)
+    .join('  ✦  ');
+  if (identity) buf.text(canvasX + 1, canvasY + 1, identity, DIM, null);
+
+  // Bottom strip: grade-roll odds left, home habitat right.
   const odds = renderGradeOddsLine(state);
   buf.text(canvasX + 1, canvasY + canvasRows - 1, odds, DIM, null);
+  const habitatDef = findHabitat(pack, state.selectedHabitat);
+  if (habitatDef) {
+    const home = `⌂ ${habitatDef.name}`;
+    buf.text(canvasX + canvasCols - home.length - 1, canvasY + canvasRows - 1, home, DIM, null);
+  }
 
   // The whole pet area is a clickable region (e.g. to pet it; no-op for MVP).
   ctx.hits.add('pet:canvas', canvasX, canvasY, canvasCols, canvasRows);
@@ -76,7 +93,13 @@ function drawBackdrop(ctx: RenderContext): void {
     const h = Math.ceil(habSprite.height / 2);
     const bx = canvasX + Math.floor((canvasCols - w) / 2);
     const by = canvasY + Math.floor((canvasRows - h) / 2);
-    drawSprite(buf, habSprite, pal, { x: bx, y: by, frame: Math.floor(frame / 8), mode });
+    drawSprite(buf, habSprite, pal, {
+      x: bx,
+      y: by,
+      frame: Math.floor(frame / 8),
+      mode,
+      clip: { x: canvasX, y: canvasY, w: canvasCols, h: canvasRows },
+    });
     return;
   }
 
