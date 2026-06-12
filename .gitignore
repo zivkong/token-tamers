@@ -30,3 +30,10 @@ Thumbs.db
 
 # Packaging artifacts
 *.tgz
+
+# graphify — track only what's needed for queries + --update (graph.json, manifest, AST cache)
+graphify-out/.graphify_*
+graphify-out/.needs_update
+graphify-out/cache/
+graphify-out/GRAPH_REPORT.md
+graphify-out/cost.json

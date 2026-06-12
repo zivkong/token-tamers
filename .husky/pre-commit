@@ -5,3 +5,4 @@ bash scripts/check-runtime-deps.sh
 bash scripts/check-workflow-pins.sh
 bash scripts/check-spoilers.sh
 bash scripts/check-kebab-case.sh
+bash scripts/graphify-update.sh
