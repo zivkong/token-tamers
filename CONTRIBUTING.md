@@ -86,13 +86,24 @@ every commit and push:
 - **pre-push** — the full `pnpm check` (typecheck + lint + format + tests + build)
   plus all invariant gates. If this is red, CI would be red too.
 
-**Commit message format:**
+**Commit message format — [Conventional Commits](https://www.conventionalcommits.org/):**
 
-- Subject: capitalized, imperative mood ("Add…", "Fix…", "Split…"), 8–72 chars,
-  no trailing period.
-- Optional body: separated by a blank line, wrapped at 100 chars (URLs and
-  `Key: value` trailers exempt).
-- Merge/revert/fixup subjects are exempt (git generates them).
+```
+<type>(<scope>)?: <description>
+
+[optional body, wrapped at 100 chars]
+
+[optional footers, e.g. BREAKING CHANGE: …]
+```
+
+- **Types:** `feat` `fix` `docs` `chore` `refactor` `test` `perf` `build` `ci`
+  `style` `revert`. Append `!` for breaking changes (`feat(core)!: …`).
+- **Scope** (optional): lowercase kebab-case — typically the package or area:
+  `core`, `tui`, `adapters`, `content`, `cli`, `deps`, `hooks`, `wiki`.
+- **Description:** imperative mood, lowercase start, no trailing period; whole
+  header ≤ 72 chars. Example: `feat(core): add static cycle-policy DST handling`.
+- Body: separated by a blank line, wrapped at 100 chars (URLs and `Key: value`
+  trailers exempt). Merge/revert/fixup subjects are exempt (git generates them).
 
 Bypassing hooks (`--no-verify`) is for genuine emergencies on your own fork only —
 PRs whose commits don't pass the hooks will fail CI anyway.

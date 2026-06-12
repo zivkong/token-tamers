@@ -1,13 +1,32 @@
 #!/usr/bin/env node
-// Commit message format gate (commit-msg hook). The format is documented in
-// CONTRIBUTING.md — keep the two in sync.
+// Commit message format gate (commit-msg hook) — Conventional Commits.
+// The format is documented in CONTRIBUTING.md; keep the two in sync.
+//
+//   <type>(<scope>)?: <description>        e.g. feat(core): add DST handling
 //
 // Rules:
-//   1. Subject line: required, 8–72 chars, starts with a capital letter,
-//      imperative mood encouraged, no trailing period.
-//   2. If a body follows, the second line must be blank.
-//   3. Body lines wrap at 100 chars (URLs and trailer lines exempt).
+//   1. type ∈ feat | fix | docs | chore | refactor | test | perf | build | ci |
+//      style | revert; optional lowercase-kebab (scope); optional ! for breaking.
+//   2. Description: required, lowercase start, no trailing period.
+//   3. Header (whole first line) ≤ 72 chars.
+//   4. If a body follows, the second line must be blank; body wraps at 100
+//      (URLs and `Key: value` trailers exempt). Breaking changes may use a
+//      `BREAKING CHANGE:` footer.
 import { readFileSync } from 'node:fs';
+
+const TYPES = [
+  'feat',
+  'fix',
+  'docs',
+  'chore',
+  'refactor',
+  'test',
+  'perf',
+  'build',
+  'ci',
+  'style',
+  'revert',
+];
 
 const file = process.argv[2];
 if (!file) {
@@ -23,27 +42,46 @@ const lines = raw
   .trimEnd()
   .split('\n');
 
-const subject = lines[0] ?? '';
+const header = lines[0] ?? '';
 const errors = [];
 
-// Merge/revert/fixup/squash commits are git-generated shapes — let them through.
-const exempt = /^(Merge |Revert |fixup! |squash! |amend! )/.test(subject);
+// Git-generated shapes pass through untouched.
+const exempt = /^(Merge |Revert "|fixup! |squash! |amend! )/.test(header);
 
 if (!exempt) {
-  if (subject.trim().length === 0) errors.push('Subject line is empty.');
-  if (subject.length > 72) errors.push(`Subject is ${subject.length} chars (max 72).`);
-  if (subject.length > 0 && subject.length < 8) errors.push('Subject is too short (min 8 chars).');
-  if (/^[a-z]/.test(subject))
-    errors.push('Subject must start with a capital letter (e.g. "Add …", "Fix …").');
-  if (/^\s/.test(subject)) errors.push('Subject must not start with whitespace.');
-  if (/\.$/.test(subject)) errors.push('Subject must not end with a period.');
+  const m = header.match(/^([a-z]+)(\(([^)]*)\))?(!)?: (.*)$/);
+  if (!m) {
+    errors.push(
+      'Header must be Conventional Commits: "<type>(<scope>)?: <description>", e.g. "feat(core): add DST handling".',
+    );
+  } else {
+    const [, type, , scope, , description] = m;
+    if (!TYPES.includes(type)) {
+      errors.push(`Unknown type "${type}". Allowed: ${TYPES.join(', ')}.`);
+    }
+    if (scope !== undefined && !/^[a-z0-9][a-z0-9-]*$/.test(scope)) {
+      errors.push(`Scope "(${scope})" must be lowercase kebab-case, e.g. (core), (cli), (deps).`);
+    }
+    if (description.trim().length < 4) {
+      errors.push('Description is too short (min 4 chars).');
+    }
+    if (/^[A-Z]/.test(description)) {
+      errors.push('Description starts lowercase ("feat: add …", not "feat: Add …").');
+    }
+    if (/\.$/.test(description)) {
+      errors.push('Description must not end with a period.');
+    }
+  }
+  if (header.length > 72) {
+    errors.push(`Header is ${header.length} chars (max 72).`);
+  }
 }
 
 if (lines.length > 1 && lines[1].trim() !== '') {
-  errors.push('Leave a blank line between the subject and the body.');
+  errors.push('Leave a blank line between the header and the body.');
 }
 
-const trailerOrUrl = /(https?:\/\/|^[A-Za-z-]+:\s|^\s{4})/;
+const trailerOrUrl = /(https?:\/\/|^[A-Za-z-]+(\s[A-Z-]+)*:\s|^\s{4})/;
 for (let i = 2; i < lines.length; i++) {
   const l = lines[i];
   if (l.length > 100 && !trailerOrUrl.test(l)) {
@@ -55,12 +93,15 @@ if (errors.length > 0) {
   console.error('✖ Commit message rejected:\n');
   for (const e of errors) console.error(`  - ${e}`);
   console.error(
-    '\nFormat (see CONTRIBUTING.md): capitalized imperative subject ≤ 72 chars,\n' +
-      'no trailing period, blank line before an optional body wrapped at 100 chars.\n' +
-      'Example:\n\n' +
-      '  Add static cycle-policy DST handling\n\n' +
-      '  Window math previously assumed fixed UTC offsets; derive offsets per\n' +
-      '  event instead. Covers the week-anchor migration case from docs/design.\n',
+    '\nConventional Commits format (see CONTRIBUTING.md):\n\n' +
+      '  <type>(<scope>)?: <description>   — header ≤ 72 chars, description\n' +
+      '  lowercase, no trailing period; blank line before an optional body\n' +
+      `  wrapped at 100. Types: ${TYPES.join(', ')}.\n\n` +
+      'Examples:\n\n' +
+      '  feat(core): add static cycle-policy DST handling\n' +
+      '  fix(tui): restore cursor on SIGTERM during shell teardown\n' +
+      '  docs: clarify grade-roll odds in the wiki\n' +
+      '  chore(deps): bump vitest to 2.1.9\n',
   );
   process.exit(1);
 }
