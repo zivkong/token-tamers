@@ -80,6 +80,10 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 ## Conventions
 
 - TypeScript strict, ESM only, Node ≥ 20; moduleResolution Bundler (no `.js` import suffixes).
+- **Filenames are kebab-case** (`scripts/check-kebab-case.sh` gates commits/CI).
+  Only exceptions: conventional root files (README.md, LICENSE, SECURITY.md,
+  CONTRIBUTING.md, CLAUDE.md, CODEOWNERS), SKILL.md (skill format),
+  pull_request_template.md (GitHub-required), `__tests__`/`__snapshots__` dirs.
 - All tests live in each project's root-level `__tests__/` folder (same level as
   `src/`, incl. fixtures and snapshots) — never inside `src/`.
 - Renderer tests are golden frames (string-buffer snapshots); adapter tests use

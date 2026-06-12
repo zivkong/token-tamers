@@ -35,7 +35,9 @@ Inside each package, folders are organized by responsibility (e.g. `helpers/`,
 "Code structure" section of `CLAUDE.md`. KISS/SRP ceilings are enforced by ESLint
 (complexity ≤ 20, nesting ≤ 4, params ≤ 5, file length ≤ 400 lines) and duplication
 is watched by `pnpm check:dup` (jscpd). If a rule trips, split the module by
-responsibility — never add a lint-disable.
+responsibility — never add a lint-disable. **Filenames are kebab-case** (enforced by
+`scripts/check-kebab-case.sh` in hooks and CI; the only exceptions are conventional
+root files like README.md, GitHub-required names, and `__tests__`/`__snapshots__`).
 
 ## Non-negotiable invariants
 

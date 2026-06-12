@@ -40,6 +40,8 @@ jobs:
         run: bash scripts/check-runtime-deps.sh
       - name: Workflow pin check (all actions pinned to commit SHAs)
         run: bash scripts/check-workflow-pins.sh
+      - name: Kebab-case filename check
+        run: bash scripts/check-kebab-case.sh
       - name: Audit production dependencies
         run: pnpm audit --prod
       - name: Audit dev dependencies (advisory)

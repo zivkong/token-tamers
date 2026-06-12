@@ -6,3 +6,4 @@ bash scripts/check-zero-network.sh
 bash scripts/check-runtime-deps.sh
 bash scripts/check-workflow-pins.sh
 bash scripts/check-spoilers.sh
+bash scripts/check-kebab-case.sh

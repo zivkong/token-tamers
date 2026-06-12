@@ -5,10 +5,10 @@ Your work raises a monster. Literally. Whatever agent you use.
 Token Tamers is a fully idle, fully offline terminal virtual pet raised by your real
 AI coding-agent usage. Start here:
 
-- [Getting Started](Getting-Started.md) — install, `tt init`, plan types, troubleshooting
-- [Game Guide](Game-Guide.md) — lifecycle, Houses, stages, traits, patterns, Dormancy
-- [Grades & the Archive](Grades-and-Archive.md) — the C→B→A→S roll system, records, odds
-- [Architecture](Architecture.md) — adapters → engine → TUI, determinism, content packs
+- [Getting Started](getting-started.md) — install, `tt init`, plan types, troubleshooting
+- [Game Guide](game-guide.md) — lifecycle, Houses, stages, traits, patterns, Dormancy
+- [Grades & the Archive](grades-and-archive.md) — the C→B→A→S roll system, records, odds
+- [Architecture](architecture.md) — adapters → engine → TUI, determinism, content packs
 
 ## The pledges
 
