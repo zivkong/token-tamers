@@ -17,23 +17,13 @@ your monster evolves.
 
 </div>
 
-```text
-┌────────────────────────────────────────────────────────────┐
-│ ╔════════════════ ✦ ROOFTOP NIGHT ✦ ════════════════════╗ │
-│ ║      ·    ˚         ✦              ·          ˚        ║ │
-│ ║   ˚           ▄▄▄▄▄▄                                   ║ │
-│ ║             ▄█▀▀▀▀▀▀█▄        ✦         Wisp           ║ │
-│ ║            ██   ◉  ◉  ██               [B] ●  molt 4   ║ │
-│ ║      ✦      ▀█▄▄▄▄▄▄█▀  ·              House Aether    ║ │
-│ ║          ·     ▀▀▀▀▀        ˚     next roll: B→A  14%  ║ │
-│ ╚════════════════════════════════════════════════════════╝ │
-├────────────────────────────────────────────────────────────┤
-│  [♥ Pet]  [☰ Dex]  [◆ Archive]  [⚙ Quit]            12.5% │
-└────────────────────────────────────────────────────────────┘
-```
+<p align="center">
+  <img src="docs/assets/readme-shell.gif" alt="The Token Tamers shell: an S-grade Aurelion shimmering over the Rooftop Night habitat, with the clickable menu and completion meter" width="780">
+</p>
 
 <div align="center">
 
+_Real footage — the actual renderer drew every frame of that GIF._
 _Half-block pixel-art sprites · clickable 4:3 canvas · 30 fps on &lt;2% CPU · works over SSH_
 
 `tt status` → `🥚 Wisp [B]● molt 4 ▓▓░░` — yes, it fits in your statusline.

@@ -56,8 +56,8 @@ const state: GameState = {
 
 // --- render parameters ------------------------------------------------------------
 
-const COLS = 96;
-const ROWS = 29;
+const COLS = 118;
+const ROWS = 36;
 const FRAMES = 63; // ~seamless loop for the sin-based shimmer/glint/twinkle
 const FPS = 12;
 const CW = 9;
