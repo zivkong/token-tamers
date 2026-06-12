@@ -131,11 +131,10 @@ async function loop(rt: ShellRuntime, ctx: LoopContext): Promise<void> {
   let advanceAcc = 0;
   let frames = 0;
 
-  // Force a full first paint.
-  let buf: FrameBuffer | null = null;
   const hits = new HitRegistry();
   let curSize = sizeFn();
-  buf = new FrameBuffer(curSize.cols, curSize.rows);
+  // Force a full first paint with a fresh buffer.
+  let buf = new FrameBuffer(curSize.cols, curSize.rows);
 
   while (!rt.quit) {
     const t = now();
