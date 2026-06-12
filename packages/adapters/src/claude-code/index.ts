@@ -119,9 +119,11 @@ export const claudeCodeAdapter: ProviderAdapter & { defaultPlan: 'subscription' 
   },
 
   async scan(paths: string[], checkpoint?: AdapterCheckpoint): Promise<ScanResult> {
-    const fileCheckpoints: Record<string, { offset: number; mtimeMs: number }> = checkpoint
-      ? { ...checkpoint.files }
-      : {};
+    const prevFiles = checkpoint?.files ?? {};
+    // Rebuilt from the files seen THIS scan: entries for sessions Claude Code
+    // has since deleted (~30-day retention) drop out, keeping the checkpoint
+    // map bounded instead of growing for the lifetime of the install.
+    const fileCheckpoints: Record<string, { offset: number; mtimeMs: number }> = {};
 
     const allEvents: UsageEvent[] = [];
 
@@ -134,8 +136,11 @@ export const claudeCodeAdapter: ProviderAdapter & { defaultPlan: 'subscription' 
           const st = await statOrNull(filePath);
           if (!st) continue; // File disappeared between readdir and stat — skip.
 
-          const prev = fileCheckpoints[filePath];
-          if (prev && prev.mtimeMs === st.mtimeMs && prev.offset > 0) continue;
+          const prev = prevFiles[filePath];
+          if (prev && prev.mtimeMs === st.mtimeMs && prev.offset > 0) {
+            fileCheckpoints[filePath] = prev;
+            continue;
+          }
 
           const startOffset = prev?.offset ?? 0;
           const sessionKey = sessionUuidFromFilename(filename);
