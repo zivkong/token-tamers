@@ -17,17 +17,37 @@ import {
   SCHEMA_VERSION,
   type AdapterConfig,
   type EngineConfig,
+  type GameState,
   type UsageEvent,
   type UserConfig,
 } from '@token-tamers/core';
 import { adapterFor } from '../services/catchup';
 import {
   loadCheckpoints,
+  loadPending,
+  loadState,
   saveCheckpoints,
   saveConfig,
+  savePending,
   saveState,
   type CheckpointMap,
 } from '../stores';
+import {
+  shouldStyle,
+  renderBanner,
+  renderAdapterFound,
+  renderAdapterMissing,
+  renderAdapterSkipped,
+  renderAdapterEnabled,
+  renderNoAdapters,
+  renderRerunBackfill,
+  renderRerunMessage,
+  renderNextStepsLine,
+  renderFirstInitSummary,
+  renderWarnings,
+  formatEnableQuestion,
+  formatPlanQuestion,
+} from '../helpers/init-style';
 
 export interface InitOptions {
   /** Take defaults non-interactively. */
@@ -88,6 +108,9 @@ function yesish(s: string): boolean {
 export async function runInit(options: InitOptions): Promise<InitResult> {
   const now = options.now ?? Date.now;
   const out = options.out ?? ((s: string) => process.stdout.write(s));
+  // Styling is gated on TTY + NO_COLOR; when `out` is injected (tests/CI) the
+  // process stdout isTTY check still works correctly.
+  const styled = shouldStyle();
   const { ask, close } = makeAsker(options.yes);
 
   const warnings: string[] = [];
@@ -95,29 +118,35 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   const enabled: string[] = [];
 
   try {
-    out('Token Tamers — setup\n\n');
+    out(renderBanner(styled));
 
     for (const adapter of allAdapters) {
       const detection = await adapter.detect();
       for (const w of detection.warnings) warnings.push(`[${adapter.id}] ${w}`);
 
       if (!detection.installed) {
-        out(`- ${adapter.displayName}: not detected, skipping.\n`);
+        out(renderAdapterMissing(adapter.displayName, styled));
         continue;
       }
 
-      out(`- ${adapter.displayName}: detected at ${detection.paths.join(', ')}\n`);
-      const enable = await ask(`  Enable ${adapter.displayName}? [Y/n] `, 'y');
+      out(renderAdapterFound(adapter.displayName, detection.paths, styled));
+      const enableQ = formatEnableQuestion(adapter.displayName, styled);
+      const enable = await ask(enableQ, 'y');
       if (!yesish(enable)) {
-        out(`  skipped.\n`);
+        out(renderAdapterSkipped(styled));
         continue;
       }
 
-      const planRaw = await ask(`  Plan type — (s)ubscription or (a)pi? [s] `, 's');
+      const planDefault = adapter.defaultPlan ?? 'subscription';
+      const planFallback = planDefault === 'api' ? 'a' : 's';
+      const planQ = formatPlanQuestion(adapter.defaultPlan, styled);
+      const planRaw = await ask(planQ, planFallback);
       const isApi = planRaw.trim().toLowerCase().startsWith('a');
       const plan = isApi ? 'api' : 'subscription';
       const cyclePolicy = isApi ? 'static' : 'dynamic';
       const weekAnchor = nextMondayLocal(now());
+
+      out(renderAdapterEnabled(plan, styled));
 
       adapterConfigs.push({
         provider: adapter.id,
@@ -133,8 +162,8 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   }
 
   if (adapterConfigs.length === 0) {
-    out('\nNo adapters enabled. Nothing to do — re-run `tt init` once an agent is installed.\n');
-    for (const w of warnings) out(`! ${w}\n`);
+    out(renderNoAdapters(styled));
+    out(renderWarnings(warnings, styled));
     return { enabled, warnings, wrote: false };
   }
 
@@ -144,34 +173,111 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   };
   saveConfig(config);
 
-  // Backfill scan from a clean checkpoint set.
-  const events: UsageEvent[] = [];
+  // Re-run semantics (design §4): re-init adds/removes adapters WITHOUT touching
+  // pet state. Only a genuine first init (no prior state.json) backfills history
+  // and seeds the normalization baseline. Adapters newly added by a re-run still
+  // get their own history backfilled into a baseline, like a first init would.
+  const savedState = loadState();
+  if (savedState !== null) {
+    out(renderRerunMessage(styled));
+    await backfillNewAdapters({ adapterConfigs, saved: savedState, now, out, styled });
+    out(renderNextStepsLine(styled));
+    out(renderWarnings(warnings, styled));
+    return { enabled, warnings, wrote: true };
+  }
+
+  await firstInitBackfill(adapterConfigs, now, out, styled);
+  out(renderWarnings(warnings, styled));
+  return { enabled, warnings, wrote: true };
+}
+
+/**
+ * Re-run backfill: adapters added by a re-init (no saved checkpoint yet) scan
+ * their full history once. Windows closed up to the saved `simulatedTo` seed
+ * that adapter's normalization baseline (history never retroactively evolves
+ * the pet); windows closing after it replay as ordinary live molts via
+ * advanceTo — the same partition a first init applies at `startAt`.
+ */
+async function backfillNewAdapters(input: {
+  adapterConfigs: AdapterConfig[];
+  saved: GameState;
+  now: () => number;
+  out: (s: string) => void;
+  styled: boolean;
+}): Promise<void> {
+  const { adapterConfigs, saved, now, out, styled } = input;
   const checkpoints: CheckpointMap = loadCheckpoints();
-  for (const cfg of adapterConfigs) {
+  const fresh = adapterConfigs.filter((cfg) => checkpoints[cfg.provider] === undefined);
+  if (fresh.length === 0) return;
+
+  const events: UsageEvent[] = [];
+  const perProvider: Record<string, number> = {};
+  for (const cfg of fresh) {
     const impl = adapterFor(cfg.provider);
     if (!impl) continue;
-    const result = await impl.scan(cfg.paths, checkpoints[cfg.provider]);
+    const result = await impl.scan(cfg.paths, undefined);
     for (const ev of result.events) events.push(ev);
+    perProvider[cfg.provider] = result.events.length;
     checkpoints[cfg.provider] = result.checkpoint;
   }
 
-  const engineConfig: EngineConfig = { adapters: adapterConfigs };
-  const engine = createEngine(contentPackV1, engineConfig);
-  engine.ingest(events);
+  const engine = createEngine(contentPackV1, { adapters: adapterConfigs }, saved);
+  engine.ingest([...loadPending(), ...events]);
+  engine.seedBaselines(saved.simulatedTo);
   engine.advanceTo(now());
 
   saveState(engine.state());
   saveCheckpoints(checkpoints);
+  savePending(engine.pendingEvents());
 
-  out('\nYour Calibration Egg has been placed.\n');
-  out('It is warming up to your coding rhythm — the first week is calibration, then it hatches.\n');
-  out(`Backfilled ${events.length} usage event${events.length === 1 ? '' : 's'}.\n`);
-  out('Run `tt` to open the shell, or `tt status` for a quick look.\n');
+  const baselines = engine.state().baselines;
+  for (const cfg of fresh) {
+    const windows = baselines[cfg.provider]?.windowsObserved ?? 0;
+    out(renderRerunBackfill(cfg.provider, perProvider[cfg.provider] ?? 0, windows, styled));
+  }
+}
 
-  if (warnings.length > 0) {
-    out('\nNotes:\n');
-    for (const w of warnings) out(`! ${w}\n`);
+/**
+ * First-init backfill: scan each adapter's full history from a FRESH checkpoint,
+ * seed the normalization baseline from that history, hatch the Calibration Egg
+ * at `now` (so it plays from day one), and persist state/checkpoints/pending.
+ */
+async function firstInitBackfill(
+  adapterConfigs: AdapterConfig[],
+  now: () => number,
+  out: (s: string) => void,
+  styled: boolean,
+): Promise<void> {
+  const startAt = now();
+  const events: UsageEvent[] = [];
+  // A fresh checkpoint set: each (re-)enabled adapter scans its full history.
+  const checkpoints: CheckpointMap = {};
+  for (const cfg of adapterConfigs) {
+    const impl = adapterFor(cfg.provider);
+    if (!impl) continue;
+    const result = await impl.scan(cfg.paths, undefined);
+    for (const ev of result.events) events.push(ev);
+    checkpoints[cfg.provider] = result.checkpoint;
   }
 
-  return { enabled, warnings, wrote: true };
+  const engineConfig: EngineConfig = { adapters: adapterConfigs, startAt };
+  const engine = createEngine(contentPackV1, engineConfig);
+  engine.ingest(events);
+  engine.seedBaselines(startAt);
+  engine.advanceTo(startAt);
+
+  saveState(engine.state());
+  saveCheckpoints(checkpoints);
+  savePending(engine.pendingEvents());
+
+  const windowsObserved = totalWindowsObserved(engine);
+  out(renderFirstInitSummary(events.length, windowsObserved, styled));
+  out(renderNextStepsLine(styled));
+}
+
+/** Sum of windows observed across all seeded adapter baselines. */
+function totalWindowsObserved(engine: ReturnType<typeof createEngine>): number {
+  let total = 0;
+  for (const b of Object.values(engine.state().baselines)) total += b.windowsObserved;
+  return total;
 }
