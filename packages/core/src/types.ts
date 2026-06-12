@@ -365,6 +365,14 @@ export type GameEffect =
 
 export interface EngineConfig {
   adapters: AdapterConfig[];
+  /**
+   * Optional epoch-ms instant the pet starts living from on a fresh `tt init`.
+   * When present, `initialState` seeds `simulatedTo` and `pet.hatchedAt` to it so
+   * the Calibration Egg plays normally from day one instead of being parked in
+   * the future at the week anchor. Omit to keep the legacy anchor-derived behavior
+   * (existing savefiles/tests are unaffected).
+   */
+  startAt?: number;
 }
 
 export interface Engine {
@@ -377,6 +385,19 @@ export interface Engine {
    */
   advanceTo(now: number): GameEffect[];
   state(): GameState;
+  /**
+   * The ingested events whose containing 5-h window has NOT yet closed by the
+   * last `advanceTo(now)` — the open-window buffer the caller must persist and
+   * re-feed next run so events in an unclosed window are never lost.
+   */
+  pendingEvents(): UsageEvent[];
+  /**
+   * Establish per-adapter normalization baselines from the already-ingested
+   * backfill history, treating windows closed before `now` as observed without
+   * replaying their molts. Used once by `tt init`; clears `pet.calibrating` once
+   * a full week of windows exists.
+   */
+  seedBaselines(now: number): void;
   /** Completion meter, 0..100 with per-page breakdown. */
   completion(): {
     overall: number;

@@ -50,18 +50,47 @@ drift in any provider = adapter patch, never an engine change.
 - ChatGPT plans have 5-hour + weekly windows → dynamic cycle policy, same shape as
   Claude subscriptions.
 
-## OpenCode — M2 (architecture-ready)
+## OpenCode — SHIPPED (`src/opencode/{index,parse}.ts`) — verified June 2026, v1.17.4
 
-- Source: `~/.local/share/opencode/storage/` —
-  `message/{sessionID}/msg_{messageID}.json` (per-message token counts) +
-  `session/{projectHash}/{sessionID}.json` index. Newer builds split
-  `project/<slug>/storage/` vs `global/storage/`. `OPENCODE_DATA_DIR` may override;
-  support comma-separated multi-roots.
-- Per-message token counts present; stored `cost: 0` is meaningless — we only need
-  tokens. Parent/child subagent sessions exist — aggregate like Claude/Codex.
-- Caveats: multi-provider by design → model IDs are arbitrary strings incl. local
-  models (the models.json registry handles this); storage grows unboundedly and
-  users prune → prune-tolerant ingestion; no inherent limits → **static cycle policy**.
+**Primary source: SQLite** (migrated from JSON tree in ~v1.x).
+
+- DB at `~/.local/share/opencode/opencode.db` (WAL mode; `-wal`/`-shm` siblings present).
+  Override: `OPENCODE_DATA_DIR` env var (comma-separated multi-roots).
+  Also honors `$XDG_DATA_HOME/opencode`.
+- Tables: `message(id, session_id, time_created, time_updated, data JSON)`,
+  `session(id, project_id, parent_id, ...)`, `part`, `project`.
+- `message.data` JSON shape (assistant): `{"role":"assistant","modelID":"deepseek-v4-pro",
+"providerID":"deepseek","path":{"cwd":"/..."},"tokens":{"total":N,"input":N,"output":N,
+"reasoning":N,"cache":{"write":N,"read":N}},"time":{"created":N,"completed":N},"finish":"..."}`.
+  Streaming rows have all-zero tokens and **no `time.completed`** — exclude these; only
+  emit records where `time.completed` is present.
+- `session.parent_id` non-null ⇒ subagent session → `isSubagent: true`.
+- `outputTokens = tokens.output + tokens.reasoning` (reasoning is billed output).
+- **Checkpointing**: `AdapterCheckpoint.files[dbPath].offset` is repurposed as a
+  `time_updated` cursor (integer epoch ms), NOT a byte offset. Query:
+  `WHERE m.time_updated > cursor ORDER BY m.time_updated ASC`.
+- **WAL caveat**: WAL writes do NOT touch the main db file's mtime — never skip
+  scanning on equal mtime; always query using the cursor.
+- **node:sqlite version gate**: `import('node:sqlite')` is loaded lazily (dynamic
+  import inside try/catch). Must not crash on Node < 22.5 where the builtin is absent —
+  returns empty events on import failure. Node 22.x prints one `ExperimentalWarning`
+  to stderr; this is expected and tolerated.
+- **Lock tolerance**: wrap the entire open+query in try/catch; return empty scan rather
+  than throw if the live WAL db is locked.
+- **Read-only enforcement**: open with `{ readOnly: true }` — must not create `-shm` or
+  `-wal` files; if open fails, catch and return empty.
+- No inherent rate limits → **static / api cycle policy** (`defaultPlan: 'api'`).
+
+**Legacy fallback** (OpenCode < ~v1.x):
+
+- Source: `storage/message/{sessionID}/msg_{messageID}.json` single-JSON files.
+- Same assistant-only / time.completed filter; `parentID` field in the message JSON
+  signals subagent; subdir name = sessionId.
+- Incremental: per-file `{offset: 1, mtimeMs}` (offset=1 = "fully read" for
+  single-JSON files that don't grow).
+
+Known accepted edge: a completed message row updated again by background sync would
+re-emit; in practice completed messages are immutable in the OpenCode store.
 
 ## Future adapters (same interface)
 

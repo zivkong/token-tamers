@@ -28,6 +28,17 @@ import {
 
 export { parseArgs, type ParsedArgs } from './helpers/args';
 
+// node:sqlite (used by the OpenCode adapter) is experimental on Node 22.x and
+// emits one ExperimentalWarning on first import. Node's default printer is a
+// 'warning' listener, so replace it with one that drops only that warning and
+// keeps the default output for everything else. (A `-S`-style shebang flag is
+// not portable to coreutils < 8.30 — see apps/cli/tsup.config.ts.)
+process.removeAllListeners('warning');
+process.on('warning', (warning) => {
+  if (warning.name === 'ExperimentalWarning' && warning.message.includes('SQLite')) return;
+  process.stderr.write(`(node:${process.pid}) ${warning.name}: ${warning.message}\n`);
+});
+
 /** Kept in sync with apps/cli/package.json "version". */
 export const VERSION = '0.1.0';
 
