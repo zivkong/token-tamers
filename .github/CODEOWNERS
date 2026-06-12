@@ -1,0 +1,13 @@
+# Maintainer review is required everywhere, and is non-negotiable on the
+# supply-chain-sensitive paths listed explicitly below (workflows, scripts,
+# manifests, lockfile, lint/security config).
+* @zivkong
+
+/.github/ @zivkong
+/scripts/ @zivkong
+/eslint.config.js @zivkong
+/pnpm-workspace.yaml @zivkong
+/pnpm-lock.yaml @zivkong
+/.npmrc @zivkong
+package.json @zivkong
+/SECURITY.md @zivkong

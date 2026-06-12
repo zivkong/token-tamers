@@ -1,0 +1,19 @@
+name: Dependency Review
+
+# Flags vulnerable or known-malicious dependency changes on every PR —
+# the primary tripwire for a Shai-Hulud-style compromised package update.
+on: [pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@40c09b7dc99638e5ddb0bfd91c1673effc064d8a # v4.8.1
+        with:
+          fail-on-severity: moderate

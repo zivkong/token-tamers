@@ -1,5 +1,12 @@
 packages:
   - packages/*
   - apps/*
+# Supply-chain protections (Shai-Hulud-class worm mitigations):
+# - allowBuilds: dependency lifecycle scripts are blocked by default; esbuild is
+#   the ONLY approved exception. Never broaden this list without an approved issue.
+# - minimumReleaseAge: refuse to install package versions younger than 3 days
+#   (4320 min). Compromised releases are usually yanked within hours/days; the
+#   cooldown means a freshly-published trojan version never reaches us.
 allowBuilds:
   esbuild: true
+minimumReleaseAge: 4320

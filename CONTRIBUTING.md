@@ -52,6 +52,20 @@ Every PR is checked against these — by ESLint rules, CI scripts, and review:
 9. **Don't weaken tests to pass a PR.** Tests assert design-doc contracts, not current
    behavior.
 
+## Supply-chain security
+
+See [SECURITY.md](SECURITY.md) for the full picture. The rules contributors hit daily:
+
+- **Dependency lifecycle scripts are blocked.** Only `esbuild` may run install scripts
+  (`allowBuilds` in `pnpm-workspace.yaml`). Never broaden that list in a feature PR.
+- **3-day release cooldown.** pnpm refuses package versions younger than 3 days
+  (`minimumReleaseAge`). If an install fails on a brand-new version, wait — that delay
+  is a worm defense, not a bug.
+- **GitHub Actions must be pinned to full commit SHAs** with a `# vX.Y.Z` comment.
+  `scripts/check-workflow-pins.sh` fails CI on any mutable tag.
+- **Dev-dependency changes** get extra scrutiny (CODEOWNERS + dependency review +
+  Dependabot cooldown). Don't bundle them into unrelated PRs.
+
 ## Pull requests
 
 - Small PRs, one concern each.
