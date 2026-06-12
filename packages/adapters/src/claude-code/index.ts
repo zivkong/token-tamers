@@ -83,9 +83,11 @@ async function scanFile(
 // Adapter implementation
 // ---------------------------------------------------------------------------
 
-export const claudeCodeAdapter: ProviderAdapter = {
+export const claudeCodeAdapter: ProviderAdapter & { defaultPlan: 'subscription' } = {
   id: ADAPTER_ID,
   displayName: 'Claude Code',
+  // Claude Code subscriptions use a 5-hour session window → dynamic cycle policy.
+  defaultPlan: 'subscription',
 
   async detect(): Promise<AdapterDetection> {
     const warnings: string[] = [];

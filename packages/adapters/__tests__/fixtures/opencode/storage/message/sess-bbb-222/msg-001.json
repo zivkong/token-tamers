@@ -1,0 +1,26 @@
+{
+  "id": "msg-002",
+  "sessionID": "sess-bbb-222",
+  "parentID": "sess-aaa-111",
+  "role": "assistant",
+  "modelID": "claude-sonnet-4-6",
+  "providerID": "anthropic",
+  "path": {
+    "cwd": "/home/dev/sub-project"
+  },
+  "tokens": {
+    "total": 1000,
+    "input": 200,
+    "output": 100,
+    "reasoning": 0,
+    "cache": {
+      "write": 50,
+      "read": 650
+    }
+  },
+  "time": {
+    "created": 1781268910000,
+    "completed": 1781268915000
+  },
+  "finish": "end-turn"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "msg-001",
+  "sessionID": "sess-aaa-111",
+  "role": "assistant",
+  "modelID": "deepseek-v4-pro",
+  "providerID": "deepseek",
+  "path": {
+    "cwd": "/home/dev/my-project"
+  },
+  "tokens": {
+    "total": 44908,
+    "input": 424,
+    "output": 147,
+    "reasoning": 49,
+    "cache": {
+      "write": 0,
+      "read": 44288
+    }
+  },
+  "time": {
+    "created": 1781268901895,
+    "completed": 1781268905095
+  },
+  "finish": "tool-calls"
+}
