@@ -8,11 +8,7 @@ A fully idle, fully offline **terminal virtual pet** for developers — raised p
 your real AI coding-agent usage. No clicks. No chores. No API calls. You ship code;
 your monster evolves.
 
-[![CI](https://github.com/zivkong/token-tamers/actions/workflows/ci.yml/badge.svg)](https://github.com/zivkong/token-tamers/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/zivkong/token-tamers?label=release)](https://github.com/zivkong/token-tamers/releases/latest)
-[![Runtime deps](https://img.shields.io/badge/runtime_deps-0-success)](#-the-three-pledges)
-[![Network calls](https://img.shields.io/badge/network_calls-0_ever-blueviolet)](#-the-three-pledges)
-[![Node](https://img.shields.io/badge/node-%E2%89%A5_20-brightgreen)](#-install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 </div>
@@ -78,7 +74,7 @@ unlock every habitat and trinket. One number to drive to 100 — `tt complete`.
 And if you stop coding for a week? Your pet curls into a cocoon — **Dormant, never
 dead** — and wakes when you return. Generation 14 will be waiting.
 
-## 📦 Install
+## 📦 Install & update
 
 **macOS & Linux** — one line. Detects your platform, verifies the download against
 `SHA256SUMS.txt`, and installs `tt` to `~/.local/bin` (no Node, no sudo):
@@ -91,6 +87,23 @@ Pin a release with `TT_VERSION=v1.2.0` or retarget with `TT_INSTALL_DIR=/usr/loc
 Rather read it before running? `curl -fsSL …/install.sh -o install.sh`, inspect, then
 `sh install.sh`. Every asset — the installer included — carries build provenance:
 `gh attestation verify <file> --repo zivkong/token-tamers`.
+
+**Updating** — re-run the same one-liner any time; it always pulls the latest release
+and replaces `tt` in place. Check what you're on with `tt --version`. Your pet lives in
+`~/.tokentamers/` and is **never touched by a reinstall** — DNA and hashes parse across
+every version, so updating moves you forward without resetting a single generation.
+
+**Uninstalling** — same shape as the installer. Removes the `tt` binary and, by
+default, **leaves your pet in place** so you can come back later:
+
+```sh
+curl -fsSL https://github.com/zivkong/token-tamers/releases/latest/download/uninstall.sh | sh
+```
+
+Want a clean break? Pipe it to `TT_PURGE=1 sh` instead and it also deletes
+`~/.tokentamers` (your pet and config — permanent). Honors `TT_INSTALL_DIR` to find the
+binary, and like everything here it makes no network request. Prefer to do it by hand?
+It's just `rm ~/.local/bin/tt` (plus `rm -rf ~/.tokentamers` to retire the pet).
 
 <details>
 <summary><strong>🪟 Windows (PowerShell)</strong></summary>
@@ -193,8 +206,8 @@ screenshot it. That's the point.
 
 - [x] **M1 — the MVP (you are here):** Claude Code adapter · evolution engine
       (Aether + Cipher lines, egg → Apex) · traits, patterns, mutations · grade rolls ·
-      rebirth + lineage · the Archive · clickable TUI · 3 habitats, 6 trinkets,
-      32 achievements
+      rebirth + lineage · the Archive · clickable TUI · 12 habitats, 6 trinkets,
+      41 achievements
 - [ ] **M2:** Codex CLI + OpenCode adapters · Flux + Forge + hybrid lines · DNA
       export/apply (paste codes to friends) · deterministic battles · fusion pools 🤫 ·
       Team Leagues · Drifter DNA for solo devs
