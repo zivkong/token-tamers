@@ -2,11 +2,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    include: [
-      'packages/*/src/**/*.test.ts',
-      'packages/*/test/**/*.test.ts',
-      'apps/*/src/**/*.test.ts',
-      'apps/*/test/**/*.test.ts',
-    ],
+    // All tests live in each project's root-level __tests__/ folder.
+    include: ['packages/*/__tests__/**/*.test.ts', 'apps/*/__tests__/**/*.test.ts'],
   },
 });

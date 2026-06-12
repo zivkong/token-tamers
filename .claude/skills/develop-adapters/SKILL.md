@@ -68,7 +68,7 @@ three current providers locally with a unified report model.
 
 ## Testing: fixtures
 
-Anonymized realistic log samples under `test/fixtures/<provider>/`. Every parser bug
+Anonymized realistic log samples under `__tests__/fixtures/<provider>/`. Every parser bug
 fix adds a fixture. Required coverage: full extraction, incremental rescan after
 append (no duplicates), subagent tagging, malformed-line tolerance, detect() against
 a temp dir via the env override.

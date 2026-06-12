@@ -61,7 +61,6 @@ export default tseslint.config(
     // packages, no wall clock, no ambient randomness. Time and randomness
     // enter core only as data (timestamps on events, seeded RNG).
     files: ['packages/core/src/**/*.ts'],
-    ignores: ['packages/core/src/**/*.test.ts'],
     rules: {
       'no-restricted-imports': [
         'error',

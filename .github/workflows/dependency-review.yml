@@ -1,7 +1,7 @@
 name: Dependency Review
 
 # Flags vulnerable or known-malicious dependency changes on every PR —
-# the primary tripwire for a Shai-Hulud-style compromised package update.
+# the primary tripwire for a compromised or trojaned package update.
 on: [pull_request]
 
 permissions:

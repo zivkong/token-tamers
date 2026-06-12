@@ -84,10 +84,12 @@ See [SECURITY.md](SECURITY.md) for the full picture. The rules contributors hit 
 
 ## Testing conventions
 
-- Unit tests live next to source (`*.test.ts`) and run with Vitest (`pnpm test`).
+- All tests live in each project's root-level `__tests__/` folder (same level as
+  `src/`) as `*.test.ts`, and run with Vitest (`pnpm test`). Fixtures and snapshots
+  live inside `__tests__/` too.
 - The renderer is tested with **golden frames**: render to a string buffer and snapshot.
 - Adapters are tested with **fixtures**: anonymized real log samples under
-  `packages/adapters/test/fixtures/`.
+  `packages/adapters/__tests__/fixtures/`.
 - Engine tests assert determinism: same saved state + same events + same clock ⇒
   identical results.
 

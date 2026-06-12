@@ -78,6 +78,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 ## Conventions
 
 - TypeScript strict, ESM only, Node ≥ 20; moduleResolution Bundler (no `.js` import suffixes).
+- All tests live in each project's root-level `__tests__/` folder (same level as
+  `src/`, incl. fixtures and snapshots) — never inside `src/`.
 - Renderer tests are golden frames (string-buffer snapshots); adapter tests use
   fixtures of real (anonymized) logs; engine tests assert determinism properties.
 - Game-state schema changes need a `schemaVersion` bump + migration in the cli store.

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseArgs, dispatch, VERSION } from './main';
+import { parseArgs, dispatch, VERSION } from '../src/main';
 
 describe('parseArgs', () => {
   it('defaults to the shell command when no positional is given', () => {

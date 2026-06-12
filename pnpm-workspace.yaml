@@ -1,7 +1,7 @@
 packages:
   - packages/*
   - apps/*
-# Supply-chain protections (Shai-Hulud-class worm mitigations):
+# Supply-chain protections (self-replicating npm-worm mitigations):
 # - allowBuilds: dependency lifecycle scripts are blocked by default; esbuild is
 #   the ONLY approved exception. Never broaden this list without an approved issue.
 # - minimumReleaseAge: refuse to install package versions younger than 3 days

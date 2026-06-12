@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # GitHub Actions must be pinned to full commit SHAs — mutable tags (@v4, @main)
-# are how the tj-actions/changed-files compromise propagated. A 40-hex pin with
-# a trailing "# vX.Y.Z" comment is the required form.
+# are a known supply-chain compromise vector. A 40-hex pin with a trailing
+# "# vX.Y.Z" comment is the required form.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

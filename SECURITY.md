@@ -23,7 +23,7 @@ Anything that weakens that promise is a vulnerability — report it.
 
 ## Supply-chain protections (in-repo)
 
-Defenses against npm-worm attacks (Shai-Hulud class) and CI compromise:
+Defenses against self-replicating npm-worm attacks and CI compromise:
 
 | Layer              | Protection                                                                                                                                                                                        |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -31,7 +31,7 @@ Defenses against npm-worm attacks (Shai-Hulud class) and CI compromise:
 | Release cooldown   | `minimumReleaseAge: 4320` — versions younger than 3 days are never installed, so freshly-poisoned releases are caught/yanked before they reach us. Dependabot mirrors this with a 7-day cooldown. |
 | Version pinning    | `save-exact=true`; `pnpm-lock.yaml` is committed; CI installs with `--frozen-lockfile` only.                                                                                                      |
 | Runtime deps       | Zero, permanently — adding one requires an approved issue and fails CI otherwise.                                                                                                                 |
-| Actions pinning    | Every GitHub Action is pinned to a full commit SHA (mutable tags are how the tj-actions compromise spread); `scripts/check-workflow-pins.sh` fails CI on any unpinned ref.                        |
+| Actions pinning    | Every GitHub Action is pinned to a full commit SHA (mutable tags are a known compromise vector); `scripts/check-workflow-pins.sh` fails CI on any unpinned ref.                                   |
 | Token scope        | Workflows default to `contents: read`; `persist-credentials: false` on checkout; write scopes are granted per-job only where needed (release).                                                    |
 | Dependency review  | `dependency-review-action` blocks PRs introducing vulnerable/malicious packages.                                                                                                                  |
 | Static analysis    | CodeQL (security-extended) on every PR + weekly.                                                                                                                                                  |
