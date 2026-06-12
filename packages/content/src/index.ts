@@ -22,14 +22,14 @@ import type {
   SpriteDef,
 } from '@token-tamers/core';
 
-import modelsRaw from '../content/v1/models.json' with { type: 'json' };
-import speciesRaw from '../content/v1/species.json' with { type: 'json' };
-import traitsRaw from '../content/v1/traits.json' with { type: 'json' };
-import patternsRaw from '../content/v1/patterns.json' with { type: 'json' };
-import achievementsRaw from '../content/v1/achievements.json' with { type: 'json' };
-import habitatsRaw from '../content/v1/habitats.json' with { type: 'json' };
-import trinketsRaw from '../content/v1/trinkets.json' with { type: 'json' };
-import spritesRaw from '../content/v1/sprites.json' with { type: 'json' };
+import modelsRaw from '../content/models.json' with { type: 'json' };
+import speciesRaw from '../content/species.json' with { type: 'json' };
+import traitsRaw from '../content/traits.json' with { type: 'json' };
+import patternsRaw from '../content/patterns.json' with { type: 'json' };
+import achievementsRaw from '../content/achievements.json' with { type: 'json' };
+import habitatsRaw from '../content/habitats.json' with { type: 'json' };
+import trinketsRaw from '../content/trinkets.json' with { type: 'json' };
+import spritesRaw from '../content/sprites.json' with { type: 'json' };
 
 const models = modelsRaw as ModelRule[];
 const species = speciesRaw as SpeciesDef[];
@@ -41,7 +41,8 @@ const trinkets = trinketsRaw as TrinketDef[];
 const sprites = spritesRaw as SpriteDef[];
 
 export const contentPackV1: ContentPack = {
-  version: 1,
+  schemaVersion: 1,
+  revision: 1,
   models,
   species,
   traits,

@@ -21,7 +21,7 @@ rationale, and parenthetical from those sections is reproduced here in full.
 Species identity derives from **raw model IDs** via a data-driven registry — no hardcoded Claude
 classes, works for any provider and any future model:
 
-- `content/vN/models.json`: ordered pattern rules →
+- `content/models.json` (single additive tree): ordered pattern rules →
   `{ pattern: "claude-*", house: "aether", gene_id, tint }`, etc.
 
 **Houses (v1)** — identity & cosmetics only, equal stat budgets:
@@ -43,7 +43,7 @@ classes, works for any provider and any future model:
 - Old "Sage/Artisan/Swift by Opus/Sonnet/Haiku" framing is retired; those names may survive as
   _sub-line names within Aether_ in content packs.
 
-_Now implemented as:_ `packages/content/content/v1/models.json` (model-ID pattern registry).
+_Now implemented as:_ `packages/content/content/models.json` (model-ID pattern registry).
 
 ### Evolution axes (design baseline §6)
 
@@ -164,7 +164,7 @@ species ≈ 35 curated variants in v1 (not every combo ships; content packs add)
 12 in v1 — **INTERNAL ONLY**, wiki hints only.
 
 One pool per DNA type; pools are published as _types_ only — contents are internal. Pool contents
-are internal — see `packages/content/content/v1/fusion-pools.json`.
+are internal — see `packages/content/content/fusion-pools.json`.
 
 The four DNA types and their associated pattern triggers:
 
@@ -257,7 +257,7 @@ _Now implemented as:_ the `tt archive` command in `apps/cli`.
 The two rows marked with species names in the original mock that are fusion-locked specials have
 been replaced with non-spoiler Aether-line placeholders (`Aurelion`, `Halcyore`) to satisfy the
 CI spoiler rule — pool contents are internal, see
-`packages/content/content/v1/fusion-pools.json`.
+`packages/content/content/fusion-pools.json`.
 
 ```
  ◆ TOKEN TAMERS ARCHIVE — 47/112 unlocked ◆

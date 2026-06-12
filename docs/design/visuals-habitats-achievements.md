@@ -217,7 +217,7 @@ rarity influence).
 
 ### Content & versioning (design baseline §14)
 
-- Data packs: `content/vN/habitats.json`, `trinkets.json` — same palette-indexed sprite format,
+- Data packs: `content/habitats.json`, `trinkets.json` — same palette-indexed sprite format,
   same additive-only ID rules
 - Unknown habitat IDs in a hash render as the default scene (graceful, version-agnostic)
 - Unlock conditions are declarative data:
@@ -235,7 +235,7 @@ Achievements are the formal layer that couples progression to the habitat & trin
 
 ### Registry format (design baseline §14)
 
-- **File:** `content/vN/achievements.json`
+- **File:** `content/achievements.json`
 - **Schema:** declarative `{id, name, condition, reward: {habitat|trinket|title|dex_flair}}`
 - **Rules:** additive-only IDs like everything else
 - **Evaluation:** locally by the daemon at molt/rebirth events
@@ -284,7 +284,7 @@ Achievements are the formal layer that couples progression to the habitat & trin
 - Battles fought / won via exchanged codes
 
   > Note on fusion pool contents: pool contents are internal — see
-  > `packages/content/content/v1/fusion-pools.json`. The DNA types (Vigil, Tempest, Prism,
+  > `packages/content/content/fusion-pools.json`. The DNA types (Vigil, Tempest, Prism,
   > Chimera) are public; the specific species within each pool are not.
 
 **Collection meta:**

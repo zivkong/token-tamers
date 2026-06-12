@@ -73,7 +73,8 @@ const species: SpeciesDef[] = [
 
 export function makePack(): ContentPack {
   return {
-    version: 1,
+    schemaVersion: 1,
+    revision: 1,
     models: [
       { pattern: 'claude-*', house: 'aether', geneId: 'aether-1', tint: '#a78bfa' },
       { pattern: 'gpt-*', house: 'cipher', geneId: 'cipher-1', tint: '#4ade80' },

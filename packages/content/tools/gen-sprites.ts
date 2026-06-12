@@ -13,7 +13,7 @@
  *  - Trinkets: 8x8 grids.
  *
  * Run with: pnpm tsx packages/content/tools/gen-sprites.ts
- * Output: packages/content/content/v1/sprites.json
+ * Output: packages/content/content/sprites.json
  *
  * TODO art pass: replace these placeholder grids with hand-crafted sprites before
  * release. The format (SpriteDef with palette-indexed frames) is production-ready.
@@ -451,6 +451,6 @@ sprites.push(generateTrinketSprite('trinket-bonsai'));
 sprites.push(generateTrinketSprite('trinket-gift-box'));
 sprites.push(generateTrinketSprite('trinket-trophy-shelf'));
 
-const outPath = join(__dirname, '../content/v1/sprites.json');
+const outPath = join(__dirname, '../content/sprites.json');
 writeFileSync(outPath, JSON.stringify(sprites, null, 2));
 console.log(`Wrote ${sprites.length} sprites to ${outPath}`);

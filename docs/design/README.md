@@ -16,9 +16,19 @@ in the same PR.
 | [roadmap-retention-backlog.md](roadmap-retention-backlog.md)         | M1–M3 scope, year-one retention plan, implementation backlog (§18–§20)                             |
 
 Spoiler note: fusion-locked special pool **contents** are deliberately absent from
-every page here — they live only in `packages/content/content/v1/fusion-pools.json`,
+every page here — they live only in `packages/content/content/fusion-pools.json`,
 and CI (`scripts/check-spoilers.sh`) fails if a pool species name appears under
 `docs/`. Public docs reference DNA _types_ and riddle hints only.
+
+**Decision record (2026-06-12, supersedes the baseline's `content/vN/` folders):** the
+content tree is ONE additive registry at `packages/content/content/` — no versioned
+folders. The pack manifest carries `schemaVersion` (JSON shape; loader migrates forward)
+and a monotonic `revision` (bumped per content release; what hashes embed as
+`content_min` and the Archive stores in `graded_under`). Immutable ids are enforced by
+`content/registry-freeze.json` + its test. Versioned folders solved a coexistence problem
+this fully-offline game does not have: content ships compiled into each binary, and
+cross-version compatibility is handled at the protocol layer (additive ids, dormant
+genes, ruleset negotiation).
 
 Player-facing documentation lives in [`docs/wiki/`](../wiki/); day-to-day engineering
 rules live in `CLAUDE.md` and the project skills under `.claude/skills/`.

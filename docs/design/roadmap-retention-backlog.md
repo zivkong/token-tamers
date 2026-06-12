@@ -159,7 +159,7 @@ Tempest, Prism, and Chimera — and the Drifter DNA mechanic. The _contents_ of 
 fusion-locked special species names) are internal and must not appear in this file or anywhere else
 under `docs/`.
 
-Pool contents are internal — see `packages/content/content/v1/fusion-pools.json`.
+Pool contents are internal — see `packages/content/content/fusion-pools.json`.
 
 All pool mechanics, timing tiers (Sprite/Rookie = species graft; Evolved = guaranteed pool entry
 next molt; Prime = fusion Apex variant), and the Drifter DNA solo-dev bridge (deterministic offline

@@ -139,6 +139,8 @@ export interface EvolutionBranch {
 }
 
 export interface SpeciesDef {
+  /** Content revision this entry first shipped in (omitted = 1). */
+  since?: number;
   /** Stable id, additive-only registry, e.g. 'aurelion'. */
   id: string;
   /** Dex number. */
@@ -156,12 +158,16 @@ export interface SpeciesDef {
 }
 
 export interface TraitDef {
+  /** Content revision this entry first shipped in (omitted = 1). */
+  since?: number;
   id: TraitId;
   name: string;
   description: string;
 }
 
 export interface PatternDef {
+  /** Content revision this entry first shipped in (omitted = 1). */
+  since?: number;
   id: PatternId;
   name: string;
   /** Trait combo that locks this pattern: all listed must be present, or
@@ -189,6 +195,8 @@ export type AchievementReward =
   | { kind: 'flair'; id: string };
 
 export interface AchievementDef {
+  /** Content revision this entry first shipped in (omitted = 1). */
+  since?: number;
   id: string;
   name: string;
   description: string;
@@ -197,6 +205,8 @@ export interface AchievementDef {
 }
 
 export interface HabitatDef {
+  /** Content revision this entry first shipped in (omitted = 1). */
+  since?: number;
   id: string;
   name: string;
   /** Palette-indexed background grid (see SpriteDef for format). */
@@ -206,6 +216,8 @@ export interface HabitatDef {
 }
 
 export interface TrinketDef {
+  /** Content revision this entry first shipped in (omitted = 1). */
+  since?: number;
   id: string;
   name: string;
   spriteId: string;
@@ -226,8 +238,14 @@ export interface SpriteDef {
 }
 
 export interface ContentPack {
-  /** Pack schema version, e.g. 1. Additive-only across versions. */
-  version: number;
+  /** JSON shape version — bumps only on a breaking schema change (loader migrates forward). */
+  schemaVersion: number;
+  /**
+   * Monotonic content revision, bumped once per content release. Hashes embed it
+   * as content_min; Archive records store it. The content tree itself is ONE
+   * additive registry (packages/content/content/) — never versioned folders.
+   */
+  revision: number;
   models: ModelRule[];
   species: SpeciesDef[];
   traits: TraitDef[];

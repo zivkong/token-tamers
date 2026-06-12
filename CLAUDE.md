@@ -71,7 +71,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   (jsonl incremental reading, shared by future adapters) · `<provider>/`
   (index = detect/scan, parse = record→UsageEvent)
 - `packages/content/src/` — `index.ts` (pack assembly) · `validate.ts` ·
-  `models.ts`; JSON under `content/v1/`; generators under `tools/`
+  `models.ts`; JSON under `content/` (ONE additive tree + `registry-freeze.json`,
+  never versioned folders — revision number in the pack manifest); `tools/`
 - `apps/cli/src/` — `main.ts` (thin entry — tsup entry point, do not move) ·
   `helpers/` (args) · `stores/` (atomic, config, state, checkpoints) ·
   `services/` (catchup, shell-host) · `commands/` (one file per command)

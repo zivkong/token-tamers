@@ -353,7 +353,7 @@ class GameEngine implements Engine {
       grade: pet.grade,
       stats: cloneStats(pet.stats),
       generation: pet.generation,
-      contentVersion: this.pack.version,
+      contentVersion: this.pack.revision,
       recordedAt: event.at,
     };
     if (this.tryArchive(record)) {

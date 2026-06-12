@@ -7,7 +7,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 shopt -s nullglob
-POOLS=(packages/content/content/v*/fusion-pools.json)
+POOLS=(packages/content/content/fusion-pools.json packages/content/content/*/fusion-pools.json)
 if [ ${#POOLS[@]} -eq 0 ]; then
   echo "OK: no fusion pools shipped yet, nothing to spoil."
   exit 0

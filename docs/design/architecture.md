@@ -337,7 +337,7 @@ gates listed above):
 
 - **Fusion-locked special species names** (the contents of the Vigil, Tempest, Prism, and
   Chimera DNA pools): pool contents are internal — see
-  `packages/content/content/v1/fusion-pools.json`. This document records only pool _types_
+  `packages/content/content/fusion-pools.json`. This document records only pool _types_
   (Vigil / Tempest / Prism / Chimera), the apply-timing tiers, and the mechanics. The species
   names that appear in design §7 and §9 are deliberately omitted here in compliance with the
   CI spoiler rule enforced by `scripts/check-spoilers.sh`.

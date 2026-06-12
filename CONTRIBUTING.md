@@ -51,7 +51,8 @@ Every PR is checked against these — by ESLint rules, CI scripts, and review:
 5. **Deterministic core.** No `Date.now()`, `new Date()`, or `Math.random()` in
    `packages/core` — time and randomness enter as data. Enforced by ESLint.
 6. **Additive-only registries.** Never remove or renumber a species/trait/achievement id.
-   Retired content becomes "Ancient", it never disappears.
+   Retired content becomes "Ancient", it never disappears. Enforced by the
+   registry-freeze test (`packages/content/content/registry-freeze.json`).
 7. **Zero runtime dependencies.** Adding a production dependency requires a linked,
    approved issue first.
 8. **No spoilers in docs.** Fusion-pool contents live only under `packages/content/` —
@@ -131,7 +132,10 @@ PRs whose commits don't pass the hooks will fail CI anyway.
 ## Content packs
 
 Content is data, not code. Species, traits, models, achievements, habitats, trinkets and
-sprites live in versioned JSON under `packages/content/content/v1/`. Sprites are
+sprites live in ONE additive JSON tree under `packages/content/content/` with a monotonic
+`revision` number in the pack manifest (no versioned folders — ids are immutable instead).
+Every id ever shipped is recorded in `content/registry-freeze.json`; new content must be
+added there in the same PR, and removing/renumbering anything fails the freeze test. Sprites are
 palette-indexed grids (never RGB); grade and House select colors at render time. See the
 `maintain-content-packs` and `create-sprites` skills under `.claude/skills/` for the full rules.
 

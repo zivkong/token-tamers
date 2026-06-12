@@ -30,7 +30,7 @@ The effect of applying DNA depends on the receiving pet's current stage:
 
 One pool exists per DNA type. Pool **types** are public; pool **contents** are internal and must
 not appear in docs. Pool contents are internal — see
-`packages/content/content/v1/fusion-pools.json`.
+`packages/content/content/fusion-pools.json`.
 
 | DNA type  | Published type name | Public riddle hint                                             |
 | --------- | ------------------- | -------------------------------------------------------------- |
@@ -263,7 +263,7 @@ and model choice never influence stats (Design Pillar 2).
 
 Stat display example from the Archive mockup (species names that correspond to fusion-pool
 contents are redacted per the spoiler rule — pool contents are internal, see
-`packages/content/content/v1/fusion-pools.json`; the row format and stat values are reproduced
+`packages/content/content/fusion-pools.json`; the row format and stat values are reproduced
 faithfully):
 
 ```
@@ -281,5 +281,5 @@ to fusion-locked special species whose names are held in `fusion-pools.json` onl
 
 The names of individual species within the Vigil, Tempest, Prism, and Chimera fusion pools are
 **internal only** and do not appear in this document. Pool contents are internal — see
-`packages/content/content/v1/fusion-pools.json`. This page documents pool **types**, their
+`packages/content/content/fusion-pools.json`. This page documents pool **types**, their
 mechanics, timing tiers, and grade carry rules in full.

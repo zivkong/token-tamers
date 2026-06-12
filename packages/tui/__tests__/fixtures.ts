@@ -51,7 +51,8 @@ const EMBER: SpeciesDef = {
 
 export function makePack(): ContentPack {
   return {
-    version: 1,
+    schemaVersion: 1,
+    revision: 1,
     models: [{ pattern: 'claude-*', house: 'aether', geneId: 'g_aether', tint: '#8a7cff' }],
     species: [WISP, EMBER],
     traits: [],

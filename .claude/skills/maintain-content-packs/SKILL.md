@@ -7,7 +7,9 @@ description: Content-pack rules for Token Tamers — species/evolution tree, Hou
 
 Source of truth: `docs/design/evolution-grades-lineage.md` and
 `docs/design/visuals-habitats-achievements.md`. Content is DATA, never code:
-versioned JSON under `packages/content/content/v1/`, assembled into the typed
+ONE additive JSON tree under `packages/content/content/` (no versioned folders —
+the pack manifest carries `schemaVersion` for shape changes and a monotonic
+`revision` bumped per content release; entries may tag `since`), assembled into the typed
 `contentPackV1` in `src/index.ts` (statically imported so the cli bundle embeds it).
 Schemas live in `packages/core/src/types.ts`. Validate with `validatePack()` + the
 pack tests (`pnpm test`).
@@ -15,7 +17,9 @@ pack tests (`pnpm test`).
 ## Iron rules
 
 - **Additive-only registries.** Never remove or renumber an id (species `num`, trait,
-  achievement, habitat, trinket, gene). Retired content becomes **Ancient** — a
+  achievement, habitat, trinket, gene). Every id ever shipped is frozen in
+  `content/registry-freeze.json` — register new ids there in the same PR; the
+  freeze test fails on any removal/renumber. Retired content becomes **Ancient** — a
   permanent Dex entry, still battle-legal. Every hash ever shared stays valid forever.
 - **No model judgment.** Houses/model IDs are identity & cosmetics ONLY. Equal stat
   budgets per stage; `statWeights` redistribute, never exceed (tests enforce).
