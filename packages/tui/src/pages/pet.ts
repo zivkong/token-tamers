@@ -5,7 +5,7 @@
 
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
 import { buildPalette, drawSprite, auraOverlay, GRADE_BADGE } from '../render/sprite';
-import { findSpecies, findSprite, habitatSpriteId, houseTint } from '../helpers/lookup';
+import { findHabitat, findSpecies, findSprite, houseTint } from '../helpers/lookup';
 import { renderGradeOddsLine } from '../helpers/status';
 import type { RenderContext } from './types';
 
@@ -61,20 +61,22 @@ function drawBackdrop(ctx: RenderContext): void {
   const { buf, layout, state, pack, mode, frame } = ctx;
   const { canvasX, canvasY, canvasCols, canvasRows } = layout;
 
-  const habId = habitatSpriteId(pack, state.selectedHabitat);
-  const habSprite = habId ? findSprite(pack, habId) : undefined;
+  const habitat = findHabitat(pack, state.selectedHabitat);
+  const habSprite = habitat ? findSprite(pack, habitat.spriteId) : undefined;
   if (habSprite) {
-    // Habitats use a neutral palette derived from the pet's house tint, dimmed
-    // to sit behind the pet. Always a flat (C) ladder so it never upstages it.
-    const tint = houseTint(pack, state.pet.house);
-    const dimmedTint = rgbHex(mix(hexToRgb(tint), DIM, 0.6));
-    const pal = buildPalette(dimmedTint, 'C', frame);
+    // Habitats carry their own scene tint (palette indirection — the scene
+    // picks its hue, not the pet). Static 16-color ladder, slightly dimmed so
+    // the backdrop never upstages the pet; slow frame steps twinkle the scene.
+    const tint = habitat?.tint ?? rgbHex(mix(hexToRgb(houseTint(pack, state.pet.house)), DIM, 0.6));
+    const pal = buildPalette(tint, 'A', 0).map((c) =>
+      c ? mix(c, { r: 8, g: 10, b: 18 }, 0.18) : c,
+    );
     // Center the backdrop sprite.
     const w = habSprite.width;
     const h = Math.ceil(habSprite.height / 2);
     const bx = canvasX + Math.floor((canvasCols - w) / 2);
     const by = canvasY + Math.floor((canvasRows - h) / 2);
-    drawSprite(buf, habSprite, pal, { x: bx, y: by, frame: 0, mode });
+    drawSprite(buf, habSprite, pal, { x: bx, y: by, frame: Math.floor(frame / 8), mode });
     return;
   }
 

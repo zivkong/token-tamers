@@ -209,6 +209,8 @@ export interface HabitatDef {
   since?: number;
   id: string;
   name: string;
+  /** Scene hue (hex) for the backdrop palette; falls back to a dimmed House tint. */
+  tint?: string;
   /** Palette-indexed background grid (see SpriteDef for format). */
   spriteId: string;
   /** Anchor cells (canvas-pixel coords) where trinkets render. */

@@ -20,6 +20,11 @@ export function habitatSpriteId(pack: ContentPack, habitatId: string): string | 
   return pack.habitats.find((h) => h.id === habitatId)?.spriteId;
 }
 
+/** Find a habitat definition, or undefined. */
+export function findHabitat(pack: ContentPack, habitatId: string) {
+  return pack.habitats.find((h) => h.id === habitatId);
+}
+
 /**
  * Resolve a House tint for a species. The pack's ModelRule carries tints keyed
  * by gene; a species only knows its House, so we pick the first model rule for
