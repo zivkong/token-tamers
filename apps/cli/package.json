@@ -16,6 +16,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsx src/main.ts",
+    "dev:watch": "tsx watch src/main.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
