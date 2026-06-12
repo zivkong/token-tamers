@@ -1,66 +1,113 @@
-# Token Tamers
+<div align="center">
 
-> **Your work raises a monster. Literally. Whatever agent you use.**
+# 🐲 Token Tamers
 
-Token Tamers is a **fully idle, fully offline terminal virtual pet** for developers.
-An evolving monster companion is raised passively by your real AI coding-agent usage —
-no interaction required. A read-only observer watches the **local session logs** of your
-coding agent (Claude Code in the MVP; Codex CLI and OpenCode next) and converts your
-actual work patterns into pet growth, evolution, grades, and a collection to complete.
+### Your work raises a monster. _Literally._ Whatever agent you use.
 
+A fully idle, fully offline **terminal virtual pet** for developers — raised passively by
+your real AI coding-agent usage. No clicks. No chores. No API calls. You ship code;
+your monster evolves.
+
+[![CI](https://github.com/zivkong/token-tamers/actions/workflows/ci.yml/badge.svg)](https://github.com/zivkong/token-tamers/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/zivkong/token-tamers?label=release)](https://github.com/zivkong/token-tamers/releases/latest)
+[![Runtime deps](https://img.shields.io/badge/runtime_deps-0-success)](#-the-three-pledges)
+[![Network calls](https://img.shields.io/badge/network_calls-0_ever-blueviolet)](#-the-three-pledges)
+[![Node](https://img.shields.io/badge/node-%E2%89%A5_20-brightgreen)](#-install)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+</div>
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│ ╔════════════════ ✦ ROOFTOP NIGHT ✦ ════════════════════╗ │
+│ ║      ·    ˚         ✦              ·          ˚        ║ │
+│ ║   ˚           ▄▄▄▄▄▄                                   ║ │
+│ ║             ▄█▀▀▀▀▀▀█▄        ✦         Wisp           ║ │
+│ ║            ██   ◉  ◉  ██               [B] ●  molt 4   ║ │
+│ ║      ✦      ▀█▄▄▄▄▄▄█▀  ·              House Aether    ║ │
+│ ║          ·     ▀▀▀▀▀        ˚     next roll: B→A  14%  ║ │
+│ ╚════════════════════════════════════════════════════════╝ │
+├────────────────────────────────────────────────────────────┤
+│  [♥ Pet]  [☰ Dex]  [◆ Archive]  [⚙ Quit]            12.5% │
+└────────────────────────────────────────────────────────────┘
 ```
-┌──────────────────────────────────────────────┐
-│ ╔══════════════ 4:3 CANVAS ══════════════╗   │
-│ ║        habitat · pet · trinkets        ║   │
-│ ║      (half-block pixel-art sprites)    ║   │
-│ ╚════════════════════════════════════════╝   │
-├──────────────────────────────────────────────┤
-│ [♥Pet] [☰Dex] [◆Archive] [⚙]          12.5% │
-└──────────────────────────────────────────────┘
+
+<div align="center">
+
+_Half-block pixel-art sprites · clickable 4:3 canvas · 30 fps on &lt;2% CPU · works over SSH_
+
+`tt status` → `🥚 Wisp [B]● molt 4 ▓▓░░` — yes, it fits in your statusline.
+
+</div>
+
+---
+
+## 🤝 The three pledges
+
+Trust is the whole game. Each pledge is **mechanically enforced in CI**, not just promised:
+
+|     | Pledge                                  | What it means                                                                                                                                                                                                  |
+| --- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔒  | **Read-only. Never spends your tokens** | Token Tamers never calls an AI API and never touches your quota. It only _reads_ the usage logs your agent already writes to disk. Your pet grows because you shipped real work.                               |
+| 🔌  | **Fully offline. Zero network code**    | No telemetry, no update checks, no sync — there is no code in this repo _capable_ of a network request, and a CI gate fails any PR that tries. Social features are humans pasting text codes.                  |
+| ⚖️  | **No model judgment**                   | Model choice shapes your pet's _species and looks_ — never its stats, grades, or speed. Progress is normalized to **your own baseline**: a small-model dev and a frontier-model dev raise equally strong pets. |
+
+## 🧬 How it works
+
+Your coding agent already writes session logs locally. Token Tamers watches them — and
+turns your real work patterns into a creature:
+
+```text
+ you ship code ──▶ tokens & sessions ──▶ 🥚 essence
+      ▲                                      │
+      │            every 5-hour window close = MOLT 🐣
+      │            the only moment your pet can evolve,
+      │            roll a trait, mutate, or grade up
+      │                                      │
+      └── new egg ◀── REBIRTH (weekly) ◀─────┘
+            lineage carries 30–70% forward, forever
 ```
 
-## The three pledges
+- **Your rhythm becomes traits** — code after midnight and your pet turns _Nightshade_;
+  ride a session window to its cap and it earns _Marathoner_; juggle many short
+  sessions and a _Swarm_ emerges. Nine traits, four hidden pattern forms.
+- **Your model mix becomes identity** — `claude-*` feeds House **Aether** (ethereal),
+  `gpt-*`/`o*` House **Cipher** (glyphs), `gemini-*` House **Flux** (light), open-weight
+  models House **Forge** (ember). Identity only — no House is stronger.
+- **Grades are a slow, honest thrill** — every molt rolls C→B→A→S with **published
+  odds** (25% / 10% / 3%, activity-modified, A→S hard-capped at 6%). Grades never go
+  down. No pity timer. The UI always shows your exact odds.
 
-1. **Read-only — it never spends your tokens.** Token Tamers never calls any AI API and
-   never touches your quota or subscription. It only _reads_ the usage logs your agent
-   already writes to disk. Your pet grows because you shipped real work.
-2. **Fully offline — zero network code.** No API calls, no telemetry, no update checks,
-   no sync. CI fails the build if any network-capable code is ever introduced. Social
-   features work by humans pasting text codes to each other.
-3. **No model judgment.** Model choice only influences your pet's _species identity and
-   cosmetics_ — never stats, grades, or progression speed. All power metrics are
-   normalized against **your own baseline**. An all-light-model dev and an all-frontier-model
-   dev with similar work patterns raise equally strong pets.
+| ○ C · Slate            | ● B · Verdant    | ◆ A · Violet                       | ★ S · Aurum                                       |
+| ---------------------- | ---------------- | ---------------------------------- | ------------------------------------------------- |
+| flat 4-color, charming | 8 colors, blinks | 16 colors, dithered shading, glint | full 24-bit ramps, shimmer sweep, particle aura ✦ |
 
-## How it works
+**The goal: 100% completion.** Fill the Dex (112 entries), earn every achievement,
+unlock every habitat and trinket. One number to drive to 100 — `tt complete`.
 
-- Your coding agent writes session logs locally (e.g. `~/.claude/projects/**/*.jsonl`).
-- Token Tamers ingests them incrementally and maps them to game events:
-  - **Token consumption** → nutrition/essence (normalized to your own baseline)
-  - **Model-ID mix** → diet → House/species identity (Aether, Cipher, Flux, Forge, Wild)
-  - **5-hour session window close** → **Molt**: the only moment a pet can evolve,
-    roll a trait, mutate, or attempt a grade-up (C → B → A → S, never down)
-  - **Week boundary** → **Rebirth**: the pet ascends into the Archive, a new egg
-    hatches with lineage carry-over
-- The goal is **100% completion**: every Dex entry, achievement, habitat, and trinket.
+And if you stop coding for a week? Your pet curls into a cocoon — **Dormant, never
+dead** — and wakes when you return. Generation 14 will be waiting.
 
-## Install
+## 📦 Install
 
-Token Tamers ships standalone binaries (no Node.js required) on every
-[GitHub Release](https://github.com/zivkong/token-tamers/releases), plus a portable
-`tt.js` for anyone with Node ≥ 20.
+Standalone binaries on every [release](https://github.com/zivkong/token-tamers/releases/latest) —
+no Node required. Verify any download against `SHA256SUMS.txt`, or check its build
+provenance: `gh attestation verify <file> --repo zivkong/token-tamers`.
 
-### macOS
+<details open>
+<summary><strong>🍎 macOS</strong></summary>
 
 ```sh
 # Apple Silicon (use tt-macos-x64 for Intel)
 curl -fsSL -o tt https://github.com/zivkong/token-tamers/releases/latest/download/tt-macos-arm64
 chmod +x tt && sudo mv tt /usr/local/bin/
-# The binary is unsigned; on first run macOS may quarantine it:
-xattr -d com.apple.quarantine /usr/local/bin/tt 2>/dev/null || true
+xattr -d com.apple.quarantine /usr/local/bin/tt 2>/dev/null || true  # unsigned binary
 ```
 
-### Linux
+</details>
+
+<details>
+<summary><strong>🐧 Linux</strong></summary>
 
 ```sh
 # x64 (use tt-linux-arm64 for ARM)
@@ -68,103 +115,130 @@ curl -fsSL -o tt https://github.com/zivkong/token-tamers/releases/latest/downloa
 chmod +x tt && sudo mv tt /usr/local/bin/
 ```
 
-### Windows (PowerShell)
+</details>
+
+<details>
+<summary><strong>🪟 Windows (PowerShell)</strong></summary>
 
 ```powershell
 Invoke-WebRequest -Uri https://github.com/zivkong/token-tamers/releases/latest/download/tt-windows-x64.exe -OutFile "$env:LOCALAPPDATA\tt.exe"
 # then add %LOCALAPPDATA% to your PATH, or move tt.exe somewhere already on it
 ```
 
-### With Node.js (any OS)
+</details>
+
+<details>
+<summary><strong>⬢ Node ≥ 20 (any OS) / from source</strong></summary>
 
 ```sh
+# portable single file, zero dependencies
 curl -fsSL -o tt.js https://github.com/zivkong/token-tamers/releases/latest/download/tt.js
 node tt.js --version
-```
 
-### From source
-
-```sh
-git clone https://github.com/zivkong/token-tamers.git
-cd token-tamers
+# or build it yourself
+git clone https://github.com/zivkong/token-tamers.git && cd token-tamers
 pnpm install && pnpm build
 node apps/cli/dist/tt.js --version
 ```
 
-Verify any download against `SHA256SUMS.txt` on the release page.
+</details>
 
-## Quickstart
+## ⚡ Quickstart
 
 ```sh
-tt init     # one-time wizard: detects your agents, asks plan type, backfills your baseline
-tt          # the clickable shell — watch your pet live (q to quit)
+tt init     # one-time wizard: detects your agents, learns your baseline
+tt          # the shell — meet your egg 🥚 (q to quit)
 ```
 
-`tt init` is the **only required interaction, ever**. From then on the game is your job:
-keep coding with your agent and check in whenever you like. Your first week hatches a
-**Calibration Egg** while your personal baseline is established.
-
-## Commands
+`tt init` is the **only required interaction, ever** (pillar one: the game is your
+job). Your first week hatches a **Calibration Egg** while it learns what "normal" looks
+like for _you_ — then the real lineage begins.
 
 | Command       | What it does                                          |
 | ------------- | ----------------------------------------------------- |
-| `tt init`     | One-time setup wizard (re-run to add/remove adapters) |
-| `tt`          | The clickable 4:3 shell: Pet, Dex, and Archive pages  |
+| `tt`          | The clickable shell: Pet, Dex, and Archive pages      |
 | `tt watch`    | Slim live view                                        |
-| `tt status`   | One-shot status line (statusline-friendly)            |
-| `tt dex`      | Dex listing in plain text                             |
-| `tt archive`  | Best-record Hall of Fame per species                  |
-| `tt complete` | Completion meter with per-page breakdown              |
-| `tt adapters` | Adapter health: detected paths, last scan, warnings   |
+| `tt status`   | One-line status — drop it in your prompt / statusline |
+| `tt dex`      | Collection progress, "???" silhouettes included       |
+| `tt archive`  | Hall of Fame: your best record per species            |
+| `tt complete` | The completion meter, your % toward 100               |
+| `tt adapters` | Adapter health, paths, warnings                       |
 
-All commands honor `--no-color` (pure-ASCII fallback) and degrade gracefully from
-truecolor → 256-color → 8-color terminals.
+Everything honors `--no-color` and degrades gracefully: truecolor → 256 → 8 → ASCII.
 
-## Supported agents
+## 🔌 Supported agents
 
-| Agent       | Status     | Data source (read-only)                   |
-| ----------- | ---------- | ----------------------------------------- |
-| Claude Code | ✅ MVP     | `~/.claude/projects/**/*.jsonl`           |
-| Codex CLI   | 🔜 planned | `$CODEX_HOME/sessions/**/rollout-*.jsonl` |
-| OpenCode    | 🔜 planned | `~/.local/share/opencode/storage/`        |
+| Agent       | Status  | Reads (locally, read-only)                |
+| ----------- | ------- | ----------------------------------------- |
+| Claude Code | ✅ now  | `~/.claude/projects/**/*.jsonl`           |
+| Codex CLI   | 🔜 next | `$CODEX_HOME/sessions/**/rollout-*.jsonl` |
+| OpenCode    | 🔜 next | `~/.local/share/opencode/storage/`        |
 
-Adapters are plugins emitting one normalized event stream; the engine never knows which
-agent produced an event. Multi-agent setups feed **one pet** — adding a second agent
-diversifies its diet, never inflates its power.
+Adapters emit one normalized event stream; the engine never knows which agent fed it.
+Multiple agents feed **one pet** — a second agent diversifies its diet, never inflates
+its power. Cross-agent diets unlock hybrid species. 🧪
 
-## FAQ
+## ❓ FAQ
 
-**Does this use my tokens / API credits?** No. Never. It reads log files your agent
-already wrote. There is no code in this repository capable of making a network request,
-and CI enforces that.
+<details>
+<summary><strong>Does this spend my tokens or API credits?</strong></summary>
 
-**Is my data sent anywhere?** No. Everything lives in `~/.tokentamers/` on your machine.
+No. Never. It reads log files your agent already wrote. There is no network-capable
+code in this repository — ESLint bans the imports and CI greps every PR.
 
-**I only use cheap/local models — is my pet weaker?** No. Progression is normalized to
-_your own_ usage baseline. Model mix only flavors species identity (Houses).
+</details>
 
-**What if I stop coding for a week?** Your pet goes **Dormant** (a cocoon, not death) and
-wakes when you return. Lineage always accrues; re-entry is always warm.
+<details>
+<summary><strong>Is my data sent anywhere?</strong></summary>
 
-## Roadmap
+No. Everything lives in `~/.tokentamers/` on your machine. The "shared world" (weekly
+weather, future Drifter DNA) is derived deterministically from the calendar, so every
+offline machine agrees without ever talking.
 
-- **M1 (this MVP):** Claude Code adapter, evolution engine (Aether + Cipher lines, egg → Apex),
-  traits, patterns, mutations, grade rolls, rebirth + lineage, Archive, clickable TUI shell,
-  3 habitats, 6 trinkets, ~30 achievements, completion meter.
-- **M2:** Codex CLI + OpenCode adapters, Flux + Forge + hybrid lines, DNA export/apply,
-  deterministic battles, fusion pools, Team Leagues, Drifter DNA for solo devs.
-- **M3:** Seasonal content packs, monthly weather events, sprite compiler pipeline.
+</details>
 
-See [`docs/design/`](docs/design/) for the full design reference and
-[`docs/wiki/`](docs/wiki/) for the player & contributor wiki.
+<details>
+<summary><strong>I only use small/local models — is my pet weaker?</strong></summary>
 
-## Contributing
+No. Progression normalizes to <em>your own</em> baseline; model mix only flavors
+species identity. This promise is pillar #2 of the design and tests enforce it.
 
-Token Tamers is an open-source, **AI-native** project — it is built entirely with AI
-coding agents, guarded by mechanical CI gates (import boundaries, determinism rules,
-zero-network checks, perf budgets). Humans own architecture and contracts; CI owns
-quality; AI writes the code. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
+</details>
 
-## License
+<details>
+<summary><strong>What's with the S-grade obsession?</strong></summary>
 
-[MIT](LICENSE) © 2026 Ziv Kong
+A→S is a ~3–6% roll, once per molt, never guaranteed, never lost. When it lands, your
+pet's palette upgrades <em>live</em> — gold ramps, shimmer sweep, particle aura. People
+screenshot it. That's the point.
+
+</details>
+
+## 🗺️ Roadmap
+
+- [x] **M1 — the MVP (you are here):** Claude Code adapter · evolution engine
+      (Aether + Cipher lines, egg → Apex) · traits, patterns, mutations · grade rolls ·
+      rebirth + lineage · the Archive · clickable TUI · 3 habitats, 6 trinkets,
+      32 achievements
+- [ ] **M2:** Codex CLI + OpenCode adapters · Flux + Forge + hybrid lines · DNA
+      export/apply (paste codes to friends) · deterministic battles · fusion pools 🤫 ·
+      Team Leagues · Drifter DNA for solo devs
+- [ ] **M3:** seasonal content packs · monthly weather events · sprite compiler pipeline
+
+Full design reference: [`docs/design/`](docs/design/) · player wiki: [`docs/wiki/`](docs/wiki/)
+
+## 🛠️ Contributing
+
+Token Tamers is **AI-native open source**: built entirely with AI coding agents, kept
+honest by mechanical gates — import-boundary lint, determinism tests, golden-frame
+snapshots, zero-network and spoiler checks, supply-chain pins. Humans own architecture;
+CI owns quality; AI writes the code. Start at [CONTRIBUTING.md](CONTRIBUTING.md) —
+your agent will feel right at home.
+
+<div align="center">
+
+**[MIT](LICENSE)** © 2026 Ziv Kong
+
+⭐ Star the repo — then go write some code. Your egg is counting on you. 🥚
+
+</div>
