@@ -103,8 +103,12 @@ function lerp(a: number, b: number, t: number): number {
  *   hop (16)   -> a 1-2 cell hop in place (jump bank)
  *   walk L (40) -> stride back to the play spot (walk bank, flipX)
  *   play (24)  -> bob beside the trinket anchor (play bank)
+ *
+ * `mobile` is false for pre-hatch stages (the egg): a legless egg never walks,
+ * hops, or plays — it sits centered on the floor and only breathes via its idle
+ * sprite frames. Locomoting an egg across the canvas reads as jitter.
  */
-export function petPlacement(frame: number, geo: WanderGeometry): WanderState {
+export function petPlacement(frame: number, geo: WanderGeometry, mobile = true): WanderState {
   const f = ((frame % CYCLE) + CYCLE) % CYCLE;
   // Top-left y so the sprite's bottom row lands on the scene floor line.
   const groundY = geo.floorY - (geo.spriteRows - 1);
@@ -113,6 +117,12 @@ export function petPlacement(frame: number, geo: WanderGeometry): WanderState {
   // The play spot sits left-of-center; the trinket anchors just to the pet's right.
   const playX = geo.canvasX + Math.floor((geo.canvasCols - geo.spriteCols) / 2) - 4;
   const trinketX = playX + geo.spriteCols + 1;
+
+  if (!mobile) {
+    // Stationary: centered on the floor, idle frames only (no wander, no hop).
+    const centerX = geo.canvasX + Math.floor((geo.canvasCols - geo.spriteCols) / 2);
+    return { px: centerX, py: groundY, anim: 'idle', flipX: false, playing: false, trinketX };
+  }
 
   if (f < WALK_R_AT) {
     return { px: leftX, py: groundY, anim: 'idle', flipX: false, playing: false, trinketX };
@@ -189,7 +199,8 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef): void {
     spriteRows,
     floorY: sceneFloorRow(ctx),
   };
-  const w = petPlacement(frame, geo);
+  // The egg is pre-hatch and legless: keep it stationary (no wander/hop/play).
+  const w = petPlacement(frame, geo, pet.stage !== 'egg');
 
   // Trinket drawn at its floor anchor during the play segment.
   if (w.playing) {
