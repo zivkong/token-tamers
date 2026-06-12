@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm build
+
+      - name: Build standalone binaries (no Node required to run)
+        run: |
+          mkdir -p out
+          pnpm exec pkg apps/cli/dist/tt.cjs \
+            --targets node22-linux-x64,node22-linux-arm64,node22-macos-x64,node22-macos-arm64,node22-win-x64 \
+            --out-path out
+          cd out
+          mv tt.cjs-linux-x64      tt-linux-x64
+          mv tt.cjs-linux-arm64    tt-linux-arm64
+          mv tt.cjs-macos-x64      tt-macos-x64
+          mv tt.cjs-macos-arm64    tt-macos-arm64
+          mv tt.cjs-win-x64.exe    tt-windows-x64.exe
+          cp ../apps/cli/dist/tt.js tt.js
+          shasum -a 256 tt-* tt.js > SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            out/tt-linux-x64
+            out/tt-linux-arm64
+            out/tt-macos-x64
+            out/tt-macos-arm64
+            out/tt-windows-x64.exe
+            out/tt.js
+            out/SHA256SUMS.txt

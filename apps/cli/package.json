@@ -1,0 +1,30 @@
+{
+  "name": "token-tamers",
+  "version": "0.1.0",
+  "description": "A fully idle, fully offline terminal virtual pet raised by your real AI coding-agent usage.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "tt": "dist/tt.js"
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@token-tamers/adapters": "workspace:*",
+    "@token-tamers/content": "workspace:*",
+    "@token-tamers/core": "workspace:*",
+    "@token-tamers/tui": "workspace:*"
+  },
+  "keywords": ["terminal", "tui", "virtual-pet", "idle-game", "claude-code", "developer-tools"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zivkong/token-tamers.git"
+  }
+}
