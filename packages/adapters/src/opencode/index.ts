@@ -207,7 +207,9 @@ async function scanLegacyTree(
   const sessionDirs = await readdirSafe(msgRoot);
 
   const events: UsageEvent[] = [];
-  const files: Record<string, { offset: number; mtimeMs: number }> = { ...checkpoint.files };
+  // Rebuilt from the files seen THIS scan: entries for messages the user has
+  // pruned from OpenCode storage drop out, keeping the checkpoint bounded.
+  const files: Record<string, { offset: number; mtimeMs: number }> = {};
 
   for (const sessionId of sessionDirs) {
     const sessionDir = path.join(msgRoot, sessionId);
@@ -221,9 +223,12 @@ async function scanLegacyTree(
       const st = await statOrNull(filePath);
       if (!st) continue;
 
-      const prev = files[filePath];
+      const prev = checkpoint.files[filePath];
       // offset=1 means this single-JSON file was already fully processed.
-      if (prev && prev.mtimeMs === st.mtimeMs && prev.offset >= 1) continue;
+      if (prev && prev.mtimeMs === st.mtimeMs && prev.offset >= 1) {
+        files[filePath] = prev;
+        continue;
+      }
 
       let raw: unknown;
       try {
@@ -330,25 +335,31 @@ export const openCodeAdapter: ProviderAdapter & { defaultPlan: 'api' } = {
   async scan(paths: string[], checkpoint?: AdapterCheckpoint): Promise<ScanResult> {
     const baseCheckpoint: AdapterCheckpoint = checkpoint ?? { files: {} };
     const allEvents: UsageEvent[] = [];
-    const mergedFiles: Record<string, { offset: number; mtimeMs: number }> = {
-      ...baseCheckpoint.files,
-    };
+    // Rebuilt from the sources seen THIS scan (removed dbs and pruned legacy
+    // trees drop out), so the checkpoint map stays bounded.
+    const mergedFiles: Record<string, { offset: number; mtimeMs: number }> = {};
 
     const DatabaseSync = await getDatabaseSync();
 
     for (const root of paths) {
       // --- SQLite path ---
       const dbPath = path.join(root, 'opencode.db');
-      if (DatabaseSync && (await fileExists(dbPath))) {
-        const { events, newCursor, mtimeMs } = await scanSqliteDb(
-          dbPath,
-          baseCheckpoint,
-          DatabaseSync,
-        );
-        allEvents.push(...events);
-        // Store the time_updated cursor in `offset`; mtimeMs is recorded but
-        // NOT used to skip scans — WAL writes do not update the main file mtime.
-        mergedFiles[dbPath] = { offset: newCursor, mtimeMs };
+      if (await fileExists(dbPath)) {
+        if (DatabaseSync) {
+          const { events, newCursor, mtimeMs } = await scanSqliteDb(
+            dbPath,
+            baseCheckpoint,
+            DatabaseSync,
+          );
+          allEvents.push(...events);
+          // Store the time_updated cursor in `offset`; mtimeMs is recorded but
+          // NOT used to skip scans — WAL writes do not update the main file mtime.
+          mergedFiles[dbPath] = { offset: newCursor, mtimeMs };
+        } else if (baseCheckpoint.files[dbPath]) {
+          // node:sqlite unavailable on this Node: keep the cursor untouched so
+          // nothing is lost or re-read once a capable Node runs again.
+          mergedFiles[dbPath] = baseCheckpoint.files[dbPath];
+        }
       }
 
       // --- Legacy JSON tree path ---
@@ -357,7 +368,7 @@ export const openCodeAdapter: ProviderAdapter & { defaultPlan: 'api' } = {
       if ((await statOrNull(legacyMsgDir))?.isDirectory()) {
         const legacyCheckpoint: AdapterCheckpoint = {
           files: Object.fromEntries(
-            Object.entries(mergedFiles).filter(([k]) => k.startsWith(legacyMsgDir)),
+            Object.entries(baseCheckpoint.files).filter(([k]) => k.startsWith(legacyMsgDir)),
           ),
         };
         const { events, updatedCheckpoint } = await scanLegacyTree(storageDir, legacyCheckpoint);

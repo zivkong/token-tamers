@@ -236,6 +236,12 @@ catch-up re-feeds `pending.json` alongside the fresh scan before advancing, so o
 survives across invocations and resume-from-snapshot stays equal to a continuous run. The buffer
 drains automatically as windows close.
 
+Both machine caches stay bounded: `pending.json` and `checkpoints.json` are written compactly
+(no pretty-printing — they are rewritten on every command and scale with usage), and adapters
+rebuild their checkpoint file-map from the files actually present on each scan, so entries for
+sessions the provider has purged (Claude Code's ~30-day retention, user-pruned OpenCode storage)
+drop out instead of accumulating for the lifetime of the install.
+
 ---
 
 ## Render Modes & CLI Command List (design baseline §15)

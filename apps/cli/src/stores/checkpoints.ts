@@ -3,7 +3,7 @@
  */
 
 import type { AdapterCheckpoint } from '@token-tamers/adapters';
-import { readJsonOrNull, writeJsonAtomic } from './atomic';
+import { readJsonOrNull, writeJsonAtomicCompact } from './atomic';
 
 export const CHECKPOINTS_FILE = 'checkpoints.json';
 
@@ -14,5 +14,5 @@ export function loadCheckpoints(): CheckpointMap {
 }
 
 export function saveCheckpoints(checkpoints: CheckpointMap): void {
-  writeJsonAtomic(CHECKPOINTS_FILE, checkpoints);
+  writeJsonAtomicCompact(CHECKPOINTS_FILE, checkpoints);
 }

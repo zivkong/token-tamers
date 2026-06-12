@@ -575,3 +575,55 @@ describe('claudeCodeAdapter.scan() — record type filtering', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Checkpoint pruning
+// ---------------------------------------------------------------------------
+
+describe('claudeCodeAdapter.scan() — checkpoint pruning', () => {
+  it('drops entries for session files Claude Code has deleted', async () => {
+    const mkLine = (sessionId: string): string =>
+      JSON.stringify({
+        type: 'assistant',
+        message: {
+          role: 'assistant',
+          content: 'hi',
+          model: 'claude-sonnet-4-5-20250929',
+          usage: {
+            input_tokens: 10,
+            output_tokens: 5,
+            cache_read_input_tokens: 0,
+            cache_creation_input_tokens: 0,
+          },
+        },
+        timestamp: '2024-05-02T08:00:00.000Z',
+        sessionId,
+        cwd: '/tmp/work',
+      }) + '\n';
+
+    const oldSession = 'aaaa0000-1111-2222-3333-444455556666';
+    const liveSession = 'bbbb0000-1111-2222-3333-444455556666';
+    const { configDir, cleanup } = await makeTmpConfigDir({
+      [`proj-old/${oldSession}.jsonl`]: mkLine(oldSession),
+      [`proj-live/${liveSession}.jsonl`]: mkLine(liveSession),
+    });
+
+    try {
+      const projectsDir = path.join(configDir, 'projects');
+      const first = await claudeCodeAdapter.scan([projectsDir]);
+      const oldPath = path.join(projectsDir, 'proj-old', `${oldSession}.jsonl`);
+      const livePath = path.join(projectsDir, 'proj-live', `${liveSession}.jsonl`);
+      expect(first.checkpoint.files[oldPath]).toBeDefined();
+
+      // Claude Code's ~30-day retention removes the old session.
+      await fs.rm(path.join(projectsDir, 'proj-old'), { recursive: true, force: true });
+
+      const second = await claudeCodeAdapter.scan([projectsDir], first.checkpoint);
+      expect(second.events).toHaveLength(0); // nothing re-read, nothing duplicated
+      expect(second.checkpoint.files[oldPath]).toBeUndefined();
+      expect(second.checkpoint.files[livePath]).toEqual(first.checkpoint.files[livePath]);
+    } finally {
+      await cleanup();
+    }
+  });
+});

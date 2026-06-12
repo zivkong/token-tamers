@@ -42,9 +42,22 @@ export function readJsonOrNull<T>(file: string): T | null {
 
 /** Atomic write: temp file in the same dir, then rename over the target. */
 export function writeJsonAtomic(file: string, value: unknown): void {
+  writeAtomic(file, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+/**
+ * Atomic write without pretty-printing, for machine-only caches that are
+ * rewritten on every command and scale with usage (checkpoints, pending
+ * buffer) — roughly a third smaller on disk than the indented form.
+ */
+export function writeJsonAtomicCompact(file: string, value: unknown): void {
+  writeAtomic(file, `${JSON.stringify(value)}\n`);
+}
+
+function writeAtomic(file: string, payload: string): void {
   ensureDir();
   const target = pathFor(file);
   const tmp = `${target}.${process.pid}.tmp`;
-  fs.writeFileSync(tmp, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+  fs.writeFileSync(tmp, payload, 'utf8');
   fs.renameSync(tmp, target);
 }

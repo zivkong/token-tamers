@@ -8,7 +8,7 @@
  */
 
 import type { UsageEvent } from '@token-tamers/core';
-import { readJsonOrNull, writeJsonAtomic } from './atomic';
+import { readJsonOrNull, writeJsonAtomicCompact } from './atomic';
 
 export const PENDING_FILE = 'pending.json';
 
@@ -17,5 +17,5 @@ export function loadPending(): UsageEvent[] {
 }
 
 export function savePending(events: UsageEvent[]): void {
-  writeJsonAtomic(PENDING_FILE, events);
+  writeJsonAtomicCompact(PENDING_FILE, events);
 }

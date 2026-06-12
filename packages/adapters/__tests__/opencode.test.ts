@@ -607,6 +607,30 @@ describe('openCodeAdapter legacy tree scan (fixtures)', () => {
     const second = await openCodeAdapter.scan([FIXTURES_DIR], first.checkpoint);
     expect(second.events).toHaveLength(0);
   });
+
+  it('prunes checkpoint entries for legacy files the user has deleted', async () => {
+    // Copy the fixture tree to a temp root we are allowed to delete from.
+    const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'tt-oc-prune-'));
+    try {
+      await fs.cp(path.join(FIXTURES_DIR, 'storage'), path.join(tmpRoot, 'storage'), {
+        recursive: true,
+      });
+      const first = await openCodeAdapter.scan([tmpRoot]);
+      const sessADir = path.join(tmpRoot, 'storage', 'message', 'sess-aaa-111');
+      const keptFile = path.join(tmpRoot, 'storage', 'message', 'sess-bbb-222', 'msg-001.json');
+      expect(Object.keys(first.checkpoint.files).some((k) => k.startsWith(sessADir))).toBe(true);
+
+      // The user prunes one session from OpenCode storage.
+      await fs.rm(sessADir, { recursive: true, force: true });
+
+      const second = await openCodeAdapter.scan([tmpRoot], first.checkpoint);
+      expect(second.events).toHaveLength(0); // nothing re-read, nothing duplicated
+      expect(Object.keys(second.checkpoint.files).some((k) => k.startsWith(sessADir))).toBe(false);
+      expect(second.checkpoint.files[keptFile]).toEqual(first.checkpoint.files[keptFile]);
+    } finally {
+      await fs.rm(tmpRoot, { recursive: true, force: true });
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
