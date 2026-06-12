@@ -1,0 +1,8 @@
+# Full gate before anything leaves the machine: typecheck + lint + format +
+# tests + build, then the invariant scripts. Same set CI runs — pushing red is
+# a CI failure you could have caught locally.
+pnpm check
+bash scripts/check-zero-network.sh
+bash scripts/check-runtime-deps.sh
+bash scripts/check-workflow-pins.sh
+bash scripts/check-spoilers.sh

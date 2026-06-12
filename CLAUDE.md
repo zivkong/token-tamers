@@ -88,6 +88,10 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - Canonical cycle rule: molts (5-h window close) are the ONLY evolution checkpoints;
   weekly rebirth never evolves the pet — it archives and re-eggs it.
 - Releases: tag `v*` → GitHub Actions builds binaries + GitHub Release.
+- Git hooks (husky, auto-installed): pre-commit = lint-staged + fast invariant
+  gates; commit-msg = format check (capitalized imperative subject ≤ 72 chars, no
+  trailing period, blank line before body, body wrap 100); pre-push = full
+  `pnpm check` + all gates. Never bypass with `--no-verify`.
 
 ## Design quick reference (full detail: docs/design/ + the skills below)
 

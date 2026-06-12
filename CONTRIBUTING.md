@@ -73,6 +73,30 @@ See [SECURITY.md](SECURITY.md) for the full picture. The rules contributors hit 
 - **Dev-dependency changes** get extra scrutiny (CODEOWNERS + dependency review +
   Dependabot cooldown). Don't bundle them into unrelated PRs.
 
+## Commits & git hooks (husky)
+
+Hooks install automatically on `pnpm install` (via the `prepare` script) and gate
+every commit and push:
+
+- **pre-commit** — `lint-staged` (Prettier + ESLint `--fix` on staged files only)
+  plus the four fast invariant gates (zero-network, runtime-deps, workflow-pins,
+  spoilers). Takes seconds.
+- **commit-msg** — enforces the commit format below
+  (`scripts/check-commit-msg.mjs`).
+- **pre-push** — the full `pnpm check` (typecheck + lint + format + tests + build)
+  plus all invariant gates. If this is red, CI would be red too.
+
+**Commit message format:**
+
+- Subject: capitalized, imperative mood ("Add…", "Fix…", "Split…"), 8–72 chars,
+  no trailing period.
+- Optional body: separated by a blank line, wrapped at 100 chars (URLs and
+  `Key: value` trailers exempt).
+- Merge/revert/fixup subjects are exempt (git generates them).
+
+Bypassing hooks (`--no-verify`) is for genuine emergencies on your own fork only —
+PRs whose commits don't pass the hooks will fail CI anyway.
+
 ## Pull requests
 
 - Small PRs, one concern each.

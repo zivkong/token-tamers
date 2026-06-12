@@ -32,6 +32,13 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   prettier,
   {
+    // Plain Node scripts (hooks, tooling) — give them the Node globals.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: { process: 'readonly', console: 'readonly' },
+    },
+  },
+  {
     files: ['packages/**/*.ts', 'apps/**/*.ts'],
     rules: {
       'no-restricted-imports': ['error', banNetworkImports],

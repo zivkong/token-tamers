@@ -18,7 +18,8 @@
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build",
     "check:network": "bash scripts/check-zero-network.sh",
     "check:spoilers": "bash scripts/check-spoilers.sh",
-    "check:dup": "jscpd packages apps"
+    "check:dup": "jscpd packages apps",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
@@ -26,12 +27,23 @@
     "@yao-pkg/pkg": "^6.3.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.7",
     "jscpd": "4.0.5",
+    "lint-staged": "^17.0.7",
     "prettier": "^3.4.2",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0",
     "vitest": "^2.1.8"
+  },
+  "lint-staged": {
+    "*.{ts,js,mjs,cjs}": [
+      "prettier --write",
+      "eslint --fix --no-warn-ignored"
+    ],
+    "*.{md,json,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }
