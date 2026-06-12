@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { runInit } from '../src/commands/init';
 import { catchUp } from '../src/services/catchup';
+import { createShellHost } from '../src/services/shell-host';
 import { loadCheckpoints } from '../src/stores';
 import { loadState } from '../src/stores/state';
 import { loadPending } from '../src/stores/pending';
@@ -208,6 +209,65 @@ describe('catchUp — pending persistence across runs', () => {
     // lets the molt see the full window, and the pending buffer drains.
     const t2 = () => Date.parse('2024-03-19T00:00:00.000Z');
     const result = await catchUp(t2);
+    expect(result.engine.state().pet.moltCount).toBeGreaterThan(0);
+    expect(loadPending()).toEqual([]);
+  });
+});
+
+describe('shell session — open-window usage survives exit', () => {
+  it('persists in-session scans to pending.json so the next run still molts', async () => {
+    // One day of usage whose latest window is still open at init time.
+    writeFixture(claudeDir, '2024-03-18T09:00:00.000Z', 1);
+    const initNow = () => Date.parse('2024-03-18T12:30:00.000Z');
+    await runInit({ yes: true, now: initNow, out: () => {} });
+
+    // Launch the shell: catchUp builds the engine (pending re-fed), the host
+    // wraps the same engine.
+    const t1 = Date.parse('2024-03-18T12:31:00.000Z');
+    const caught = await catchUp(() => t1);
+    const { host, persist } = createShellHost(caught.config, caught.engine);
+
+    // New usage lands in the same still-open window while the shell is up.
+    const inSessionTs = '2024-03-18T12:40:00.000Z';
+    const projectDir = path.join(claudeDir, 'projects', 'encoded-path-test');
+    fs.writeFileSync(
+      path.join(projectDir, 'aaaa2222-bbbb-3333-cccc-444455556666.jsonl'),
+      JSON.stringify({
+        type: 'assistant',
+        message: {
+          role: 'assistant',
+          model: 'claude-sonnet-4-5-20250929',
+          content: 'in-session',
+          usage: {
+            input_tokens: 300,
+            output_tokens: 400,
+            cache_read_input_tokens: 0,
+            cache_creation_input_tokens: 0,
+          },
+        },
+        timestamp: inSessionTs,
+        sessionId: 'aaaa2222-bbbb-3333-cccc-444455556666',
+        cwd: '/home/dev/proj',
+      }) + '\n',
+      'utf8',
+    );
+
+    // One advance kicks the fire-and-forget rescan; wait for it to land.
+    host.advance(t1 + 6_000);
+    const newFile = path.join(projectDir, 'aaaa2222-bbbb-3333-cccc-444455556666.jsonl');
+    for (let i = 0; i < 100; i++) {
+      if (loadCheckpoints()['claude-code']?.files[newFile]) break;
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    expect(loadCheckpoints()['claude-code']?.files[newFile]).toBeTruthy();
+
+    // Shell exits: the in-session open-window event must survive on disk.
+    persist();
+    const pending = loadPending();
+    expect(pending.some((e) => e.ts === Date.parse(inSessionTs))).toBe(true);
+
+    // Next launch, after the window closed: the molt sees the full window.
+    const result = await catchUp(() => Date.parse('2024-03-19T00:00:00.000Z'));
     expect(result.engine.state().pet.moltCount).toBeGreaterThan(0);
     expect(loadPending()).toEqual([]);
   });

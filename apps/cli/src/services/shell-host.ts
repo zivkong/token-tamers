@@ -18,7 +18,13 @@ import {
 } from '@token-tamers/core';
 import type { ShellHost } from '@token-tamers/tui';
 import { scanAll } from './catchup';
-import { loadCheckpoints, saveCheckpoints, saveState, type CheckpointMap } from '../stores';
+import {
+  loadCheckpoints,
+  saveCheckpoints,
+  savePending,
+  saveState,
+  type CheckpointMap,
+} from '../stores';
 
 const RESCAN_MS = 5000;
 
@@ -32,7 +38,8 @@ export interface ShellHostHandle {
  * Build a ShellHost over an existing engine. Rescans are async-fire-and-forget
  * (the shell's advance is synchronous): a scan kicked off on one tick ingests
  * its events on a later tick. State is persisted on every advance so a crash
- * loses at most one tick.
+ * loses at most one tick; checkpoints + the open-window pending buffer are
+ * persisted together after each scan and on exit.
  */
 export function createShellHost(config: UserConfig, engine: Engine): ShellHostHandle {
   let checkpoints: CheckpointMap = loadCheckpoints();
@@ -48,6 +55,10 @@ export function createShellHost(config: UserConfig, engine: Engine): ShellHostHa
         if (result.events.length > 0) engine.ingest(result.events);
         checkpoints = result.checkpoints;
         saveCheckpoints(checkpoints);
+        // Checkpoints just advanced past the scanned bytes; without persisting
+        // the open-window buffer too, usage ingested during a shell session
+        // would exist only in memory and be lost when the process exits.
+        savePending(engine.pendingEvents());
       })
       .finally(() => {
         scanning = false;
@@ -75,6 +86,7 @@ export function createShellHost(config: UserConfig, engine: Engine): ShellHostHa
     persist(): void {
       saveState(engine.state());
       saveCheckpoints(checkpoints);
+      savePending(engine.pendingEvents());
     },
   };
 }
