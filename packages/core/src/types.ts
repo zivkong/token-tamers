@@ -211,6 +211,15 @@ export interface HabitatDef {
   name: string;
   /** Scene hue (hex) for the backdrop palette; falls back to a dimmed House tint. */
   tint?: string;
+  /**
+   * Optional ordered list of hex colors the scene's indices map to DIRECTLY:
+   * index 1 = palette[0], index 2 = palette[1], ... (index 0 stays transparent).
+   * This frees a habitat from the single-tint grade ramp so the scene can be
+   * genuinely multi-colored — the renderer uses these exact colors with no grade
+   * ladder and no dimming. When omitted, the renderer falls back to the `tint`
+   * ramp path.
+   */
+  palette?: string[];
   /** Palette-indexed background grid (see SpriteDef for format). */
   spriteId: string;
   /** Anchor cells (canvas-pixel coords) where trinkets render. */
@@ -234,9 +243,21 @@ export interface SpriteDef {
   id: string;
   width: number;
   height: number;
-  /** frames[frame][row][col] = palette index (0 = transparent). */
+  /** frames[frame][row][col] = palette index (0 = transparent). The idle bank. */
   frames: number[][][];
   fps: number;
+  /**
+   * Optional animation banks, additive to `frames`. Each bank is a frame list
+   * with the SAME dims as `frames` (same width/height); the renderer selects a
+   * bank by name and falls back to `frames` when the requested bank is absent.
+   * Authored as small deltas of the idle base (see sprite-lib `framesFromDeltas`).
+   */
+  /** Walk cycle (locomotion); used while the pet is moving horizontally. */
+  walk?: number[][][];
+  /** Jump/hop bank; used for the short airborne hop. */
+  jump?: number[][][];
+  /** Play bank; used when the pet interacts with a trinket. */
+  play?: number[][][];
 }
 
 export interface ContentPack {

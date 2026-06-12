@@ -3,56 +3,336 @@
     "id": "terminal-den",
     "name": "Terminal Den",
     "spriteId": "habitat-terminal-den",
-    "trinketSlots": [
-      {
-        "x": 16,
-        "y": 28
-      },
-      {
-        "x": 80,
-        "y": 28
-      },
-      {
-        "x": 48,
-        "y": 30
-      }
+    "palette": [
+      "#0a0c10",
+      "#12161e",
+      "#1c2230",
+      "#3a2e1a",
+      "#1e4a50",
+      "#1a7a8a",
+      "#22afc0",
+      "#d4882a",
+      "#ffb84a",
+      "#8a6c3a",
+      "#3aa060",
+      "#60d0e8",
+      "#a0f0ff",
+      "#e8feff",
+      "#ff8c00"
     ],
-    "tint": "#3c6e58"
+    "tint": "#22afc0",
+    "trinketSlots": [
+      { "x": 16, "y": 28 },
+      { "x": 80, "y": 28 },
+      { "x": 48, "y": 30 }
+    ]
   },
   {
     "id": "meadow",
     "name": "Meadow",
     "spriteId": "habitat-meadow",
-    "trinketSlots": [
-      {
-        "x": 20,
-        "y": 26
-      },
-      {
-        "x": 76,
-        "y": 26
-      },
-      {
-        "x": 48,
-        "y": 30
-      }
+    "palette": [
+      "#1a3010",
+      "#2a4c18",
+      "#3a6820",
+      "#4a8030",
+      "#5aa840",
+      "#70c050",
+      "#90d870",
+      "#5090d0",
+      "#80bcf0",
+      "#b8daf8",
+      "#e0f0a0",
+      "#ffffc0",
+      "#ffe060",
+      "#80d040",
+      "#ffff80"
     ],
-    "tint": "#79b356"
+    "tint": "#79b356",
+    "trinketSlots": [
+      { "x": 20, "y": 26 },
+      { "x": 76, "y": 26 },
+      { "x": 48, "y": 30 }
+    ]
   },
   {
     "id": "rooftop-night",
     "name": "Rooftop Night",
     "spriteId": "habitat-rooftop-night",
-    "trinketSlots": [
-      {
-        "x": 16,
-        "y": 28
-      },
-      {
-        "x": 80,
-        "y": 28
-      }
+    "palette": [
+      "#050810",
+      "#0a1428",
+      "#101c3a",
+      "#1a2850",
+      "#283860",
+      "#606880",
+      "#9098a8",
+      "#b08020",
+      "#e0a820",
+      "#e8c040",
+      "#d8e0f0",
+      "#f0f4ff",
+      "#a0a8c0",
+      "#e8e060",
+      "#fffff0"
     ],
-    "tint": "#5a6bb8"
+    "tint": "#5a6bb8",
+    "trinketSlots": [
+      { "x": 16, "y": 28 },
+      { "x": 80, "y": 28 },
+      { "x": 48, "y": 30 }
+    ]
+  },
+  {
+    "id": "beach-cove",
+    "name": "Beach Cove",
+    "spriteId": "habitat-beach-cove",
+    "palette": [
+      "#0a2840",
+      "#0e4060",
+      "#1a7090",
+      "#c8a060",
+      "#d8bc80",
+      "#e8d8a0",
+      "#e87020",
+      "#d04810",
+      "#e88860",
+      "#c07050",
+      "#ff9020",
+      "#ffcc30",
+      "#f8f4e0",
+      "#306830",
+      "#ffffb0"
+    ],
+    "tint": "#20a0b8",
+    "trinketSlots": [
+      { "x": 28, "y": 30 },
+      { "x": 70, "y": 30 },
+      { "x": 48, "y": 34 }
+    ]
+  },
+  {
+    "id": "forest-glade",
+    "name": "Forest Glade",
+    "spriteId": "habitat-forest-glade",
+    "palette": [
+      "#060e04",
+      "#3a2010",
+      "#184010",
+      "#286820",
+      "#40902a",
+      "#283010",
+      "#3a5020",
+      "#60a030",
+      "#70c850",
+      "#8ad060",
+      "#e8d870",
+      "#80e840",
+      "#c0f070",
+      "#f8ff90",
+      "#f0ff60"
+    ],
+    "tint": "#40902a",
+    "trinketSlots": [
+      { "x": 28, "y": 32 },
+      { "x": 68, "y": 32 },
+      { "x": 48, "y": 36 }
+    ]
+  },
+  {
+    "id": "snowpeak",
+    "name": "Snowpeak",
+    "spriteId": "habitat-snowpeak",
+    "palette": [
+      "#080c18",
+      "#0c1428",
+      "#004838",
+      "#008050",
+      "#4040a0",
+      "#3880a0",
+      "#8080d0",
+      "#a0b8c8",
+      "#c0d8e8",
+      "#dceef8",
+      "#a0ffe0",
+      "#50c0b0",
+      "#d0d0e0",
+      "#f0f8ff",
+      "#ffffff"
+    ],
+    "tint": "#80c8e0",
+    "trinketSlots": [
+      { "x": 28, "y": 34 },
+      { "x": 68, "y": 34 },
+      { "x": 48, "y": 36 }
+    ]
+  },
+  {
+    "id": "desert-dunes",
+    "name": "Desert Dunes",
+    "spriteId": "habitat-desert-dunes",
+    "palette": [
+      "#1a0808",
+      "#482010",
+      "#703020",
+      "#c06028",
+      "#d89040",
+      "#e8c070",
+      "#d85018",
+      "#e87030",
+      "#f0a060",
+      "#e09020",
+      "#ffc020",
+      "#ffe050",
+      "#f0e8b0",
+      "#f8d8a0",
+      "#ffffa0"
+    ],
+    "tint": "#d07820",
+    "trinketSlots": [
+      { "x": 30, "y": 32 },
+      { "x": 65, "y": 32 },
+      { "x": 48, "y": 36 }
+    ]
+  },
+  {
+    "id": "crimson-mars",
+    "name": "Crimson Mars",
+    "spriteId": "habitat-crimson-mars",
+    "palette": [
+      "#1a0808",
+      "#401010",
+      "#602010",
+      "#903020",
+      "#b05030",
+      "#c8a060",
+      "#e0b878",
+      "#f0c888",
+      "#e8d8c0",
+      "#d0b890",
+      "#f0d8a0",
+      "#f0e8c0",
+      "#e8c080",
+      "#f8f0d0",
+      "#fffbe0"
+    ],
+    "tint": "#b04028",
+    "trinketSlots": [
+      { "x": 30, "y": 32 },
+      { "x": 60, "y": 32 },
+      { "x": 48, "y": 36 }
+    ]
+  },
+  {
+    "id": "europa-ice",
+    "name": "Europa Ice",
+    "spriteId": "habitat-europa-ice",
+    "palette": [
+      "#000008",
+      "#080828",
+      "#603000",
+      "#804020",
+      "#c07040",
+      "#d8a060",
+      "#e8c888",
+      "#183050",
+      "#1060a0",
+      "#2090c8",
+      "#60c0e8",
+      "#a0e0f0",
+      "#d0f4ff",
+      "#f0faff",
+      "#c0ffff"
+    ],
+    "tint": "#2090c8",
+    "trinketSlots": [
+      { "x": 30, "y": 34 },
+      { "x": 65, "y": 34 },
+      { "x": 48, "y": 38 }
+    ]
+  },
+  {
+    "id": "lunar-base",
+    "name": "Lunar Base",
+    "spriteId": "habitat-lunar-base",
+    "palette": [
+      "#000000",
+      "#181818",
+      "#282828",
+      "#404040",
+      "#606060",
+      "#505080",
+      "#7070a0",
+      "#484848",
+      "#686868",
+      "#2050a0",
+      "#3888d0",
+      "#f0f8ff",
+      "#80b0d0",
+      "#c0d8f8",
+      "#ffffc0"
+    ],
+    "tint": "#6070a0",
+    "trinketSlots": [
+      { "x": 28, "y": 32 },
+      { "x": 68, "y": 32 },
+      { "x": 48, "y": 36 }
+    ]
+  },
+  {
+    "id": "nebula-drift",
+    "name": "Nebula Drift",
+    "spriteId": "habitat-nebula-drift",
+    "palette": [
+      "#020008",
+      "#0a081e",
+      "#3a1060",
+      "#6030a0",
+      "#108080",
+      "#c02060",
+      "#e04080",
+      "#a060d0",
+      "#40a0c0",
+      "#e0a000",
+      "#80d0ff",
+      "#404040",
+      "#888888",
+      "#c0c0c0",
+      "#ffe080"
+    ],
+    "tint": "#7030a0",
+    "trinketSlots": [
+      { "x": 28, "y": 34 },
+      { "x": 68, "y": 34 },
+      { "x": 48, "y": 38 }
+    ]
+  },
+  {
+    "id": "starship-deck",
+    "name": "Starship Deck",
+    "spriteId": "habitat-starship-deck",
+    "palette": [
+      "#000000",
+      "#080808",
+      "#181820",
+      "#282838",
+      "#504868",
+      "#303048",
+      "#504858",
+      "#282830",
+      "#383840",
+      "#40c0e0",
+      "#60e8ff",
+      "#d0f8ff",
+      "#d09040",
+      "#e0b860",
+      "#00ff80"
+    ],
+    "tint": "#304060",
+    "trinketSlots": [
+      { "x": 28, "y": 32 },
+      { "x": 68, "y": 32 },
+      { "x": 48, "y": 36 }
+    ]
   }
 ]

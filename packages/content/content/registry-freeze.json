@@ -54,6 +54,15 @@
     "generation-10",
     "generation-2",
     "generation-5",
+    "habitat-beach-cove-unlock",
+    "habitat-crimson-mars-unlock",
+    "habitat-desert-dunes-unlock",
+    "habitat-europa-ice-unlock",
+    "habitat-forest-glade-unlock",
+    "habitat-lunar-base-unlock",
+    "habitat-nebula-drift-unlock",
+    "habitat-snowpeak-unlock",
+    "habitat-starship-deck-unlock",
     "house-apex-aether",
     "house-apex-cipher",
     "molt-count-10",
@@ -77,8 +86,17 @@
     "trait-switcher"
   ],
   "habitats": [
+    "beach-cove",
+    "crimson-mars",
+    "desert-dunes",
+    "europa-ice",
+    "forest-glade",
+    "lunar-base",
     "meadow",
+    "nebula-drift",
     "rooftop-night",
+    "snowpeak",
+    "starship-deck",
     "terminal-den"
   ],
   "trinkets": [

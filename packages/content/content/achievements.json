@@ -206,5 +206,68 @@
     "description": "Reached the Apex stage with a full Cipher lineage.",
     "condition": { "type": "house_apex", "house": "cipher" },
     "reward": { "kind": "title", "id": "cipher-master", "name": "Cipher Master" }
+  },
+  {
+    "id": "habitat-beach-cove-unlock",
+    "name": "Shore Leave",
+    "description": "Earned a vacation spot — the Beach Cove is yours.",
+    "condition": { "type": "stage_reached", "stage": "rookie" },
+    "reward": { "kind": "habitat", "id": "beach-cove" }
+  },
+  {
+    "id": "habitat-forest-glade-unlock",
+    "name": "Into the Green",
+    "description": "Your pet has earned a quiet glade to wander.",
+    "condition": { "type": "molt_count_lifetime", "count": 3 },
+    "reward": { "kind": "habitat", "id": "forest-glade" }
+  },
+  {
+    "id": "habitat-snowpeak-unlock",
+    "name": "Summit Reached",
+    "description": "Your lineage has grown strong enough for the high peaks.",
+    "condition": { "type": "stage_reached", "stage": "evolved" },
+    "reward": { "kind": "habitat", "id": "snowpeak" }
+  },
+  {
+    "id": "habitat-desert-dunes-unlock",
+    "name": "Into the Dusk",
+    "description": "Endured five generations — the desert dunes beckon.",
+    "condition": { "type": "generation", "count": 3 },
+    "reward": { "kind": "habitat", "id": "desert-dunes" }
+  },
+  {
+    "id": "habitat-crimson-mars-unlock",
+    "name": "Red Horizon",
+    "description": "Reached Grade A — your pet has earned an alien sky.",
+    "condition": { "type": "grade_reached", "grade": "A" },
+    "reward": { "kind": "habitat", "id": "crimson-mars" }
+  },
+  {
+    "id": "habitat-europa-ice-unlock",
+    "name": "Ice Moon",
+    "description": "Filled 10% of the Dex — Europa's frozen plains await.",
+    "condition": { "type": "dex_percent", "percent": 10 },
+    "reward": { "kind": "habitat", "id": "europa-ice" }
+  },
+  {
+    "id": "habitat-lunar-base-unlock",
+    "name": "Moonwalker",
+    "description": "Your lineage spans 7 generations — a lunar base is constructed.",
+    "condition": { "type": "generation", "count": 7 },
+    "reward": { "kind": "habitat", "id": "lunar-base" }
+  },
+  {
+    "id": "habitat-nebula-drift-unlock",
+    "name": "Between the Stars",
+    "description": "Filled 25% of the Dex — the nebula opens its drifting corridors.",
+    "condition": { "type": "dex_percent", "percent": 25 },
+    "reward": { "kind": "habitat", "id": "nebula-drift" }
+  },
+  {
+    "id": "habitat-starship-deck-unlock",
+    "name": "Warp Speed",
+    "description": "Ten generations of rebirth — you command the observation deck.",
+    "condition": { "type": "generation", "count": 10 },
+    "reward": { "kind": "habitat", "id": "starship-deck" }
   }
 ]

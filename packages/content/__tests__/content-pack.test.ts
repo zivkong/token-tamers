@@ -233,8 +233,8 @@ describe('content counts', () => {
     expect(contentPackV1.achievements.length).toBeGreaterThanOrEqual(30);
   });
 
-  it('has 3 habitats', () => {
-    expect(contentPackV1.habitats).toHaveLength(3);
+  it('has at least 3 habitats', () => {
+    expect(contentPackV1.habitats.length).toBeGreaterThanOrEqual(3);
   });
 
   it('has 6 trinkets', () => {
@@ -256,20 +256,34 @@ describe('content counts', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Sprite data integrity — new art contract
+// Sprite data integrity — new art contract (owner direction 2026-06-13:
+// small high-density characters, ~1/3 of the old 48-64px sizing)
 //
 // Rules (matching the art-direction contract in docs/design/ and SKILL.md):
 //   - All palette indices must be in 0..15 (0=transparent, 1=outline/darkest,
 //     2..12=body shading ramp, 13/14=rim-light, 15=animated glint slot)
-//   - Species sprites: even width and height, 28x28 (egg) to 48x48 (apex)
-//   - Apex-stage species sprites: exactly 48x48
-//   - Habitat sprites: exactly 96x48
+//   - Species sprites: EXACTLY square, sized by stage —
+//       egg 10, sprite 12, rookie 14, evolved 16, prime 18, apex 20
+//   - Every species sprite HAS walk + jump + play banks, each with the SAME
+//     dims as its idle frames (the idle base contract)
+//   - Habitat sprites: exactly 96x48, with a `palette` of 8..15 hexes and
+//     >= 2 frames
 //   - Trinket sprites: exactly 12x12
 //   - Every sprite (species/habitat/trinket): at least 2 animation frames
-//   - Every sprite: all frames share the same width and height
+//   - Every sprite: all frames (and all anim banks) share the same width/height
 //   - Every sprite: at least 6 distinct non-zero palette indices across all
 //     frames (complexity floor — depth comes from many ramp indices)
 //   - Every species/habitat/trinket id must resolve in the sprites array
+//
+// SIZE LAW (square px, keyed by stage); the egg stage is the 'mote' species.
+const SPECIES_STAGE_SIZE: Record<Stage, number> = {
+  egg: 10,
+  sprite: 12,
+  rookie: 14,
+  evolved: 16,
+  prime: 18,
+  apex: 20,
+};
 // ---------------------------------------------------------------------------
 
 describe('sprite data integrity', () => {
@@ -291,44 +305,78 @@ describe('sprite data integrity', () => {
     }
   });
 
-  it('every species sprite has even width and height in 28..48', () => {
-    const petIds = new Set(contentPackV1.species.map((s) => s.spriteId));
-    for (const sprite of contentPackV1.sprites) {
-      if (!petIds.has(sprite.id)) continue;
-      expect(sprite.width % 2, `sprite '${sprite.id}' width must be even`).toBe(0);
-      expect(sprite.height % 2, `sprite '${sprite.id}' height must be even`).toBe(0);
-      expect(sprite.width, `sprite '${sprite.id}' width must be >= 28`).toBeGreaterThanOrEqual(28);
-      expect(sprite.height, `sprite '${sprite.id}' height must be >= 28`).toBeGreaterThanOrEqual(
-        28,
+  it('every species sprite is EXACTLY square at its stage size (10/12/14/16/18/20)', () => {
+    const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
+    for (const sp of contentPackV1.species) {
+      const sprite = spriteMap.get(sp.spriteId);
+      expect(sprite, `species '${sp.id}' sprite '${sp.spriteId}' not found`).toBeDefined();
+      if (!sprite) continue;
+      const want = SPECIES_STAGE_SIZE[sp.stage];
+      expect(sprite.width, `species '${sp.id}' (${sp.stage}) width must be ${want}`).toBe(want);
+      expect(sprite.height, `species '${sp.id}' (${sp.stage}) height must be ${want}`).toBe(want);
+    }
+  });
+
+  it('every species sprite HAS walk/jump/play banks with idle-matching dims', () => {
+    const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
+    const banks = ['walk', 'jump', 'play'] as const;
+    for (const sp of contentPackV1.species) {
+      const sprite = spriteMap.get(sp.spriteId);
+      expect(sprite, `species '${sp.id}' sprite '${sp.spriteId}' not found`).toBeDefined();
+      if (!sprite) continue;
+      const w = sprite.width;
+      const h = sprite.height;
+      for (const bank of banks) {
+        const frames = sprite[bank];
+        expect(frames, `species '${sp.id}' is missing the '${bank}' bank`).toBeDefined();
+        if (!frames) continue;
+        expect(
+          frames.length,
+          `species '${sp.id}' '${bank}' bank should have >= 2 frames`,
+        ).toBeGreaterThanOrEqual(2);
+        for (let fi = 0; fi < frames.length; fi++) {
+          const frame = frames[fi]!;
+          expect(
+            frame.length,
+            `species '${sp.id}' '${bank}' frame ${fi} height must match idle`,
+          ).toBe(h);
+          for (let ri = 0; ri < frame.length; ri++) {
+            expect(
+              frame[ri]!.length,
+              `species '${sp.id}' '${bank}' frame ${fi} row ${ri} width must match idle`,
+            ).toBe(w);
+          }
+        }
+      }
+    }
+  });
+
+  it('habitat sprites are exactly 96x48 with a palette of 8..15 hexes and >= 2 frames', () => {
+    const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
+    const hexRe = /^#[0-9a-fA-F]{6}$/;
+    for (const h of contentPackV1.habitats) {
+      const sprite = spriteMap.get(h.spriteId);
+      expect(sprite, `habitat '${h.id}' sprite '${h.spriteId}' not found`).toBeDefined();
+      if (!sprite) continue;
+      expect(sprite.width, `habitat sprite '${h.spriteId}' width must be 96`).toBe(96);
+      expect(sprite.height, `habitat sprite '${h.spriteId}' height must be 48`).toBe(48);
+      expect(
+        sprite.frames.length,
+        `habitat sprite '${h.spriteId}' should have >= 2 frames`,
+      ).toBeGreaterThanOrEqual(2);
+      // Every habitat owns a direct multi-color palette of 8..15 hexes.
+      expect(h.palette, `habitat '${h.id}' must declare a palette`).toBeDefined();
+      const pal = h.palette ?? [];
+      expect(pal.length, `habitat '${h.id}' palette must have >= 8 hexes`).toBeGreaterThanOrEqual(
+        8,
       );
-      expect(sprite.width, `sprite '${sprite.id}' width must be <= 48`).toBeLessThanOrEqual(48);
-      expect(sprite.height, `sprite '${sprite.id}' height must be <= 48`).toBeLessThanOrEqual(48);
-    }
-  });
-
-  it('apex-stage species sprites are exactly 48x48', () => {
-    const apexSpriteIds = new Set(
-      contentPackV1.species.filter((s) => s.stage === 'apex').map((s) => s.spriteId),
-    );
-    const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
-    for (const id of apexSpriteIds) {
-      const sprite = spriteMap.get(id);
-      expect(sprite, `apex sprite '${id}' not found`).toBeDefined();
-      if (!sprite) continue;
-      expect(sprite.width, `apex sprite '${id}' width must be 48`).toBe(48);
-      expect(sprite.height, `apex sprite '${id}' height must be 48`).toBe(48);
-    }
-  });
-
-  it('habitat sprites are exactly 96x48', () => {
-    const habitatSpriteIds = new Set(contentPackV1.habitats.map((h) => h.spriteId));
-    const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
-    for (const id of habitatSpriteIds) {
-      const sprite = spriteMap.get(id);
-      expect(sprite, `habitat sprite '${id}' not found`).toBeDefined();
-      if (!sprite) continue;
-      expect(sprite.width, `habitat sprite '${id}' width must be 96`).toBe(96);
-      expect(sprite.height, `habitat sprite '${id}' height must be 48`).toBe(48);
+      expect(pal.length, `habitat '${h.id}' palette must have <= 15 hexes`).toBeLessThanOrEqual(15);
+      for (const hex of pal) {
+        expect(
+          hexRe.test(hex),
+          `habitat '${h.id}' palette entry '${hex}' must be a #rrggbb hex`,
+        ).toBe(true);
+      }
     }
   });
 

@@ -96,6 +96,19 @@ export function resolveIndex(pal: Palette, index: number): Rgb | null {
   return pal[pal.length - 1] ?? null;
 }
 
+/**
+ * Build a palette directly from an ordered list of hex colors, with NO grade
+ * ladder and no dimming. Index 0 is transparent; index 1 maps to hexes[0],
+ * index 2 to hexes[1], and so on (so `grid` index N reads `hexes[N - 1]`).
+ * Used by habitats that own their colors (HabitatDef.palette).
+ */
+export function paletteFromHexes(hexes: string[]): Palette {
+  return [null, ...hexes.map((h) => hexToRgb(h))];
+}
+
+/** Named animation banks selectable via DrawOptions.anim. */
+export type AnimBank = 'idle' | 'walk' | 'jump' | 'play';
+
 export interface DrawOptions {
   /** Cell column to draw at (0-based). */
   x: number;
@@ -107,6 +120,20 @@ export interface DrawOptions {
   mode?: ColorMode;
   /** Optional clip rect (cells); pixels outside it are not drawn. */
   clip?: { x: number; y: number; w: number; h: number };
+  /** Mirror columns left<->right when set (face the other way). */
+  flipX?: boolean;
+  /**
+   * Animation bank to draw from. Falls back to `frames` (idle) when the named
+   * bank is absent on the sprite. 'idle' always uses `frames`.
+   */
+  anim?: AnimBank;
+}
+
+/** Select the frame grid for the requested bank/frame, honoring fallback. */
+function selectGrid(sprite: SpriteDef, anim: AnimBank, frame: number): number[][] | undefined {
+  const bank = anim === 'idle' ? sprite.frames : (sprite[anim] ?? sprite.frames);
+  if (bank.length === 0) return sprite.frames[0];
+  return bank[frame % bank.length] ?? bank[0];
 }
 
 /**
@@ -122,31 +149,39 @@ export function drawSprite(
   pal: Palette,
   opts: DrawOptions,
 ): void {
-  const x = opts.x;
-  const y = opts.y;
   const frame = opts.frame ?? 0;
-  const mode = opts.mode ?? 'truecolor';
-  const grid = sprite.frames[frame % sprite.frames.length] ?? sprite.frames[0];
+  const grid = selectGrid(sprite, opts.anim ?? 'idle', frame);
   if (!grid) return;
 
-  const height = grid.length;
-  const cellRows = Math.ceil(height / 2);
+  const cellRows = Math.ceil(grid.length / 2);
   for (let cy = 0; cy < cellRows; cy++) {
-    const topRow = grid[cy * 2];
-    const botRow = grid[cy * 2 + 1];
-    const width = Math.max(topRow?.length ?? 0, botRow?.length ?? 0);
-    for (let cx = 0; cx < width; cx++) {
-      const topIdx = topRow?.[cx] ?? 0;
-      const botIdx = botRow?.[cx] ?? 0;
-      const top = resolveIndex(pal, topIdx);
-      const bot = resolveIndex(pal, botIdx);
-      if (top === null && bot === null) continue;
-      const tx = x + cx;
-      const ty = y + cy;
-      if (!insideClip(opts.clip, tx, ty)) continue;
-      const cell = composeHalfBlock(top, bot, topIdx, botIdx, mode);
-      buf.set(tx, ty, cell);
-    }
+    drawSpriteRow(buf, grid, pal, opts, cy);
+  }
+}
+
+/** Composite one cell-row (two pixel rows) of a sprite grid. */
+function drawSpriteRow(
+  buf: FrameBuffer,
+  grid: number[][],
+  pal: Palette,
+  opts: DrawOptions,
+  cy: number,
+): void {
+  const mode = opts.mode ?? 'truecolor';
+  const topRow = grid[cy * 2];
+  const botRow = grid[cy * 2 + 1];
+  const width = Math.max(topRow?.length ?? 0, botRow?.length ?? 0);
+  for (let cx = 0; cx < width; cx++) {
+    const src = opts.flipX ? width - 1 - cx : cx;
+    const topIdx = topRow?.[src] ?? 0;
+    const botIdx = botRow?.[src] ?? 0;
+    const top = resolveIndex(pal, topIdx);
+    const bot = resolveIndex(pal, botIdx);
+    if (top === null && bot === null) continue;
+    const tx = opts.x + cx;
+    const ty = opts.y + cy;
+    if (!insideClip(opts.clip, tx, ty)) continue;
+    buf.set(tx, ty, composeHalfBlock(top, bot, topIdx, botIdx, mode));
   }
 }
 

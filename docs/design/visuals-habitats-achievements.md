@@ -5,6 +5,41 @@ Derived from the Token Tamers v1.0.3 design baseline. Covers design §13 (Visual
 
 ---
 
+## Decision records
+
+### 2026-06-13 — Small, high-density characters (~1/3 size); SUPERSEDES the 48–64px sizing
+
+**Owner direction (2026-06-13):** pets are **small, high-density characters at roughly one
+third** of the previously-specified 48–64px footprint. The old "48×48 → 64×64, Apex/fusion at
+64×64" rule below (§13) is **superseded** by an exact per-stage square size law:
+
+| Stage   | Species size (square px) | Half-block cell render |
+| ------- | ------------------------ | ---------------------- |
+| egg     | 10 × 10                  | 10 × 5                 |
+| sprite  | 12 × 12                  | 12 × 6                 |
+| rookie  | 14 × 14                  | 14 × 7                 |
+| evolved | 16 × 16                  | 16 × 8                 |
+| prime   | 18 × 18                  | 18 × 9                 |
+| apex    | 20 × 20                  | 20 × 10                |
+
+- **Square and exact:** every species sprite is exactly its stage's size (no range). The
+  content-pack test enforces this; it is a hard law, not a guideline.
+- **Habitats stay 96 × 48** and **trinkets stay 12 × 12** (unchanged).
+- **Tone over gradient.** At these sizes ordered-dither gradients read as noise. Author **flat
+  tones** — a small fixed vocabulary (outline 1, shadow ~3, body ~7, light ~11, rim 13, glint 15) with at most a 2–3px dither seam where two tones meet. Depth comes from a clean
+  silhouette + a few well-placed light/shadow/rim pixels, not from ramps. (The ≥6 distinct
+  non-zero indices complexity floor still holds — flat tones, not flat color.)
+- **Every species ships all four animation banks** (idle / walk / jump / play), authored as
+  small deltas of the idle base; each bank shares the idle frames' exact dims. See §13
+  Animation set and the `create-sprites` skill.
+- **Habitats own their colors** via a direct multi-color `palette` (8–15 hexes) mapped index
+  1 → palette[0] (index 0 transparent) — no grade ladder, no dimming.
+
+The prose in §13 below is retained for context but **defers to this record** wherever the two
+disagree on sizing.
+
+---
+
 ## §13 Visual Design — lightweight, richly animated, grade-driven beauty (design baseline §13)
 
 **Goal:** genuinely beautiful colorful pixel-art pets in the terminal, with grade determining
@@ -16,8 +51,10 @@ visual _richness_ (S = the most beautiful), at <1% CPU.
   rich shading, vibrant saturated palettes, expressive silhouettes. **Original creature designs
   only.** Every pet must pass a "clearly its own monster" check; no resemblance to existing
   franchise creatures, poses, or signature palettes.
-- **Sprite resolution upgraded:** 48×48 to 64×64 pixels per pet (Apex/fusion forms at 64×64).
-  Via half-blocks that's a 64×32-cell render — still tiny text.
+- **Sprite resolution (SUPERSEDED 2026-06-13 — see the decision record above):** ~~48×48 to
+  64×64 pixels per pet (Apex/fusion forms at 64×64)~~. Now an exact per-stage square law:
+  egg 10, sprite 12, rookie 14, evolved 16, prime 18, apex 20 (square px). Small high-density
+  characters, ~1/3 of the old footprint.
 - **Density techniques:**
   - Quadrant blocks (`▘▝▖▗▚▞`) where sub-cell shaping helps silhouettes
   - Ordered dithering for smooth shading ramps

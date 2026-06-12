@@ -166,6 +166,119 @@ export class PixelCanvas {
 // Primitive shapes — all clip safely against canvas bounds.
 // ---------------------------------------------------------------------------
 
+/**
+ * Set a SINGLE pixel — the smallest deliberate mark. Alias of `dot`/`PixelCanvas.set`
+ * with the argument order artists think in: (x, y, index). Clips out of bounds.
+ */
+export function px(c: PixelCanvas, x: number, y: number, index: number): void {
+  c.set(x, y, index);
+}
+
+/**
+ * 1px Bresenham line from (x0,y0) to (x1,y1). Unlike `thickLine` this is exactly
+ * one pixel wide with no rounding gaps — ideal for tiny art (whiskers, antennae,
+ * scene contours). For thickness > 1 use `thickLine`.
+ */
+export function line(
+  c: PixelCanvas,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  index: number,
+): void {
+  let x = Math.round(x0);
+  let y = Math.round(y0);
+  const tx = Math.round(x1);
+  const ty = Math.round(y1);
+  const dx = Math.abs(tx - x);
+  const dy = -Math.abs(ty - y);
+  const sx = x < tx ? 1 : -1;
+  const sy = y < ty ? 1 : -1;
+  let err = dx + dy;
+  // Guard against pathological inputs; the longest 1px line fits the canvas.
+  let guard = (c.width + c.height) * 2 + 4;
+  for (;;) {
+    c.set(x, y, index);
+    if ((x === tx && y === ty) || guard-- <= 0) break;
+    const e2 = 2 * err;
+    if (e2 >= dy) {
+      err += dy;
+      x += sx;
+    }
+    if (e2 <= dx) {
+      err += dx;
+      y += sy;
+    }
+  }
+}
+
+/**
+ * Filled ellipse tuned to read cleanly at SMALL radii (2..6) where the generic
+ * `fillEllipse` distance test leaves lopsided or single-pixel-spike edges. Uses a
+ * symmetric per-row half-width so radius-2..6 blobs are round and balanced; this
+ * is the go-to for eyes, cheeks, berries, paws and other tiny features. For large
+ * masses keep using `fillEllipse`.
+ */
+export function smallEllipse(
+  c: PixelCanvas,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  index: number,
+): void {
+  if (rx <= 0 || ry <= 0) return;
+  for (let dy = -ry; dy <= ry; dy++) {
+    // Half-width at this row from the ellipse equation, rounded to keep
+    // small radii symmetric (no single-pixel spikes at the poles).
+    const frac = 1 - (dy * dy) / (ry * ry);
+    if (frac < 0) continue;
+    const halfW = Math.round(rx * Math.sqrt(frac));
+    for (let dx = -halfW; dx <= halfW; dx++) {
+      c.set(cx + dx, cy + dy, index);
+    }
+  }
+}
+
+/** Eye rendering styles for the `eyes` helper. */
+export type EyeStyle = 'dot' | 'round' | 'sleepy' | 'wide';
+
+/**
+ * Stamp ONE eye at (x,y) in a small consistent style. The eye is drawn with the
+ * outline index for the pupil and a rim-light pixel for the catch-light so it
+ * reads at tiny sizes. Call once per eye (typically before `mirrorX`, on the left
+ * eye only). Styles:
+ *   'dot'    — a single dark pixel (the simplest, for C-grade / tiny pets)
+ *   'round'  — a 2px pupil with a 1px white catch-light (the default)
+ *   'wide'   — a 3px-wide round eye for expressive faces
+ *   'sleepy' — a 1px horizontal lid line (half-closed)
+ */
+export function eyes(c: PixelCanvas, x: number, y: number, style: EyeStyle = 'round'): void {
+  switch (style) {
+    case 'dot':
+      c.set(x, y, OUTLINE);
+      return;
+    case 'sleepy':
+      c.set(x - 1, y, OUTLINE);
+      c.set(x, y, OUTLINE);
+      c.set(x + 1, y, OUTLINE);
+      return;
+    case 'wide':
+      smallEllipse(c, x, y, 2, 2, OUTLINE);
+      c.set(x - 1, y - 1, RIM_HI); // catch-light
+      return;
+    case 'round':
+    default:
+      c.set(x, y, OUTLINE);
+      c.set(x + 1, y, OUTLINE);
+      c.set(x, y + 1, OUTLINE);
+      c.set(x + 1, y + 1, OUTLINE);
+      c.set(x, y, RIM_HI); // catch-light pixel
+      return;
+  }
+}
+
 /** Filled axis-aligned ellipse centered at (cx,cy) with radii (rx,ry). */
 export function fillEllipse(
   c: PixelCanvas,
@@ -652,6 +765,41 @@ export function blink(c: PixelCanvas, eyeBoxes: EyeBox[]): PixelCanvas {
     }
   }
   return out;
+}
+
+/**
+ * A single authoring edit applied to a clone of the base canvas to produce one
+ * animation frame. `draw` receives a fresh clone of the base each call, so a
+ * delta only describes what CHANGES this frame (a leg lifts, the body bobs) —
+ * the rest of the body comes along automatically from the base.
+ */
+export type FrameDelta = (frame: PixelCanvas, index: number) => void;
+
+/**
+ * Author an animation bank as small edits of a base canvas. For each delta we
+ * clone `base`, run the delta, and collect the resulting grid — so a walk/jump/
+ * play bank is a handful of tiny diffs instead of N fully redrawn canvases. The
+ * returned grids share the base's dims (the contract animation banks require:
+ * same width/height as the idle `frames`).
+ *
+ *   const walk = framesFromDeltas(base, [
+ *     (f) => {},                                  // contact pose = the base
+ *     (f, i) => { line(f, 18, 30, 18, 33, i); },   // lead leg forward
+ *     (f) => bobInto(f, 1),                        // mid-stride bob
+ *     (f, i) => { line(f, 22, 30, 22, 33, i); },   // trail leg forward
+ *   ]);
+ *   const def: SpriteDef = { ...buildSprite(id, [base], 6), walk };
+ */
+export function framesFromDeltas(
+  base: PixelCanvas,
+  deltas: FrameDelta[],
+  index = RAMP_LO,
+): number[][][] {
+  return deltas.map((delta) => {
+    const frame = base.clone();
+    delta(frame, index);
+    return frame.grid;
+  });
 }
 
 /** Assemble a SpriteDef from canvases (or raw grids) at the given fps. */

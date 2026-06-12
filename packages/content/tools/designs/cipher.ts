@@ -1,1929 +1,1879 @@
 /**
  * Cipher line sprite designs (House: Cipher — angular/glyph, PWR-leaning).
  *
- * Angular-rune-machine theme: hard edges, hex/triangle motifs, circuit accents.
- * Each species is individually composed from sprite-lib primitives — no shared
- * body template. Full ramp usage (indices 3..14), 1px outline, upper-left rim
- * light, glint runes (index 15) for the Cipher glyph aesthetic.
+ * Hard angles, rune marks, one glowing accent per creature. Every pixel is
+ * deliberate at these tiny sizes. Tones not gradients: pick 4-5 ramp indices
+ * and commit. Flat readable planes beat noise.
  *
- * Sizes: sprite-stage 32x32, rookie 34x34-36x36, evolved 40x40, prime 44x44,
- * apex 48x48. All even-dimensioned as required.
+ * Sizes (new compact spec, all even):
+ *   sprite-stage 12x12  — glyphit
+ *   rookie      14x14  — cipherling, bitfang
+ *   evolved     16x16  — runeclaw, vectorix, glyphound
+ *   prime       18x18  — cryptarch, matrixion, sigilus
+ *   apex        20x20  — enigmax, keystrix
+ *
+ * Animation banks (required for every species):
+ *   idle  2f breath/blink
+ *   walk  2f side-stride or drift-lean (faces RIGHT — engine flips for left)
+ *   jump  2f crouch / stretched-air
+ *   play  2f reach/bounce toward toy
+ *
+ * Tone vocabulary (no large dither fields):
+ *   outline 1 | shadow 3-4 | mid 6-7 | light 10-11 | rim 13 | glint 15
+ * At most a 2-3 px dither seam where two tones meet. Flat planes first.
+ *
+ * Determinism: no Math.random / Date.now. LCG seeded on id for scatter.
  */
 
 import type { SpriteDef } from '@token-tamers/core';
 import {
   PixelCanvas,
   buildSprite,
-  fillPolygon,
   fillRect,
-  fillEllipse,
-  strokeRect,
-  thickLine,
-  bezier,
+  fillPolygon,
+  line,
+  px,
   mirrorX,
-  shade,
-  rimLight,
   outline,
-  glyphStamp,
+  rimLight,
   bobFrame,
-  blink,
-  dot,
+  glyphStamp,
+  OUTLINE,
   GLINT,
-  RIM_HI,
   RIM_LO,
+  RIM_HI,
 } from '../sprite-lib';
 
 // ---------------------------------------------------------------------------
-// Shared glyph bitmaps for Cipher sigils and circuit marks.
+// Tone constants — the committed palette for Cipher (flat planes, not blobs)
 // ---------------------------------------------------------------------------
 
-/** A small angular rune — 5x5 cross-and-bar sigil. */
-const RUNE_CROSS: number[][] = [
-  [0, 1, 1, 1, 0],
-  [1, 0, 1, 0, 1],
-  [1, 1, 1, 1, 1],
-  [1, 0, 1, 0, 1],
-  [0, 1, 1, 1, 0],
-];
+/** Darkest body / deep shadow. */
+const SH = 3;
+/** Shadow-mid — main body fill. */
+const MD = 6;
+/** Mid-light — secondary surfaces, lighter panels. */
+const LT = 10;
+/** Bright highlight — lit face. */
+const HL = 13;
 
-/** A 3x3 hex-node dot pattern (circuit junction). */
-const HEX_NODE: number[][] = [
-  [0, 1, 0],
+// ---------------------------------------------------------------------------
+// Tiny shared bitmaps for Cipher sigils (3x3 rune marks).
+// ---------------------------------------------------------------------------
+
+/** Angular rune cross — 3x3. */
+const RUNE3: number[][] = [
   [1, 1, 1],
+  [1, 0, 1],
+  [1, 1, 1],
+];
+
+/** Chevron — 3x2 pointing right. */
+const CHEV: number[][] = [
+  [1, 0, 1],
   [0, 1, 0],
 ];
 
-/** A 5x3 chevron (for vectorix body trail). */
-const CHEVRON: number[][] = [
-  [1, 0, 0, 0, 1],
-  [0, 1, 0, 1, 0],
-  [0, 0, 1, 0, 0],
-];
-
-/** A 4x4 lock-icon bitmap (for cryptarch chest). */
-const LOCK_ICON: number[][] = [
-  [0, 1, 1, 0],
-  [1, 0, 0, 1],
-  [1, 1, 1, 1],
-  [1, 0, 0, 1],
-];
-
 // ---------------------------------------------------------------------------
-// sprite-glyphit — 32x32, living rune tile, single bright sigil eye.
-// A flat angular stone tile with an etched rune on its face. Single luminous
-// eye formed by a glint + dark pupil. Hard rectangular silhouette.
+// sprite-glyphit — 12x12, living rune pebble; one bright sigil eye,
+// two stub feet, head tilt right.
+// Silhouette: a flat-edged rounded pebble with a single huge eye-glyph.
+// Signature: the glowing sigil eye IS the face — 4x4 bright slab, one slit.
 // ---------------------------------------------------------------------------
 
 function buildGlyphit(): SpriteDef {
-  const W = 32;
-  const H = 32;
-  const c = PixelCanvas.create(W, H);
+  const W = 12;
+  const H = 12;
 
-  // Outer tile body — a wide octagonal shape (flat-topped stone tile).
-  fillPolygon(
-    c,
-    [
-      [4, 2],
-      [28, 2],
-      [30, 6],
-      [30, 26],
-      [28, 30],
-      [4, 30],
-      [2, 26],
-      [2, 6],
-    ],
-    7,
-  );
+  // Base canvas — draw once, frames branch from this.
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Inner face panel — slightly inset, darker.
-  fillPolygon(
-    c,
-    [
-      [6, 5],
-      [26, 5],
-      [28, 8],
-      [28, 24],
-      [26, 27],
-      [6, 27],
-      [4, 24],
-      [4, 8],
-    ],
-    5,
-  );
+    // Body: angular pebble — 10x8 solid block with clipped corners (octagon).
+    // Left half only (x 0..5), mirrorX adds right half.
+    fillPolygon(
+      c,
+      [
+        [1, 2],
+        [5, 2],
+        [5, 9],
+        [1, 9],
+      ],
+      MD,
+    );
+    // Clip top-left corner.
+    px(c, 1, 2, 0);
+    // Flat top cap.
+    fillRect(c, 2, 1, 5, 2, SH);
 
-  // Etched border groove.
-  strokeRect(c, 7, 7, 25, 25, 3);
+    mirrorX(c);
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  // Corner accent marks (angular bracket-corners to frame the face).
-  dot(c, 8, 8, 9);
-  dot(c, 9, 8, 9);
-  dot(c, 8, 9, 9);
+    // Sigil eye — bright wide slab in upper body, center.
+    // Eye socket (dark surround).
+    fillRect(c, 3, 3, 8, 5, SH);
+    // Iris (bright).
+    fillRect(c, 4, 3, 7, 5, LT);
+    // Pupil slit.
+    fillRect(c, 5, 3, 6, 5, OUTLINE);
+    // Glint on pupil.
+    px(c, 5, 3, GLINT);
 
-  // Large single eye — dominant focal point, center-upper area.
-  // Eye surround socket (wide dark rectangle — "slot eye").
-  fillRect(c, 10, 7, 22, 12, 3);
-  // Iris glow.
-  fillEllipse(c, 16, 9, 5, 3, 11);
-  // Pupil dark slit.
-  fillRect(c, 14, 8, 18, 10, 2);
-  // Inner pupil core.
-  dot(c, 16, 9, 2);
-  // Glint (prominent — this is the sigil eye).
-  dot(c, 13, 8, GLINT);
-  dot(c, 14, 7, GLINT);
-  dot(c, 15, 7, GLINT);
+    // Rune mark below eye.
+    glyphStamp(c, 4, 6, RUNE3, GLINT);
+    // Dither seam: 1px lighter row at rune border.
+    px(c, 5, 6, MD);
 
-  // The sigil rune — in the lower half of the face.
-  glyphStamp(c, 11, 15, RUNE_CROSS, GLINT);
+    // Stub feet.
+    px(c, 3, 10, SH);
+    px(c, 4, 10, SH);
+    px(c, 7, 10, SH);
+    px(c, 8, 10, SH);
 
-  // Circuit traces on the sides of the face panel (left half).
-  thickLine(c, 7, 14, 10, 14, 4, 1);
-  thickLine(c, 7, 20, 10, 20, 4, 1);
-  dot(c, 7, 14, GLINT);
-  dot(c, 7, 20, GLINT);
+    return c;
+  };
 
-  // Bottom rune strip (horizontal bar below the cross sigil).
-  fillRect(c, 9, 22, 23, 23, 4);
-  dot(c, 12, 22, GLINT);
-  dot(c, 16, 22, GLINT);
-  dot(c, 20, 22, GLINT);
+  const base = make();
 
-  mirrorX(c);
-  shade(c, { dir: 'upper-left', bands: 9, lo: 3, hi: 11, dither: true, onlyBelow: 9 });
-  rimLight(c, 'upper-left');
-  outline(c);
+  // Idle frame 2: blink (eye slit closes to outline row).
+  const f2 = base.clone();
+  fillRect(f2, 4, 3, 7, 5, SH); // clear iris
+  fillRect(f2, 3, 4, 8, 4, OUTLINE); // blink line
+  // Rune still glows.
+  glyphStamp(f2, 4, 6, RUNE3, GLINT);
 
-  // Re-apply all glint features after outline.
-  dot(c, 13, 8, GLINT);
-  dot(c, 14, 7, GLINT);
-  dot(c, 15, 7, GLINT);
-  glyphStamp(c, 11, 15, RUNE_CROSS, GLINT);
-  dot(c, 7, 14, GLINT);
-  dot(c, 25, 14, GLINT); // mirrored
-  dot(c, 7, 20, GLINT);
-  dot(c, 25, 20, GLINT); // mirrored
-  dot(c, 12, 22, GLINT);
-  dot(c, 16, 22, GLINT);
-  dot(c, 20, 22, GLINT);
+  // Walk bank: 2f side-stride lean (facing right — shift feet, tilt body).
+  // Walk f0 = neutral stride (base reused).
+  // Walk f1 = lean-step right.
+  const wf1 = base.clone();
+  // Lean: shift top body right 1px (darken left edge, lighten right).
+  px(wf1, 1, 2, 0); // remove leftmost top pixel
+  px(wf1, 1, 3, 0);
+  px(wf1, 10, 2, MD); // extend right
+  px(wf1, 10, 3, MD);
+  // Advance left foot forward (to right in walk direction).
+  px(wf1, 3, 10, 0);
+  px(wf1, 9, 10, SH); // right foot back
 
-  // Frame 2 — slow blink: eye closes to a horizontal slit.
-  const f2 = blink(c, [{ x0: 10, y0: 7, x1: 22, y1: 12 }]);
-  glyphStamp(f2, 11, 15, RUNE_CROSS, GLINT);
-  dot(f2, 12, 22, GLINT);
-  dot(f2, 16, 22, GLINT);
+  // Jump bank: 2f crouch / air-stretch.
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jcrouch.set(x, y + 1, idx));
 
-  // Frame 3 — rune pulses (brightest, eye glint intensifies).
-  const f3 = c.clone();
-  glyphStamp(f3, 11, 15, RUNE_CROSS, RIM_HI);
-  dot(f3, 14, 7, RIM_HI);
-  dot(f3, 15, 7, RIM_HI);
-  fillEllipse(f3, 16, 9, 5, 3, RIM_LO);
-  dot(f3, 16, 9, 2);
-  dot(f3, 13, 8, GLINT);
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 1, idx));
 
-  return buildSprite('sprite-glyphit', [c, f2, f3], 3);
+  // Play bank: 2f reach/bounce toward toy.
+  // Reach: tilt head right.
+  const preach = base.clone();
+  px(preach, 9, 1, MD); // top-right up.
+  px(preach, 9, 2, 0); // clear old pixel.
+
+  // Bounce: body down 1px + rune flares.
+  const pbouncec = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => pbouncec.set(x, y + 1, idx));
+  glyphStamp(pbouncec, 4, 7, RUNE3, RIM_LO);
+
+  return {
+    ...buildSprite('sprite-glyphit', [base.grid, f2.grid], 3),
+    walk: [base.grid, wf1.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [preach.grid, pbouncec.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
-// sprite-cipherling — 34x34, angular imp folded from code-glyphs, antenna quirk.
-// Small bipedal imp with a triangular torso, jagged wing-nubs, and a single
-// tall antenna tipped with a glowing node.
+// sprite-cipherling — 14x14, zigzag imp; lightning antenna, wide mischief
+// grin, 3-finger wave (left hand raised). Faces right.
+// Signature: the zigzag lightning antenna is the 5-second-doodle feature.
 // ---------------------------------------------------------------------------
 
 function buildCipherling(): SpriteDef {
-  const W = 34;
-  const H = 34;
-  const c = PixelCanvas.create(W, H);
+  const W = 14;
+  const H = 14;
 
-  // Head — angular hexagon sitting atop the body.
-  fillPolygon(
-    c,
-    [
-      [14, 5],
-      [20, 5],
-      [23, 9],
-      [20, 13],
-      [14, 13],
-      [11, 9],
-    ],
-    8,
-  );
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Antenna shaft (left half; mirrorX will not duplicate — keep as single).
-  thickLine(c, 17, 1, 17, 5, 6, 1);
-  // Antenna tip node.
-  fillEllipse(c, 17, 1, 2, 2, 11);
-  dot(c, 17, 1, GLINT);
+    // Head: angular hexagon — upper body.
+    fillPolygon(
+      c,
+      [
+        [4, 2],
+        [9, 2],
+        [10, 4],
+        [9, 7],
+        [4, 7],
+        [3, 4],
+      ],
+      MD,
+    );
 
-  // Eyes — two angular slanted marks.
-  // Left eye only (mirrorX copies right).
-  fillRect(c, 13, 8, 15, 9, 3);
-  dot(c, 14, 8, GLINT); // glint left pupil
+    // Torso: triangular body below head.
+    fillPolygon(
+      c,
+      [
+        [3, 7],
+        [10, 7],
+        [9, 11],
+        [5, 11],
+      ],
+      SH,
+    );
 
-  // Torso — triangular chest pointing down.
-  fillPolygon(
-    c,
-    [
-      [11, 13],
-      [23, 13],
-      [22, 22],
-      [17, 25],
-      [12, 22],
-    ],
-    7,
-  );
+    // Left arm (down at side).
+    px(c, 2, 8, SH);
+    px(c, 2, 9, SH);
+    px(c, 2, 10, SH);
+    // Right arm raised (3-finger wave).
+    px(c, 11, 7, LT);
+    px(c, 11, 8, LT);
+    px(c, 12, 6, LT); // three fingers.
+    px(c, 12, 7, LT);
+    px(c, 11, 5, LT);
 
-  // Circuit line across chest.
-  thickLine(c, 13, 17, 16, 17, 9, 1);
-  dot(c, 13, 17, GLINT);
+    // Legs: two stub legs.
+    px(c, 5, 12, SH);
+    px(c, 5, 13, SH);
+    px(c, 8, 12, SH);
+    px(c, 8, 13, SH);
 
-  // Wing-nub (left) — small angular triangle jutting out.
-  fillPolygon(
-    c,
-    [
-      [6, 15],
-      [11, 14],
-      [11, 20],
-      [7, 20],
-    ],
-    6,
-  );
-  dot(c, 7, 16, 4);
+    // Antenna (zigzag lightning — left half, from head top).
+    px(c, 6, 1, MD);
+    px(c, 7, 0, SH);
+    px(c, 8, 1, MD);
+    // Zigzag tip (glint node).
+    px(c, 8, 0, GLINT);
 
-  // Arms (left only).
-  fillPolygon(
-    c,
-    [
-      [8, 18],
-      [12, 17],
-      [13, 22],
-      [9, 23],
-    ],
-    7,
-  );
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  // Claw tips (left hand).
-  dot(c, 8, 23, 4);
-  dot(c, 10, 24, 4);
+    // Eyes: left eye wide (imp grin = wide set).
+    // Left eye: dark + glint.
+    px(c, 5, 4, OUTLINE);
+    px(c, 5, 5, OUTLINE);
+    px(c, 5, 3, GLINT);
+    // Right eye.
+    px(c, 8, 4, OUTLINE);
+    px(c, 8, 5, OUTLINE);
+    px(c, 8, 3, GLINT);
 
-  // Legs (left only).
-  fillPolygon(
-    c,
-    [
-      [13, 25],
-      [16, 24],
-      [16, 31],
-      [13, 33],
-      [11, 31],
-    ],
-    7,
-  );
+    // Mischief grin: wide line from 4 to 9 with upturned corners.
+    line(c, 4, 6, 9, 6, OUTLINE);
+    px(c, 4, 5, OUTLINE); // left corner up.
+    px(c, 9, 5, OUTLINE); // right corner up.
 
-  // Foot (left).
-  fillPolygon(
-    c,
-    [
-      [10, 31],
-      [15, 31],
-      [14, 33],
-      [9, 33],
-    ],
-    5,
-  );
+    // Antenna glint re-stamp (outline may overwrite).
+    px(c, 8, 0, GLINT);
 
-  mirrorX(c);
-  shade(c, { dir: 'upper-left', bands: 9, lo: 3, hi: 12, dither: true });
-  rimLight(c, 'upper-left');
-  outline(c);
+    return c;
+  };
 
-  // Re-apply glint features post-outline.
-  dot(c, 14, 8, GLINT);
-  dot(c, 20, 8, GLINT);
-  dot(c, 17, 1, GLINT);
-  dot(c, 13, 17, GLINT);
-  dot(c, 21, 17, GLINT);
+  const base = make();
 
-  // Frame 2 — antenna node pulses, idle bob -1.
-  const f2 = bobFrame(c, -1);
-  dot(f2, 17, 0, GLINT);
-  fillEllipse(f2, 17, 0, 3, 2, RIM_LO);
-  dot(f2, 17, 0, GLINT);
+  // Idle f2: antenna node pulses, bob +1.
+  const f2 = bobFrame(base, 1);
+  px(f2, 8, 1, GLINT);
+  px(f2, 7, 1, RIM_LO);
 
-  return buildSprite('sprite-cipherling', [c, f2], 3);
+  // Walk f0: neutral (base). Walk f1: mid-stride lean.
+  const wf1 = base.clone();
+  // Lean forward (toward right): shift torso top.
+  px(wf1, 3, 7, 0); // trim left torso.
+  px(wf1, 10, 7, SH); // add right.
+  // Swing left arm back.
+  px(wf1, 2, 7, SH);
+  px(wf1, 2, 8, SH);
+  px(wf1, 2, 10, 0);
+  // Advance right leg.
+  px(wf1, 9, 12, SH);
+  px(wf1, 9, 13, SH);
+  px(wf1, 5, 13, 0);
+
+  // Jump f0: crouch (shift down 1).
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jcrouch.set(x, y + 1, idx));
+
+  // Jump f1: air (shift up 1, arms spread).
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 1, idx));
+  // Arms spread in air.
+  px(jair, 1, 7, LT);
+  px(jair, 12, 5, LT);
+
+  // Play f0: reach toward toy (lean right + arm extend).
+  const pf0 = base.clone();
+  // Extend right arm further.
+  px(pf0, 13, 6, LT);
+  px(pf0, 13, 7, LT);
+  px(pf0, 12, 5, LT);
+
+  // Play f1: bounce back (bob down).
+  const pf1 = bobFrame(base, 1);
+  px(pf1, 8, 1, GLINT);
+
+  return {
+    ...buildSprite('sprite-cipherling', [base.grid, f2.grid], 3),
+    walk: [base.grid, wf1.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [pf0.grid, pf1.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
-// sprite-bitfang — 36x36, compact pixel-beast, oversized jaw of square teeth.
-// A squat, wide creature with a massive rectangular jaw and two blocky fists.
-// Hard square body with serrated tooth row.
+// sprite-bitfang — 14x14, cube pup; jaw IS half the body, four square teeth,
+// stumpy legs. Faces right (walk direction).
+// Signature: oversized square jaw taking up bottom 5 rows of body.
 // ---------------------------------------------------------------------------
 
 function buildBitfang(): SpriteDef {
-  const W = 36;
-  const H = 36;
-  const c = PixelCanvas.create(W, H);
+  const W = 14;
+  const H = 14;
 
-  // Main body block — wide, squat, low-center of mass.
-  fillRect(c, 8, 11, 28, 22, 7);
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Head — wider block on top, merged with body.
-  fillRect(c, 5, 5, 31, 14, 8);
+    // Upper head block: rows 1-5 (wide flat head).
+    fillRect(c, 2, 1, 11, 5, MD);
 
-  // Ear spike plates — left only.
-  fillPolygon(
-    c,
-    [
-      [3, 3],
-      [7, 2],
-      [7, 8],
-      [3, 9],
-    ],
-    6,
-  );
-  dot(c, 4, 3, 9);
+    // Ear stubs: left only, mirrorX adds right.
+    px(c, 2, 0, SH);
+    px(c, 3, 0, SH);
 
-  // Eye sockets — left half: single thick square eye.
-  fillRect(c, 7, 7, 14, 12, 3); // left eye socket (dark)
-  fillRect(c, 8, 8, 13, 11, 11); // left eye iris (bright)
-  fillRect(c, 9, 9, 12, 10, 2); // left pupil slit
-  dot(c, 9, 8, GLINT); // left glint
-  dot(c, 10, 8, GLINT);
+    mirrorX(c);
 
-  // Oversized jaw — the defining feature. Wide and deep.
-  // Upper jaw (connected to head bottom).
-  fillRect(c, 3, 13, 33, 19, 6);
-  // Lower jaw (larger, hangs below).
-  fillRect(c, 2, 19, 34, 28, 5);
+    // Big square jaw (lower body — rows 5-10, even wider).
+    fillRect(c, 1, 5, 12, 10, SH);
 
-  // Big square teeth — left half, 3 wide teeth on upper jaw edge.
-  fillRect(c, 4, 19, 9, 25, 9); // left tooth 1
-  fillRect(c, 11, 19, 16, 25, 9); // left tooth 2 (gap at x=10)
-  fillRect(c, 18, 19, 23, 25, 9); // center tooth (slightly left of center)
+    // Four square teeth protruding down from jaw bottom.
+    // Tooth 1.
+    fillRect(c, 2, 10, 3, 11, LT);
+    // Tooth 2.
+    fillRect(c, 5, 10, 6, 11, LT);
+    // Tooth 3.
+    fillRect(c, 7, 10, 8, 11, LT);
+    // Tooth 4.
+    fillRect(c, 10, 10, 11, 11, LT);
+    // Gaps between teeth (transparent).
+    for (let y = 10; y <= 11; y++) {
+      px(c, 4, y, 0);
+      px(c, 9, y, 0);
+    }
 
-  // Tooth gaps (transparent — left 0-valued gaps between teeth on jaw).
-  // Gap 1: col 10, rows 19-25.
-  for (let y = 19; y <= 25; y++) c.set(10, y, 0);
-  // Gap 2: col 17, rows 19-25.
-  for (let y = 19; y <= 25; y++) c.set(17, y, 0);
+    // Stumpy legs.
+    fillRect(c, 3, 12, 5, 13, SH);
+    fillRect(c, 8, 12, 10, 13, SH);
 
-  // Jaw circuit marks.
-  dot(c, 5, 26, GLINT);
-  dot(c, 13, 26, GLINT);
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  // Arms — left: blocky fist.
-  fillRect(c, 1, 15, 7, 22, 7);
-  // Knuckle ridges.
-  dot(c, 2, 16, 5);
-  dot(c, 2, 18, 5);
-  dot(c, 2, 20, 5);
+    // Eyes: square block eyes, left half.
+    fillRect(c, 3, 2, 4, 3, OUTLINE);
+    px(c, 3, 2, GLINT);
+    // Right eye (mirrored position x = W-1 - x).
+    fillRect(c, 9, 2, 10, 3, OUTLINE);
+    px(c, 9, 2, GLINT);
 
-  // Legs — left.
-  fillRect(c, 9, 28, 16, 34, 6);
-  // Foot — left.
-  fillRect(c, 8, 32, 18, 35, 5);
-  // Toenail marks.
-  dot(c, 9, 35, 4);
-  dot(c, 13, 35, 4);
+    // Circuit marks on jaw.
+    px(c, 6, 7, GLINT);
+    px(c, 7, 7, GLINT);
 
-  mirrorX(c);
-  shade(c, { dir: 'upper-left', bands: 10, lo: 3, hi: 12, dither: true });
-  rimLight(c, 'upper-left');
-  outline(c);
+    return c;
+  };
 
-  // Re-punch the tooth gaps (shade/outline fills them back in).
-  for (let y = 19; y <= 25; y++) {
-    c.set(10, y, 0);
-    c.set(17, y, 0);
-    c.set(26, y, 0); // mirrored gap1
-    c.set(19, y, 0); // mirrored gap2 — already 0, but ensure
-  }
+  const base = make();
 
-  // Re-apply glints.
-  dot(c, 9, 8, GLINT);
-  dot(c, 10, 8, GLINT);
-  dot(c, 27, 8, GLINT); // mirrored eye glint
-  dot(c, 26, 8, GLINT);
-  dot(c, 5, 26, GLINT);
-  dot(c, 31, 26, GLINT); // mirrored
+  // Idle f2: mouth clamp (jaw row gap animates).
+  const f2 = base.clone();
+  // Darken jaw seam line.
+  line(f2, 1, 5, 12, 5, OUTLINE);
 
-  // Frame 2 — mouth open wider (extend gap between jaws).
-  const f2 = c.clone();
-  // Darken the jaw gap line.
-  for (let x = 3; x <= 33; x++) {
-    if (f2.get(x, 19) > 0 && f2.get(x, 18) > 0) f2.set(x, 19, 2);
-  }
-  // Re-punch gaps.
-  for (let y = 18; y <= 26; y++) {
-    f2.set(10, y, 0);
-    f2.set(17, y, 0);
-    f2.set(26, y, 0);
-  }
+  // Walk f0: base. Walk f1: stomp stride.
+  const wf1 = base.clone();
+  // Advance right leg forward, pull left back.
+  fillRect(wf1, 8, 12, 10, 13, 0);
+  fillRect(wf1, 9, 12, 11, 13, SH); // right leg forward.
+  fillRect(wf1, 3, 12, 5, 13, 0);
+  fillRect(wf1, 2, 12, 4, 13, SH); // left leg back.
 
-  // Frame 3 — idle bob.
-  const f3 = bobFrame(c, -1);
+  // Jump f0: crouch (body compressed down).
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jcrouch.set(x, y + 1, idx));
 
-  return buildSprite('sprite-bitfang', [c, f2, f3], 3);
+  // Jump f1: air stretch (body up 1, legs dangle).
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 1, idx));
+
+  // Play f0: snap jaw open (teeth gap wider).
+  const pf0 = base.clone();
+  line(pf0, 1, 10, 12, 10, 0); // open gap.
+  fillRect(pf0, 1, 11, 12, 12, SH); // jaw drops.
+  px(pf0, 6, 8, GLINT);
+  px(pf0, 7, 8, GLINT);
+
+  // Play f1: snap closed, bounce.
+  const pf1 = bobFrame(base, 1);
+
+  return {
+    ...buildSprite('sprite-bitfang', [base.grid, f2.grid], 3),
+    walk: [base.grid, wf1.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [pf0.grid, pf1.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
-// sprite-runeclaw — 40x40, four-legged hunter with engraved claw plates.
-// A sleek quadruped with a low-slung body, angular head, and four leg-claws
-// each bearing an engraved rune mark.
+// sprite-runeclaw — 16x16, low pouncing hunter; visor eye-slit across the
+// face, two oversized engraved front claws. Profile facing right.
+// Signature: wide visor slit + claws wider than the head.
 // ---------------------------------------------------------------------------
 
 function buildRuneclaw(): SpriteDef {
-  const W = 40;
-  const H = 40;
-  const c = PixelCanvas.create(W, H);
+  const W = 16;
+  const H = 16;
 
-  // Torso — long low rectangle with angled front.
-  fillPolygon(
-    c,
-    [
-      [12, 16],
-      [30, 16],
-      [32, 20],
-      [32, 28],
-      [28, 30],
-      [12, 30],
-      [8, 28],
-      [8, 20],
-    ],
-    7,
-  );
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Head — angular triangle/wedge facing left.
-  fillPolygon(
-    c,
-    [
-      [5, 10],
-      [16, 10],
-      [18, 14],
-      [16, 18],
-      [5, 18],
-      [3, 14],
-    ],
-    8,
-  );
+    // Sleek body: low horizontal wedge.
+    fillPolygon(
+      c,
+      [
+        [4, 6],
+        [13, 6],
+        [14, 8],
+        [14, 11],
+        [12, 12],
+        [4, 12],
+        [2, 11],
+        [2, 8],
+      ],
+      MD,
+    );
 
-  // Snout tip — narrow angular point.
-  fillPolygon(
-    c,
-    [
-      [1, 13],
-      [5, 11],
-      [5, 17],
-    ],
-    6,
-  );
+    // Head: angular wedge on left, pointing right.
+    fillPolygon(
+      c,
+      [
+        [2, 4],
+        [8, 4],
+        [10, 6],
+        [8, 8],
+        [2, 8],
+        [0, 6],
+      ],
+      LT,
+    );
 
-  // Eye (single, on head — left creature facing).
-  fillEllipse(c, 8, 13, 3, 3, 3);
-  fillEllipse(c, 8, 13, 2, 2, 11);
-  dot(c, 8, 13, 2);
-  dot(c, 7, 12, GLINT);
+    // Visor eye-slit: dark horizontal bar across head center.
+    line(c, 1, 6, 9, 6, OUTLINE);
+    // Glowing eye through slit.
+    px(c, 4, 6, GLINT);
+    px(c, 5, 6, GLINT);
 
-  // Neck ridges.
-  thickLine(c, 14, 11, 14, 15, 5, 1);
-  thickLine(c, 12, 12, 12, 15, 4, 1);
+    // Tail: angular upswept spike at right.
+    fillPolygon(
+      c,
+      [
+        [13, 6],
+        [15, 4],
+        [15, 7],
+        [14, 8],
+      ],
+      SH,
+    );
+    px(c, 15, 4, GLINT);
 
-  // Tail — angular, upward-swept (right side only, not mirrored).
-  fillPolygon(
-    c,
-    [
-      [32, 16],
-      [36, 10],
-      [38, 12],
-      [37, 18],
-      [33, 22],
-    ],
-    7,
-  );
-  dot(c, 37, 10, GLINT);
+    // LEFT front claw: oversized, wider than the head. Left of x=2.
+    fillPolygon(
+      c,
+      [
+        [0, 9],
+        [3, 8],
+        [4, 12],
+        [2, 14],
+        [0, 13],
+      ],
+      SH,
+    );
+    // Claw engraving (rune mark).
+    px(c, 1, 10, GLINT);
+    px(c, 2, 11, GLINT);
+    // Claw tip.
+    px(c, 0, 14, LT);
 
-  // Front leg/claw (left-front — only draw left side, mirrorX for right).
-  fillPolygon(
-    c,
-    [
-      [10, 28],
-      [15, 28],
-      [16, 35],
-      [13, 37],
-      [9, 37],
-      [8, 33],
-    ],
-    7,
-  );
+    // RIGHT front claw (mirrored position — second claw at right).
+    fillPolygon(
+      c,
+      [
+        [11, 8],
+        [14, 9],
+        [15, 13],
+        [13, 14],
+        [11, 13],
+      ],
+      SH,
+    );
+    px(c, 12, 10, GLINT);
+    px(c, 13, 11, GLINT);
+    px(c, 14, 14, LT);
 
-  // Front claw tips (left).
-  fillPolygon(
-    c,
-    [
-      [8, 37],
-      [10, 35],
-      [12, 38],
-      [9, 39],
-    ],
-    5,
-  );
-  fillPolygon(
-    c,
-    [
-      [13, 37],
-      [15, 36],
-      [16, 39],
-      [13, 39],
-    ],
-    5,
-  );
+    // Hind legs: two stubs.
+    fillRect(c, 5, 12, 7, 15, SH);
+    fillRect(c, 9, 12, 11, 15, SH);
 
-  // Rune mark on front claw plate.
-  glyphStamp(c, 10, 30, HEX_NODE, GLINT);
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  // Back leg/claw (left-rear).
-  fillPolygon(
-    c,
-    [
-      [24, 28],
-      [29, 28],
-      [30, 34],
-      [27, 37],
-      [23, 37],
-      [22, 33],
-    ],
-    7,
-  );
+    // Re-stamp glints after outline.
+    px(c, 4, 6, GLINT);
+    px(c, 5, 6, GLINT);
+    px(c, 15, 4, GLINT);
+    px(c, 1, 10, GLINT);
+    px(c, 2, 11, GLINT);
+    px(c, 12, 10, GLINT);
+    px(c, 13, 11, GLINT);
 
-  // Back claw tips (left-rear perspective).
-  fillPolygon(
-    c,
-    [
-      [22, 37],
-      [24, 35],
-      [26, 38],
-      [23, 39],
-    ],
-    5,
-  );
-  fillPolygon(
-    c,
-    [
-      [27, 37],
-      [29, 36],
-      [30, 39],
-      [27, 39],
-    ],
-    5,
-  );
-  glyphStamp(c, 24, 30, HEX_NODE, GLINT);
+    return c;
+  };
 
-  // Spine ridge along top of torso.
-  for (let x = 12; x <= 30; x += 3) {
-    dot(c, x, 16, 10);
-    dot(c, x + 1, 15, 9);
-  }
+  const base = make();
 
-  // Circuit lines on torso side (left half).
-  thickLine(c, 10, 22, 16, 22, 5, 1);
-  dot(c, 13, 22, GLINT);
+  // Idle f2: bob -1 (head raise).
+  const f2 = bobFrame(base, -1);
 
-  shade(c, { dir: 'upper-left', bands: 10, lo: 3, hi: 12, dither: true });
-  rimLight(c, 'upper-left');
-  outline(c);
+  // Walk f0: base. Walk f1: prowl-stride.
+  const wf1 = base.clone();
+  // Advance body slightly right.
+  px(wf1, 5, 12, 0);
+  px(wf1, 6, 12, SH);
+  px(wf1, 10, 12, SH);
+  px(wf1, 10, 13, SH);
+  px(wf1, 5, 15, 0);
+  px(wf1, 12, 13, SH);
 
-  // Re-apply glints post-outline.
-  dot(c, 7, 12, GLINT);
-  dot(c, 37, 10, GLINT);
-  dot(c, 13, 22, GLINT);
-  glyphStamp(c, 10, 30, HEX_NODE, GLINT);
-  glyphStamp(c, 24, 30, HEX_NODE, GLINT);
+  // Jump f0: coiled crouch (body squished down).
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => {
+    if (y < 12) jcrouch.set(x, y + 1, idx);
+    else jcrouch.set(x, y, idx);
+  });
 
-  // Frame 2 — idle head raise (bob -1).
-  const f2 = bobFrame(c, -1);
+  // Jump f1: pounce air (body shifts up, claws extend).
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 1, idx));
+  // Claws extend down in air.
+  px(jair, 0, 14, LT);
+  px(jair, 14, 14, LT);
 
-  // Frame 3 — tail twitch (swap glint on tail tip).
-  const f3 = c.clone();
-  dot(f3, 36, 9, GLINT);
-  dot(f3, 38, 11, GLINT);
+  // Play f0: swipe claw (left claw forward).
+  const pf0 = base.clone();
+  px(pf0, 0, 13, LT);
+  px(pf0, 0, 15, LT);
+  px(pf0, 1, 15, GLINT);
 
-  return buildSprite('sprite-runeclaw', [c, f2, f3], 3);
+  // Play f1: bob bounce.
+  const pf1 = bobFrame(base, 1);
+
+  return {
+    ...buildSprite('sprite-runeclaw', [base.grid, f2.grid], 3),
+    walk: [base.grid, wf1.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [pf0.grid, pf1.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
-// sprite-vectorix — 40x40, arrow-headed darting creature, chevron body trails.
-// A sleek, aerodynamic creature with an arrowhead-shaped head and a body
-// decorated with chevron trail markings suggesting extreme speed.
+// sprite-vectorix — 16x16, dart hawk; chevron head, swept delta wings,
+// single keen eye on the wedge-tip. Profile facing right.
+// Signature: entire body IS a swept delta chevron — no separated parts.
 // ---------------------------------------------------------------------------
 
 function buildVectorix(): SpriteDef {
-  const W = 40;
-  const H = 40;
-  const c = PixelCanvas.create(W, H);
+  const W = 16;
+  const H = 16;
 
-  // Body — elongated horizontal teardrop/arrow shape.
-  fillPolygon(
-    c,
-    [
-      [20, 14],
-      [34, 18],
-      [36, 20],
-      [34, 22],
-      [20, 26],
-      [8, 24],
-      [4, 20],
-      [8, 16],
-    ],
-    8,
-  );
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Head — sharp arrowhead pointing right (the direction of motion).
-  fillPolygon(
-    c,
-    [
-      [34, 16],
-      [40, 20],
-      [34, 24],
-      [32, 22],
-      [32, 18],
-    ],
-    9,
-  );
+    // Main body: swept delta — a long horizontal wedge.
+    fillPolygon(
+      c,
+      [
+        [0, 7], // tail tip (left)
+        [6, 5],
+        [15, 7], // head tip (right)
+        [6, 9],
+      ],
+      MD,
+    );
 
-  // Eye — on the arrowhead.
-  fillEllipse(c, 36, 20, 2, 2, 3);
-  dot(c, 36, 20, 2);
-  dot(c, 35, 19, GLINT);
+    // Top delta wing: swept up-right from body.
+    fillPolygon(
+      c,
+      [
+        [4, 5],
+        [13, 2],
+        [15, 4],
+        [10, 6],
+      ],
+      SH,
+    );
 
-  // Wing-fin upper (left, mirror for right) — swept-back.
-  fillPolygon(
-    c,
-    [
-      [18, 14],
-      [28, 10],
-      [32, 12],
-      [26, 16],
-      [18, 17],
-    ],
-    7,
-  );
+    // Bottom delta wing: swept down-right.
+    fillPolygon(
+      c,
+      [
+        [4, 9],
+        [10, 10],
+        [15, 10],
+        [13, 12],
+      ],
+      SH,
+    );
 
-  // Wing-fin lower (left).
-  fillPolygon(
-    c,
-    [
-      [18, 23],
-      [26, 24],
-      [32, 28],
-      [28, 30],
-      [18, 26],
-    ],
-    7,
-  );
+    // Chevron head band: 3 stacked chevron lines to mark the head.
+    px(c, 13, 6, LT);
+    px(c, 14, 7, LT);
+    px(c, 13, 8, LT);
 
-  // Chevron body trail markings — left half only.
-  glyphStamp(c, 11, 17, CHEVRON, 10);
-  glyphStamp(c, 16, 17, CHEVRON, 11);
-  glyphStamp(c, 21, 17, CHEVRON, 12);
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  // Tail — narrow triangular point to the left.
-  fillPolygon(
-    c,
-    [
-      [4, 20],
-      [8, 16],
-      [10, 20],
-      [8, 24],
-    ],
-    6,
-  );
-  thickLine(c, 1, 20, 5, 20, 5, 1);
-  dot(c, 1, 20, GLINT);
-  dot(c, 2, 20, GLINT);
+    // Single keen eye at beak tip (right-most body pixel area).
+    px(c, 14, 7, OUTLINE);
+    px(c, 13, 6, GLINT); // glint above eye.
 
-  // Leg-fins (4 stubby limbs, lower-body, left pair only).
-  fillPolygon(
-    c,
-    [
-      [15, 24],
-      [20, 25],
-      [19, 30],
-      [14, 29],
-    ],
-    6,
-  );
-  fillPolygon(
-    c,
-    [
-      [24, 24],
-      [29, 25],
-      [28, 30],
-      [23, 29],
-    ],
-    6,
-  );
+    // Chevron body marks (speed lines).
+    glyphStamp(c, 5, 6, CHEV, LT);
+    glyphStamp(c, 8, 6, CHEV, MD);
 
-  shade(c, { dir: 'upper-left', bands: 10, lo: 3, hi: 12, dither: true });
-  rimLight(c, 'upper-left');
-  outline(c);
+    // Tail glint.
+    px(c, 0, 7, GLINT);
 
-  // Re-apply glints.
-  dot(c, 35, 19, GLINT);
-  dot(c, 1, 20, GLINT);
-  dot(c, 2, 20, GLINT);
-  // Stamp chevrons again (shade may overwrite).
-  glyphStamp(c, 11, 17, CHEVRON, 10);
-  glyphStamp(c, 16, 17, CHEVRON, 11);
-  glyphStamp(c, 21, 17, CHEVRON, 12);
+    return c;
+  };
 
-  // Frame 2 — bob down 1, speed lines.
-  const f2 = bobFrame(c, 1);
-  dot(f2, 1, 21, GLINT);
-  dot(f2, 2, 21, GLINT);
+  const base = make();
 
-  // Frame 3 — bob up 1.
-  const f3 = bobFrame(c, -1);
+  // Idle f2: drift lean -1 (bob up).
+  const f2 = bobFrame(base, -1);
+  px(f2, 0, 6, GLINT);
 
-  return buildSprite('sprite-vectorix', [c, f2, f3], 4);
+  // Walk f0: base glide. Walk f1: wing-beat (wings shift).
+  const wf1 = base.clone();
+  // Top wing rises 1px.
+  px(wf1, 13, 1, SH);
+  px(wf1, 13, 2, 0);
+  px(wf1, 14, 3, SH);
+  // Bottom wing lowers 1px.
+  px(wf1, 13, 13, SH);
+  px(wf1, 13, 12, 0);
+
+  // Jump f0: steep climb (shift body up + wings up).
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jcrouch.set(x, y + 1, idx));
+
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 2, idx));
+  px(jair, 0, 5, GLINT);
+
+  // Play f0: banking turn (lean into body).
+  const pf0 = base.clone();
+  // Tilt effect: shift top of body up.
+  px(pf0, 14, 6, MD);
+  px(pf0, 14, 7, 0);
+  px(pf0, 15, 6, LT);
+
+  // Play f1: bob back to level.
+  const pf1 = bobFrame(base, 1);
+
+  return {
+    ...buildSprite('sprite-vectorix', [base.grid, f2.grid], 4),
+    walk: [base.grid, wf1.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [pf0.grid, pf1.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
-// sprite-glyphound — 40x40, sleek hound of stacked sigils, glowing collar ring.
-// An elegant four-legged hound whose body surface appears made of overlapping
-// rune panels. A bright glowing collar ring at the neck is its signature.
+// sprite-glyphound — 16x16, sleek greyhound profile; glowing collar ring,
+// circuit line on flank. Profile facing right.
+// Signature: the glowing collar node + long lean body in 16 pixels.
 // ---------------------------------------------------------------------------
 
 function buildGlyphound(): SpriteDef {
-  const W = 40;
-  const H = 40;
-  const c = PixelCanvas.create(W, H);
+  const W = 16;
+  const H = 16;
 
-  // Body — sleek rectangular core, slightly raised at shoulders.
-  fillPolygon(
-    c,
-    [
-      [10, 16],
-      [30, 15],
-      [33, 18],
-      [33, 28],
-      [29, 30],
-      [11, 30],
-      [7, 28],
-      [7, 18],
-    ],
-    7,
-  );
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Shoulder hump (slight rise on torso front).
-  fillPolygon(
-    c,
-    [
-      [10, 14],
-      [20, 13],
-      [22, 16],
-      [10, 17],
-    ],
-    8,
-  );
+    // Long lean body: narrow horizontal ellipse-ish polygon.
+    fillPolygon(
+      c,
+      [
+        [3, 6],
+        [13, 5],
+        [15, 7],
+        [15, 10],
+        [13, 11],
+        [3, 11],
+        [1, 9],
+        [1, 7],
+      ],
+      MD,
+    );
 
-  // Head — narrow angular head set low, forward.
-  fillPolygon(
-    c,
-    [
-      [4, 12],
-      [14, 11],
-      [16, 14],
-      [15, 19],
-      [4, 19],
-      [2, 16],
-    ],
-    8,
-  );
+    // Head: angular, forward-thrust (right side).
+    fillPolygon(
+      c,
+      [
+        [12, 3],
+        [15, 5],
+        [15, 7],
+        [12, 8],
+        [10, 6],
+        [10, 4],
+      ],
+      LT,
+    );
 
-  // Snout — flat, slightly recessed.
-  fillRect(c, 1, 15, 6, 18, 6);
-  dot(c, 3, 14, 3); // nostril
+    // Snout protrusion.
+    px(c, 15, 6, LT);
 
-  // Eye.
-  fillEllipse(c, 9, 14, 3, 3, 3);
-  fillEllipse(c, 9, 14, 2, 2, 12);
-  dot(c, 9, 14, 2);
-  dot(c, 8, 13, GLINT);
+    // Ear: flat spike back.
+    fillPolygon(
+      c,
+      [
+        [12, 2],
+        [14, 1],
+        [15, 3],
+        [13, 4],
+      ],
+      SH,
+    );
 
-  // Ear — triangular, swept back.
-  fillPolygon(
-    c,
-    [
-      [13, 8],
-      [18, 8],
-      [17, 12],
-      [12, 12],
-    ],
-    6,
-  );
-  dot(c, 15, 9, 9);
+    // Tail: curved upward at left.
+    px(c, 1, 5, SH);
+    px(c, 0, 4, SH);
+    px(c, 0, 3, MD);
+    px(c, 1, 3, MD);
+    px(c, 0, 3, GLINT); // tail tip glint.
 
-  // Collar ring — glowing loop around neck junction.
-  // (Not mirrored — draw as full ring since it's centered on neck area.)
-  for (let angle = 0; angle < 360; angle += 15) {
-    const rad = (angle * Math.PI) / 180;
-    const rx = 4;
-    const ry = 2;
-    const nx = Math.round(12 + rx * Math.cos(rad));
-    const ny = Math.round(16 + ry * Math.sin(rad));
-    c.set(nx, ny, GLINT);
-    // Thicken collar ring.
-    c.set(nx, ny - 1, RIM_LO);
-    c.set(nx, ny + 1, RIM_LO);
-  }
+    // Front legs (right side — facing right).
+    fillRect(c, 13, 11, 14, 15, SH);
+    px(c, 12, 15, SH); // front paw extends.
 
-  // Rune panels on body (left half).
-  glyphStamp(c, 13, 19, HEX_NODE, 11);
-  glyphStamp(c, 20, 18, HEX_NODE, 10);
+    // Back legs (left side).
+    fillRect(c, 3, 11, 4, 14, SH);
+    px(c, 2, 14, SH); // back paw.
+    px(c, 5, 11, SH);
+    px(c, 5, 12, SH);
 
-  // Tail — curled upward sweep to the right (draw right side only, will not be mirrored).
-  bezier(c, 33, 22, 38, 16, 36, 13, 8, 2, 1);
-  dot(c, 35, 13, GLINT);
-  dot(c, 36, 12, GLINT);
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  // Front legs (left only).
-  fillPolygon(
-    c,
-    [
-      [9, 29],
-      [14, 29],
-      [14, 37],
-      [11, 38],
-      [8, 37],
-      [8, 32],
-    ],
-    7,
-  );
-  // Paw.
-  fillPolygon(
-    c,
-    [
-      [7, 36],
-      [15, 36],
-      [14, 39],
-      [8, 39],
-    ],
-    5,
-  );
-  dot(c, 9, 38, 4);
-  dot(c, 12, 38, 4);
+    // Eye: single dot + glint.
+    px(c, 14, 5, OUTLINE);
+    px(c, 14, 4, GLINT);
 
-  // Back legs (left-rear).
-  fillPolygon(
-    c,
-    [
-      [24, 28],
-      [29, 28],
-      [30, 36],
-      [27, 38],
-      [23, 38],
-      [22, 33],
-    ],
-    7,
-  );
-  // Paw.
-  fillPolygon(
-    c,
-    [
-      [21, 36],
-      [29, 36],
-      [28, 39],
-      [22, 39],
-    ],
-    5,
-  );
-  dot(c, 23, 38, 4);
-  dot(c, 26, 38, 4);
+    // GLOWING COLLAR: bright ring at neck junction (x 10-12, y 6-8).
+    px(c, 10, 6, GLINT);
+    px(c, 10, 7, RIM_LO);
+    px(c, 10, 8, GLINT);
+    px(c, 11, 6, RIM_LO);
+    px(c, 11, 8, RIM_LO);
+    px(c, 12, 7, GLINT);
 
-  shade(c, { dir: 'upper-left', bands: 10, lo: 3, hi: 12, dither: true });
-  rimLight(c, 'upper-left');
-  outline(c);
+    // Circuit line on flank: single glint-px line.
+    px(c, 6, 7, GLINT);
+    px(c, 7, 7, GLINT);
+    px(c, 8, 7, GLINT);
 
-  // Re-apply glints post-outline.
-  dot(c, 8, 13, GLINT);
-  dot(c, 35, 13, GLINT);
-  dot(c, 36, 12, GLINT);
-  glyphStamp(c, 13, 19, HEX_NODE, GLINT);
-  glyphStamp(c, 20, 18, HEX_NODE, GLINT);
+    return c;
+  };
 
-  // Re-stamp collar ring glints.
-  for (let angle = 0; angle < 360; angle += 30) {
-    const rad = (angle * Math.PI) / 180;
-    const rx = 4;
-    const ry = 2;
-    const nx = Math.round(12 + rx * Math.cos(rad));
-    const ny = Math.round(16 + ry * Math.sin(rad));
-    c.set(nx, ny, GLINT);
-  }
+  const base = make();
 
-  // Frame 2 — tail wag up.
-  const f2 = c.clone();
-  bezier(f2, 33, 22, 39, 14, 37, 11, 8, 2, 1);
-  dot(f2, 36, 11, GLINT);
+  // Idle f2: tail wag (tail tip shifts).
+  const f2 = base.clone();
+  px(f2, 0, 3, 0);
+  px(f2, 0, 2, MD);
+  px(f2, 1, 2, MD);
+  px(f2, 0, 2, GLINT);
 
-  // Frame 3 — idle bob.
-  const f3 = bobFrame(c, -1);
+  // Walk f0: base. Walk f1: stride.
+  const wf1 = base.clone();
+  // Front leg forward.
+  fillRect(wf1, 13, 11, 14, 15, 0);
+  fillRect(wf1, 14, 11, 15, 15, SH);
+  px(wf1, 13, 15, SH);
+  // Back leg back.
+  fillRect(wf1, 3, 11, 4, 14, 0);
+  fillRect(wf1, 2, 11, 3, 14, SH);
 
-  return buildSprite('sprite-glyphound', [c, f2, f3], 3);
+  // Jump f0: coiled (body down 1).
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jcrouch.set(x, y + 1, idx));
+
+  // Jump f1: stretched air (body up 1, legs dangle).
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 1, idx));
+
+  // Play f0: play-bow (front down, rear up).
+  const pf0 = base.clone();
+  // Front of body dips.
+  px(pf0, 14, 9, MD);
+  px(pf0, 15, 9, MD);
+  px(pf0, 15, 7, 0);
+  // Collar glints extra bright.
+  px(pf0, 10, 6, RIM_HI);
+  px(pf0, 10, 8, RIM_HI);
+
+  // Play f1: bounce up.
+  const pf1 = bobFrame(base, -1);
+
+  return {
+    ...buildSprite('sprite-glyphound', [base.grid, f2.grid], 3),
+    walk: [base.grid, wf1.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [pf0.grid, pf1.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
-// sprite-cryptarch — 44x44, robed keeper of keys, lock-shaped chest core.
-// A tall cloaked figure. Robe made of stacked angular plates. A lock-shaped
-// medallion glows on the chest. Carries an oversized key staff.
+// sprite-cryptarch — 18x18, little key-keeper monk; lock-shaped chest plate,
+// one floating key orbiting, sleeves over hands. Upright profile.
+// Signature: the floating orbiting key (a separate pixel cluster off the body).
 // ---------------------------------------------------------------------------
 
 function buildCryptarch(): SpriteDef {
-  const W = 44;
-  const H = 44;
-  const c = PixelCanvas.create(W, H);
+  const W = 18;
+  const H = 18;
 
-  // Robe body — wide trapezoid, narrow at top.
-  fillPolygon(
-    c,
-    [
-      [14, 18],
-      [30, 18],
-      [34, 22],
-      [36, 38],
-      [30, 42],
-      [14, 42],
-      [8, 38],
-      [10, 22],
-    ],
-    7,
-  );
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Robe layers — stacked horizontal plates (decorative edge lines).
-  for (let py = 22; py <= 38; py += 4) {
-    thickLine(c, 10, py, 34, py, 4, 1);
-  }
-  dot(c, 14, 22, GLINT);
-  dot(c, 22, 26, GLINT);
-  dot(c, 30, 30, GLINT);
-  dot(c, 18, 34, GLINT);
+    // Robe body: wide trapezoid, narrow at top.
+    fillPolygon(
+      c,
+      [
+        [5, 9],
+        [13, 9],
+        [14, 11],
+        [15, 16],
+        [3, 16],
+        [4, 11],
+      ],
+      MD,
+    );
 
-  // Chest — slightly raised front panel.
-  fillPolygon(
-    c,
-    [
-      [16, 18],
-      [28, 18],
-      [30, 22],
-      [28, 28],
-      [16, 28],
-      [14, 22],
-    ],
-    9,
-  );
+    // Robe layer lines (stacked horizontal dark seams).
+    line(c, 5, 11, 13, 11, SH);
+    line(c, 4, 13, 14, 13, SH);
 
-  // Lock icon on chest.
-  glyphStamp(c, 18, 19, LOCK_ICON, GLINT);
-  // Lock body fill.
-  fillRect(c, 19, 22, 25, 27, 11);
-  // Lock keyhole.
-  fillEllipse(c, 22, 24, 2, 2, 3);
-  dot(c, 22, 24, 2);
-  dot(c, 22, 25, 3);
+    // Head: angular dome.
+    fillPolygon(
+      c,
+      [
+        [6, 3],
+        [12, 3],
+        [13, 5],
+        [12, 8],
+        [6, 8],
+        [5, 5],
+      ],
+      LT,
+    );
 
-  // Head — angular dome with visor.
-  fillPolygon(
-    c,
-    [
-      [16, 6],
-      [28, 6],
-      [30, 10],
-      [28, 17],
-      [16, 17],
-      [14, 10],
-    ],
-    8,
-  );
+    // Hood/cowl: dark cap over head.
+    fillRect(c, 6, 2, 12, 4, SH);
+    px(c, 9, 1, SH); // hood peak.
 
-  // Visor slit — dark horizontal bar across eyes.
-  fillRect(c, 15, 11, 29, 14, 3);
-  // Eye glow (through visor).
-  dot(c, 18, 12, GLINT);
-  dot(c, 26, 12, GLINT);
+    // Visor slit: dark across eye area.
+    line(c, 6, 6, 12, 6, OUTLINE);
 
-  // Hood/cowl — triangular shadow on head top.
-  fillPolygon(
-    c,
-    [
-      [14, 6],
-      [22, 3],
-      [30, 6],
-      [28, 8],
-      [16, 8],
-    ],
-    4,
-  );
+    // Eyes glowing through visor.
+    px(c, 7, 6, GLINT);
+    px(c, 11, 6, GLINT);
 
-  // Staff (left-side, tall key staff — not mirrored).
-  thickLine(c, 6, 8, 6, 40, 5, 2);
-  // Key head — bow (ring).
-  fillEllipse(c, 6, 8, 4, 4, 9);
-  fillEllipse(c, 6, 8, 2, 2, 3);
-  dot(c, 6, 8, GLINT);
-  // Key teeth — two notches.
-  fillRect(c, 2, 33, 5, 35, 10);
-  fillRect(c, 2, 37, 5, 39, 10);
-  dot(c, 3, 34, GLINT);
-  dot(c, 3, 38, GLINT);
+    // Lock chest plate: rectangular with keyhole.
+    fillRect(c, 7, 10, 11, 14, SH);
+    px(c, 9, 11, LT); // keyhole circle top.
+    px(c, 8, 12, LT);
+    px(c, 9, 12, LT);
+    px(c, 10, 12, LT);
+    px(c, 9, 13, OUTLINE); // keyhole slot.
+    px(c, 9, 14, OUTLINE);
+    // Lock shackle glint.
+    px(c, 8, 10, GLINT);
+    px(c, 9, 10, GLINT);
+    px(c, 10, 10, GLINT);
 
-  // Arms (left only).
-  fillPolygon(
-    c,
-    [
-      [9, 20],
-      [14, 19],
-      [13, 30],
-      [8, 31],
-    ],
-    7,
-  );
-  // Hand gripping staff.
-  fillEllipse(c, 7, 31, 3, 3, 8);
+    // Sleeves over hands: two fat sleeve ends.
+    fillRect(c, 2, 11, 5, 14, SH);
+    fillRect(c, 13, 11, 16, 14, SH);
 
-  shade(c, { dir: 'upper-left', bands: 10, lo: 3, hi: 12, dither: true });
-  rimLight(c, 'upper-left');
-  outline(c);
+    // FLOATING KEY: orbiting at upper right (separate from body).
+    // Key bow (small circle).
+    px(c, 15, 3, MD);
+    px(c, 16, 3, MD);
+    px(c, 15, 4, MD);
+    px(c, 16, 4, MD);
+    px(c, 15, 3, GLINT); // glint on bow.
+    // Key shaft.
+    px(c, 16, 5, SH);
+    px(c, 16, 6, SH);
+    px(c, 16, 7, SH);
+    // Key teeth.
+    px(c, 15, 6, SH);
+    px(c, 15, 7, SH);
 
-  // Re-apply key glints.
-  dot(c, 6, 8, GLINT);
-  dot(c, 3, 34, GLINT);
-  dot(c, 3, 38, GLINT);
-  dot(c, 18, 12, GLINT);
-  dot(c, 26, 12, GLINT);
-  glyphStamp(c, 18, 19, LOCK_ICON, GLINT);
-  dot(c, 14, 22, GLINT);
-  dot(c, 22, 26, GLINT);
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  // Frame 2 — staff raised (bob body -1, staff stays).
-  const f2 = bobFrame(c, -1);
+    // Re-stamp glints.
+    px(c, 7, 6, GLINT);
+    px(c, 11, 6, GLINT);
+    px(c, 8, 10, GLINT);
+    px(c, 9, 10, GLINT);
+    px(c, 10, 10, GLINT);
+    px(c, 15, 3, GLINT);
 
-  // Frame 3 — lock glow intensifies.
-  const f3 = c.clone();
-  fillRect(f3, 19, 22, 25, 27, 12);
-  dot(f3, 22, 24, RIM_HI);
-  dot(f3, 21, 24, GLINT);
-  dot(f3, 23, 24, GLINT);
+    return c;
+  };
 
-  return buildSprite('sprite-cryptarch', [c, f2, f3], 3);
+  const base = make();
+
+  // Idle f2: key orbits (moves 1px around arc), bob -1.
+  const f2 = bobFrame(base, -1);
+  // Move key bow to next orbital position (from upper-right to right).
+  px(f2, 15, 3, 0);
+  px(f2, 16, 3, 0);
+  px(f2, 15, 4, 0);
+  px(f2, 16, 4, 0);
+  px(f2, 16, 5, 0);
+  px(f2, 16, 6, 0);
+  px(f2, 16, 7, 0);
+  px(f2, 15, 6, 0);
+  px(f2, 15, 7, 0);
+  // New position: key on right side.
+  px(f2, 17, 7, MD);
+  px(f2, 17, 8, MD);
+  px(f2, 17, 7, GLINT);
+  px(f2, 16, 9, SH);
+  px(f2, 16, 10, SH);
+  px(f2, 16, 11, SH);
+  px(f2, 15, 10, SH);
+  px(f2, 15, 11, SH);
+
+  // Walk f0: base. Walk f1: robes sway.
+  const wf1 = base.clone();
+  // Robe hem shifts right slightly.
+  px(wf1, 3, 16, 0);
+  px(wf1, 16, 16, MD);
+
+  // Jump f0: crouch.
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jcrouch.set(x, y + 1, idx));
+
+  // Jump f1: float up.
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 1, idx));
+  px(jair, 15, 2, GLINT); // key rises with.
+
+  // Play f0: reach sleeve toward toy.
+  const pf0 = base.clone();
+  // Right sleeve extends.
+  px(pf0, 17, 13, SH);
+  px(pf0, 17, 12, SH);
+  // Lock plate glows.
+  px(pf0, 9, 11, RIM_LO);
+  px(pf0, 8, 12, RIM_LO);
+  px(pf0, 10, 12, RIM_LO);
+
+  // Play f1: bob bounce.
+  const pf1 = bobFrame(base, 1);
+
+  return {
+    ...buildSprite('sprite-cryptarch', [base.grid, f2.grid], 3),
+    walk: [base.grid, wf1.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [pf0.grid, pf1.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
-// sprite-matrixion — 44x44, lattice golem, grid torso with pulsing nodes.
-// A boxy construct whose torso is a visible circuit-grid lattice. Squared-off
-// limbs. Pulsing junction nodes across the body (glint index 15).
+// sprite-matrixion — 18x18, lattice golem; open grid torso showing a pulsing
+// node heart, squared-off limbs.
+// Signature: the chest is literally a grid lattice with a visible pulsing node.
 // ---------------------------------------------------------------------------
 
 function buildMatrixion(): SpriteDef {
-  const W = 44;
-  const H = 44;
-  const c = PixelCanvas.create(W, H);
+  const W = 18;
+  const H = 18;
 
-  // Torso — large square with rounded corners (polygon for crispness).
-  fillPolygon(
-    c,
-    [
-      [12, 14],
-      [32, 14],
-      [34, 16],
-      [34, 32],
-      [32, 34],
-      [12, 34],
-      [10, 32],
-      [10, 16],
-    ],
-    7,
-  );
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Grid lines across torso (horizontal).
-  for (let gy = 17; gy <= 31; gy += 4) {
-    thickLine(c, 11, gy, 33, gy, 5, 1);
-  }
-  // Grid lines across torso (vertical — left half only, mirrorX handles right).
-  for (let gx = 13; gx <= 22; gx += 4) {
-    thickLine(c, gx, 15, gx, 33, 5, 1);
-  }
+    // Torso box.
+    fillRect(c, 4, 6, 13, 13, MD);
 
-  // Junction nodes at grid intersections (left half).
-  for (let gy = 17; gy <= 31; gy += 4) {
-    for (let gx = 13; gx <= 22; gx += 4) {
-      dot(c, gx, gy, GLINT);
-    }
-  }
+    // Grid lattice over torso (horizontal + vertical lines at intervals).
+    // Horizontal grid lines.
+    line(c, 4, 8, 13, 8, SH);
+    line(c, 4, 11, 13, 11, SH);
+    // Vertical grid lines.
+    line(c, 7, 6, 7, 13, SH);
+    line(c, 10, 6, 10, 13, SH);
 
-  // Head — cube-shaped with a T-shaped visor.
-  fillPolygon(
-    c,
-    [
-      [14, 4],
-      [30, 4],
-      [32, 6],
-      [32, 13],
-      [30, 15],
-      [14, 15],
-      [12, 13],
-      [12, 6],
-    ],
-    8,
-  );
+    // Grid node intersections.
+    px(c, 7, 8, LT);
+    px(c, 10, 8, LT);
+    px(c, 7, 11, LT);
+    px(c, 10, 11, LT);
 
-  // Visor — T-slot across face center.
-  fillRect(c, 14, 8, 30, 11, 3);
-  // Eyes glow through visor slot.
-  fillEllipse(c, 18, 9, 2, 1, GLINT);
-  fillEllipse(c, 26, 9, 2, 1, GLINT);
+    // Pulsing node HEART at chest center (3x3 bright plus).
+    px(c, 8, 9, LT);
+    px(c, 9, 9, LT);
+    px(c, 8, 10, LT);
+    px(c, 9, 10, LT);
+    // Center core glint.
+    px(c, 8, 9, GLINT);
+    px(c, 9, 10, GLINT);
 
-  // Antenna pair (left half).
-  thickLine(c, 17, 1, 17, 4, 9, 1);
-  dot(c, 17, 1, GLINT);
+    // Head: cube with T-visor.
+    fillRect(c, 5, 1, 12, 5, LT);
+    line(c, 5, 3, 12, 3, OUTLINE); // visor slot.
+    // Eyes glow through visor.
+    px(c, 6, 3, GLINT);
+    px(c, 11, 3, GLINT);
 
-  // Shoulder blocks (left only).
-  fillRect(c, 7, 14, 13, 20, 8);
-  dot(c, 9, 15, 10);
+    // Antenna pair.
+    px(c, 7, 0, SH);
+    px(c, 10, 0, SH);
+    px(c, 7, 0, GLINT);
+    px(c, 10, 0, GLINT);
 
-  // Arms (left only) — rectangular with elbow joint.
-  fillRect(c, 5, 20, 12, 28, 7);
-  // Elbow joint bevel.
-  dot(c, 6, 24, 9);
-  dot(c, 11, 24, 5);
+    // Shoulder blocks.
+    fillRect(c, 1, 6, 4, 9, SH);
+    fillRect(c, 14, 6, 17, 9, SH);
 
-  // Hand/fist (left).
-  fillRect(c, 4, 28, 12, 34, 6);
-  // Knuckle circuit nodes.
-  dot(c, 6, 29, GLINT);
-  dot(c, 9, 29, GLINT);
+    // Arms.
+    fillRect(c, 1, 9, 3, 13, MD);
+    fillRect(c, 15, 9, 17, 13, MD);
 
-  // Leg column (left only).
-  fillRect(c, 12, 34, 20, 40, 7);
+    // Fists.
+    fillRect(c, 0, 13, 3, 15, SH);
+    fillRect(c, 15, 13, 17, 15, SH);
+    // Knuckle nodes.
+    px(c, 1, 13, GLINT);
+    px(c, 16, 13, GLINT);
 
-  // Knee joint.
-  fillRect(c, 11, 36, 21, 38, 8);
-  dot(c, 16, 37, GLINT);
+    // Legs.
+    fillRect(c, 5, 14, 8, 17, SH);
+    fillRect(c, 10, 14, 13, 17, SH);
 
-  // Foot platform (left).
-  fillRect(c, 10, 40, 22, 43, 5);
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  mirrorX(c);
-  shade(c, { dir: 'upper-left', bands: 10, lo: 3, hi: 12, dither: true });
-  rimLight(c, 'upper-left');
-  outline(c);
+    // Re-stamp glints.
+    px(c, 8, 9, GLINT);
+    px(c, 9, 10, GLINT);
+    px(c, 6, 3, GLINT);
+    px(c, 11, 3, GLINT);
+    px(c, 7, 0, GLINT);
+    px(c, 10, 0, GLINT);
+    px(c, 1, 13, GLINT);
+    px(c, 16, 13, GLINT);
 
-  // Re-apply grid node glints (they span full torso after mirrorX).
-  for (let gy = 17; gy <= 31; gy += 4) {
-    for (let gx = 13; gx <= 31; gx += 4) {
-      dot(c, gx, gy, GLINT);
-    }
-  }
-  fillEllipse(c, 18, 9, 2, 1, GLINT);
-  fillEllipse(c, 26, 9, 2, 1, GLINT);
-  dot(c, 17, 1, GLINT);
-  dot(c, 27, 1, GLINT);
-  dot(c, 6, 29, GLINT);
-  dot(c, 9, 29, GLINT);
-  dot(c, 35, 29, GLINT);
-  dot(c, 38, 29, GLINT);
-  dot(c, 16, 37, GLINT);
-  dot(c, 28, 37, GLINT);
+    return c;
+  };
 
-  // Frame 2 — nodes pulse (offset glint positions).
-  const f2 = c.clone();
-  for (let gy = 19; gy <= 31; gy += 4) {
-    for (let gx = 15; gx <= 29; gx += 4) {
-      dot(f2, gx, gy, RIM_LO);
-    }
-  }
+  const base = make();
 
-  // Frame 3 — bob -1.
-  const f3 = bobFrame(c, -1);
+  // Idle f2: node heart pulses (alternate glint positions).
+  const f2 = base.clone();
+  px(f2, 8, 9, LT);
+  px(f2, 9, 10, LT);
+  px(f2, 9, 9, GLINT);
+  px(f2, 8, 10, GLINT);
+  // Grid nodes brighten.
+  px(f2, 7, 8, GLINT);
+  px(f2, 10, 11, GLINT);
 
-  return buildSprite('sprite-matrixion', [c, f2, f3], 3);
+  // Walk f0: base. Walk f1: march stride.
+  const wf1 = base.clone();
+  // Advance left leg forward.
+  fillRect(wf1, 5, 14, 8, 17, 0);
+  fillRect(wf1, 4, 14, 7, 17, SH);
+  // Pull right leg back.
+  fillRect(wf1, 10, 14, 13, 17, 0);
+  fillRect(wf1, 11, 14, 14, 17, SH);
+  // Swing right fist forward.
+  px(wf1, 15, 12, SH);
+  px(wf1, 15, 13, SH);
+
+  // Jump f0: crouch.
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jcrouch.set(x, y + 1, idx));
+
+  // Jump f1: upward stretch.
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 1, idx));
+
+  // Play f0: arms open wide toward toy.
+  const pf0 = base.clone();
+  // Arms extend.
+  px(pf0, 0, 11, MD);
+  px(pf0, 17, 11, MD);
+  // Heart pulses bright.
+  px(pf0, 8, 9, RIM_HI);
+  px(pf0, 9, 10, RIM_HI);
+
+  // Play f1: bob.
+  const pf1 = bobFrame(base, 1);
+
+  return {
+    ...buildSprite('sprite-matrixion', [base.grid, f2.grid], 3),
+    walk: [base.grid, wf1.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [pf0.grid, pf1.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
-// sprite-sigilus — 44x44, floating seal-creature, concentric ring wards.
-// A spectral floating disc-body with no limbs — it hovers via three
-// concentric glowing ring-wards. Face centered in the disc. Eerie and
-// distinctive silhouette.
+// sprite-sigilus — 18x18, floating wax-seal; two concentric ring wards,
+// one serene central eye. No limbs — pure disc.
+// Signature: two crisp ring-ward loops around the disc face.
 // ---------------------------------------------------------------------------
 
 function buildSigilus(): SpriteDef {
-  const W = 44;
-  const H = 44;
-  const c = PixelCanvas.create(W, H);
+  const W = 18;
+  const H = 18;
 
-  const cx = 22;
-  const cy = 23;
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Outer ring body (filled disc).
-  fillEllipse(c, cx, cy, 18, 16, 5);
+    const cx = 9;
+    const cy = 9;
 
-  // Concentric darker ring (middle of disc).
-  fillEllipse(c, cx, cy, 13, 11, 6);
+    // Outer disc fill.
+    // Build disc as polygon (octagon for crispness at this size).
+    fillPolygon(
+      c,
+      [
+        [3, 1],
+        [14, 1],
+        [16, 3],
+        [16, 14],
+        [14, 16],
+        [3, 16],
+        [1, 14],
+        [1, 3],
+      ],
+      SH,
+    );
 
-  // Core face plate.
-  fillEllipse(c, cx, cy, 9, 8, 8);
+    // Mid ring fill (slightly lighter inner disc).
+    fillPolygon(
+      c,
+      [
+        [5, 3],
+        [12, 3],
+        [14, 5],
+        [14, 12],
+        [12, 14],
+        [5, 14],
+        [3, 12],
+        [3, 5],
+      ],
+      MD,
+    );
 
-  // Concentric ring wards (stroked ellipses as glowing circuit lines).
-  // Outer ward ring.
-  for (let a = 0; a < 360; a += 5) {
-    const rad = (a * Math.PI) / 180;
-    const rx = 17;
-    const ry = 15;
-    const px = Math.round(cx + rx * Math.cos(rad));
-    const py = Math.round(cy + ry * Math.sin(rad));
-    const cur = c.get(px, py);
-    if (cur > 0) c.set(px, py, GLINT);
-  }
+    // Inner face plate.
+    fillPolygon(
+      c,
+      [
+        [6, 5],
+        [11, 5],
+        [12, 6],
+        [12, 11],
+        [11, 12],
+        [6, 12],
+        [5, 11],
+        [5, 6],
+      ],
+      LT,
+    );
 
-  // Inner ward ring.
-  for (let a = 0; a < 360; a += 7) {
-    const rad = (a * Math.PI) / 180;
-    const rx = 12;
-    const ry = 10;
-    const px = Math.round(cx + rx * Math.cos(rad));
-    const py = Math.round(cy + ry * Math.sin(rad));
-    const cur = c.get(px, py);
-    if (cur > 0) c.set(px, py, RIM_LO);
-  }
+    // OUTER RING WARD: bright pixel ring at radius ~7.
+    // Using manual cardinal + diagonal positions.
+    const outerRing: Array<[number, number]> = [
+      [cx, 1],
+      [cx, 16], // top/bottom
+      [1, cy],
+      [16, cy], // left/right
+      [2, 3],
+      [3, 2], // top-left corners
+      [15, 3],
+      [14, 2], // top-right
+      [2, 14],
+      [3, 15], // bottom-left
+      [15, 14],
+      [14, 15], // bottom-right
+    ];
+    for (const [rx, ry] of outerRing) {
+      if (c.get(rx, ry) > 0) px(c, rx, ry, GLINT);
+    }
 
-  // Ward nodes — 8 equally spaced bright nodes on outer ring.
-  for (let a = 0; a < 360; a += 45) {
-    const rad = (a * Math.PI) / 180;
-    const rx = 17;
-    const ry = 15;
-    const px = Math.round(cx + rx * Math.cos(rad));
-    const py = Math.round(cy + ry * Math.sin(rad));
-    c.set(px, py, GLINT);
-  }
+    // INNER RING WARD: bright ring at radius ~4.
+    const innerRing: Array<[number, number]> = [
+      [cx, 4],
+      [cx, 13],
+      [4, cy],
+      [13, cy],
+      [5, 4],
+      [4, 5],
+      [13, 4],
+      [12, 5],
+      [5, 13],
+      [4, 12],
+      [13, 13],
+      [12, 12],
+    ];
+    for (const [rx, ry] of innerRing) {
+      if (c.get(rx, ry) > 0) px(c, rx, ry, RIM_LO);
+    }
 
-  // Cross-hair etchings on face plate (4 lines from center).
-  thickLine(c, cx - 7, cy, cx - 3, cy, 10, 1);
-  thickLine(c, cx, cy - 6, cx, cy - 2, 10, 1);
-  // (mirrorX will add the right/bottom counterparts).
-  dot(c, cx - 6, cy, GLINT);
-  dot(c, cx, cy - 5, GLINT);
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  // Eyes — two angular slits.
-  fillRect(c, cx - 6, cy - 2, cx - 2, cy, 3);
-  dot(c, cx - 4, cy - 1, GLINT);
+    // SERENE CENTRAL EYE: at disc center.
+    // Eye surround (dark oval).
+    fillRect(c, 7, 7, 11, 11, OUTLINE);
+    // Iris.
+    fillRect(c, 8, 8, 10, 10, LT);
+    // Pupil.
+    px(c, 9, 9, OUTLINE);
+    // Glint above pupil.
+    px(c, 8, 8, GLINT);
 
-  // Nose mark.
-  dot(c, cx, cy + 1, 3);
-  dot(c, cx, cy + 2, 3);
+    // Serenity mark (two tiny arch lines above and below eye).
+    px(c, 8, 6, OUTLINE);
+    px(c, 9, 6, OUTLINE);
+    px(c, 10, 6, OUTLINE);
+    px(c, 8, 12, OUTLINE);
+    px(c, 9, 12, OUTLINE);
+    px(c, 10, 12, OUTLINE);
 
-  // Mouth — angular grimace.
-  fillRect(c, cx - 4, cy + 3, cx - 1, cy + 4, 3);
-  dot(c, cx - 4, cy + 3, 2);
-  dot(c, cx - 1, cy + 3, 2);
+    // Re-stamp ward rings after outline.
+    for (const [rx, ry] of outerRing) {
+      if (c.get(rx, ry) > 0) px(c, rx, ry, GLINT);
+    }
+    px(c, 8, 8, GLINT);
 
-  // Floating wisp tendrils below disc (left side).
-  bezier(c, cx - 4, cy + 14, cx - 8, cy + 18, cx - 10, cy + 22, 4, 2, 1);
-  bezier(c, cx - 10, cy + 14, cx - 14, cy + 17, cx - 14, cy + 20, 4, 2, 1);
+    return c;
+  };
 
-  mirrorX(c);
-  shade(c, { dir: 'radial', bands: 9, lo: 4, hi: 12, dither: true });
-  rimLight(c, 'upper-left');
-  outline(c);
+  const base = make();
 
-  // Re-apply ward ring glints after shading/outline.
-  for (let a = 0; a < 360; a += 45) {
-    const rad = (a * Math.PI) / 180;
-    const rx = 17;
-    const ry = 15;
-    const px = Math.round(cx + rx * Math.cos(rad));
-    const py = Math.round(cy + ry * Math.sin(rad));
-    if (c.get(px, py) > 0) c.set(px, py, GLINT);
-  }
-  dot(c, cx - 6, cy, GLINT);
-  dot(c, cx + 6, cy, GLINT);
-  dot(c, cx, cy - 5, GLINT);
-  dot(c, cx - 4, cy - 1, GLINT);
-  dot(c, cx + 4, cy - 1, GLINT);
+  // Idle f2: ward ring rotates (glints shift phase), bob -1.
+  const f2 = bobFrame(base, -1);
+  // Rotate outer ward glints 22deg (next node).
+  px(f2, 9, 1, 0);
+  px(f2, 10, 1, GLINT);
+  px(f2, 9, 16, 0);
+  px(f2, 10, 16, GLINT);
+  // Eye stays serene.
+  px(f2, 8, 7, GLINT);
 
-  // Frame 2 — disc rotates (bob -1 + ward nodes shift phase).
-  const f2 = bobFrame(c, -1);
-  for (let a = 22; a < 360; a += 45) {
-    const rad = (a * Math.PI) / 180;
-    const rx = 17;
-    const ry = 15;
-    const px = Math.round(cx + rx * Math.cos(rad));
-    const py = Math.round(cy - 1 + ry * Math.sin(rad));
-    if (f2.get(px, py) > 0) f2.set(px, py, GLINT);
-  }
+  // Walk f0: base (float drift). Walk f1: drift lean right.
+  // Disc tilts slightly right (shift content 1px right).
+  const wdrift = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => wdrift.set(x + 1, y, idx));
 
-  // Frame 3 — eyes open wide.
-  const f3 = c.clone();
-  fillRect(f3, cx - 6, cy - 3, cx - 2, cy + 1, 3);
-  dot(f3, cx - 4, cy - 1, GLINT);
-  fillRect(f3, cx + 2, cy - 3, cx + 6, cy + 1, 3);
-  dot(f3, cx + 4, cy - 1, GLINT);
+  // Jump f0: disc sinks slightly.
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jcrouch.set(x, y + 1, idx));
 
-  return buildSprite('sprite-sigilus', [c, f2, f3], 3);
+  // Jump f1: disc floats up.
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 2, idx));
+  px(jair, 9, 0, GLINT);
+
+  // Play f0: eye opens wide (iris expands), disc tilts.
+  const pf0 = base.clone();
+  fillRect(pf0, 7, 7, 11, 11, OUTLINE); // clear eye area
+  fillRect(pf0, 7, 7, 11, 11, LT); // large iris.
+  px(pf0, 9, 9, OUTLINE);
+  px(pf0, 7, 7, GLINT);
+  px(pf0, 9, 7, GLINT);
+
+  // Play f1: bob back.
+  const pf1 = bobFrame(base, 1);
+
+  return {
+    ...buildSprite('sprite-sigilus', [base.grid, f2.grid], 3),
+    walk: [base.grid, wdrift.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [pf0.grid, pf1.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
-// sprite-enigmax — 48x48, apex puzzle-titan, rotating cube heart, asymmetric horns.
-// A massive hulking titan. Its chest is dominated by a floating geometric cube
-// that seems to rotate. Each shoulder bears a different-sized horn (asymmetric).
-// Angular plates everywhere, high contrast.
+// sprite-enigmax — 20x20, apex puzzle titan; rotating cube heart in open chest,
+// asymmetric horns (one long one broken), heavy fists.
+// Iterate 5+ times on this one — it's the apex.
+// Signature: open chest cavity showing isometric cube heart + lopsided horns.
 // ---------------------------------------------------------------------------
 
 function buildEnigmax(): SpriteDef {
-  const W = 48;
-  const H = 48;
-  const c = PixelCanvas.create(W, H);
+  const W = 20;
+  const H = 20;
 
-  // Main torso — very wide, heavily armored block.
-  fillPolygon(
-    c,
-    [
-      [10, 18],
-      [38, 18],
-      [42, 22],
-      [42, 36],
-      [38, 40],
-      [10, 40],
-      [6, 36],
-      [6, 22],
-    ],
-    7,
-  );
+  // Iteration 1: establish major silhouette.
+  // Iteration 2: asymmetric horns, open chest.
+  // Iteration 3: heavy fists, leg armor.
+  // Iteration 4: cube face shading, face visor.
+  // Iteration 5: rim light, glint placement, animation quality.
 
-  // Chest cavity — deep dark inset panel for the cube heart.
-  fillPolygon(
-    c,
-    [
-      [16, 20],
-      [32, 20],
-      [34, 23],
-      [34, 35],
-      [32, 37],
-      [16, 37],
-      [14, 35],
-      [14, 23],
-    ],
-    2,
-  );
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Cube heart — large isometric cube floating in the dark chest cavity.
-  // Top face (bright highlight).
-  fillPolygon(
-    c,
-    [
-      [19, 23],
-      [24, 20],
-      [29, 23],
-      [24, 26],
-    ],
-    13,
-  );
-  // Left face (shadow side).
-  fillPolygon(
-    c,
-    [
-      [19, 23],
-      [24, 26],
-      [24, 33],
-      [19, 30],
-    ],
-    7,
-  );
-  // Right face (mid tone).
-  fillPolygon(
-    c,
-    [
-      [24, 26],
-      [29, 23],
-      [29, 30],
-      [24, 33],
-    ],
-    10,
-  );
-  // Cube edge glints — all 4 corners.
-  dot(c, 24, 20, GLINT);
-  dot(c, 19, 23, GLINT);
-  dot(c, 29, 23, GLINT);
-  dot(c, 24, 33, GLINT);
-  // Top face inner glow.
-  dot(c, 24, 22, RIM_HI);
-  dot(c, 23, 23, RIM_LO);
-  dot(c, 25, 23, RIM_LO);
+    // BODY: wide armored torso block.
+    fillPolygon(
+      c,
+      [
+        [4, 9],
+        [16, 9],
+        [17, 11],
+        [17, 16],
+        [15, 17],
+        [5, 17],
+        [3, 16],
+        [3, 11],
+      ],
+      MD,
+    );
 
-  // Head — massive angular skull.
-  fillPolygon(
-    c,
-    [
-      [15, 6],
-      [33, 6],
-      [36, 10],
-      [36, 17],
-      [33, 19],
-      [15, 19],
-      [12, 17],
-      [12, 10],
-    ],
-    8,
-  );
+    // Open chest cavity (dark inset).
+    fillRect(c, 7, 10, 13, 16, SH);
 
-  // Visor — dark band across eyes.
-  fillRect(c, 14, 10, 34, 14, 3);
-  // Eye glow slots (left half).
-  fillEllipse(c, 18, 12, 3, 1, GLINT);
+    // CUBE HEART inside chest cavity — isometric small cube.
+    // Top face (bright).
+    fillPolygon(
+      c,
+      [
+        [9, 11],
+        [11, 10],
+        [13, 11],
+        [11, 12],
+      ],
+      HL,
+    );
+    // Left face (shadow).
+    fillPolygon(
+      c,
+      [
+        [9, 11],
+        [11, 12],
+        [11, 15],
+        [9, 14],
+      ],
+      SH,
+    );
+    // Right face (mid).
+    fillPolygon(
+      c,
+      [
+        [11, 12],
+        [13, 11],
+        [13, 14],
+        [11, 15],
+      ],
+      LT,
+    );
+    // Cube glints.
+    px(c, 11, 10, GLINT); // top apex.
+    px(c, 9, 11, GLINT); // left corner.
+    px(c, 13, 11, GLINT); // right corner.
+    px(c, 11, 15, GLINT); // bottom apex.
 
-  // Jaw plate — hanging slightly below head.
-  fillPolygon(
-    c,
-    [
-      [14, 17],
-      [34, 17],
-      [35, 19],
-      [34, 22],
-      [14, 22],
-      [13, 19],
-    ],
-    5,
-  );
-  // Jaw seam line.
-  thickLine(c, 14, 19, 34, 19, 3, 1);
+    // HEAD: massive angular skull.
+    fillPolygon(
+      c,
+      [
+        [5, 3],
+        [15, 3],
+        [16, 5],
+        [16, 8],
+        [14, 9],
+        [6, 9],
+        [4, 8],
+        [4, 5],
+      ],
+      LT,
+    );
 
-  // LEFT horn — tall angular spike.
-  fillPolygon(
-    c,
-    [
-      [12, 6],
-      [18, 1],
-      [20, 4],
-      [16, 8],
-      [12, 8],
-    ],
-    9,
-  );
-  dot(c, 18, 1, GLINT);
-  dot(c, 17, 2, GLINT);
+    // Visor: dark slab across eye area.
+    fillRect(c, 5, 5, 15, 7, OUTLINE);
+    // Eye glow through visor (two hot slots).
+    px(c, 7, 6, GLINT);
+    px(c, 8, 6, GLINT);
+    px(c, 11, 6, GLINT);
+    px(c, 12, 6, GLINT);
 
-  // RIGHT horn — shorter, forward-angled (asymmetric!).
-  fillPolygon(
-    c,
-    [
-      [30, 6],
-      [35, 3],
-      [38, 6],
-      [35, 10],
-      [30, 9],
-    ],
-    9,
-  );
-  dot(c, 37, 4, GLINT);
+    // Jaw plate.
+    fillRect(c, 5, 8, 15, 9, SH);
+    line(c, 5, 8, 15, 8, OUTLINE);
 
-  // Shoulder armor plates (left only — large, spiky).
-  fillPolygon(
-    c,
-    [
-      [2, 18],
-      [10, 17],
-      [10, 26],
-      [4, 28],
-      [1, 24],
-    ],
-    8,
-  );
-  // Shoulder spike.
-  fillPolygon(
-    c,
-    [
-      [1, 16],
-      [7, 14],
-      [9, 18],
-      [3, 20],
-    ],
-    9,
-  );
-  dot(c, 3, 14, GLINT);
+    // LEFT HORN: tall angular spike (3 segments up-left).
+    fillPolygon(
+      c,
+      [
+        [4, 3],
+        [6, 0],
+        [8, 1],
+        [6, 4],
+      ],
+      LT,
+    );
+    px(c, 6, 0, GLINT); // horn tip.
 
-  // Arms (left only) — thick segmented.
-  fillPolygon(
-    c,
-    [
-      [2, 26],
-      [10, 25],
-      [11, 34],
-      [4, 36],
-    ],
-    7,
-  );
+    // RIGHT HORN: shorter, forward-angled, broken tip (asymmetric!).
+    fillPolygon(
+      c,
+      [
+        [12, 3],
+        [14, 1],
+        [16, 3],
+        [15, 5],
+        [13, 4],
+      ],
+      MD,
+    );
+    px(c, 14, 0, GLINT); // broken tip.
+    // Crack mark on broken horn.
+    px(c, 15, 2, OUTLINE);
 
-  // Gauntlet/fist (left).
-  fillPolygon(
-    c,
-    [
-      [1, 34],
-      [11, 33],
-      [13, 38],
-      [9, 41],
-      [2, 40],
-    ],
-    6,
-  );
-  // Knuckle ridges (left).
-  dot(c, 3, 36, 5);
-  dot(c, 6, 36, 5);
-  dot(c, 9, 36, 5);
+    // SHOULDER ARMOR: large plates on each side.
+    fillRect(c, 0, 9, 4, 13, MD);
+    fillRect(c, 16, 9, 19, 13, MD);
+    // Shoulder spikes.
+    px(c, 0, 8, SH);
+    px(c, 1, 7, SH);
+    px(c, 19, 8, SH);
+    px(c, 18, 7, SH);
 
-  // Legs (left only) — wide and armored.
-  fillPolygon(
-    c,
-    [
-      [12, 40],
-      [22, 40],
-      [23, 46],
-      [20, 47],
-      [11, 47],
-      [10, 44],
-    ],
-    7,
-  );
+    // HEAVY FISTS: large square gauntlets.
+    fillRect(c, 0, 13, 4, 17, SH);
+    fillRect(c, 16, 13, 19, 17, SH);
+    // Knuckle ridges.
+    line(c, 0, 14, 3, 14, OUTLINE);
+    line(c, 16, 14, 19, 14, OUTLINE);
+    px(c, 1, 15, GLINT);
+    px(c, 17, 15, GLINT);
 
-  // Foot (left) — wide platform.
-  fillPolygon(
-    c,
-    [
-      [9, 45],
-      [23, 45],
-      [24, 47],
-      [8, 47],
-    ],
-    5,
-  );
+    // LEGS: wide armored columns.
+    fillRect(c, 5, 17, 8, 19, SH);
+    fillRect(c, 12, 17, 15, 19, SH);
+    // Boots.
+    fillRect(c, 4, 19, 9, 19, MD);
+    fillRect(c, 11, 19, 16, 19, MD);
 
-  // Rune marks on torso sides (left).
-  glyphStamp(c, 7, 26, HEX_NODE, 10);
-  glyphStamp(c, 7, 32, HEX_NODE, 10);
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  mirrorX(c);
-  shade(c, { dir: 'upper-left', bands: 11, lo: 3, hi: 12, dither: true });
-  rimLight(c, 'upper-left');
-  outline(c);
+    // Re-stamp glints after outline.
+    px(c, 11, 10, GLINT);
+    px(c, 9, 11, GLINT);
+    px(c, 13, 11, GLINT);
+    px(c, 11, 15, GLINT);
+    px(c, 7, 6, GLINT);
+    px(c, 8, 6, GLINT);
+    px(c, 11, 6, GLINT);
+    px(c, 12, 6, GLINT);
+    px(c, 6, 0, GLINT);
+    px(c, 14, 0, GLINT);
+    px(c, 1, 15, GLINT);
+    px(c, 17, 15, GLINT);
 
-  // Re-apply glints (cube + horns + eyes).
-  dot(c, 24, 20, GLINT);
-  dot(c, 19, 23, GLINT);
-  dot(c, 29, 23, GLINT);
-  dot(c, 24, 33, GLINT);
-  dot(c, 24, 22, RIM_HI);
-  dot(c, 18, 1, GLINT);
-  dot(c, 17, 2, GLINT);
-  dot(c, 37, 4, GLINT);
-  dot(c, 3, 14, GLINT);
-  dot(c, 45, 14, GLINT); // mirrored shoulder
-  fillEllipse(c, 18, 12, 3, 1, GLINT);
-  fillEllipse(c, 30, 12, 3, 1, GLINT); // mirrored eye
-  glyphStamp(c, 7, 26, HEX_NODE, GLINT);
-  glyphStamp(c, 7, 32, HEX_NODE, GLINT);
+    return c;
+  };
 
-  // Frame 2 — cube heart "rotates" (swap face brightness to simulate rotation).
-  const f2 = c.clone();
-  // Top face dims, side faces swap highlight.
+  const base = make();
+
+  // Idle f2: cube heart "rotates" (swap face brightness), visor glow shifts.
+  const f2 = base.clone();
+  // Rotate cube faces.
   fillPolygon(
     f2,
     [
-      [19, 23],
-      [24, 20],
-      [29, 23],
-      [24, 26],
+      [9, 11],
+      [11, 10],
+      [13, 11],
+      [11, 12],
     ],
-    10,
-  );
+    LT,
+  ); // top dims.
   fillPolygon(
     f2,
     [
-      [19, 23],
-      [24, 26],
-      [24, 33],
-      [19, 30],
+      [9, 11],
+      [11, 12],
+      [11, 15],
+      [9, 14],
     ],
-    13,
-  );
+    HL,
+  ); // left brightens.
   fillPolygon(
     f2,
     [
-      [24, 26],
-      [29, 23],
-      [29, 30],
-      [24, 33],
+      [11, 12],
+      [13, 11],
+      [13, 14],
+      [11, 15],
     ],
-    7,
+    SH,
+  ); // right dims.
+  px(f2, 9, 13, GLINT); // new bright corner.
+  px(f2, 11, 15, GLINT);
+  px(f2, 13, 11, GLINT);
+  // Visor glow pulses.
+  px(f2, 8, 6, RIM_LO);
+  px(f2, 11, 6, RIM_LO);
+
+  // Walk f0: base. Walk f1: heavy stomp stride.
+  const wf1 = base.clone();
+  // Right leg forward.
+  fillRect(wf1, 12, 17, 15, 19, 0);
+  fillRect(wf1, 13, 17, 16, 19, SH);
+  fillRect(wf1, 12, 19, 17, 19, MD);
+  // Left leg back.
+  fillRect(wf1, 5, 17, 8, 19, 0);
+  fillRect(wf1, 4, 17, 7, 19, SH);
+  fillRect(wf1, 3, 19, 8, 19, MD);
+  // Left fist swings back.
+  px(wf1, 0, 12, SH);
+  px(wf1, 1, 12, SH);
+  // Right fist forward.
+  px(wf1, 18, 12, SH);
+  px(wf1, 19, 12, SH);
+
+  // Jump f0: crouch (whole body down 1, fists down).
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jcrouch.set(x, Math.min(y + 1, H - 1), idx));
+
+  // Jump f1: air stretch (body up 2, fists raised).
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 2, idx));
+  // Fists raise into air.
+  px(jair, 1, 10, SH);
+  px(jair, 17, 10, SH);
+  px(jair, 6, 0, GLINT); // horn catches light.
+
+  // Play f0: SLAM fists down (arms extend down, cube pulses).
+  const pf0 = base.clone();
+  fillRect(pf0, 0, 16, 4, 19, SH); // left fist slams down.
+  fillRect(pf0, 16, 16, 19, 19, SH); // right fist slams down.
+  // Cube heart flares.
+  fillPolygon(
+    pf0,
+    [
+      [9, 11],
+      [11, 10],
+      [13, 11],
+      [11, 12],
+    ],
+    RIM_HI,
   );
-  dot(f2, 24, 20, GLINT);
-  dot(f2, 19, 23, GLINT);
-  dot(f2, 29, 23, GLINT);
-  dot(f2, 24, 33, GLINT);
-  dot(f2, 24, 22, RIM_LO);
-  dot(f2, 19, 25, RIM_HI);
+  px(pf0, 11, 10, RIM_HI);
+  px(pf0, 9, 11, RIM_LO);
+  px(pf0, 13, 11, RIM_LO);
 
-  // Frame 3 — idle bob -1.
-  const f3 = bobFrame(c, -1);
+  // Play f1: rebound up.
+  const pf1 = bobFrame(base, -1);
 
-  return buildSprite('sprite-enigmax', [c, f2, f3], 3);
+  return {
+    ...buildSprite('sprite-enigmax', [base.grid, f2.grid], 3),
+    walk: [base.grid, wf1.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [pf0.grid, pf1.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
-// sprite-keystrix — 48x48, apex key-raptor, beak like a skeleton key, fan of
-// blade-feathers. A powerful raptor-form creature. Beak has a ring-bow at tip
-// like a skeleton key. Tail is a magnificent fan of blade-feathers.
+// sprite-keystrix — 20x20, apex key-raptor; skeleton-key beak, blade-feather
+// fan tail, raised talon. Faces right.
+// Iterate 5+ times.
+// Signature: the beak IS a skeleton key — ring at tip + notched shaft.
 // ---------------------------------------------------------------------------
 
 function buildKeystrix(): SpriteDef {
-  const W = 48;
-  const H = 48;
-  const c = PixelCanvas.create(W, H);
+  const W = 20;
+  const H = 20;
 
-  // Main body — sleek avian torso.
-  fillPolygon(
-    c,
-    [
-      [16, 18],
-      [32, 16],
-      [36, 20],
-      [36, 32],
-      [32, 36],
-      [16, 36],
-      [12, 32],
-      [12, 20],
-    ],
-    7,
-  );
+  // Iteration 1: avian silhouette, beak shape established.
+  // Iteration 2: key beak ring, blade feather tail fan.
+  // Iteration 3: raised talon, wing blade-slats, keel line.
+  // Iteration 4: face eye + glints, circuit body marks.
+  // Iteration 5: animation quality, clean rim light check.
 
-  // Chest keel — raised sternum ridge.
-  fillPolygon(
-    c,
-    [
-      [20, 20],
-      [28, 19],
-      [30, 24],
-      [28, 30],
-      [20, 30],
-      [18, 24],
-    ],
-    9,
-  );
-  thickLine(c, 24, 20, 24, 30, 11, 1); // center keel line
+  const make = (): PixelCanvas => {
+    const c = PixelCanvas.create(W, H);
 
-  // Head — angular avian skull.
-  fillPolygon(
-    c,
-    [
-      [16, 8],
-      [28, 7],
-      [32, 11],
-      [30, 17],
-      [16, 18],
-      [12, 14],
-      [12, 10],
-    ],
-    8,
-  );
+    // BODY: sleek avian torso, upright-ish facing right.
+    fillPolygon(
+      c,
+      [
+        [5, 7],
+        [14, 6],
+        [16, 8],
+        [16, 14],
+        [14, 15],
+        [5, 15],
+        [3, 13],
+        [3, 9],
+      ],
+      MD,
+    );
 
-  // Crest feathers (left half — angular swept-back blades).
-  fillPolygon(
-    c,
-    [
-      [12, 6],
-      [18, 2],
-      [22, 5],
-      [20, 9],
-      [13, 10],
-    ],
-    9,
-  );
-  fillPolygon(
-    c,
-    [
-      [18, 5],
-      [22, 0],
-      [26, 3],
-      [24, 8],
-      [19, 9],
-    ],
-    8,
-  );
-  dot(c, 18, 2, GLINT);
-  dot(c, 22, 0, GLINT);
+    // Keel line: sternum ridge.
+    line(c, 8, 7, 8, 14, LT);
 
-  // KEY BEAK — the signature feature. Long angular beak with a circular
-  // ring-bow at the tip (skeleton key bow).
-  // Beak shaft.
-  fillPolygon(
-    c,
-    [
-      [30, 11],
-      [44, 13],
-      [43, 16],
-      [30, 15],
-    ],
-    7,
-  );
-  // Key bow ring (circle at beak tip).
-  fillEllipse(c, 44, 14, 4, 4, 9);
-  fillEllipse(c, 44, 14, 2, 2, 3);
-  dot(c, 44, 14, GLINT);
-  // Key bow inner hole.
-  dot(c, 44, 13, 2);
-  dot(c, 44, 15, 2);
-  // Beak serration (key-teeth marks).
-  dot(c, 36, 15, 4);
-  dot(c, 39, 15, 4);
-  dot(c, 42, 15, 4);
+    // HEAD: angular avian skull facing right.
+    fillPolygon(
+      c,
+      [
+        [9, 2],
+        [15, 2],
+        [17, 4],
+        [16, 7],
+        [9, 7],
+        [7, 5],
+        [7, 3],
+      ],
+      LT,
+    );
 
-  // Eye.
-  fillEllipse(c, 19, 12, 3, 3, 3);
-  fillEllipse(c, 19, 12, 2, 2, 12);
-  dot(c, 19, 12, 2);
-  dot(c, 18, 11, GLINT);
+    // SKELETON-KEY BEAK: long angular beak with ring bow at the tip.
+    // Beak shaft.
+    fillPolygon(
+      c,
+      [
+        [16, 3],
+        [19, 4],
+        [18, 6],
+        [16, 5],
+      ],
+      SH,
+    );
+    // Key bow ring at beak tip.
+    px(c, 19, 3, MD);
+    px(c, 19, 4, MD); // ring.
+    px(c, 18, 3, SH);
+    px(c, 19, 3, GLINT); // bow glint.
+    // Key notch on shaft.
+    px(c, 17, 5, OUTLINE);
+    px(c, 17, 6, OUTLINE);
 
-  // Wing (left side — large angular swept wing, fills left area).
-  fillPolygon(
-    c,
-    [
-      [8, 18],
-      [16, 17],
-      [14, 32],
-      [4, 36],
-      [2, 28],
-      [4, 22],
-    ],
-    6,
-  );
+    // CREST FEATHERS: swept-back blade feathers from head crown.
+    fillPolygon(
+      c,
+      [
+        [8, 1],
+        [12, 0],
+        [13, 2],
+        [10, 3],
+      ],
+      SH,
+    );
+    fillPolygon(
+      c,
+      [
+        [11, 0],
+        [14, 0],
+        [15, 2],
+        [12, 2],
+      ],
+      MD,
+    );
+    px(c, 12, 0, GLINT); // crest tip glint.
 
-  // Wing blade-feathers (3 overlapping angular slats).
-  fillPolygon(
-    c,
-    [
-      [4, 26],
-      [14, 22],
-      [15, 25],
-      [5, 29],
-    ],
-    8,
-  );
-  fillPolygon(
-    c,
-    [
-      [3, 30],
-      [13, 26],
-      [14, 29],
-      [4, 33],
-    ],
-    7,
-  );
-  fillPolygon(
-    c,
-    [
-      [2, 34],
-      [12, 30],
-      [13, 33],
-      [3, 37],
-    ],
-    6,
-  );
+    // EYE: single keen dot with glint.
+    px(c, 14, 4, OUTLINE);
+    px(c, 15, 4, OUTLINE);
+    px(c, 14, 3, GLINT);
 
-  // Wing tip glints.
-  dot(c, 3, 26, GLINT);
-  dot(c, 2, 30, GLINT);
-  dot(c, 2, 34, GLINT);
+    // LEFT WING: large swept blade-wing.
+    fillPolygon(
+      c,
+      [
+        [2, 8],
+        [6, 7],
+        [5, 14],
+        [1, 15],
+        [0, 12],
+        [1, 9],
+      ],
+      SH,
+    );
+    // Wing blade-slats (3 overlapping plates).
+    line(c, 1, 10, 5, 9, LT);
+    line(c, 1, 12, 5, 11, MD);
+    line(c, 1, 14, 4, 13, SH);
+    // Wing tip glints.
+    px(c, 0, 10, GLINT);
+    px(c, 0, 12, GLINT);
 
-  // Tail fan — magnificent blade-feather fan (right side, not mirrored).
-  // Central tail feathers.
-  fillPolygon(
-    c,
-    [
-      [34, 28],
-      [40, 20],
-      [43, 22],
-      [38, 32],
-    ],
-    8,
-  );
-  fillPolygon(
-    c,
-    [
-      [34, 30],
-      [42, 24],
-      [44, 28],
-      [38, 36],
-    ],
-    7,
-  );
-  fillPolygon(
-    c,
-    [
-      [34, 32],
-      [40, 30],
-      [44, 34],
-      [38, 38],
-    ],
-    6,
-  );
-  fillPolygon(
-    c,
-    [
-      [34, 33],
-      [38, 36],
-      [42, 40],
-      [36, 40],
-    ],
-    5,
-  );
+    // BLADE-FEATHER TAIL FAN: 4 feathers splaying right-downward.
+    // Feather 1 (top).
+    fillPolygon(
+      c,
+      [
+        [14, 12],
+        [18, 9],
+        [19, 11],
+        [16, 14],
+      ],
+      LT,
+    );
+    // Feather 2.
+    fillPolygon(
+      c,
+      [
+        [14, 13],
+        [19, 12],
+        [19, 15],
+        [15, 16],
+      ],
+      MD,
+    );
+    // Feather 3.
+    fillPolygon(
+      c,
+      [
+        [14, 14],
+        [18, 15],
+        [18, 18],
+        [14, 17],
+      ],
+      SH,
+    );
+    // Feather 4 (bottom).
+    fillPolygon(
+      c,
+      [
+        [14, 15],
+        [16, 17],
+        [15, 19],
+        [12, 18],
+      ],
+      SH,
+    );
+    // Tail feather edge glints.
+    px(c, 19, 10, GLINT);
+    px(c, 19, 14, GLINT);
+    px(c, 17, 18, GLINT);
 
-  // Tail feather edge glints.
-  dot(c, 43, 22, GLINT);
-  dot(c, 44, 27, GLINT);
-  dot(c, 44, 33, GLINT);
-  dot(c, 42, 39, GLINT);
+    // LEGS: right leg with raised talon.
+    // Right leg (standing).
+    fillRect(c, 10, 15, 11, 18, SH);
+    px(c, 9, 19, SH);
+    px(c, 10, 19, SH);
+    px(c, 11, 19, SH);
+    // LEFT LEG: raised (talon lifted mid-stride).
+    fillRect(c, 6, 14, 7, 17, SH);
+    px(c, 5, 14, SH); // knee bend.
+    px(c, 4, 13, SH); // talon raised.
+    px(c, 5, 13, SH);
+    px(c, 4, 12, GLINT); // talon claw glint.
 
-  // Rune markings along tail shafts.
-  dot(c, 38, 25, 11);
-  dot(c, 39, 29, 11);
-  dot(c, 38, 33, 11);
+    // Circuit marks on body.
+    px(c, 7, 10, GLINT);
+    px(c, 7, 11, GLINT);
 
-  // Taloned legs (left only).
-  fillPolygon(
-    c,
-    [
-      [16, 35],
-      [21, 34],
-      [22, 42],
-      [19, 44],
-      [15, 44],
-      [14, 39],
-    ],
-    7,
-  );
+    outline(c);
+    rimLight(c, 'upper-left');
 
-  // Talons (left — three forward-pointing curved claws).
-  bezier(c, 14, 43, 10, 46, 8, 47, 4, 2, 1);
-  bezier(c, 17, 44, 15, 47, 13, 47, 4, 2, 1);
-  bezier(c, 20, 44, 20, 47, 18, 47, 4, 2, 1);
+    // Re-stamp glints.
+    px(c, 19, 3, GLINT);
+    px(c, 14, 3, GLINT);
+    px(c, 12, 0, GLINT);
+    px(c, 0, 10, GLINT);
+    px(c, 0, 12, GLINT);
+    px(c, 19, 10, GLINT);
+    px(c, 19, 14, GLINT);
+    px(c, 17, 18, GLINT);
+    px(c, 4, 12, GLINT);
+    px(c, 7, 10, GLINT);
+    px(c, 7, 11, GLINT);
 
-  // Talon glints.
-  dot(c, 8, 47, GLINT);
-  dot(c, 13, 47, GLINT);
-  dot(c, 18, 47, GLINT);
+    return c;
+  };
 
-  // Circuit etchings on torso (left half).
-  glyphStamp(c, 14, 22, HEX_NODE, 10);
-  glyphStamp(c, 14, 28, HEX_NODE, 10);
+  const base = make();
 
-  shade(c, { dir: 'upper-left', bands: 11, lo: 3, hi: 12, dither: true });
-  rimLight(c, 'upper-left');
-  outline(c);
+  // Idle f2: feather fan flutter (tail feathers shift 1px), bob -1.
+  const f2 = bobFrame(base, -1);
+  px(f2, 19, 9, GLINT);
+  px(f2, 19, 10, 0);
+  px(f2, 18, 19, GLINT);
+  px(f2, 17, 18, 0);
 
-  // Re-apply all critical glints.
-  dot(c, 44, 14, GLINT);
-  dot(c, 18, 11, GLINT);
-  dot(c, 18, 2, GLINT);
-  dot(c, 22, 0, GLINT);
-  dot(c, 43, 22, GLINT);
-  dot(c, 44, 27, GLINT);
-  dot(c, 44, 33, GLINT);
-  dot(c, 42, 39, GLINT);
-  dot(c, 3, 26, GLINT);
-  dot(c, 2, 30, GLINT);
-  dot(c, 2, 34, GLINT);
-  dot(c, 8, 47, GLINT);
-  dot(c, 13, 47, GLINT);
-  dot(c, 18, 47, GLINT);
-  glyphStamp(c, 14, 22, HEX_NODE, GLINT);
-  glyphStamp(c, 14, 28, HEX_NODE, GLINT);
+  // Walk f0: base. Walk f1: mid-stride.
+  const wf1 = base.clone();
+  // Advance right leg.
+  fillRect(wf1, 10, 15, 11, 18, 0);
+  fillRect(wf1, 11, 15, 12, 18, SH);
+  px(wf1, 10, 19, SH);
+  px(wf1, 11, 19, SH);
+  px(wf1, 12, 19, SH);
+  // Set left leg down.
+  fillRect(wf1, 6, 14, 7, 17, 0);
+  fillRect(wf1, 6, 15, 7, 18, SH);
+  px(wf1, 5, 19, SH);
+  px(wf1, 6, 19, SH);
+  px(wf1, 4, 12, 0);
+  px(wf1, 5, 13, 0);
+  px(wf1, 5, 14, 0);
 
-  // Frame 2 — wings spread slightly wider.
-  const f2 = c.clone();
-  fillPolygon(
-    f2,
-    [
-      [7, 17],
-      [16, 17],
-      [14, 32],
-      [3, 37],
-      [1, 28],
-      [3, 21],
-    ],
-    6,
-  );
-  dot(f2, 2, 26, GLINT);
-  dot(f2, 1, 30, GLINT);
+  // Jump f0: tuck (body down, wing clamp, talon tuck).
+  const jcrouch = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jcrouch.set(x, y + 1, idx));
 
-  // Frame 3 — bob -1 (hovering pose).
-  const f3 = bobFrame(c, -1);
+  // Jump f1: wing spread air (body up 2, wings fully spread).
+  const jair = PixelCanvas.create(W, H);
+  base.forEach((x, y, idx) => jair.set(x, y - 2, idx));
+  // Wings spread wider.
+  px(jair, 0, 6, SH);
+  px(jair, 0, 8, SH);
+  // Tail fans fully open.
+  px(jair, 19, 8, GLINT);
+  px(jair, 19, 12, GLINT);
 
-  return buildSprite('sprite-keystrix', [c, f2, f3], 3);
+  // Play f0: talon swipe (left talon sweeps toward toy).
+  const pf0 = base.clone();
+  px(pf0, 3, 11, SH); // talon sweeps.
+  px(pf0, 2, 10, SH);
+  px(pf0, 2, 10, GLINT); // talon claw.
+  px(pf0, 1, 9, GLINT);
+  // Beak key bow glows.
+  px(pf0, 19, 3, RIM_HI);
+  px(pf0, 18, 3, RIM_LO);
+
+  // Play f1: bounce back up.
+  const pf1 = bobFrame(base, -1);
+  px(pf1, 19, 9, GLINT);
+
+  return {
+    ...buildSprite('sprite-keystrix', [base.grid, f2.grid], 3),
+    walk: [base.grid, wf1.grid],
+    jump: [jcrouch.grid, jair.grid],
+    play: [pf0.grid, pf1.grid],
+  };
 }
 
 // ---------------------------------------------------------------------------
