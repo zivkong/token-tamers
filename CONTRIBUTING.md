@@ -89,7 +89,7 @@ See [SECURITY.md](SECURITY.md) for the full picture. The rules contributors hit 
 Content is data, not code. Species, traits, models, achievements, habitats, trinkets and
 sprites live in versioned JSON under `packages/content/content/v1/`. Sprites are
 palette-indexed grids (never RGB); grade and House select colors at render time. See the
-`content-pack` and `sprite-design` skills under `.claude/skills/` for the full rules.
+`maintain-content-packs` and `create-sprites` skills under `.claude/skills/` for the full rules.
 
 ## Releases
 

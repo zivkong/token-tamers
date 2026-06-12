@@ -62,8 +62,50 @@ Key contracts live in `packages/core/src/types.ts`.
   weekly rebirth never evolves the pet — it archives and re-eggs it.
 - Releases: tag `v*` → GitHub Actions builds binaries + GitHub Release.
 
-## Project skills (.claude/skills/)
+## Design quick reference (full detail: token-tamers-design.md + the skills below)
 
-`sprite-design` (art rules), `content-pack` (schemas/additive rules),
-`adapter-dev` (UsageEvent contract, provider quirks), `wiki-writer` (docs style +
-spoiler policy). Read the relevant skill before working in its area.
+- **Pillars:** fully idle (zero required interaction — `tt init` is the only one,
+  ever) · no model judgment · horizontal evolution (equal stat budgets) · version
+  agnostic (hashes outlive versions) · provider agnostic · social by DNA codes ·
+  fully local/zero internet · completionist North Star (100% = Dex + achievements +
+  habitats + trinkets; meter weighting 40/40/10/10).
+- **Cycle:** molt = 5-h session-window close (the ONLY evolution/trait/mutation/
+  grade moment); rebirth = week boundary (archive + new egg, never evolves).
+  Dynamic policy (subscriptions, inferred windows) vs static (API/fixed anchor).
+- **Stages:** egg(Mote) → sprite → rookie → evolved → prime → apex; branch by
+  rhythm / trait class / consistency / arc — all data-driven (`evolvesTo`).
+- **Houses (identity ONLY):** Aether `claude-*` WIS · Cipher `gpt-*`/`o*` PWR ·
+  Flux `gemini-*` SPD · Forge open-weight GRT · Wild unmatched ("???" dormant gene).
+- **Grades:** C→B 25%, B→A 10%, A→S 3% base; activity modifier ×0.5–2.0 (model- and
+  volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI.
+- **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C;
+  Archive keeps one strictly-best record per species.
+- **Scope:** M1 (shipped) = Claude Code adapter, Aether+Cipher lines, shell with
+  Pet/Dex/Archive. M2 = Codex/OpenCode adapters, Flux/Forge/hybrids, DNA, battles,
+  leagues. M3 = seasons, weather events, sprite compiler.
+
+## AI-native development policy (design §17)
+
+Humans own architecture and contracts; CI owns quality and performance; AI writes
+the code. Mechanical countermeasures are already wired (import-boundary lint,
+zero-deps gate, determinism tests, golden frames, fixture suites). Process rules:
+keep CLAUDE.md + skills current (a stale CLAUDE.md is a project bug); small PRs, one
+concern each, invariant checklist in the description; architecture changes require a
+design-doc update in the same PR; perf ceiling lives in the architecture — implement
+within it.
+
+## Project skills (.claude/skills/) — read the relevant one BEFORE working in its area
+
+- `develop-game-engine` — cycle policies, molts/rebirth, evolution, traits, grade
+  rolls, lineage/Archive, determinism rules (packages/core)
+- `develop-tui-renderer` — 4:3 canvas law, diff renderer, half-blocks, SGR mouse,
+  perf budgets, golden-frame testing (packages/tui)
+- `develop-adapters` — UsageEvent contract + per-provider quirks: Claude Code
+  30-day deletion, Codex cumulative deltas/format generations, OpenCode storage
+  tree (packages/adapters)
+- `maintain-content-packs` — schemas, additive-only registries, the full evolution
+  tree incl. reserved M2 names, achievements/habitats/trinkets (packages/content)
+- `create-sprites` — art direction, palette indirection, grade beauty ladder,
+  originality rules (any sprite asset)
+- `write-wiki-docs` — docs style, pledges, grade-odds transparency, spoiler policy
+  (docs/wiki, README)
