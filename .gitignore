@@ -9,6 +9,7 @@ coverage/
 # Claude Code session artifacts (.claude/skills/ IS tracked — project skills)
 .claude/worktrees/
 .claude/settings.local.json
+.playwright-mcp
 
 # Logs & temp
 *.log
