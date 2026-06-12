@@ -76,34 +76,36 @@ dead** — and wakes when you return. Generation 14 will be waiting.
 
 ## 📦 Install & update
 
-**macOS & Linux** — one line. Detects your platform, verifies the download against
-`SHA256SUMS.txt`, and installs `tt` to `~/.local/bin` (no Node, no sudo):
+**macOS & Linux** — one line, no Node, no sudo. Detects your platform, verifies the
+download against `SHA256SUMS.txt`, and installs `tt` to `~/.local/bin`:
 
 ```sh
 curl -fsSL https://github.com/zivkong/token-tamers/releases/latest/download/install.sh | sh
 ```
 
-Pin a release with `TT_VERSION=v1.2.0` or retarget with `TT_INSTALL_DIR=/usr/local/bin`.
-Rather read it before running? `curl -fsSL …/install.sh -o install.sh`, inspect, then
-`sh install.sh`. Every asset — the installer included — carries build provenance:
-`gh attestation verify <file> --repo zivkong/token-tamers`.
-
-**Updating** — re-run the same one-liner any time; it always pulls the latest release
-and replaces `tt` in place. Check what you're on with `tt --version`. Your pet lives in
-`~/.tokentamers/` and is **never touched by a reinstall** — DNA and hashes parse across
-every version, so updating moves you forward without resetting a single generation.
-
-**Uninstalling** — same shape as the installer. Removes the `tt` binary and, by
-default, **leaves your pet in place** so you can come back later:
+**To update**, re-run that exact line — it replaces `tt` in place with the latest release
+(`tt --version` shows what you're on). **To uninstall**, swap `install` → `uninstall`:
 
 ```sh
 curl -fsSL https://github.com/zivkong/token-tamers/releases/latest/download/uninstall.sh | sh
 ```
 
-Want a clean break? Pipe it to `TT_PURGE=1 sh` instead and it also deletes
-`~/.tokentamers` (your pet and config — permanent). Honors `TT_INSTALL_DIR` to find the
-binary, and like everything here it makes no network request. Prefer to do it by hand?
-It's just `rm ~/.local/bin/tt` (plus `rm -rf ~/.tokentamers` to retire the pet).
+Token Tamers is just one binary plus the `~/.tokentamers/` folder — and that folder
+**survives every update, reinstall, and uninstall**, because DNA and hashes parse across
+all versions. You never lose a generation. To erase your pet too, uninstall with
+`TT_PURGE=1`.
+
+Each step is tunable with an environment variable:
+
+| Variable         | Default        | What it does                                       |
+| ---------------- | -------------- | -------------------------------------------------- |
+| `TT_VERSION`     | `latest`       | install or pin a specific tag, e.g. `v1.2.0`       |
+| `TT_INSTALL_DIR` | `~/.local/bin` | where `tt` is installed into / removed from        |
+| `TT_PURGE`       | `0`            | set `1` so uninstall also deletes `~/.tokentamers` |
+
+Cautious about piping to `sh`? Download the script, read it, then run it — e.g.
+`curl -fsSL …/install.sh -o install.sh && sh install.sh`. Every asset is signed: verify
+provenance with `gh attestation verify <file> --repo zivkong/token-tamers`.
 
 <details>
 <summary><strong>🪟 Windows (PowerShell)</strong></summary>
