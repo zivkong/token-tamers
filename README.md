@@ -155,7 +155,7 @@ wakes when you return. Lineage always accrues; re-entry is always warm.
   deterministic battles, fusion pools, Team Leagues, Drifter DNA for solo devs.
 - **M3:** Seasonal content packs, monthly weather events, sprite compiler pipeline.
 
-See [`token-tamers-design.md`](token-tamers-design.md) for the full design document and
+See [`docs/design/`](docs/design/) for the full design reference and
 [`docs/wiki/`](docs/wiki/) for the player & contributor wiki.
 
 ## Contributing

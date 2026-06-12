@@ -5,7 +5,8 @@ description: Style, structure, and spoiler policy for Token Tamers player/contri
 
 # Write wiki & docs
 
-Source of truth: `token-tamers-design.md` §17 (wiki plan). Wiki source lives in
+Source of truth: this skill (page map + policies); mechanics detail lives in
+`docs/design/`. Wiki source lives in
 `docs/wiki/` (synced to the GitHub wiki); keep pages in sync with content-pack
 changes in the same PR.
 

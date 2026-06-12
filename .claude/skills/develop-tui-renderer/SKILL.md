@@ -5,7 +5,8 @@ description: TUI shell and renderer rules for Token Tamers — 4:3 canvas layout
 
 # Develop the TUI shell & renderer (packages/tui)
 
-Source of truth: `token-tamers-design.md` §13 (rendering), §15 (shell). Custom slim
+Source of truth: `docs/design/visuals-habitats-achievements.md` (rendering) and
+`docs/design/architecture.md` (shell). Custom slim
 TUI core — NO framework (Ink/OpenTUI rejected by design; OpenTUI is the documented
 fallback if the renderer hits a wall). Zero runtime dependencies; works on any Node
 LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or content.

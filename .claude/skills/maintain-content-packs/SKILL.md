@@ -5,7 +5,8 @@ description: Content-pack rules for Token Tamers — species/evolution tree, Hou
 
 # Maintain content packs (packages/content)
 
-Source of truth: `token-tamers-design.md` §6, §7, §14. Content is DATA, never code:
+Source of truth: `docs/design/evolution-grades-lineage.md` and
+`docs/design/visuals-habitats-achievements.md`. Content is DATA, never code:
 versioned JSON under `packages/content/content/v1/`, assembled into the typed
 `contentPackV1` in `src/index.ts` (statically imported so the cli bundle embeds it).
 Schemas live in `packages/core/src/types.ts`. Validate with `validatePack()` + the

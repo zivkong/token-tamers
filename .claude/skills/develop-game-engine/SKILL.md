@@ -5,7 +5,8 @@ description: Game-engine rules for Token Tamers — cycle policies, molts/rebirt
 
 # Develop the game engine (packages/core)
 
-Source of truth: `token-tamers-design.md` §5, §6, §8, §11, §12. The engine is PURE and
+Source of truth: `docs/design/lifecycle-and-cycles.md`,
+`docs/design/evolution-grades-lineage.md`, and `docs/design/dna-hash-battles.md`. The engine is PURE and
 DETERMINISTIC: no I/O, no `Date.now()`/`new Date()`/`Math.random()` (ESLint enforces) —
 time enters as event timestamps, randomness via the seeded RNG (`src/rng.ts`,
 mulberry32, serializable state). Same saved state + same events + same clock ⇒
@@ -35,14 +36,27 @@ power.
 
 ## Signal mapping
 
-| Real-world signal                | Game meaning                            |
-| -------------------------------- | --------------------------------------- |
-| Token consumption (any provider) | Nutrition/essence (baseline-normalized) |
-| Model-ID mix                     | Diet → House/species (identity ONLY)    |
-| Session window close             | Molt                                    |
-| Week boundary                    | Rebirth                                 |
-| Riding a window to its cap       | Marathoner trigger                      |
-| Week of zero usage               | Dormant (cocoon, not death)             |
+| Real-world signal                | Game meaning                                      |
+| -------------------------------- | ------------------------------------------------- |
+| Token consumption (any provider) | Nutrition/essence (baseline-normalized)           |
+| Model-ID mix                     | Diet → House/species (identity ONLY)              |
+| Session window close             | Molt                                              |
+| Week boundary                    | Rebirth                                           |
+| Riding a window to its cap       | Marathoner trigger                                |
+| Hitting weekly limit exactly     | Rare Limitbreaker evolution (dynamic policy only) |
+| Week of zero usage               | Dormant (cocoon, not death)                       |
+
+## Weekly arc & weather
+
+- Three acts: **Growth** (days 1–3) molts and traits accrue; **Bloom** (days 4–6) the
+  form matures and one random molt fires the weekly **Bloom event** — a guaranteed
+  rare roll; **Twilight** (final ~24h) legacy score crystallizes and the UI previews
+  rebirth inheritance. Form is already final after the week's last molt.
+- **Weekly weather:** a deterministic seed from the ISO week number biases trait
+  rates ("Storm Week: Sprinter rolls doubled") — shared by every machine, fully
+  offline, no server.
+- Molt evaluation inputs: session count, gap rhythm, time-of-day spread, window-cap
+  proximity, tool/lang diversity, streak vs burst, adapter diversity.
 
 ## Evolution
 
@@ -79,8 +93,11 @@ power.
 - Stat carry-over: 30% base +10% per stage tier reached, cap 70%; inherited trait =
   most-repeated. New egg starts at C (lineage perks may sweeten roll odds, never the
   starting grade, never to certainty).
+- Lineage perks: species affinity by lineage; 3× Prism ancestors → **Kaleido** egg;
+  **Progenitor** flag marks DNA donors. Perks sweeten roll odds only, never grades.
 - Archive: one best-record slot per species; overwrite only if STRICTLY better
-  (grade first, total-stats tiebreak). Records never retroactively demoted.
+  (grade first, total-stats tiebreak). Records never retroactively demoted; records
+  tag `graded_under: vN`; new record → new DNA code, old shared codes stay valid.
 - Stats PWR/SPD/WIS/GRT; equal total budget per stage across species (horizontal
   evolution: different builds, never better builds).
 

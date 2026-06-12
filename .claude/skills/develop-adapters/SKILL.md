@@ -5,8 +5,8 @@ description: Provider-adapter development for Token Tamers — UsageEvent contra
 
 # Develop provider adapters (packages/adapters)
 
-Source of truth: `token-tamers-design.md` §3 (verified research findings, June 2026)
-and §15 (adapter layer). Adapters are versioned plugins emitting one normalized
+Source of truth: this skill (per-provider research findings, verified June 2026)
+and `docs/design/architecture.md` (adapter layer). Adapters are versioned plugins emitting one normalized
 `UsageEvent` stream; the engine never knows which agent produced an event. Format
 drift in any provider = adapter patch, never an engine change.
 
@@ -27,7 +27,9 @@ drift in any provider = adapter patch, never an engine change.
 - Source: `~/.claude/projects/{encoded-path}/*.jsonl` (override: `CLAUDE_CONFIG_DIR`).
   Assistant records carry `message.usage` (input_tokens, output_tokens,
   cache_creation_input_tokens → cacheWriteTokens, cache_read_input_tokens →
-  cacheReadTokens) and `message.model` (full model ID).
+  cacheReadTokens) and `message.model` (full model ID). Auxiliary local sources
+  (not yet ingested): `~/.claude/history.jsonl` (prompt index) and statusline
+  snapshots.
 - `{uuid}.jsonl` = main session; `agent-{uuid}.jsonl` = subagents → tag
   `isSubagent: true`.
 - Caveats: format unofficial and may change; **sessions auto-delete after ~30 days**

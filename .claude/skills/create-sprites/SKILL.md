@@ -5,7 +5,7 @@ description: Art direction and asset format for Token Tamers sprites — palette
 
 # Create sprites
 
-Source of truth: `token-tamers-design.md` §13. Goal: genuinely beautiful colorful
+Source of truth: `docs/design/visuals-habitats-achievements.md`. Goal: genuinely beautiful colorful
 pixel-art pets in the terminal, with grade determining visual _richness_, at <1% CPU.
 
 ## Asset format (non-negotiable)

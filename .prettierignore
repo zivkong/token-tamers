@@ -10,8 +10,5 @@ coverage/
 # Generated or byte-exact files (formatting would corrupt or churn them)
 pnpm-lock.yaml
 packages/content/content/**/*.json
-packages/adapters/test/fixtures/
+packages/adapters/__tests__/fixtures/
 **/__snapshots__/
-
-# Historical design baseline — kept verbatim, never reflowed
-token-tamers-design.md

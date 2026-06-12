@@ -1,0 +1,41 @@
+{
+  "_comment": "INTERNAL M2 design data — fusion-locked special pools (design baseline §7/§9). Pool CONTENTS are spoilers: the species_id values below must never appear in docs/, README, or the wiki. scripts/check-spoilers.sh greps every species_id in this file against public docs and fails CI on a hit. Publicly documented: only the DNA *types* and riddle-style hints. Not yet wired into the shipped pack (no engine/pack import); ids are reserved, additive-only.",
+  "pools": [
+    {
+      "dna_type": "vigil",
+      "hint": "those who watch through the night are watched back…",
+      "species": [
+        { "species_id": "sentinel", "name": "Sentinel" },
+        { "species_id": "nocturnix", "name": "Nocturnix" },
+        { "species_id": "wardenmoth", "name": "Wardenmoth" }
+      ]
+    },
+    {
+      "dna_type": "tempest",
+      "hint": "TODO riddle copy (backlog: riddle-hint copy for each DNA type)",
+      "species": [
+        { "species_id": "galecrest", "name": "Galecrest" },
+        { "species_id": "stormveil", "name": "Stormveil" },
+        { "species_id": "aelstrom", "name": "Aelstrom" }
+      ]
+    },
+    {
+      "dna_type": "prism",
+      "hint": "TODO riddle copy (backlog: riddle-hint copy for each DNA type)",
+      "species": [
+        { "species_id": "kaleidon", "name": "Kaleidon" },
+        { "species_id": "spectrarch", "name": "Spectrarch" },
+        { "species_id": "facetra", "name": "Facetra" }
+      ]
+    },
+    {
+      "dna_type": "chimera",
+      "hint": "TODO riddle copy (backlog: riddle-hint copy for each DNA type)",
+      "species": [
+        { "species_id": "twinmaw", "name": "Twinmaw" },
+        { "species_id": "paradoxa", "name": "Paradoxa" },
+        { "species_id": "amalgamus", "name": "Amalgamus" }
+      ]
+    }
+  ]
+}

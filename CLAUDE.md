@@ -1,7 +1,8 @@
 # Token Tamers — project memory
 
 A fully idle, fully offline terminal virtual pet raised by the developer's real AI
-coding-agent usage. Full design: `token-tamers-design.md` (the contract for everything).
+coding-agent usage. Full design reference: `docs/design/` (the contract for everything, extracted in
+full from the v1.0.3 design baseline).
 
 ## Architecture map
 
@@ -88,7 +89,7 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   weekly rebirth never evolves the pet — it archives and re-eggs it.
 - Releases: tag `v*` → GitHub Actions builds binaries + GitHub Release.
 
-## Design quick reference (full detail: token-tamers-design.md + the skills below)
+## Design quick reference (full detail: docs/design/ + the skills below)
 
 - **Pillars:** fully idle (zero required interaction — `tt init` is the only one,
   ever) · no model judgment · horizontal evolution (equal stat budgets) · version
@@ -110,14 +111,14 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   Pet/Dex/Archive. M2 = Codex/OpenCode adapters, Flux/Forge/hybrids, DNA, battles,
   leagues. M3 = seasons, weather events, sprite compiler.
 
-## AI-native development policy (design §17)
+## AI-native development policy (full text: docs/design/architecture.md)
 
 Humans own architecture and contracts; CI owns quality and performance; AI writes
 the code. Mechanical countermeasures are already wired (import-boundary lint,
 zero-deps gate, determinism tests, golden frames, fixture suites). Process rules:
 keep CLAUDE.md + skills current (a stale CLAUDE.md is a project bug); small PRs, one
 concern each, invariant checklist in the description; architecture changes require a
-design-doc update in the same PR; perf ceiling lives in the architecture — implement
+`docs/design/` update in the same PR; perf ceiling lives in the architecture — implement
 within it.
 
 ## Project skills (.claude/skills/) — read the relevant one BEFORE working in its area

@@ -78,7 +78,7 @@ See [SECURITY.md](SECURITY.md) for the full picture. The rules contributors hit 
 - Small PRs, one concern each.
 - Run `pnpm check` locally before pushing.
 - PRs that change architecture (package boundaries, engine event flow, renderer design)
-  require a design-doc update in the same PR.
+  require a `docs/design/` update in the same PR.
 - Include the invariant checklist in your description: offline ✓ read-only ✓
   no-model-judgment ✓ additive-only ✓ no spoilers ✓.
 
