@@ -80,32 +80,17 @@ dead** — and wakes when you return. Generation 14 will be waiting.
 
 ## 📦 Install
 
-Standalone binaries on every [release](https://github.com/zivkong/token-tamers/releases/latest) —
-no Node required. Verify any download against `SHA256SUMS.txt`, or check its build
-provenance: `gh attestation verify <file> --repo zivkong/token-tamers`.
-
-<details open>
-<summary><strong>🍎 macOS</strong></summary>
+**macOS & Linux** — one line. Detects your platform, verifies the download against
+`SHA256SUMS.txt`, and installs `tt` to `~/.local/bin` (no Node, no sudo):
 
 ```sh
-# Apple Silicon (use tt-macos-x64 for Intel)
-curl -fsSL -o tt https://github.com/zivkong/token-tamers/releases/latest/download/tt-macos-arm64
-chmod +x tt && sudo mv tt /usr/local/bin/
-xattr -d com.apple.quarantine /usr/local/bin/tt 2>/dev/null || true  # unsigned binary
+curl -fsSL https://github.com/zivkong/token-tamers/releases/latest/download/install.sh | sh
 ```
 
-</details>
-
-<details>
-<summary><strong>🐧 Linux</strong></summary>
-
-```sh
-# x64 (use tt-linux-arm64 for ARM)
-curl -fsSL -o tt https://github.com/zivkong/token-tamers/releases/latest/download/tt-linux-x64
-chmod +x tt && sudo mv tt /usr/local/bin/
-```
-
-</details>
+Pin a release with `TT_VERSION=v1.2.0` or retarget with `TT_INSTALL_DIR=/usr/local/bin`.
+Rather read it before running? `curl -fsSL …/install.sh -o install.sh`, inspect, then
+`sh install.sh`. Every asset — the installer included — carries build provenance:
+`gh attestation verify <file> --repo zivkong/token-tamers`.
 
 <details>
 <summary><strong>🪟 Windows (PowerShell)</strong></summary>
