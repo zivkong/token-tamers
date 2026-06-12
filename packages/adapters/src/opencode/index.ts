@@ -8,8 +8,12 @@
  * for older OpenCode builds that predate the SQLite migration.
  *
  * Read-only, always. Never writes inside the provider dir.
- * node:sqlite is experimental in Node 22.x — loaded lazily via dynamic import
- * so this module does NOT crash on Node < 22.5 where the builtin is absent.
+ * node:sqlite is experimental in Node 22.x — loaded lazily via
+ * process.getBuiltinModule so this module does NOT crash on Node < 22.5 where
+ * the builtin is absent, and so it keeps working inside the pkg standalone
+ * binary (whose V8 snapshot has no dynamic-import() callback, and whose CJS
+ * `import.meta.url` is bogus — ruling out both `await import()` and
+ * `createRequire(import.meta.url)`).
  */
 
 import * as fs from 'node:fs/promises';
@@ -90,16 +94,26 @@ let sqliteCapable: boolean | null = null;
  * Probe whether node:sqlite is usable on this Node version.
  * Returns the DatabaseSync class, or null when the builtin is absent (< 22.5).
  * The result is cached after the first probe.
+ *
+ * Loaded via `process.getBuiltinModule` — the canonical synchronous builtin
+ * loader (Node ≥ 22.3 / 20.16). It works identically in ESM source, the CJS
+ * bundle, and the pkg snapshot, unlike `await import()` (no snapshot callback)
+ * or `createRequire(import.meta.url)` (bogus url in the pkg CJS bundle). Returns
+ * `undefined` when the builtin/method is absent (older Node) → treated as
+ * unavailable.
  */
-async function getDatabaseSync(): Promise<(typeof import('node:sqlite'))['DatabaseSync'] | null> {
+function getDatabaseSync(): (typeof import('node:sqlite'))['DatabaseSync'] | null {
   if (sqliteCapable === false) return null;
 
   try {
-    // Indirect specifier: esbuild (tsup, target node20) rewrites a literal
-    // import('node:sqlite') — a builtin newer than its node20 list — into a
-    // broken import('sqlite'). A non-literal specifier is left untouched.
-    const specifier = 'node:sqlite';
-    const mod = (await import(specifier)) as typeof import('node:sqlite');
+    const get = process.getBuiltinModule as
+      | ((id: string) => typeof import('node:sqlite') | undefined)
+      | undefined;
+    const mod = get?.('node:sqlite');
+    if (!mod?.DatabaseSync) {
+      sqliteCapable = false;
+      return null;
+    }
     sqliteCapable = true;
     return mod.DatabaseSync;
   } catch {
@@ -293,7 +307,7 @@ async function detectRoot(root: string): Promise<{ paths: string[]; warnings: st
 
   if (hasDb) {
     // Warn when node:sqlite is not available — install will warn but not fail.
-    const DatabaseSync = await getDatabaseSync();
+    const DatabaseSync = getDatabaseSync();
     if (!DatabaseSync) {
       warnings.push(
         `opencode.db found at ${root} but node:sqlite is unavailable on this Node version ` +
@@ -339,7 +353,7 @@ export const openCodeAdapter: ProviderAdapter & { defaultPlan: 'api' } = {
     // trees drop out), so the checkpoint map stays bounded.
     const mergedFiles: Record<string, { offset: number; mtimeMs: number }> = {};
 
-    const DatabaseSync = await getDatabaseSync();
+    const DatabaseSync = getDatabaseSync();
 
     for (const root of paths) {
       // --- SQLite path ---
