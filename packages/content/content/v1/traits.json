@@ -1,0 +1,47 @@
+[
+  {
+    "id": "marathoner",
+    "name": "Marathoner",
+    "description": "Earned by riding a session window to its cap or sustaining near-continuous usage. A pet with this trait works long and deep without pause."
+  },
+  {
+    "id": "sprinter",
+    "name": "Sprinter",
+    "description": "Earned by intense short bursts of activity with long gaps between sessions. A pet with this trait strikes fast and recovers faster."
+  },
+  {
+    "id": "polyglot",
+    "name": "Polyglot",
+    "description": "Earned by touching 3 or more languages or file types in one session window. A pet with this trait speaks many tongues fluently."
+  },
+  {
+    "id": "nightshade",
+    "name": "Nightshade",
+    "description": "Earned when the majority of usage falls after midnight. A pet with this trait thrives in the quiet hours when the rest of the world sleeps."
+  },
+  {
+    "id": "daybreaker",
+    "name": "Daybreaker",
+    "description": "Earned by completing meaningful sessions before 9am. A pet with this trait greets each dawn with energy and purpose."
+  },
+  {
+    "id": "switcher",
+    "name": "Switcher",
+    "description": "Earned by changing model IDs mid-session. Rewards adaptability and curiosity — never penalizes loyalty to a single model."
+  },
+  {
+    "id": "deepdiver",
+    "name": "Deepdiver",
+    "description": "Earned by sustaining one long continuous conversation thread. A pet with this trait plunges to unfathomable depths and returns with treasure."
+  },
+  {
+    "id": "swarm",
+    "name": "Swarm",
+    "description": "Earned by running many short parallel sessions in a window. A pet with this trait divides and conquers, overwhelming with sheer presence."
+  },
+  {
+    "id": "polyhost",
+    "name": "Polyhost",
+    "description": "Earned by contributing meaningful usage from 2 or more provider adapters in a single window. A pet with this trait bridges worlds without losing itself."
+  }
+]

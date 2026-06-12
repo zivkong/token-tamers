@@ -15,20 +15,20 @@ House by the window's dominant model-ID gene.
 
 ## Houses (identity & cosmetics only — equal stat budgets)
 
-| House  | Diet (model-ID family)        | Theme            | Stat lean |
-| ------ | ----------------------------- | ---------------- | --------- |
-| Aether | `claude-*`                    | ethereal / mind  | WIS       |
-| Cipher | `gpt-*` / `o*`                | glyph / geometry | PWR       |
-| Flux   | `gemini-*`                    | light / current  | SPD       |
-| Forge  | open-weight families          | metal / ember    | GRT       |
-| Wild   | anything unmatched            | "???" silhouette | neutral   |
+| House  | Diet (model-ID family) | Theme            | Stat lean |
+| ------ | ---------------------- | ---------------- | --------- |
+| Aether | `claude-*`             | ethereal / mind  | WIS       |
+| Cipher | `gpt-*` / `o*`         | glyph / geometry | PWR       |
+| Flux   | `gemini-*`             | light / current  | SPD       |
+| Forge  | open-weight families   | metal / ember    | GRT       |
+| Wild   | anything unmatched     | "???" silhouette | neutral   |
 
 No House is stronger; no model is better food. "Lean" redistributes an equal budget.
 
 ## Traits (rolled once per molt, up to ~5 slots)
 
 Marathoner · Sprinter · Polyglot · Nightshade · Daybreaker · Switcher · Deepdiver ·
-Swarm · Polyhost — all triggered by *work patterns*, never by model choice or volume.
+Swarm · Polyhost — all triggered by _work patterns_, never by model choice or volume.
 
 ## Pattern evolutions (locked at the week's final molt)
 

@@ -3,4 +3,5 @@ dist/
 out/
 coverage/
 pnpm-lock.yaml
+token-tamers-design.md
 packages/content/content/**/*.json

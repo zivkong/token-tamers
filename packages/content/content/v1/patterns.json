@@ -1,0 +1,22 @@
+[
+  {
+    "id": "vigil",
+    "name": "Vigil",
+    "requiresTraits": ["marathoner", "nightshade"]
+  },
+  {
+    "id": "tempest",
+    "name": "Tempest",
+    "requiresTraits": ["sprinter", "swarm"]
+  },
+  {
+    "id": "prism",
+    "name": "Prism",
+    "minDistinctTraits": 4
+  },
+  {
+    "id": "chimera",
+    "name": "Chimera",
+    "requiresTraits": ["polyhost", "switcher"]
+  }
+]

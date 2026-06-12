@@ -1,0 +1,31 @@
+[
+  {
+    "id": "terminal-den",
+    "name": "Terminal Den",
+    "spriteId": "habitat-terminal-den",
+    "trinketSlots": [
+      { "x": 16, "y": 28 },
+      { "x": 80, "y": 28 },
+      { "x": 48, "y": 30 }
+    ]
+  },
+  {
+    "id": "meadow",
+    "name": "Meadow",
+    "spriteId": "habitat-meadow",
+    "trinketSlots": [
+      { "x": 20, "y": 26 },
+      { "x": 76, "y": 26 },
+      { "x": 48, "y": 30 }
+    ]
+  },
+  {
+    "id": "rooftop-night",
+    "name": "Rooftop Night",
+    "spriteId": "habitat-rooftop-night",
+    "trinketSlots": [
+      { "x": 16, "y": 28 },
+      { "x": 80, "y": 28 }
+    ]
+  }
+]

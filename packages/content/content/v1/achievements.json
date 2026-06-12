@@ -1,0 +1,210 @@
+[
+  {
+    "id": "first-molt",
+    "name": "First Molt",
+    "description": "Your Mote completed its first molt and took its true form.",
+    "condition": { "type": "stage_reached", "stage": "sprite" }
+  },
+  {
+    "id": "reached-rookie",
+    "name": "Rookie Steps",
+    "description": "Evolved into a Rookie stage for the first time.",
+    "condition": { "type": "stage_reached", "stage": "rookie" }
+  },
+  {
+    "id": "reached-evolved",
+    "name": "True Form Emerging",
+    "description": "Evolved into the Evolved stage for the first time.",
+    "condition": { "type": "stage_reached", "stage": "evolved" }
+  },
+  {
+    "id": "reached-prime",
+    "name": "Prime Ascension",
+    "description": "Evolved into the Prime stage for the first time.",
+    "condition": { "type": "stage_reached", "stage": "prime" }
+  },
+  {
+    "id": "reached-apex",
+    "name": "Apex Achieved",
+    "description": "Evolved into the Apex stage — the pinnacle of your lineage.",
+    "condition": { "type": "stage_reached", "stage": "apex" },
+    "reward": { "kind": "title", "id": "apex-tamer", "name": "Apex Tamer" }
+  },
+  {
+    "id": "first-grade-b",
+    "name": "Showing Promise",
+    "description": "Your pet's grade reached B for the first time.",
+    "condition": { "type": "grade_reached", "grade": "B" },
+    "reward": { "kind": "trinket", "id": "bouncy-ball" }
+  },
+  {
+    "id": "first-grade-a",
+    "name": "Exceptional Quality",
+    "description": "Your pet's grade reached A — a rare achievement.",
+    "condition": { "type": "grade_reached", "grade": "A" },
+    "reward": { "kind": "trinket", "id": "lava-lamp" }
+  },
+  {
+    "id": "first-grade-s",
+    "name": "Legendary Grade",
+    "description": "Your pet achieved S grade — truly extraordinary.",
+    "condition": { "type": "grade_reached", "grade": "S" },
+    "reward": { "kind": "trinket", "id": "trophy-shelf" }
+  },
+  {
+    "id": "trait-marathoner",
+    "name": "The Long Haul",
+    "description": "Earned the Marathoner trait for the first time.",
+    "condition": { "type": "trait_earned", "trait": "marathoner", "count": 1 },
+    "reward": { "kind": "trinket", "id": "cushion" }
+  },
+  {
+    "id": "trait-sprinter",
+    "name": "Burst and Rest",
+    "description": "Earned the Sprinter trait for the first time.",
+    "condition": { "type": "trait_earned", "trait": "sprinter", "count": 1 }
+  },
+  {
+    "id": "trait-polyglot",
+    "name": "Many Tongues",
+    "description": "Earned the Polyglot trait for the first time.",
+    "condition": { "type": "trait_earned", "trait": "polyglot", "count": 1 }
+  },
+  {
+    "id": "trait-nightshade",
+    "name": "Child of Midnight",
+    "description": "Earned the Nightshade trait for the first time.",
+    "condition": { "type": "trait_earned", "trait": "nightshade", "count": 1 }
+  },
+  {
+    "id": "trait-daybreaker",
+    "name": "Early Riser",
+    "description": "Earned the Daybreaker trait for the first time.",
+    "condition": { "type": "trait_earned", "trait": "daybreaker", "count": 1 }
+  },
+  {
+    "id": "trait-switcher",
+    "name": "Model Curious",
+    "description": "Earned the Switcher trait for the first time.",
+    "condition": { "type": "trait_earned", "trait": "switcher", "count": 1 }
+  },
+  {
+    "id": "trait-deepdiver",
+    "name": "Depth of Focus",
+    "description": "Earned the Deepdiver trait for the first time.",
+    "condition": { "type": "trait_earned", "trait": "deepdiver", "count": 1 }
+  },
+  {
+    "id": "trait-swarm",
+    "name": "Many Are One",
+    "description": "Earned the Swarm trait for the first time.",
+    "condition": { "type": "trait_earned", "trait": "swarm", "count": 1 }
+  },
+  {
+    "id": "trait-polyhost",
+    "name": "Bridge Builder",
+    "description": "Earned the Polyhost trait for the first time.",
+    "condition": { "type": "trait_earned", "trait": "polyhost", "count": 1 },
+    "reward": { "kind": "trinket", "id": "gift-box" }
+  },
+  {
+    "id": "pattern-vigil",
+    "name": "Watcher of the Night",
+    "description": "Locked the Vigil pattern — Marathoner and Nightshade combined.",
+    "condition": { "type": "pattern_first", "pattern": "vigil" },
+    "reward": { "kind": "habitat", "id": "rooftop-night" }
+  },
+  {
+    "id": "pattern-tempest",
+    "name": "Eye of the Storm",
+    "description": "Locked the Tempest pattern — Sprinter and Swarm combined.",
+    "condition": { "type": "pattern_first", "pattern": "tempest" }
+  },
+  {
+    "id": "pattern-prism",
+    "name": "Spectrum Complete",
+    "description": "Locked the Prism pattern — four distinct traits in one pet.",
+    "condition": { "type": "pattern_first", "pattern": "prism" },
+    "reward": { "kind": "habitat", "id": "meadow" }
+  },
+  {
+    "id": "pattern-chimera",
+    "name": "Between Worlds",
+    "description": "Locked the Chimera pattern — Polyhost and Switcher combined.",
+    "condition": { "type": "pattern_first", "pattern": "chimera" }
+  },
+  {
+    "id": "generation-2",
+    "name": "Second Generation",
+    "description": "Raised your second generation of pets through rebirth.",
+    "condition": { "type": "generation", "count": 2 }
+  },
+  {
+    "id": "generation-5",
+    "name": "Lineage Begins",
+    "description": "Reached the fifth generation — your lineage has real depth.",
+    "condition": { "type": "generation", "count": 5 },
+    "reward": { "kind": "title", "id": "lineage-keeper", "name": "Lineage Keeper" }
+  },
+  {
+    "id": "generation-10",
+    "name": "Ancient Line",
+    "description": "Ten generations of rebirth — your lineage is truly ancient.",
+    "condition": { "type": "generation", "count": 10 },
+    "reward": { "kind": "title", "id": "ancient-tamer", "name": "Ancient Tamer" }
+  },
+  {
+    "id": "dormant-survived",
+    "name": "Through the Cocoon",
+    "description": "Survived a week of dormancy — your pet endured the silence and emerged.",
+    "condition": { "type": "dormant_survived" },
+    "reward": { "kind": "title", "id": "dormant-survivor", "name": "Survivor" }
+  },
+  {
+    "id": "molt-count-10",
+    "name": "Seasoned Molter",
+    "description": "Accumulated 10 molts across all lifetimes.",
+    "condition": { "type": "molt_count_lifetime", "count": 10 }
+  },
+  {
+    "id": "molt-count-50",
+    "name": "Master of Change",
+    "description": "Accumulated 50 molts across all lifetimes — a dedication to growth.",
+    "condition": { "type": "molt_count_lifetime", "count": 50 },
+    "reward": { "kind": "title", "id": "master-of-change", "name": "Master of Change" }
+  },
+  {
+    "id": "dex-25-percent",
+    "name": "Quarter Collection",
+    "description": "Filled 25% of the Dex — you have seen much, but there is more.",
+    "condition": { "type": "dex_percent", "percent": 25 }
+  },
+  {
+    "id": "dex-50-percent",
+    "name": "Halfway There",
+    "description": "Filled 50% of the Dex — the collection is taking real shape.",
+    "condition": { "type": "dex_percent", "percent": 50 },
+    "reward": { "kind": "title", "id": "collector", "name": "Collector" }
+  },
+  {
+    "id": "distinct-traits-5-one-life",
+    "name": "Kaleidoscope",
+    "description": "Earned 5 distinct traits in a single lifetime — a truly diverse pet.",
+    "condition": { "type": "distinct_traits_one_life", "count": 5 },
+    "reward": { "kind": "trinket", "id": "bonsai" }
+  },
+  {
+    "id": "house-apex-aether",
+    "name": "Aether Mastery",
+    "description": "Reached the Apex stage with a full Aether lineage.",
+    "condition": { "type": "house_apex", "house": "aether" },
+    "reward": { "kind": "title", "id": "aether-master", "name": "Aether Master" }
+  },
+  {
+    "id": "house-apex-cipher",
+    "name": "Cipher Mastery",
+    "description": "Reached the Apex stage with a full Cipher lineage.",
+    "condition": { "type": "house_apex", "house": "cipher" },
+    "reward": { "kind": "title", "id": "cipher-master", "name": "Cipher Master" }
+  }
+]

@@ -22,13 +22,13 @@ actual work patterns into pet growth, evolution, grades, and a collection to com
 ## The three pledges
 
 1. **Read-only — it never spends your tokens.** Token Tamers never calls any AI API and
-   never touches your quota or subscription. It only *reads* the usage logs your agent
+   never touches your quota or subscription. It only _reads_ the usage logs your agent
    already writes to disk. Your pet grows because you shipped real work.
 2. **Fully offline — zero network code.** No API calls, no telemetry, no update checks,
    no sync. CI fails the build if any network-capable code is ever introduced. Social
    features work by humans pasting text codes to each other.
-3. **No model judgment.** Model choice only influences your pet's *species identity and
-   cosmetics* — never stats, grades, or progression speed. All power metrics are
+3. **No model judgment.** Model choice only influences your pet's _species identity and
+   cosmetics_ — never stats, grades, or progression speed. All power metrics are
    normalized against **your own baseline**. An all-light-model dev and an all-frontier-model
    dev with similar work patterns raise equally strong pets.
 
@@ -106,27 +106,27 @@ keep coding with your agent and check in whenever you like. Your first week hatc
 
 ## Commands
 
-| Command       | What it does                                              |
-| ------------- | --------------------------------------------------------- |
-| `tt init`     | One-time setup wizard (re-run to add/remove adapters)      |
-| `tt`          | The clickable 4:3 shell: Pet, Dex, and Archive pages       |
-| `tt watch`    | Slim live view                                             |
-| `tt status`   | One-shot status line (statusline-friendly)                 |
-| `tt dex`      | Dex listing in plain text                                  |
-| `tt archive`  | Best-record Hall of Fame per species                       |
-| `tt complete` | Completion meter with per-page breakdown                   |
-| `tt adapters` | Adapter health: detected paths, last scan, warnings        |
+| Command       | What it does                                          |
+| ------------- | ----------------------------------------------------- |
+| `tt init`     | One-time setup wizard (re-run to add/remove adapters) |
+| `tt`          | The clickable 4:3 shell: Pet, Dex, and Archive pages  |
+| `tt watch`    | Slim live view                                        |
+| `tt status`   | One-shot status line (statusline-friendly)            |
+| `tt dex`      | Dex listing in plain text                             |
+| `tt archive`  | Best-record Hall of Fame per species                  |
+| `tt complete` | Completion meter with per-page breakdown              |
+| `tt adapters` | Adapter health: detected paths, last scan, warnings   |
 
 All commands honor `--no-color` (pure-ASCII fallback) and degrade gracefully from
 truecolor → 256-color → 8-color terminals.
 
 ## Supported agents
 
-| Agent       | Status      | Data source (read-only)                        |
-| ----------- | ----------- | ----------------------------------------------- |
-| Claude Code | ✅ MVP       | `~/.claude/projects/**/*.jsonl`                 |
-| Codex CLI   | 🔜 planned   | `$CODEX_HOME/sessions/**/rollout-*.jsonl`       |
-| OpenCode    | 🔜 planned   | `~/.local/share/opencode/storage/`              |
+| Agent       | Status     | Data source (read-only)                   |
+| ----------- | ---------- | ----------------------------------------- |
+| Claude Code | ✅ MVP     | `~/.claude/projects/**/*.jsonl`           |
+| Codex CLI   | 🔜 planned | `$CODEX_HOME/sessions/**/rollout-*.jsonl` |
+| OpenCode    | 🔜 planned | `~/.local/share/opencode/storage/`        |
 
 Adapters are plugins emitting one normalized event stream; the engine never knows which
 agent produced an event. Multi-agent setups feed **one pet** — adding a second agent
@@ -141,7 +141,7 @@ and CI enforces that.
 **Is my data sent anywhere?** No. Everything lives in `~/.tokentamers/` on your machine.
 
 **I only use cheap/local models — is my pet weaker?** No. Progression is normalized to
-*your own* usage baseline. Model mix only flavors species identity (Houses).
+_your own_ usage baseline. Model mix only flavors species identity (Houses).
 
 **What if I stop coding for a week?** Your pet goes **Dormant** (a cocoon, not death) and
 wakes when you return. Lineage always accrues; re-entry is always warm.

@@ -1,0 +1,362 @@
+[
+  {
+    "id": "mote",
+    "num": 1,
+    "name": "Mote",
+    "house": "wild",
+    "stage": "egg",
+    "statWeights": { "pwr": 25, "spd": 25, "wis": 25, "grt": 25 },
+    "evolvesTo": [
+      { "species": "wisp", "when": { "kind": "default" } },
+      { "species": "glyphit", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-mote",
+    "flavor": "A softly glowing orb that flickers with potential. Its House is not yet determined."
+  },
+
+  {
+    "id": "wisp",
+    "num": 2,
+    "name": "Wisp",
+    "house": "aether",
+    "stage": "sprite",
+    "statWeights": { "pwr": 22, "spd": 24, "wis": 31, "grt": 23 },
+    "evolvesTo": [
+      { "species": "aetherling", "when": { "kind": "rhythm", "value": "steady" } },
+      { "species": "murmur", "when": { "kind": "rhythm", "value": "bursty" } },
+      { "species": "aetherling", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-wisp",
+    "flavor": "A drifting luminous wisp trailing threads of light. Calm and contemplative."
+  },
+
+  {
+    "id": "aetherling",
+    "num": 3,
+    "name": "Aetherling",
+    "house": "aether",
+    "stage": "rookie",
+    "statWeights": { "pwr": 21, "spd": 23, "wis": 34, "grt": 22 },
+    "evolvesTo": [
+      { "species": "oraclet", "when": { "kind": "traitClass", "value": "endurance" } },
+      { "species": "cirrux", "when": { "kind": "traitClass", "value": "tempo" } },
+      { "species": "nimbusk", "when": { "kind": "traitClass", "value": "breadth" } },
+      { "species": "oraclet", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-aetherling",
+    "flavor": "A small humanoid wreathed in soft violet light. Studies the world with wide, luminous eyes."
+  },
+
+  {
+    "id": "murmur",
+    "num": 4,
+    "name": "Murmur",
+    "house": "aether",
+    "stage": "rookie",
+    "statWeights": { "pwr": 20, "spd": 27, "wis": 32, "grt": 21 },
+    "evolvesTo": [
+      { "species": "oraclet", "when": { "kind": "traitClass", "value": "endurance" } },
+      { "species": "cirrux", "when": { "kind": "traitClass", "value": "tempo" } },
+      { "species": "nimbusk", "when": { "kind": "traitClass", "value": "breadth" } },
+      { "species": "cirrux", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-murmur",
+    "flavor": "Flickers and pulses with rapid thought. Leaves faint echo-trails when it moves quickly."
+  },
+
+  {
+    "id": "oraclet",
+    "num": 5,
+    "name": "Oraclet",
+    "house": "aether",
+    "stage": "evolved",
+    "statWeights": { "pwr": 20, "spd": 22, "wis": 38, "grt": 20 },
+    "evolvesTo": [
+      { "species": "seraphix", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "thoughtwarden", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "halcyore", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "thoughtwarden", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-oraclet",
+    "flavor": "A floating oracle wrapped in layered aether bands. Speaks in riddles of light."
+  },
+
+  {
+    "id": "cirrux",
+    "num": 6,
+    "name": "Cirrux",
+    "house": "aether",
+    "stage": "evolved",
+    "statWeights": { "pwr": 22, "spd": 26, "wis": 32, "grt": 20 },
+    "evolvesTo": [
+      { "species": "seraphix", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "thoughtwarden", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "halcyore", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "seraphix", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-cirrux",
+    "flavor": "Streaks like a comet through aetheric fields, leaving crystalline wake-patterns."
+  },
+
+  {
+    "id": "nimbusk",
+    "num": 7,
+    "name": "Nimbusk",
+    "house": "aether",
+    "stage": "evolved",
+    "statWeights": { "pwr": 21, "spd": 23, "wis": 35, "grt": 21 },
+    "evolvesTo": [
+      { "species": "seraphix", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "thoughtwarden", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "halcyore", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "halcyore", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-nimbusk",
+    "flavor": "Surrounded by a permanent nimbus of drifting wisdom-sigils. Sees connections others miss."
+  },
+
+  {
+    "id": "seraphix",
+    "num": 8,
+    "name": "Seraphix",
+    "house": "aether",
+    "stage": "prime",
+    "statWeights": { "pwr": 22, "spd": 24, "wis": 42, "grt": 22 },
+    "evolvesTo": [
+      { "species": "aurelion", "when": { "kind": "arc", "value": "early" } },
+      { "species": "mindspire", "when": { "kind": "arc", "value": "late" } },
+      { "species": "aurelion", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-seraphix",
+    "flavor": "Radiates pure aetheric brilliance. Multiple wing-like light-sheets orbit its core."
+  },
+
+  {
+    "id": "thoughtwarden",
+    "num": 9,
+    "name": "Thoughtwarden",
+    "house": "aether",
+    "stage": "prime",
+    "statWeights": { "pwr": 24, "spd": 22, "wis": 38, "grt": 26 },
+    "evolvesTo": [
+      { "species": "aurelion", "when": { "kind": "arc", "value": "early" } },
+      { "species": "mindspire", "when": { "kind": "arc", "value": "late" } },
+      { "species": "mindspire", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-thoughtwarden",
+    "flavor": "A towering guardian of crystallized thought. Shields its ward with pillars of solid light."
+  },
+
+  {
+    "id": "halcyore",
+    "num": 10,
+    "name": "Halcyore",
+    "house": "aether",
+    "stage": "prime",
+    "statWeights": { "pwr": 20, "spd": 25, "wis": 40, "grt": 25 },
+    "evolvesTo": [
+      { "species": "aurelion", "when": { "kind": "arc", "value": "early" } },
+      { "species": "mindspire", "when": { "kind": "arc", "value": "late" } },
+      { "species": "aurelion", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-halcyore",
+    "flavor": "Drifts in a perpetual calm aura. Its presence stills turbulent energies for miles around."
+  },
+
+  {
+    "id": "aurelion",
+    "num": 11,
+    "name": "Aurelion",
+    "house": "aether",
+    "stage": "apex",
+    "statWeights": { "pwr": 24, "spd": 26, "wis": 46, "grt": 24 },
+    "evolvesTo": [],
+    "spriteId": "sprite-aurelion",
+    "flavor": "The apex of aetheric potential. Its wings are woven from pure thought given form."
+  },
+
+  {
+    "id": "mindspire",
+    "num": 12,
+    "name": "Mindspire",
+    "house": "aether",
+    "stage": "apex",
+    "statWeights": { "pwr": 26, "spd": 22, "wis": 44, "grt": 28 },
+    "evolvesTo": [],
+    "spriteId": "sprite-mindspire",
+    "flavor": "A crystalline spire of pure intellect. Ancient truths orbit it like satellites."
+  },
+
+  {
+    "id": "glyphit",
+    "num": 13,
+    "name": "Glyphit",
+    "house": "cipher",
+    "stage": "sprite",
+    "statWeights": { "pwr": 31, "spd": 24, "wis": 22, "grt": 23 },
+    "evolvesTo": [
+      { "species": "cipherling", "when": { "kind": "rhythm", "value": "steady" } },
+      { "species": "bitfang", "when": { "kind": "rhythm", "value": "bursty" } },
+      { "species": "cipherling", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-glyphit",
+    "flavor": "A compact angular creature inscribed with shifting cipher-glyphs. Decisive and sharp."
+  },
+
+  {
+    "id": "cipherling",
+    "num": 14,
+    "name": "Cipherling",
+    "house": "cipher",
+    "stage": "rookie",
+    "statWeights": { "pwr": 34, "spd": 23, "wis": 21, "grt": 22 },
+    "evolvesTo": [
+      { "species": "runeclaw", "when": { "kind": "traitClass", "value": "endurance" } },
+      { "species": "vectorix", "when": { "kind": "traitClass", "value": "tempo" } },
+      { "species": "glyphound", "when": { "kind": "traitClass", "value": "breadth" } },
+      { "species": "runeclaw", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-cipherling",
+    "flavor": "Wears geometric plating etched with evolving cipher sequences. Methodical in battle."
+  },
+
+  {
+    "id": "bitfang",
+    "num": 15,
+    "name": "Bitfang",
+    "house": "cipher",
+    "stage": "rookie",
+    "statWeights": { "pwr": 32, "spd": 27, "wis": 20, "grt": 21 },
+    "evolvesTo": [
+      { "species": "runeclaw", "when": { "kind": "traitClass", "value": "endurance" } },
+      { "species": "vectorix", "when": { "kind": "traitClass", "value": "tempo" } },
+      { "species": "glyphound", "when": { "kind": "traitClass", "value": "breadth" } },
+      { "species": "vectorix", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-bitfang",
+    "flavor": "Strikes like a data packet — sharp, fast, and precisely targeted."
+  },
+
+  {
+    "id": "runeclaw",
+    "num": 16,
+    "name": "Runeclaw",
+    "house": "cipher",
+    "stage": "evolved",
+    "statWeights": { "pwr": 38, "spd": 22, "wis": 20, "grt": 20 },
+    "evolvesTo": [
+      { "species": "cryptarch", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "matrixion", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "sigilus", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "cryptarch", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-runeclaw",
+    "flavor": "Massive rune-engraved claws that unlock any cipher with a single strike."
+  },
+
+  {
+    "id": "vectorix",
+    "num": 17,
+    "name": "Vectorix",
+    "house": "cipher",
+    "stage": "evolved",
+    "statWeights": { "pwr": 35, "spd": 26, "wis": 20, "grt": 19 },
+    "evolvesTo": [
+      { "species": "cryptarch", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "matrixion", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "sigilus", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "matrixion", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-vectorix",
+    "flavor": "Moves in precise geometric trajectories. Its body segments realign per combat vector."
+  },
+
+  {
+    "id": "glyphound",
+    "num": 18,
+    "name": "Glyphound",
+    "house": "cipher",
+    "stage": "evolved",
+    "statWeights": { "pwr": 34, "spd": 23, "wis": 23, "grt": 20 },
+    "evolvesTo": [
+      { "species": "cryptarch", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "matrixion", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "sigilus", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "sigilus", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-glyphound",
+    "flavor": "Hunts by decoding encrypted scent-trails. Its glyph-patterned coat shifts like a hash."
+  },
+
+  {
+    "id": "cryptarch",
+    "num": 19,
+    "name": "Cryptarch",
+    "house": "cipher",
+    "stage": "prime",
+    "statWeights": { "pwr": 42, "spd": 23, "wis": 22, "grt": 23 },
+    "evolvesTo": [
+      { "species": "enigmax", "when": { "kind": "arc", "value": "early" } },
+      { "species": "keystrix", "when": { "kind": "arc", "value": "late" } },
+      { "species": "enigmax", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-cryptarch",
+    "flavor": "A cryptographic archon who holds the master key to all known ciphers."
+  },
+
+  {
+    "id": "matrixion",
+    "num": 20,
+    "name": "Matrixion",
+    "house": "cipher",
+    "stage": "prime",
+    "statWeights": { "pwr": 38, "spd": 26, "wis": 22, "grt": 24 },
+    "evolvesTo": [
+      { "species": "enigmax", "when": { "kind": "arc", "value": "early" } },
+      { "species": "keystrix", "when": { "kind": "arc", "value": "late" } },
+      { "species": "keystrix", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-matrixion",
+    "flavor": "Exists as a living matrix of decision nodes. Calculates every branch simultaneously."
+  },
+
+  {
+    "id": "sigilus",
+    "num": 21,
+    "name": "Sigilus",
+    "house": "cipher",
+    "stage": "prime",
+    "statWeights": { "pwr": 40, "spd": 22, "wis": 24, "grt": 24 },
+    "evolvesTo": [
+      { "species": "enigmax", "when": { "kind": "arc", "value": "early" } },
+      { "species": "keystrix", "when": { "kind": "arc", "value": "late" } },
+      { "species": "enigmax", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-sigilus",
+    "flavor": "Sealed with ancient sigils that rewrite themselves each cycle. Impenetrable and serene."
+  },
+
+  {
+    "id": "enigmax",
+    "num": 22,
+    "name": "Enigmax",
+    "house": "cipher",
+    "stage": "apex",
+    "statWeights": { "pwr": 46, "spd": 24, "wis": 24, "grt": 26 },
+    "evolvesTo": [],
+    "spriteId": "sprite-enigmax",
+    "flavor": "The unsolvable enigma made manifest. Even its silhouette resists definition."
+  },
+
+  {
+    "id": "keystrix",
+    "num": 23,
+    "name": "Keystrix",
+    "house": "cipher",
+    "stage": "apex",
+    "statWeights": { "pwr": 44, "spd": 26, "wis": 22, "grt": 28 },
+    "evolvesTo": [],
+    "spriteId": "sprite-keystrix",
+    "flavor": "The master key. Its existence unlocks potential others cannot even perceive."
+  }
+]

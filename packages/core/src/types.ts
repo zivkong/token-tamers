@@ -47,7 +47,14 @@ export const GRADE_ORDER: readonly Grade[] = ['C', 'B', 'A', 'S'];
 
 export type Stage = 'egg' | 'sprite' | 'rookie' | 'evolved' | 'prime' | 'apex';
 
-export const STAGE_ORDER: readonly Stage[] = ['egg', 'sprite', 'rookie', 'evolved', 'prime', 'apex'];
+export const STAGE_ORDER: readonly Stage[] = [
+  'egg',
+  'sprite',
+  'rookie',
+  'evolved',
+  'prime',
+  'apex',
+];
 
 export type TraitId =
   | 'marathoner'
@@ -330,7 +337,13 @@ export interface Engine {
   advanceTo(now: number): GameEffect[];
   state(): GameState;
   /** Completion meter, 0..100 with per-page breakdown. */
-  completion(): { overall: number; dex: number; achievements: number; habitats: number; trinkets: number };
+  completion(): {
+    overall: number;
+    dex: number;
+    achievements: number;
+    habitats: number;
+    trinkets: number;
+  };
 }
 
 // ---------------------------------------------------------------------------

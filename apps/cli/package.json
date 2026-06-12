@@ -7,7 +7,9 @@
   "bin": {
     "tt": "dist/tt.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=20"
   },
@@ -22,7 +24,14 @@
     "@token-tamers/core": "workspace:*",
     "@token-tamers/tui": "workspace:*"
   },
-  "keywords": ["terminal", "tui", "virtual-pet", "idle-game", "claude-code", "developer-tools"],
+  "keywords": [
+    "terminal",
+    "tui",
+    "virtual-pet",
+    "idle-game",
+    "claude-code",
+    "developer-tools"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zivkong/token-tamers.git"

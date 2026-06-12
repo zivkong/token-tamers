@@ -1,4 +1,5 @@
 import type { UsageEvent } from '@token-tamers/core';
+import { claudeCodeAdapter } from './claude-code';
 
 /** Per-file scan bookkeeping so re-scans are incremental, never full re-reads. */
 export interface AdapterCheckpoint {
@@ -25,5 +26,7 @@ export interface ProviderAdapter {
   scan(paths: string[], checkpoint?: AdapterCheckpoint): Promise<ScanResult>;
 }
 
+export { claudeCodeAdapter };
+
 // Implementations are registered here; MVP ships claude-code only.
-export const adapters: ProviderAdapter[] = [];
+export const adapters: ProviderAdapter[] = [claudeCodeAdapter];

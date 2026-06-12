@@ -1,0 +1,32 @@
+[
+  {
+    "id": "bouncy-ball",
+    "name": "Bouncy Ball",
+    "spriteId": "trinket-bouncy-ball"
+  },
+  {
+    "id": "cushion",
+    "name": "Cushion",
+    "spriteId": "trinket-cushion"
+  },
+  {
+    "id": "lava-lamp",
+    "name": "Lava Lamp",
+    "spriteId": "trinket-lava-lamp"
+  },
+  {
+    "id": "bonsai",
+    "name": "Bonsai",
+    "spriteId": "trinket-bonsai"
+  },
+  {
+    "id": "gift-box",
+    "name": "Gift Box",
+    "spriteId": "trinket-gift-box"
+  },
+  {
+    "id": "trophy-shelf",
+    "name": "Trophy Shelf",
+    "spriteId": "trinket-trophy-shelf"
+  }
+]

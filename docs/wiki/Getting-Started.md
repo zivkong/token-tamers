@@ -9,9 +9,9 @@ See the [README](../../README.md#install) for per-OS install instructions
 
 1. **Detection** — probes for installed agents (Claude Code: `~/.claude/projects/`).
 2. **Plan type per provider:**
-   - *Subscription with limit windows* (Claude Pro/Max) → **dynamic cycle policy**:
+   - _Subscription with limit windows_ (Claude Pro/Max) → **dynamic cycle policy**:
      molt windows inferred from your real usage gaps.
-   - *API / pay-as-you-go* → **static cycle policy**: fixed 5-hour windows and a 7-day
+   - _API / pay-as-you-go_ → **static cycle policy**: fixed 5-hour windows and a 7-day
      week anchored to a configurable epoch (default: next Monday 00:00 local).
 3. **Backfill** — scans existing logs to establish your normalization baseline.
    Your first week hatches a **Calibration Egg**: it plays normally, but grades are

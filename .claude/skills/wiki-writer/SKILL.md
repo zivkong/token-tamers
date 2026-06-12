@@ -11,8 +11,8 @@ description: Style and spoiler policy for Token Tamers docs and the docs/wiki tr
   experiences, then the rules, then edge cases.
 - Always restate the pledges where relevant: read-only (never spends tokens), fully
   offline, no model judgment.
-- **Spoiler policy — HINT, NEVER REVEAL:** document *that* fusion-locked specials exist,
-  the apply-timing tiers, and which DNA *types* exist — never pool contents, special
+- **Spoiler policy — HINT, NEVER REVEAL:** document _that_ fusion-locked specials exist,
+  the apply-timing tiers, and which DNA _types_ exist — never pool contents, special
   names, sprites, or stats. Riddle-style hints only (e.g. Vigil DNA: "those who watch
   through the night are watched back…"). Dex shows "???" silhouettes.
   `scripts/check-spoilers.sh` greps docs for special-pool ids and fails CI.
