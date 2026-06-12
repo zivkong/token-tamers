@@ -20,6 +20,7 @@ import { staticMolts } from './static';
 import { makeRebirth, WEEK_MS, weekStartFor } from './windows';
 
 export { WEEK_MS, weekStartFor, WINDOW_MS } from './windows';
+export { unconsumedEvents } from './pending';
 
 /**
  * Derive the cycle events whose `at` (close time) falls in `(after, now]`.

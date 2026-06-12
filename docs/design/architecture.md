@@ -226,6 +226,16 @@ daemon. On each `tt` invocation the adapter scanner catches up from its last sto
 the daemon architecture (persistent process + store) is the target design and the code is
 structured to support it, but the M1 binary does not install a background process.
 
+**Pending-events store (`~/.tokentamers/pending.json`).** A molt only consumes a 5-h window once
+it has _closed_, but file checkpoints advance past every byte read. Usage that lands in a window
+still open at catch-up time would therefore be read once, never molted, and lost on the next run
+(checkpoints have moved past it). To prevent this the engine exposes `pendingEvents()` — the
+ingested events whose containing window has not yet closed — and the CLI persists them to
+`pending.json` (atomic write, same store pattern as `state.json`/`checkpoints.json`). Each
+catch-up re-feeds `pending.json` alongside the fresh scan before advancing, so open-window usage
+survives across invocations and resume-from-snapshot stays equal to a continuous run. The buffer
+drains automatically as windows close.
+
 ---
 
 ## Render Modes & CLI Command List (design baseline §15)

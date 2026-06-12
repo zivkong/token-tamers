@@ -7,3 +7,4 @@ export {
   loadCheckpoints,
   saveCheckpoints,
 } from './checkpoints';
+export { PENDING_FILE, loadPending, savePending } from './pending';

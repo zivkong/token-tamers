@@ -12,7 +12,7 @@
  * data. No wall clock, no Math.random, no I/O, no imports outside core.
  */
 
-import { deriveCycleEvents, WEEK_MS } from '../cycle';
+import { deriveCycleEvents, unconsumedEvents } from '../cycle';
 import {
   activityModifier,
   classifyRhythm,
@@ -46,7 +46,7 @@ import {
   type UsageEvent,
 } from '../types';
 import { achievementConditionMet, patternSatisfied } from './achievements';
-import { updateBaseline } from './baseline';
+import { hasFullWeekBaseline, seedBaselinesFromHistory, updateBaseline } from './baseline';
 import { consistencyBand, pickBranch, type BranchInputs } from './branches';
 import { computeCompletion } from './completion';
 import {
@@ -71,6 +71,7 @@ import { isStrictlyBetter, scaleStats } from './rebirth';
 import { cloneState, freshPet, initialState } from './state';
 
 export { SCHEMA_VERSION } from './constants';
+export { hasFullWeekBaseline, seedBaselinesFromHistory } from './baseline';
 export { matchModelRule } from './houses';
 
 interface InternalCycleEvent {
@@ -120,6 +121,30 @@ class GameEngine implements Engine {
 
   completion() {
     return computeCompletion(this.state_, this.pack);
+  }
+
+  pendingEvents(): UsageEvent[] {
+    const out: UsageEvent[] = [];
+    const now = this.state_.simulatedTo;
+    for (const adapter of this.config.adapters) {
+      for (const ev of unconsumedEvents(this.buffer, adapter, now)) out.push(ev);
+    }
+    return out.sort((a, b) => a.ts - b.ts || cmpStr(a.adapter, b.adapter));
+  }
+
+  /**
+   * Seed per-adapter baselines purely from the ingested backfill history (init).
+   * Folds each CLOSED window's essence into the running mean WITHOUT replaying
+   * molts (so history establishes normalization without retroactively evolving
+   * the pet), then clears the Calibration flag once a full week is observed.
+   */
+  seedBaselines(now: number): void {
+    const seeded = seedBaselinesFromHistory(this.buffer, this.config.adapters, now);
+    for (const [adapter, baseline] of Object.entries(seeded)) {
+      this.state_.baselines[adapter] = baseline;
+    }
+    if (!hasFullWeekBaseline(this.state_.baselines)) return;
+    this.state_.pet.calibrating = false;
   }
 
   // --- cycle derivation -----------------------------------------------------
@@ -366,7 +391,7 @@ class GameEngine implements Engine {
 
     const weekEvs = all.filter((e) => e.ts >= event.weekStart && e.ts < event.weekEnd);
     const dormant = weekEvs.length === 0;
-    const calibrating = !this.hasFullWeekBaseline();
+    const calibrating = !hasFullWeekBaseline(this.state_.baselines);
 
     const newGen = pet.generation + 1;
     const next = freshPet(newGen, event.at, calibrating);
@@ -392,15 +417,6 @@ class GameEngine implements Engine {
       return true;
     }
     return false;
-  }
-
-  private hasFullWeekBaseline(): boolean {
-    const windowsPerWeek = Math.ceil(WEEK_MS / (5 * 60 * 60 * 1000));
-    let max = 0;
-    for (const b of Object.values(this.state_.baselines)) {
-      if (b.windowsObserved > max) max = b.windowsObserved;
-    }
-    return max >= windowsPerWeek;
   }
 
   // --- achievements ---------------------------------------------------------

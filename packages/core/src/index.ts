@@ -7,7 +7,7 @@ export * from './types';
 export { chance, createRng, nextFloat, nextInt, pickWeighted, type Rng } from './helpers/rng';
 
 // Cycle — re-exported via cycle/index barrel.
-export { deriveCycleEvents, WEEK_MS, weekStartFor, WINDOW_MS } from './cycle';
+export { deriveCycleEvents, unconsumedEvents, WEEK_MS, weekStartFor, WINDOW_MS } from './cycle';
 
 // Molt evaluation — re-exported via evaluation/index barrel.
 export {
@@ -23,4 +23,10 @@ export {
 } from './evaluation';
 
 // Engine — re-exported via engine/index barrel.
-export { createEngine, matchModelRule, SCHEMA_VERSION } from './engine';
+export {
+  createEngine,
+  hasFullWeekBaseline,
+  matchModelRule,
+  SCHEMA_VERSION,
+  seedBaselinesFromHistory,
+} from './engine';

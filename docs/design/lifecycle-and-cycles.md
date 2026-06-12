@@ -48,9 +48,16 @@ Write to `~/.tokentamers/config.json`:
 
 ### Step 4 — Backfill scan
 
-Scan existing logs to establish the player's normalization baseline. Cold start: the first week
-hatches a **Calibration Egg** — it plays normally but grades are provisional until a baseline
-exists.
+Scan existing logs to **establish the player's normalization baseline**. The backfill derives the
+already-CLOSED 5-h windows from history (using the same cycle policy the engine runs) and folds
+each window's essence into the per-adapter baseline — _without_ replaying their molts, so history
+seeds normalization but never retroactively evolves the pet. Once a full week of windows is
+observed the Calibration flag clears immediately.
+
+Cold start: the egg hatches and starts living from `now` (it is **not** parked at the future week
+anchor); the first week is a **Calibration Egg** — it plays normally from day one, but grades are
+provisional until a baseline exists. The fresh init also persists any usage that falls in a window
+still open at `now` to the **pending buffer** (see §5 / `pending.json`).
 
 ### Step 5 — Persistence warnings
 
@@ -58,7 +65,10 @@ Warn if a provider's local persistence is disabled (Codex `history` off, etc.).
 
 ### Re-run semantics
 
-Re-running `tt init` adds/removes adapters without touching pet state.
+Re-running `tt init` adds/removes adapters **without touching pet state**. When a valid
+`state.json` already exists, re-init only rewrites `config.json` (the adapter set); it never
+re-hatches the egg, re-seeds the baseline, or backfills. Existing adapters keep their checkpoints;
+a newly added adapter has no checkpoint yet, so the next catch-up scans its full history.
 
 ---
 

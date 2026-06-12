@@ -20,8 +20,10 @@ import {
 import {
   loadCheckpoints,
   loadConfig,
+  loadPending,
   loadState,
   saveCheckpoints,
+  savePending,
   saveState,
   type CheckpointMap,
 } from '../stores';
@@ -76,11 +78,15 @@ export async function catchUp(now: () => number = Date.now): Promise<CatchUpResu
 
   const checkpoints = loadCheckpoints();
   const scan = await scanAll(config, checkpoints);
-  engine.ingest(scan.events);
+  // Re-feed the open-window buffer persisted last run alongside the new scan so
+  // events in an as-yet-unclosed window are never lost (checkpoints advanced past
+  // their bytes, so the scan will not surface them again).
+  engine.ingest([...loadPending(), ...scan.events]);
   const effects = engine.advanceTo(now());
 
   saveState(engine.state());
   saveCheckpoints(scan.checkpoints);
+  savePending(engine.pendingEvents());
 
   return { config, engine, effects };
 }
