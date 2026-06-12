@@ -29,6 +29,9 @@ export type Palette = ReadonlyArray<Rgb | null>;
 
 const WHITE: Rgb = { r: 255, g: 255, b: 255 };
 const BLACK: Rgb = { r: 0, g: 0, b: 0 };
+// Aurum accents (design §13: S = gold→amber→white traveling highlight).
+const AURUM: Rgb = { r: 251, g: 191, b: 36 };
+const AMBER: Rgb = { r: 255, g: 214, b: 110 };
 
 /**
  * Build the palette LUT for a House tint + Grade. The grade determines how many
@@ -62,14 +65,20 @@ export function buildPalette(tint: string, grade: Grade, frame = 0): Palette {
       return ramp;
     }
     case 'S': {
-      // Animated shimmer: the whole ramp breathes toward white over frames.
-      const shimmer = (Math.sin(frame * 0.5) + 1) / 2; // 0..1
+      // Aurum: a gold→amber→white highlight travels across the ramp (design
+      // §13 beauty ladder) — each index peaks at a different phase, so the
+      // shimmer visibly SWEEPS over the sprite instead of breathing uniformly,
+      // and the body stays saturated (gold-infused, never washed out).
       const ramp: Array<Rgb | null> = [null];
       for (let i = 1; i <= 14; i++) {
         const t = i / 14;
-        ramp.push(mix(mix(darker, lighter, t), WHITE, shimmer * 0.4));
+        // Body keeps the House hue, saturated; gold lives in the highlights.
+        const body = mix(mix(dark, lighter, t), AURUM, t * t * 0.35);
+        const sweep = (Math.sin(frame * 0.5 - i * 0.55) + 1) / 2; // traveling phase
+        const peak = sweep > 0.72 ? (sweep - 0.72) / 0.28 : 0;
+        ramp.push(peak > 0 ? mix(body, mix(AMBER, WHITE, peak), 0.65) : body);
       }
-      ramp.push(glint(base, frame));
+      ramp.push(glint(mix(base, AURUM, 0.6), frame));
       return ramp;
     }
   }

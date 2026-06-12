@@ -256,33 +256,24 @@ describe('content counts', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Sprite data integrity
+// Sprite data integrity — new art contract
+//
+// Rules (matching the art-direction contract in docs/design/ and SKILL.md):
+//   - All palette indices must be in 0..15 (0=transparent, 1=outline/darkest,
+//     2..12=body shading ramp, 13/14=rim-light, 15=animated glint slot)
+//   - Species sprites: even width and height, 28x28 (egg) to 48x48 (apex)
+//   - Apex-stage species sprites: exactly 48x48
+//   - Habitat sprites: exactly 96x48
+//   - Trinket sprites: exactly 12x12
+//   - Every sprite (species/habitat/trinket): at least 2 animation frames
+//   - Every sprite: all frames share the same width and height
+//   - Every sprite: at least 6 distinct non-zero palette indices across all
+//     frames (complexity floor — depth comes from many ramp indices)
+//   - Every species/habitat/trinket id must resolve in the sprites array
 // ---------------------------------------------------------------------------
 
 describe('sprite data integrity', () => {
-  it('every pet sprite has at least 2 idle frames', () => {
-    const petIds = new Set(contentPackV1.species.map((s) => s.spriteId));
-    for (const sprite of contentPackV1.sprites) {
-      if (petIds.has(sprite.id)) {
-        expect(
-          sprite.frames.length,
-          `pet sprite '${sprite.id}' should have >= 2 frames`,
-        ).toBeGreaterThanOrEqual(2);
-      }
-    }
-  });
-
-  it('every pet sprite is at least 24x24', () => {
-    const petIds = new Set(contentPackV1.species.map((s) => s.spriteId));
-    for (const sprite of contentPackV1.sprites) {
-      if (petIds.has(sprite.id)) {
-        expect(sprite.width, `sprite '${sprite.id}' width`).toBeGreaterThanOrEqual(24);
-        expect(sprite.height, `sprite '${sprite.id}' height`).toBeGreaterThanOrEqual(24);
-      }
-    }
-  });
-
-  it('all palette indices are 0–7 (transparent=0, outline=1, body=2–7)', () => {
+  it('all palette indices are 0–15 (0=transparent, 1=outline, 2..14=ramp, 15=glint)', () => {
     for (const sprite of contentPackV1.sprites) {
       for (const frame of sprite.frames) {
         for (const row of frame) {
@@ -292,11 +283,121 @@ describe('sprite data integrity', () => {
               `sprite '${sprite.id}' has out-of-range index ${idx}`,
             ).toBeGreaterThanOrEqual(0);
             expect(idx, `sprite '${sprite.id}' has out-of-range index ${idx}`).toBeLessThanOrEqual(
-              7,
+              15,
             );
           }
         }
       }
+    }
+  });
+
+  it('every species sprite has even width and height in 28..48', () => {
+    const petIds = new Set(contentPackV1.species.map((s) => s.spriteId));
+    for (const sprite of contentPackV1.sprites) {
+      if (!petIds.has(sprite.id)) continue;
+      expect(sprite.width % 2, `sprite '${sprite.id}' width must be even`).toBe(0);
+      expect(sprite.height % 2, `sprite '${sprite.id}' height must be even`).toBe(0);
+      expect(sprite.width, `sprite '${sprite.id}' width must be >= 28`).toBeGreaterThanOrEqual(28);
+      expect(sprite.height, `sprite '${sprite.id}' height must be >= 28`).toBeGreaterThanOrEqual(
+        28,
+      );
+      expect(sprite.width, `sprite '${sprite.id}' width must be <= 48`).toBeLessThanOrEqual(48);
+      expect(sprite.height, `sprite '${sprite.id}' height must be <= 48`).toBeLessThanOrEqual(48);
+    }
+  });
+
+  it('apex-stage species sprites are exactly 48x48', () => {
+    const apexSpriteIds = new Set(
+      contentPackV1.species.filter((s) => s.stage === 'apex').map((s) => s.spriteId),
+    );
+    const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
+    for (const id of apexSpriteIds) {
+      const sprite = spriteMap.get(id);
+      expect(sprite, `apex sprite '${id}' not found`).toBeDefined();
+      if (!sprite) continue;
+      expect(sprite.width, `apex sprite '${id}' width must be 48`).toBe(48);
+      expect(sprite.height, `apex sprite '${id}' height must be 48`).toBe(48);
+    }
+  });
+
+  it('habitat sprites are exactly 96x48', () => {
+    const habitatSpriteIds = new Set(contentPackV1.habitats.map((h) => h.spriteId));
+    const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
+    for (const id of habitatSpriteIds) {
+      const sprite = spriteMap.get(id);
+      expect(sprite, `habitat sprite '${id}' not found`).toBeDefined();
+      if (!sprite) continue;
+      expect(sprite.width, `habitat sprite '${id}' width must be 96`).toBe(96);
+      expect(sprite.height, `habitat sprite '${id}' height must be 48`).toBe(48);
+    }
+  });
+
+  it('trinket sprites are exactly 12x12', () => {
+    const trinketSpriteIds = new Set(contentPackV1.trinkets.map((t) => t.spriteId));
+    const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
+    for (const id of trinketSpriteIds) {
+      const sprite = spriteMap.get(id);
+      expect(sprite, `trinket sprite '${id}' not found`).toBeDefined();
+      if (!sprite) continue;
+      expect(sprite.width, `trinket sprite '${id}' width must be 12`).toBe(12);
+      expect(sprite.height, `trinket sprite '${id}' height must be 12`).toBe(12);
+    }
+  });
+
+  it('every species/habitat/trinket sprite has at least 2 animation frames', () => {
+    const relevantIds = new Set([
+      ...contentPackV1.species.map((s) => s.spriteId),
+      ...contentPackV1.habitats.map((h) => h.spriteId),
+      ...contentPackV1.trinkets.map((t) => t.spriteId),
+    ]);
+    for (const sprite of contentPackV1.sprites) {
+      if (!relevantIds.has(sprite.id)) continue;
+      expect(
+        sprite.frames.length,
+        `sprite '${sprite.id}' should have >= 2 frames`,
+      ).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('every sprite has consistent frame dimensions (all frames same width/height)', () => {
+    for (const sprite of contentPackV1.sprites) {
+      const expectedH = sprite.frames[0]?.length ?? 0;
+      const expectedW = sprite.frames[0]?.[0]?.length ?? 0;
+      for (let fi = 0; fi < sprite.frames.length; fi++) {
+        const frame = sprite.frames[fi]!;
+        expect(frame.length, `sprite '${sprite.id}' frame ${fi} row count mismatch`).toBe(
+          expectedH,
+        );
+        for (let ri = 0; ri < frame.length; ri++) {
+          expect(
+            frame[ri]!.length,
+            `sprite '${sprite.id}' frame ${fi} row ${ri} width mismatch`,
+          ).toBe(expectedW);
+        }
+      }
+    }
+  });
+
+  it('every species/habitat/trinket sprite uses >= 6 distinct non-zero palette indices (complexity floor)', () => {
+    const relevantIds = new Set([
+      ...contentPackV1.species.map((s) => s.spriteId),
+      ...contentPackV1.habitats.map((h) => h.spriteId),
+      ...contentPackV1.trinkets.map((t) => t.spriteId),
+    ]);
+    for (const sprite of contentPackV1.sprites) {
+      if (!relevantIds.has(sprite.id)) continue;
+      const indices = new Set<number>();
+      for (const frame of sprite.frames) {
+        for (const row of frame) {
+          for (const idx of row) {
+            if (idx > 0) indices.add(idx);
+          }
+        }
+      }
+      expect(
+        indices.size,
+        `sprite '${sprite.id}' uses only ${indices.size} distinct non-zero indices (need >= 6)`,
+      ).toBeGreaterThanOrEqual(6);
     }
   });
 });
