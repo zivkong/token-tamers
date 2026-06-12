@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { deriveCycleEvents, weekStartFor, WEEK_MS, WINDOW_MS } from '../src/cycle';
+import {
+  deriveCycleEvents,
+  eggHatchMolts,
+  EGG_HATCH_MS,
+  weekStartFor,
+  WEEK_MS,
+  WINDOW_MS,
+} from '../src/cycle';
 import { dynamicAdapter, ev, HOUR, staticAdapter, WEEK_ANCHOR } from './fixture';
 
 describe('cycle — static policy', () => {
@@ -96,6 +103,47 @@ describe('cycle — dynamic policy', () => {
     // now is before the 5h close.
     const out = deriveCycleEvents(events, cfg, 0, WEEK_ANCHOR + 2 * HOUR);
     expect(out.filter((e) => e.type === 'molt')).toHaveLength(0);
+  });
+});
+
+describe('eggHatchMolts — one bonus hatch checkpoint per used week', () => {
+  it('fires EGG_HATCH_MS after a week’s first event, marked hatch', () => {
+    const out = eggHatchMolts(
+      [ev(2 * HOUR), ev(3 * HOUR)],
+      WEEK_ANCHOR,
+      -Infinity,
+      WEEK_ANCHOR + 6 * HOUR,
+    );
+    expect(out).toHaveLength(1);
+    expect(out[0]).toMatchObject({
+      type: 'molt',
+      hatch: true,
+      windowStart: WEEK_ANCHOR + 2 * HOUR,
+      windowEnd: WEEK_ANCHOR + 2 * HOUR + EGG_HATCH_MS,
+    });
+  });
+
+  it('emits one per week (each week starts a fresh egg)', () => {
+    const out = eggHatchMolts(
+      [ev(HOUR), ev(WEEK_MS + HOUR)],
+      WEEK_ANCHOR,
+      -Infinity,
+      WEEK_ANCHOR + WEEK_MS + 6 * HOUR,
+    );
+    expect(out).toHaveLength(2);
+    expect(out.every((m) => m.hatch === true)).toBe(true);
+  });
+
+  it('respects the (after, now] window like normal molts', () => {
+    const events = [ev(HOUR)];
+    // Hatch close is HOUR + 10m; before that `now` it is not yet emitted.
+    expect(
+      eggHatchMolts(events, WEEK_ANCHOR, -Infinity, WEEK_ANCHOR + HOUR + 5 * 60 * 1000),
+    ).toHaveLength(0);
+    // After it has closed but already consumed (after past it): not re-emitted.
+    expect(
+      eggHatchMolts(events, WEEK_ANCHOR, WEEK_ANCHOR + HOUR + EGG_HATCH_MS, WEEK_ANCHOR + 6 * HOUR),
+    ).toHaveLength(0);
   });
 });
 

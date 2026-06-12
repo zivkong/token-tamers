@@ -19,7 +19,7 @@ import { dynamicMolts } from './dynamic';
 import { staticMolts } from './static';
 import { makeRebirth, WEEK_MS, weekStartFor } from './windows';
 
-export { WEEK_MS, weekStartFor, WINDOW_MS } from './windows';
+export { EGG_HATCH_MS, eggHatchMolts, WEEK_MS, weekStartFor, WINDOW_MS } from './windows';
 export { unconsumedEvents } from './pending';
 
 /**

@@ -12,7 +12,7 @@
  * data. No wall clock, no Math.random, no I/O, no imports outside core.
  */
 
-import { deriveCycleEvents, unconsumedEvents } from '../cycle';
+import { deriveCycleEvents, eggHatchMolts, unconsumedEvents } from '../cycle';
 import {
   activityModifier,
   classifyRhythm,
@@ -159,6 +159,12 @@ class GameEngine implements Engine {
       const adEvents = all.filter((e) => e.adapter === adapter.provider);
       const derived = deriveCycleEvents(adEvents, adapter, after, now);
       for (const event of derived) cycles.push({ adapter: adapter.provider, event });
+      // Additive egg-hatch checkpoints (one per week); each is a no-op unless the
+      // pet is still an egg when replayed (see replayMolt). They never touch the
+      // normal 5-h window chain, so pending/determinism are unaffected.
+      for (const event of eggHatchMolts(adEvents, adapter.weekAnchor, after, now)) {
+        cycles.push({ adapter: adapter.provider, event });
+      }
     }
     cycles.sort((a, b) => {
       if (a.event.at !== b.event.at) return a.event.at - b.event.at;
@@ -180,17 +186,26 @@ class GameEngine implements Engine {
     effects: GameEffect[],
   ): void {
     const pet = this.state_.pet;
+    // An egg-hatch checkpoint only acts on an unhatched egg; once the pet has
+    // hatched (this generation) it is a no-op, leaving the normal molt chain and
+    // RNG stream untouched.
+    if (event.hatch && pet.stage !== 'egg') return;
     const evs = windowEvents(all, adapter, event.windowStart, event.windowEnd);
     const baselineMean = this.state_.baselines[adapter]?.meanWindowTokens ?? 0;
     const signals = computeWindowSignals(evs, event.windowStart, event.windowEnd, baselineMean);
 
+    // A hatch checkpoint hatches the egg and rolls like any molt, but it is a
+    // bonus peek at the first 10 min — it must NOT feed diet or the normalization
+    // baseline (those come only from the real 5-h windows), or it would double-
+    // count the overlap and skew normalization.
+    const isHatch = event.hatch === true;
     const committedThisMolt = pet.stage === 'egg';
     if (committedThisMolt) {
       this.commitHouse(pet, evs, effects);
     }
 
     pet.moltCount += 1;
-    this.accumulateDiet(pet, evs, baselineMean);
+    if (!isHatch) this.accumulateDiet(pet, evs, baselineMean);
 
     if (!committedThisMolt) {
       this.progressStage(pet, signals, rng, effects);
@@ -203,7 +218,7 @@ class GameEngine implements Engine {
     this.rollGrade(pet, signals, rng, effects);
 
     effects.push({ type: 'molt', at: event.at });
-    updateBaseline(this.state_, adapter, signals.totalEssence);
+    if (!isHatch) updateBaseline(this.state_, adapter, signals.totalEssence);
     this.evaluateAchievements(event.at, effects);
   }
 

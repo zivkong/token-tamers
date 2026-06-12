@@ -34,7 +34,9 @@ describe('engine — house commitment from model patterns', () => {
 
     const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
     eng.ingest([ev(0, { modelId: 'claude-opus-4' })]);
-    eng.advanceTo(WEEK_ANCHOR + 6 * HOUR);
+    // Stop after the 10-min egg-hatch checkpoint but before the first 5h window:
+    // the House is committed at the hatch (the egg's first molt).
+    eng.advanceTo(WEEK_ANCHOR + HOUR);
     const st = eng.state();
     expect(st.pet.house).toBe('aether');
     expect(st.pet.speciesId).toBe('wisp'); // aether sprite
@@ -59,12 +61,49 @@ describe('engine — house commitment from model patterns', () => {
   });
 });
 
+describe('engine — egg fast-hatch', () => {
+  const MIN = 60 * 1000;
+
+  it('hatches the egg ~10 minutes after first usage, not at the 5h close', () => {
+    const eng = createEngine(makePack(), { adapters: [dynamicAdapter()] });
+    eng.ingest([ev(0)]);
+    // Just before the 10-minute hatch close: still an egg.
+    eng.advanceTo(WEEK_ANCHOR + 9 * MIN);
+    expect(eng.state().pet.stage).toBe('egg');
+    expect(eng.state().pet.moltCount).toBe(0);
+    // Just after: the short hatch window closed → the egg hatched.
+    const effects = eng.advanceTo(WEEK_ANCHOR + 11 * MIN);
+    expect(effects.some((e) => e.type === 'hatched')).toBe(true);
+    expect(eng.state().pet.stage).toBe('sprite');
+    expect(eng.state().pet.moltCount).toBe(1);
+  });
+
+  it('is identical whether advanced in one big step or many small ones', () => {
+    const events = [ev(0), ev(30 * MIN), ev(6 * HOUR), ev(7 * HOUR)];
+
+    const big = createEngine(makePack(), { adapters: [dynamicAdapter()] });
+    big.ingest(events);
+    big.advanceTo(WEEK_ANCHOR + 13 * HOUR);
+
+    const small = createEngine(makePack(), { adapters: [dynamicAdapter()] });
+    small.ingest(events);
+    for (const t of [5 * MIN, 11 * MIN, 3 * HOUR, 7 * HOUR, 13 * HOUR]) {
+      small.advanceTo(WEEK_ANCHOR + t);
+    }
+
+    // Granularity independence: the fast-hatch cannot depend on how often the
+    // engine is advanced, or replay-from-scratch would diverge from resume.
+    expect(small.state()).toEqual(big.state());
+  });
+});
+
 describe('engine — molt-only evolution', () => {
   it('no molts => no evolution, stays an egg', () => {
     const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
     eng.ingest([ev(0)]);
-    // Advance to before the 5h window close: the window has not molted.
-    const effects = eng.advanceTo(WEEK_ANCHOR + 2 * HOUR);
+    // Advance to before even the short egg-hatch close (5 min < 10 min): the
+    // first window has not closed, so nothing has molted.
+    const effects = eng.advanceTo(WEEK_ANCHOR + 5 * 60 * 1000);
     expect(effects.filter((e) => e.type === 'molt')).toHaveLength(0);
     const st = eng.state();
     expect(st.pet.stage).toBe('egg');
@@ -74,15 +113,19 @@ describe('engine — molt-only evolution', () => {
   it('each molt advances at most one stage', () => {
     const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
     eng.ingest(denseWeek());
-    // One window only.
-    eng.advanceTo(WEEK_ANCHOR + 6 * HOUR);
+    // Molt 1 is the egg-hatch checkpoint (10 min in) → sprite.
+    eng.advanceTo(WEEK_ANCHOR + HOUR);
     expect(eng.state().pet.moltCount).toBe(1);
     expect(eng.state().pet.stage).toBe('sprite');
-    // A second window.
+    // Molt 2 is the first full 5h window → rookie.
+    eng.advanceTo(WEEK_ANCHOR + 6 * HOUR);
+    expect(eng.state().pet.moltCount).toBe(2);
+    expect(eng.state().pet.stage).toBe('rookie');
+    // Molt 3 is the second 5h window → evolved.
     eng.advanceTo(WEEK_ANCHOR + 11 * HOUR);
     const st = eng.state();
-    expect(st.pet.moltCount).toBe(2);
-    expect(st.pet.stage).toBe('rookie');
+    expect(st.pet.moltCount).toBe(3);
+    expect(st.pet.stage).toBe('evolved');
   });
 
   it('reaches Apex over a full active week and never beyond', () => {

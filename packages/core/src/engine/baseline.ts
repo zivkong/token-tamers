@@ -58,6 +58,9 @@ export function seedBaselinesFromHistory(
     const adEvents = events
       .filter((e) => e.adapter === adapter.provider)
       .sort((a, b) => a.ts - b.ts);
+    // Only the normal 5-h windows feed the baseline; egg-hatch checkpoints are
+    // deliberately excluded from normalization (they never call updateBaseline
+    // in replay either), so this stays equal to the engine's accumulation.
     const cycles = deriveCycleEvents(adEvents, adapter, -Infinity, now);
     for (const cycle of cycles) {
       if (cycle.type !== 'molt') continue;

@@ -22,6 +22,16 @@ identical results, forever. The engine is provider-blind: it consumes only norma
   ascension, legacy scoring, Archive record, inheritance roll, new egg. The pet's
   final form is whatever it became at the week's **last molt** — rebirth never
   evolves it.
+- **Egg fast-hatch (the sole exception).** Each week's egg→sprite hatch fires on a
+  bonus checkpoint ≈10 min after that week's first usage (`EGG_HATCH_MS`,
+  `eggHatchMolts`), not at a 5-h close. It is an ADDITIVE `{hatch:true}` molt layered
+  on the normal window chain (one per week — every generation starts as an egg at a
+  rebirth); `replayMolt` makes it act only while the pet is an egg, else a no-op, so
+  the normal windows / pending buffer / determinism are untouched. It hatches +
+  rolls like a molt but skips diet and `updateBaseline` (normalization comes only
+  from real 5-h windows). ONLY the hatch bypasses the 5-h rule; every later molt
+  obeys it. Keep the checkpoint a pure fn of (events, weekAnchor) — never gate the
+  window SHAPE on pet state (it reshapes the chain and breaks replay==resume).
 
 ## Cycle policies (real time → abstract events)
 

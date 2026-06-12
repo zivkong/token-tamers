@@ -100,6 +100,13 @@ export interface MoltEvent {
   at: number;
   windowStart: number;
   windowEnd: number;
+  /**
+   * Egg fast-hatch checkpoint (design §5): an extra molt fired ~10 min into each
+   * week's first usage, ON TOP OF the normal 5-h windows. It only acts while the
+   * pet is still an egg (hatches it early); once hatched it is a no-op, so the
+   * normal window chain — and thus determinism — is never disturbed.
+   */
+  hatch?: boolean;
 }
 
 export interface RebirthEvent {

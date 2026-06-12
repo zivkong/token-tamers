@@ -85,6 +85,19 @@ _Abstraction over the lifecycle._
   ascension, legacy scoring, Archive record write, inheritance roll, new egg. The pet's final
   form — including its pattern form — is whatever it already became at its **last molt of the
   week**; rebirth never evolves it.
+- **Egg fast-hatch (the one exception to "5-hour windows only").** Waiting up to 5 hours just to
+  see the egg hatch is poor first-contact UX, so each week's egg hatches on a **bonus hatch
+  checkpoint fired ≈10 minutes after that week's first usage**, instead of at the first 5-h window
+  close. This is the ONLY molt that does not align to a 5-h window, and it applies **only to the
+  egg→sprite hatch** — every later molt still respects the 5-h window. Mechanically it is an
+  ADDITIVE checkpoint layered on top of the normal window chain (one per week, since every
+  generation begins as an egg at a rebirth): it acts only while the pet is still an egg and is
+  otherwise a no-op, so the normal windows, the pending buffer, and replay determinism are
+  untouched. The hatch checkpoint hatches + rolls like any molt but is deliberately excluded from
+  diet and the normalization baseline (those come only from real 5-h windows). Determinism: the
+  checkpoint time is a pure function of the event stream + week anchor, identical under any advance
+  granularity; and an unhatched egg guarantees no molt has consumed the week's events yet, so a
+  resumed (truncated) buffer still identifies the week's first usage correctly.
 
 ### Abstract event table
 
