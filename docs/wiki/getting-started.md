@@ -7,7 +7,8 @@ See the [README](../../README.md#install) for per-OS install instructions
 
 ## `tt init` — the only required interaction, ever
 
-1. **Detection** — probes for installed agents (Claude Code: `~/.claude/projects/`).
+1. **Detection** — probes for installed agents (Claude Code: `~/.config/claude/projects/`
+   or `~/.claude/projects/`; OpenCode: `~/.local/share/opencode/`).
 2. **Plan type per provider:**
    - _Subscription with limit windows_ (Claude Pro/Max) → **dynamic cycle policy**:
      molt windows inferred from your real usage gaps.

@@ -47,7 +47,7 @@ implementation starts (GitHub + Claude Code)).
 
 ### Post-MVP (M2)
 
-- Codex CLI + OpenCode adapters; Flux + Forge lines; hybrid lines
+- Codex CLI adapter; Flux + Forge lines; hybrid lines
 - Hash export/import; battles; DNA fusion + pools; Drifter DNA; Team Leagues
 - Habitat/trinket full sets; remaining achievements; Deco/DNA/Battle/League pages
 
@@ -118,7 +118,7 @@ complete at baseline; all others remain open.
       soft-pity (must never reach guarantee), anti-gaming caps
 - [ ] Molt evaluation spec: per-adapter field parsing + normalization math
 - [ ] Codex adapter: delta algorithm + format-generation detection spec
-- [ ] OpenCode adapter: storage-tree walk + prune-tolerance spec
+- [x] OpenCode adapter: SQLite (`opencode.db`) primary + legacy storage-tree walk, prune-tolerant
 - [ ] Static-policy edge cases: timezone changes, DST, week-anchor migration
 - [x] Full evolution tree v1 (§7) — sprites pending
 - [ ] 12-month content calendar + Season 1 pack outline

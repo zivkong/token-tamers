@@ -11,7 +11,7 @@ rationale, and parenthetical from those sections is reproduced here in full.
 
 ### Stage track
 
-**Seed → Sprite → Rookie → Evolved → Prime → Apex**
+**Egg → Sprite → Rookie → Evolved → Prime → Apex**
 
 - Molt 1–2 guaranteed progression; molt 3–5 behavioral branching; molt 6+ rares, patterns, rising
   mutation chance. Solo reaches Apex — standard pool only.
@@ -97,7 +97,7 @@ fusion-locked specials (hidden) + 12 reserved/Ancient slots.
 
 ### House lines (design baseline §7)
 
-Full stage track: Seed → Sprite → Rookie → Evolved → Prime → Apex.
+Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 
 **AETHER** (`claude-*` genes; WIS-lean; ethereal/mind theme)
 

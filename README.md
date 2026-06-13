@@ -69,7 +69,7 @@ turns your real work patterns into a creature:
 | ---------------------- | ---------------- | ---------------------------------- | ------------------------------------------------- |
 | flat 4-color, charming | 8 colors, blinks | 16 colors, dithered shading, glint | full 24-bit ramps, shimmer sweep, particle aura ✦ |
 
-**The goal: 100% completion.** Fill the Dex (112 entries), earn every achievement,
+**The goal: 100% completion.** Fill the Dex (112 slots, more landing each release), earn every achievement,
 unlock every habitat and trinket. One number to drive to 100 — `tt complete`.
 
 And if you stop coding for a week? Your pet curls into a cocoon — **Dormant, never
@@ -163,11 +163,11 @@ Everything honors `--no-color` and degrades gracefully: truecolor → 256 → 8 
 
 ## 🔌 Supported agents
 
-| Agent       | Status  | Reads (locally, read-only)                |
-| ----------- | ------- | ----------------------------------------- |
-| Claude Code | ✅ now  | `~/.claude/projects/**/*.jsonl`           |
-| Codex CLI   | 🔜 next | `$CODEX_HOME/sessions/**/rollout-*.jsonl` |
-| OpenCode    | 🔜 next | `~/.local/share/opencode/storage/`        |
+| Agent       | Status  | Reads (locally, read-only)                      |
+| ----------- | ------- | ----------------------------------------------- |
+| Claude Code | ✅ now  | `~/{.config/claude,.claude}/projects/*/*.jsonl` |
+| OpenCode    | ✅ now  | `~/.local/share/opencode/`                      |
+| Codex CLI   | 🔜 next | `$CODEX_HOME/sessions/**/rollout-*.jsonl`       |
 
 Adapters emit one normalized event stream; the engine never knows which agent fed it.
 Multiple agents feed **one pet** — a second agent diversifies its diet, never inflates
@@ -211,11 +211,11 @@ screenshot it. That's the point.
 
 ## 🗺️ Roadmap
 
-- [x] **M1 — the MVP (you are here):** Claude Code adapter · evolution engine
+- [x] **M1 — the MVP (you are here):** Claude Code + OpenCode adapters · evolution engine
       (Aether + Cipher lines, egg → Apex) · traits, patterns, mutations · grade rolls ·
       rebirth + lineage · the Archive · clickable TUI · 12 habitats, 6 trinkets,
       41 achievements
-- [ ] **M2:** Codex CLI + OpenCode adapters · Flux + Forge + hybrid lines · DNA
+- [ ] **M2:** Codex CLI adapter · Flux + Forge + hybrid lines · DNA
       export/apply (paste codes to friends) · deterministic battles · fusion pools 🤫 ·
       Team Leagues · Drifter DNA for solo devs
 - [ ] **M3:** seasonal content packs · monthly weather events · sprite compiler pipeline

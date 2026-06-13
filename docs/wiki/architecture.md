@@ -2,8 +2,8 @@
 
 ```
 [claude-code adapter]──┐
-[codex adapter (M2)]───┼──▶ normalized UsageEvent stream ──▶ core engine ──▶ store ──▶ TUI
-[opencode adapter (M2)]┘        (provider-blind)                (~/.tokentamers/)
+[opencode adapter]─────┼──▶ normalized UsageEvent stream ──▶ core engine ──▶ store ──▶ TUI
+[codex adapter (M2)]───┘        (provider-blind)                (~/.tokentamers/)
 ```
 
 - **Adapters** read each provider's local logs incrementally (per-file offset

@@ -125,8 +125,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI.
 - **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C;
   Archive keeps one strictly-best record per species.
-- **Scope:** M1 (shipped) = Claude Code adapter, Aether+Cipher lines, shell with
-  Pet/Dex/Archive/Settings. M2 = Codex/OpenCode adapters, Flux/Forge/hybrids, DNA, battles,
+- **Scope:** M1 (shipped) = Claude Code + OpenCode adapters, Aether+Cipher lines, shell with
+  Pet/Dex/Archive/Settings. M2 = Codex adapter, Flux/Forge/hybrids, DNA, battles,
   leagues. M3 = seasons, weather events, sprite compiler.
 
 ## AI-native development policy (full text: docs/design/architecture.md)
