@@ -1,17 +1,19 @@
 /**
- * Pure frame rendering: draw the active page + the menu grid into a frame buffer
- * and register hit regions. Shared by the live shell loop and golden tests
- * (which call `renderFrameToString` against a fake stdout).
+ * Pure frame rendering: draw the active page + the menu into a frame buffer and
+ * register hit regions. Shared by the live shell loop and golden tests (which
+ * call `renderFrameToString` against a fake stdout).
  *
  * Layout is a top-oriented, full-width stack (see render/layout.ts): pages fill
- * the content region edge-to-edge, and the menu is a 6-column grid (3 on narrow
- * terminals) docked immediately AFTER the canvas rather than at the very bottom.
+ * the content region edge-to-edge, and the menu is a LEFT-ALIGNED row of buttons
+ * (wrapping as needed) docked immediately AFTER the canvas. The completion meter
+ * lives in the pet VITALS panel, not the menu.
  */
 
 import { StringSink, Writer, type ColorMode, type Rgb } from '../terminal/ansi';
 import { FrameBuffer } from './buffer';
 import { HitRegistry } from './hit';
 import { computeLayout, tooSmallMessage, type Layout } from './layout';
+import { buttonText, packMenu, type MenuButton } from './menu';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
 import { renderArchivePage } from '../pages/archive';
@@ -33,53 +35,6 @@ const MENU_ACTIVE_BG: Rgb = { r: 56, g: 50, b: 18 };
 const MENU_BG: Rgb = { r: 22, g: 26, b: 38 };
 const FLASH_FG: Rgb = { r: 255, g: 226, b: 140 };
 const FLASH_BG: Rgb = { r: 56, g: 46, b: 12 };
-const METER_FILL: Rgb = { r: 240, g: 196, b: 80 };
-
-export interface MenuItem {
-  id: PageId | 'quit';
-  label: string;
-  hotkey: string;
-}
-
-export const MENU_ITEMS: MenuItem[] = [
-  { id: 'pet', label: '♥ Pet', hotkey: '1' },
-  { id: 'dex', label: '☰ Dex', hotkey: '2' },
-  { id: 'archive', label: '◆ Archive', hotkey: '3' },
-  { id: 'settings', label: '⚙ Settings', hotkey: '4' },
-  { id: 'quit', label: '⏻ Quit', hotkey: 'q' },
-];
-
-/** One laid-out menu grid cell: a nav button or the completion meter. */
-export interface MenuCell {
-  id: PageId | 'quit' | 'meter';
-  label: string;
-  hotkey: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-/**
- * Lay out the menu as a grid placed right after the canvas: the 5 nav buttons
- * plus the completion meter flow across `layout.menuCols` columns (6 on wide
- * terminals, 3 on narrow → 2 rows). Shared by the renderer and the shell's
- * mouse hit-testing so clicks always match what's drawn.
- */
-export function menuCells(layout: Layout): MenuCell[] {
-  const entries: Array<Pick<MenuCell, 'id' | 'label' | 'hotkey'>> = [
-    ...MENU_ITEMS,
-    { id: 'meter', label: '', hotkey: '' },
-  ];
-  const cols = Math.max(1, layout.menuCols);
-  const cellW = Math.floor(layout.termCols / cols);
-  return entries.map((e, i) => {
-    const col = i % cols;
-    const x = col * cellW;
-    const w = col === cols - 1 ? layout.termCols - x : cellW;
-    return { ...e, x, y: layout.menuY + Math.floor(i / cols), w, h: 1 };
-  });
-}
 
 export interface FrameInput {
   page: PageId;
@@ -125,6 +80,7 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
     info: input.info,
     settings: input.settings,
     live: input.live,
+    completionPct: input.completionPct,
   };
 
   switch (input.page) {
@@ -150,58 +106,39 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
     buf.text(x, row, text, FLASH_FG, FLASH_BG);
   }
 
-  drawMenu(buf, hits, layout, input.page, input.completionPct);
+  drawMenu(buf, hits, layout, input.page);
   return layout;
 }
 
-function drawMenu(
-  buf: FrameBuffer,
-  hits: HitRegistry,
-  layout: Layout,
-  page: PageId,
-  completionPct: number,
-): void {
+function drawMenu(buf: FrameBuffer, hits: HitRegistry, layout: Layout, page: PageId): void {
   // Paint the whole menu band.
   for (let ry = 0; ry < layout.menuRows; ry++) {
     for (let x = 0; x < buf.cols; x++) {
       buf.set(x, layout.menuY + ry, { ch: ' ', fg: null, bg: MENU_BG });
     }
   }
-  for (const cell of menuCells(layout)) {
-    if (cell.id === 'meter') {
-      drawMeterCell(buf, cell, completionPct);
-      continue;
-    }
-    drawMenuButton(buf, cell, cell.id === page);
-    hits.add(`menu:${cell.id}`, cell.x, cell.y, cell.w, cell.h);
+  for (const btn of packMenu(layout.termCols).buttons) {
+    const y = layout.menuY + btn.row;
+    drawMenuButton(buf, btn, y, btn.id === page);
+    hits.add(`menu:${btn.id}`, btn.x, y, btn.w, 1);
   }
 }
 
-/** Draw one centered nav button, highlighting the active page. */
-function drawMenuButton(buf: FrameBuffer, cell: MenuCell, active: boolean): void {
+/** Draw one LEFT-ALIGNED nav button ('label key'), highlighting the active page. */
+function drawMenuButton(buf: FrameBuffer, btn: MenuButton, y: number, active: boolean): void {
   const bg = active ? MENU_ACTIVE_BG : MENU_BG;
-  for (let x = 0; x < cell.w; x++) {
-    buf.set(cell.x + x, cell.y, { ch: ' ', fg: null, bg });
+  for (let x = 0; x < btn.w; x++) {
+    buf.set(btn.x + x, y, { ch: ' ', fg: null, bg });
   }
-  const text = `${cell.label} ${cell.hotkey}`;
-  const tx = cell.x + Math.max(1, Math.floor((cell.w - text.length) / 2));
-  buf.text(tx, cell.y, cell.label, active ? MENU_ACTIVE : MENU_FG, bg);
-  buf.text(tx + cell.label.length + 1, cell.y, cell.hotkey, active ? MENU_ACTIVE : MENU_DIM, bg);
-}
-
-/** Draw the completion meter cell: a mini bar (when it fits) + 'NN.N%'. */
-function drawMeterCell(buf: FrameBuffer, cell: MenuCell, completionPct: number): void {
-  for (let x = 0; x < cell.w; x++) {
-    buf.set(cell.x + x, cell.y, { ch: ' ', fg: null, bg: MENU_BG });
-  }
-  const pct = `${completionPct.toFixed(1)}%`;
-  const barMax = Math.max(0, Math.min(10, cell.w - pct.length - 3));
-  if (barMax > 0) {
-    const filled = Math.max(0, Math.min(barMax, Math.round((completionPct / 100) * barMax)));
-    buf.text(cell.x + 1, cell.y, '█'.repeat(filled), METER_FILL, MENU_BG);
-    buf.text(cell.x + 1 + filled, cell.y, '░'.repeat(barMax - filled), MENU_DIM, MENU_BG);
-  }
-  buf.text(cell.x + cell.w - pct.length - 1, cell.y, pct, MENU_FG, MENU_BG);
+  buf.text(btn.x, y, btn.label, active ? MENU_ACTIVE : MENU_FG, bg);
+  const text = buttonText(btn);
+  buf.text(
+    btn.x + text.length - btn.hotkey.length,
+    y,
+    btn.hotkey,
+    active ? MENU_ACTIVE : MENU_DIM,
+    bg,
+  );
 }
 
 function drawTooSmall(buf: FrameBuffer, layout: Layout): void {

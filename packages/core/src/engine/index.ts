@@ -59,7 +59,7 @@ import {
   MUTATION_CHANCE,
   MUTATION_IDS,
 } from './constants';
-import { round4 } from './grades';
+import { round4, vitalityBonus } from './grades';
 import {
   cloneStats,
   matchModelRule,
@@ -70,7 +70,8 @@ import {
 import { isStrictlyBetter, scaleStats } from './rebirth';
 import { cloneState, freshPet, initialState } from './state';
 
-export { SCHEMA_VERSION } from './constants';
+export { SCHEMA_VERSION, VITALITY_FULL_TOKENS, VITALITY_MAX_BONUS } from './constants';
+export { vitalityBonus } from './grades';
 export { hasFullWeekBaseline, seedBaselinesFromHistory } from './baseline';
 export { matchModelRule } from './houses';
 
@@ -361,7 +362,9 @@ class GameEngine implements Engine {
     const to = GRADE_ORDER[idx + 1]!;
     const base = GRADE_BASE[from] ?? 0;
     const mod = activityModifier(signals, pet.traits);
-    let p = base * mod;
+    // Baseline-normalized odds (volume-blind) PLUS a separate capped vitality
+    // bonus from the session's raw token volume (hybrid FOMO design).
+    let p = base * mod + vitalityBonus(signals.totalTokens);
     if (from === 'A') p = Math.min(p, A_TO_S_CAP);
     p = Math.max(0, Math.min(1, p));
 

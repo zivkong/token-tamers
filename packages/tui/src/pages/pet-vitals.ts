@@ -1,28 +1,30 @@
 /**
  * Pet vitals panel — the section between the game canvas and the menu.
  *
- * Stat / feeding / diet rows separated by blank spacer rows, deliberately free
- * of any evolution/stage hints (those stay a mystery — see pet.ts):
+ * Four rows, one per blank-spaced slot, deliberately free of evolution hints:
  *
- *   PWR ████░ 12   SPD ███░░ 9   WIS █████ 15   GRT ███░░ 11
+ *   PWR ▓▓▓░ 12   SPD ▓▓░ 9    WIS ▓▓▓▓ 15   GRT ▓▓░ 11
  *
- *   Feeding ▕███████░░░▏ this window 24.3k tok · 1.3× baseline ↑   fed 6 windows
+ *   Charge ▕████░░░░░░░░▏ 84.2M / 200M  +6% molt ↑
  *
- *   Diet    ▕██████░░░░▏ Aether 70% · Cipher 30%            last roll: C→B 38%
+ *   Diet   Aether 72% · Cipher 28%              last roll: C→B 38%
  *
- * The feeding row is REAL-TIME: it reads `ctx.live` (the engine's open window),
- * so token usage visibly feeds the pet and previews the next molt's odds. The
- * rest is a pure function of GameState; without `ctx.live` (golden tests) the
- * feeding row falls back to a static baseline summary, keeping frames stable.
+ *   Progress ▕███░░░░░░░░▏ 16.7%
+ *
+ * The Charge row is the FOMO meter: the open window's raw tokens fill toward a
+ * 200M "full" cap (segmented by the diet's House tints), and the molt-boost
+ * preview is the REAL capped vitality bonus the engine will apply at the molt
+ * (`vitalityBonus`). Everything else is a pure function of GameState; without a
+ * live readout (golden tests) the Charge row shows an empty/awaiting state.
  */
 
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
+import { VITALITY_FULL_TOKENS, vitalityBonus } from '@token-tamers/core';
 import type { FrameBuffer } from '../render/buffer';
 import { houseTint } from '../helpers/lookup';
 import { renderGradeOddsLine } from '../helpers/status';
 import type { RenderContext } from './types';
 import type { SceneRect } from '../render/layout';
-import type { GameState } from '@token-tamers/core';
 
 const FULL = String.fromCodePoint(0x2588); // █
 const LIGHT = String.fromCodePoint(0x2591); // ░
@@ -32,15 +34,27 @@ const VALUE: Rgb = { r: 222, g: 228, b: 240 };
 const MUTED: Rgb = { r: 120, g: 126, b: 146 };
 const BAR_EMPTY: Rgb = { r: 44, g: 50, b: 70 };
 const UNKNOWN_TINT: Rgb = { r: 96, g: 102, b: 122 };
+const CHARGE_FILL: Rgb = { r: 240, g: 196, b: 80 };
+const METER_FILL: Rgb = { r: 240, g: 196, b: 80 };
 
-/** Draw the vitals panel into `panel`: stats / (gap) / feeding / (gap) / diet. */
+/** Per-stat bar reference (≈ half the 240 stage budget) so bars show headroom. */
+const STAT_BAR_MAX = 120;
+/** Below this width we drop to compact single-letter / shorter labels. */
+const NARROW = 64;
+
+/** Draw the vitals panel: stats / charge / diet / progress (blank-spaced). */
 export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
   drawStatsRow(ctx, panel, panel.y);
-  drawFeedingRow(ctx, panel, panel.y + 2);
+  drawChargeRow(ctx, panel, panel.y + 2);
   drawDietRow(ctx, panel, panel.y + 4);
+  drawProgressRow(ctx, panel, panel.y + 6);
 }
 
-/** Row 1 — the four stat bars across the full width. */
+// ---------------------------------------------------------------------------
+// Rows.
+// ---------------------------------------------------------------------------
+
+/** Row 1 — the four stat bars (normalized to a fixed cap so empty track shows). */
 function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf, pack, state } = ctx;
   const s = state.pet.stats;
@@ -50,106 +64,92 @@ function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
     ['WIS', s.wis],
     ['GRT', s.grt],
   ];
-  const max = Math.max(1, ...cells.map(([, v]) => v));
   const fill = mix(hexToRgb(houseTint(pack, state.pet.house)), VALUE, 0.15);
   const cellW = Math.floor(panel.cols / cells.length);
+  const narrow = panel.cols < NARROW;
+  const labelW = narrow ? 1 : 3;
 
   cells.forEach(([name, val], i) => {
     const cx = panel.x + i * cellW + 1;
-    buf.text(cx, y, name, LABEL, null);
+    const label = narrow ? (name[0] ?? '') : name;
+    buf.text(cx, y, label, LABEL, null);
     const valStr = String(val).padStart(2);
-    const barX = cx + 4;
-    const barW = Math.max(3, cellW - 4 - valStr.length - 3);
-    drawBar(buf, { x: barX, y, w: barW }, val / max, fill);
+    const barX = cx + labelW + 1;
+    const barW = Math.max(2, cellW - labelW - valStr.length - 3);
+    drawBar(buf, { x: barX, y, w: barW }, val / STAT_BAR_MAX, fill);
     buf.text(barX + barW + 1, y, valStr, VALUE, null);
   });
 }
 
 /**
- * Row 2 — REAL-TIME feeding: the open window's tokens vs the pet's baseline
- * appetite. The gauge climbs as usage lands; passing the baseline (1×) means the
- * next molt rolls grade at better odds. Falls back to a static baseline summary
- * when no live readout is available (golden tests).
+ * Row 2 — the FOMO charge meter: open-window tokens toward 200M, segmented by
+ * diet, with the real capped molt-boost preview. Token counts only.
  */
-function drawFeedingRow(ctx: RenderContext, panel: SceneRect, y: number): void {
-  const { buf, state } = ctx;
-  const live = ctx.live;
-  const fill = mix(hexToRgb(houseTint(ctx.pack, state.pet.house)), VALUE, 0.15);
+function drawChargeRow(ctx: RenderContext, panel: SceneRect, y: number): void {
+  const { buf } = ctx;
+  const narrow = panel.cols < NARROW;
+  buf.text(panel.x + 1, y, narrow ? 'Feed' : 'Charge', LABEL, null);
+  const barX = panel.x + (narrow ? 6 : 8);
+  const barW = narrow ? 8 : 12;
 
-  buf.text(panel.x + 1, y, 'Feeding', LABEL, null);
-  const gaugeX = panel.x + 9;
+  const tokens = ctx.live?.windowTokens ?? 0;
+  const frac = tokens / VITALITY_FULL_TOKENS;
+  drawChargeBar(buf, { x: barX, y, w: barW }, frac, dietBreakdown(ctx));
 
-  // Right edge: lifetime feedings (windows the pet has closed).
-  const windows = live ? live.windowsObserved : consumptionSummary(state).windows;
-  const right = `fed ${windows} window${windows === 1 ? '' : 's'}`;
-  const rightX = panel.x + panel.cols - right.length - 1;
-  buf.text(rightX, y, right, MUTED, null);
-
-  if (!live) {
-    const { windows: w, avgTokens } = consumptionSummary(state);
-    const text =
-      w > 0 ? `~${fmtTokens(avgTokens)} essence/window baseline` : 'awaiting first usage';
-    buf.text(gaugeX, y, text, MUTED, null);
+  const textX = barX + barW + 2;
+  const avail = panel.x + panel.cols - 1 - textX;
+  if (!ctx.live) {
+    buf.text(textX, y, 'feed your session'.slice(0, Math.max(0, avail)), MUTED, null);
     return;
   }
-
-  const gaugeW = 12;
-  const textX = gaugeX + gaugeW + 2;
-  const avail = rightX - 1 - textX;
-  if (live.baselineEssence > 0) {
-    const ratio = live.windowEssence / live.baselineEssence;
-    drawBar(buf, { x: gaugeX, y, w: gaugeW }, Math.min(1, ratio), fill);
-    const arrow = ratio >= 1.05 ? ' ↑' : ratio < 0.95 ? ' ↓' : '';
-    const text = `this window ${fmtTokens(live.windowTokens)} tok · ${ratio.toFixed(1)}× baseline${arrow}`;
-    if (avail > 0) buf.text(textX, y, text.slice(0, avail), VALUE, null);
-  } else {
-    drawBar(buf, { x: gaugeX, y, w: gaugeW }, 0, fill);
-    const text = `this window ${fmtTokens(live.windowTokens)} tok · building baseline…`;
-    if (avail > 0) buf.text(textX, y, text.slice(0, avail), MUTED, null);
-  }
+  const bonusPct = Math.round(vitalityBonus(tokens) * 100);
+  const arrow = bonusPct > 0 ? ' ↑' : '';
+  const text = `${fmtTokens(tokens)} / 200M  +${bonusPct}% molt${arrow}`;
+  if (avail > 0) buf.text(textX, y, text.slice(0, avail), bonusPct > 0 ? VALUE : MUTED, null);
 }
 
-/** Row 3 — diet composition (tinted stacked bar + legend) + grade-roll odds. */
+/** Row 3 — diet composition legend + the grade-roll odds (transparency). */
 function drawDietRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf, state } = ctx;
+  const narrow = panel.cols < NARROW;
   buf.text(panel.x + 1, y, 'Diet', LABEL, null);
-  const barX = panel.x + 9;
+  const legendX = panel.x + 6;
 
   // Grade-roll odds stay visible (transparency invariant), right-aligned.
   const odds = renderGradeOddsLine(state);
   const oddsX = panel.x + panel.cols - odds.length - 1;
-  buf.text(oddsX, y, odds, MUTED, null);
+  if (!narrow) buf.text(oddsX, y, odds, MUTED, null);
 
   const diet = dietBreakdown(ctx);
+  const rightLimit = narrow ? panel.x + panel.cols - 1 : oddsX - 1;
   if (diet.length === 0) {
-    buf.text(barX, y, 'no intake recorded yet', MUTED, null);
+    buf.text(legendX, y, 'no intake yet', MUTED, null);
     return;
   }
-
-  const barW = 12;
-  let bx = barX;
-  for (const seg of diet) {
-    const cells = Math.round(seg.frac * barW);
-    for (let i = 0; i < cells && bx < barX + barW; i++) {
-      buf.set(bx++, y, { ch: FULL, fg: seg.tint, bg: null });
-    }
-  }
-  while (bx < barX + barW) buf.set(bx++, y, { ch: LIGHT, fg: BAR_EMPTY, bg: null });
-
-  const legendX = barX + barW + 2;
   const legend = diet
     .slice(0, 3)
-    .map((s) => `${s.name} ${Math.round(s.frac * 100)}%`)
-    .join(' · ');
-  const avail = oddsX - 1 - legendX;
+    .map((d) => `${narrow ? d.name.slice(0, 1) : d.name} ${Math.round(d.frac * 100)}%`)
+    .join(narrow ? ' ' : ' · ');
+  const avail = rightLimit - legendX;
   if (avail > 0) buf.text(legendX, y, legend.slice(0, avail), VALUE, null);
 }
 
+/** Row 4 — the overall completion meter (moved here from the menu). */
+function drawProgressRow(ctx: RenderContext, panel: SceneRect, y: number): void {
+  const { buf } = ctx;
+  const narrow = panel.cols < NARROW;
+  buf.text(panel.x + 1, y, narrow ? 'Done' : 'Progress', LABEL, null);
+  const barX = panel.x + (narrow ? 6 : 10);
+  const barW = narrow ? 8 : 12;
+  drawBar(buf, { x: barX, y, w: barW }, ctx.completionPct / 100, METER_FILL);
+  buf.text(barX + barW + 1, y, `${ctx.completionPct.toFixed(1)}%`, VALUE, null);
+}
+
 // ---------------------------------------------------------------------------
-// Pure helpers.
+// Bars + helpers.
 // ---------------------------------------------------------------------------
 
-/** Draw a `w`-cell bar at (x,y) filled to `frac` (0..1) with `fill`/empty colors. */
+/** Draw a `w`-cell bar at (x,y) filled to `frac` (0..1); empty cells show a track. */
 function drawBar(
   buf: FrameBuffer,
   at: { x: number; y: number; w: number },
@@ -164,15 +164,24 @@ function drawBar(
   }
 }
 
-/** Aggregate the per-adapter token baselines into a single nourishment view. */
-function consumptionSummary(state: GameState): { windows: number; avgTokens: number } {
-  let windows = 0;
-  let avgTokens = 0;
-  for (const b of Object.values(state.baselines)) {
-    windows = Math.max(windows, b.windowsObserved);
-    avgTokens += b.meanWindowTokens;
+/** Charge bar: fill toward 200M, the filled part tinted by the diet mix. */
+function drawChargeBar(
+  buf: FrameBuffer,
+  at: { x: number; y: number; w: number },
+  frac: number,
+  diet: DietSegment[],
+): void {
+  const f = frac < 0 ? 0 : frac > 1 ? 1 : frac;
+  const filled = Math.round(f * at.w);
+  let i = 0;
+  for (const seg of diet) {
+    const cells = Math.round(seg.frac * filled);
+    for (let k = 0; k < cells && i < filled; k++) {
+      buf.set(at.x + i++, at.y, { ch: FULL, fg: seg.tint, bg: null });
+    }
   }
-  return { windows, avgTokens };
+  while (i < filled) buf.set(at.x + i++, at.y, { ch: FULL, fg: CHARGE_FILL, bg: null });
+  while (i < at.w) buf.set(at.x + i++, at.y, { ch: LIGHT, fg: BAR_EMPTY, bg: null });
 }
 
 interface DietSegment {
@@ -202,7 +211,7 @@ function capitalize(s: string): string {
   return s.length === 0 ? s : `${s[0]?.toUpperCase()}${s.slice(1)}`;
 }
 
-/** Compact token count: 24300 → '24.3k', 1_500_000 → '1.5M'. */
+/** Compact token count: 84_200_000 → '84.2M', 24_300 → '24.3k'. */
 function fmtTokens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;

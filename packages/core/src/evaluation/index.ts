@@ -1,5 +1,5 @@
 export { activityModifier } from './modifier';
-export { computeWindowSignals, eventEssence, type WindowSignals } from './signals';
+export { computeWindowSignals, eventEssence, eventTokens, type WindowSignals } from './signals';
 export {
   classifyRhythm,
   dominantTraitClass,

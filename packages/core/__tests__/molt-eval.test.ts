@@ -6,6 +6,7 @@ import {
   dominantTraitClass,
   evaluateTraits,
 } from '../src/evaluation';
+import { vitalityBonus, VITALITY_FULL_TOKENS, VITALITY_MAX_BONUS } from '../src/engine';
 import { ev, HOUR, MIN, WEEK_ANCHOR } from './fixture';
 
 const WSTART = WEEK_ANCHOR;
@@ -135,6 +136,28 @@ describe('molt-eval — modifiers (model-neutral)', () => {
       activityModifier(s10, ['marathoner']),
       9,
     );
+  });
+
+  it('vitality bonus is zero at no usage and hard-capped at the max', () => {
+    expect(vitalityBonus(0)).toBe(0);
+    expect(vitalityBonus(VITALITY_FULL_TOKENS)).toBeCloseTo(VITALITY_MAX_BONUS, 9);
+    // Beyond 200M it cannot run away — the bonus stays clamped at the cap.
+    expect(vitalityBonus(VITALITY_FULL_TOKENS * 5)).toBe(VITALITY_MAX_BONUS);
+  });
+
+  it('vitality bonus rises monotonically with session token volume', () => {
+    expect(vitalityBonus(50_000_000)).toBeGreaterThan(vitalityBonus(10_000_000));
+    expect(vitalityBonus(VITALITY_FULL_TOKENS / 2)).toBeCloseTo(VITALITY_MAX_BONUS / 2, 9);
+  });
+
+  it('window signals carry the raw (cache-inclusive) token total for vitality', () => {
+    const s = computeWindowSignals(
+      [ev(0, { inputTokens: 100, outputTokens: 50, cacheReadTokens: 1000, cacheWriteTokens: 10 })],
+      WSTART,
+      WEND,
+      0,
+    );
+    expect(s.totalTokens).toBe(1160);
   });
 
   it('classifyRhythm distinguishes steady vs bursty', () => {

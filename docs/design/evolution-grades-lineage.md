@@ -232,6 +232,16 @@ baseline, trait synergy that window, rhythm quality, diversity — scale the bas
 (idle/thin window) up to ×2.0 (an excellent window), hard-capped so A→S never exceeds ~6%. Token
 volume and model choice never enter the modifier (pillar 2).
 
+**Capped vitality bonus (hybrid FOMO, layout rev 1.1):** on TOP of the volume-blind modifier, a
+SEPARATE additive bonus rewards a heavy session — the closing window's raw token total ramps a
+flat bonus to the roll, **full at 200M tokens** (`VITALITY_FULL_TOKENS`) and clamped at
+**+0.15** (`VITALITY_MAX_BONUS`). This is the single, deliberate exception to volume-blindness:
+it gives developers a reason to keep feeding before the window closes, but it is hard-capped so it
+can never dominate the self-normalized base odds, the A→S ceiling still applies after it, and it
+is purely additive (the modifier itself stays volume-blind). The pet screen surfaces it live as a
+"Charge" gauge filling toward 200M with a molt-boost preview (see architecture.md). Model choice
+still never enters power (pillar 2 / invariant 3).
+
 **Gradeshift moment:** a successful roll plays a molt cutscene where the pet's palette visibly
 upgrades to the new grade live (see §13) — the mid-week jackpot moment worth screenshotting.
 

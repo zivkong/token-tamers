@@ -41,8 +41,21 @@ export interface WindowSignals {
   essenceRatio: number;
   /** Total essence (cache-weighted tokens) — for baseline accounting only. */
   totalEssence: number;
+  /** Total RAW tokens (in+out+cache+reasoning) — drives the capped vitality bonus. */
+  totalTokens: number;
   /** Number of events in the window. */
   eventCount: number;
+}
+
+/** Raw token total of one event (no cache weighting) — the vitality metric. */
+export function eventTokens(ev: UsageEvent): number {
+  return (
+    ev.inputTokens +
+    ev.outputTokens +
+    (ev.reasoningTokens ?? 0) +
+    ev.cacheReadTokens +
+    ev.cacheWriteTokens
+  );
 }
 
 /** Cache reads count less than fresh tokens; cache writes a bit more. */
@@ -77,6 +90,7 @@ interface DiversityCounts {
   nightCount: number;
   morningCount: number;
   totalEssence: number;
+  totalTokens: number;
 }
 
 /** Scan events once for all diversity/essence counts. */
@@ -88,6 +102,7 @@ function collectDiversityCounts(sorted: readonly UsageEvent[]): DiversityCounts 
   let nightCount = 0;
   let morningCount = 0;
   let totalEssence = 0;
+  let totalTokens = 0;
 
   for (const ev of sorted) {
     sessions.set(ev.sessionKey, (sessions.get(ev.sessionKey) ?? 0) + 1);
@@ -98,6 +113,7 @@ function collectDiversityCounts(sorted: readonly UsageEvent[]): DiversityCounts 
     if (h < 6 || h >= 22) nightCount++;
     if (h >= 5 && h < 9) morningCount++;
     totalEssence += eventEssence(ev);
+    totalTokens += eventTokens(ev);
   }
 
   return {
@@ -108,6 +124,7 @@ function collectDiversityCounts(sorted: readonly UsageEvent[]): DiversityCounts 
     nightCount,
     morningCount,
     totalEssence,
+    totalTokens,
   };
 }
 
@@ -170,6 +187,7 @@ export function computeWindowSignals(
     shortSessionCount,
     essenceRatio,
     totalEssence: counts.totalEssence,
+    totalTokens: counts.totalTokens,
     eventCount,
   };
 }

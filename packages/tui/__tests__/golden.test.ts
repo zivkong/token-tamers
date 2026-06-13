@@ -67,23 +67,24 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('renders the pet page with a real-time feeding readout', () => {
+  it('renders the pet page with a real-time charge readout (FOMO)', () => {
     const out = renderFrameToString(
       100,
       30,
       input({
         page: 'pet',
         live: {
-          windowTokens: 31200,
-          windowEssence: 31800,
-          baselineEssence: 24300,
+          windowTokens: 84_200_000,
+          windowEssence: 90_000_000,
+          baselineEssence: 24_300,
           windowsObserved: 6,
         },
       }),
     );
-    expect(out).toContain('Feeding');
-    expect(out).toContain('this window');
-    expect(out).toContain('baseline');
+    expect(out).toContain('Charge');
+    expect(out).toContain('/ 200M');
+    expect(out).toContain('molt');
+    expect(out).toContain('Progress'); // completion meter moved into VITALS
     expect(out).toMatchSnapshot();
   });
 
@@ -105,13 +106,15 @@ describe('golden frames (100x30, no-color)', () => {
 });
 
 describe('menu + completion meter', () => {
-  it('shows all menu items and the completion percent', () => {
-    const out = renderFrameToString(100, 30, input({ completionPct: 12.3 }));
+  it('shows all nav items in the menu and the completion percent in VITALS', () => {
+    const out = renderFrameToString(100, 30, input({ page: 'pet', completionPct: 12.3 }));
     expect(out).toContain('Pet');
     expect(out).toContain('Dex');
     expect(out).toContain('Archive');
     expect(out).toContain('Settings');
     expect(out).toContain('Quit');
+    // The completion meter now lives in the pet VITALS panel, not the menu.
+    expect(out).toContain('Progress');
     expect(out).toContain('12.3%');
   });
 });
