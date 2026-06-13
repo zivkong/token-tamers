@@ -48,8 +48,10 @@ scenes are fixed 96×48 px art (96 cols × 24 cell-rows → a 4:1 cell aspect). 
 the **full terminal width** and the scene height tracks that 4:1 aspect (`sceneRows ≈
 cols/4`), capped to the rows available above the menu, so the backdrop **scales uniformly to
 fill the width with no padding and no distortion** (nearest-neighbor, via `drawSprite`'s
-`destW`/`destH`). Minimum terminal 64×24. Canvas hosts: pet + habitat + trinkets, cutscenes,
-battle view, and full-screen pages (Dex, Archive, Settings) drawn in the same content region.
+`destW`/`destH`). The **pet and its trinkets scale by the same factor** (`scene.cols /
+HABITAT_COLS`) so they stay proportionate to the backdrop at any width. Minimum terminal
+64×24. Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
+(Dex, Archive, Settings) drawn in the same content region.
 
 ### Menu Grid Spec
 

@@ -34,7 +34,10 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 - Cells are ~1:2 w:h; half-blocks give 2 vertical px/cell. Habitat scenes are 96×48 px
   (96 cols × 24 rows → 4:1 cell aspect). The canvas is full width and `sceneRows ≈ cols/4`
   (capped to fit), so the backdrop **scales uniformly to fill the width** via `drawSprite`'s
-  `destW`/`destH` (nearest-neighbor) — no padding, no distortion. Minimum terminal 64×24.
+  `destW`/`destH` (nearest-neighbor) — no padding, no distortion. The **pet + trinkets scale
+  by the same `scene.cols / HABITAT_COLS` factor** so they stay proportionate at any width
+  (`sceneScale` in pet.ts; pass scaled dims into the wander geometry AND `drawSprite`).
+  Minimum terminal 64×24.
 - Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
   (Dex, Archive, Settings, Achievements) inside the same content region.
 - Menu grid (`menuCells(layout)`, shared by the renderer and the shell's mouse hit-testing):

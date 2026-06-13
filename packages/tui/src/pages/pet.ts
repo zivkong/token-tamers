@@ -74,6 +74,13 @@ type Dwell = 'idle' | 'sit' | 'look' | 'hop' | 'play';
 const SCENE_FLOOR_PX = 38;
 /** Habitat backdrop pixel height (matches scenes.ts HH). */
 const HABITAT_PX_H = 48;
+/**
+ * Habitat backdrop width in cells (= the 96-px scene, 1 px per column). The
+ * backdrop is scaled to fill `scene.cols`, so `scene.cols / HABITAT_COLS` is the
+ * background's scale factor — the pet and trinkets multiply by it too so they
+ * stay proportionate to the scene at any terminal width.
+ */
+const HABITAT_COLS = 96;
 
 export interface WanderGeometry {
   /** Left/top cell of the canvas region. */
@@ -288,13 +295,21 @@ export function renderPetPage(ctx: RenderContext): void {
   ctx.hits.add('pet:canvas', sec.scene.x, sec.scene.y, sec.scene.cols, sec.scene.rows);
 }
 
+/** The scale factor the backdrop is drawn at, so sprites match its proportions. */
+function sceneScale(scene: SceneRect): number {
+  return scene.cols / HABITAT_COLS;
+}
+
 /** Draw the pet (and, during play, its trinket + S aura) along the wander path. */
 function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRect): void {
   const { buf, state, pack, mode, frame } = ctx;
   const pet = state.pet;
 
-  const spriteCols = sprite.width;
-  const spriteRows = Math.ceil(sprite.height / 2);
+  // Scale the pet by the same factor as the backdrop so it stays proportionate
+  // to the scene as the terminal width changes.
+  const scale = sceneScale(scene);
+  const spriteCols = Math.max(1, Math.round(sprite.width * scale));
+  const spriteRows = Math.max(1, Math.round(Math.ceil(sprite.height / 2) * scale));
   const geo: WanderGeometry = {
     canvasX: scene.x,
     canvasY: scene.y,
@@ -309,7 +324,7 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRec
 
   // Trinket drawn at its floor anchor during the play segment.
   if (w.playing) {
-    drawPlayTrinket(ctx, w.trinketX, geo);
+    drawPlayTrinket(ctx, w.trinketX, geo, scale);
   }
 
   const tint = houseTint(pack, pet.house);
@@ -318,6 +333,8 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRec
   drawSprite(buf, sprite, pal, {
     x: w.px,
     y: w.py,
+    destW: spriteCols,
+    destH: spriteRows,
     frame,
     mode,
     anim: w.anim,
@@ -345,7 +362,12 @@ function sceneFloorRow(scene: SceneRect): number {
 }
 
 /** Draw the selected trinket at the floor anchor beside the play spot. */
-function drawPlayTrinket(ctx: RenderContext, trinketX: number, geo: WanderGeometry): void {
+function drawPlayTrinket(
+  ctx: RenderContext,
+  trinketX: number,
+  geo: WanderGeometry,
+  scale: number,
+): void {
   const { buf, state, pack, mode, frame } = ctx;
   const trinketId = state.selectedTrinkets[0];
   if (!trinketId) return;
@@ -353,13 +375,17 @@ function drawPlayTrinket(ctx: RenderContext, trinketX: number, geo: WanderGeomet
   const sprite = def ? findSprite(pack, def.spriteId) : undefined;
   if (!sprite) return;
 
-  const rows = Math.ceil(sprite.height / 2);
+  // Match the pet's scale so the toy stays proportionate to the scene.
+  const cols = Math.max(1, Math.round(sprite.width * scale));
+  const rows = Math.max(1, Math.round(Math.ceil(sprite.height / 2) * scale));
   // Bottom-align the trinket on the same floor line as the pet's feet.
   const ty = geo.floorY - (rows - 1);
   const pal = buildPalette('#9aa0b5', 'B', frame);
   drawSprite(buf, sprite, pal, {
     x: trinketX,
     y: ty,
+    destW: cols,
+    destH: rows,
     frame,
     mode,
     clip: { x: geo.canvasX, y: geo.canvasY, w: geo.canvasCols, h: geo.canvasRows },
