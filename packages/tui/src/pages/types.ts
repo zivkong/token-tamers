@@ -58,6 +58,23 @@ export interface SettingsState {
   selected: number;
 }
 
+/**
+ * Live, real-time token-consumption readout for the pet's vitals panel. Derived
+ * by the host each frame from the engine's OPEN window (`pendingEvents`) plus the
+ * per-adapter baselines, so the player sees usage feed the pet as it happens.
+ * Undefined in golden tests (the panel falls back to a static baseline summary).
+ */
+export interface LiveStats {
+  /** Raw tokens (in+out+cache+reasoning) accumulated in the open window so far. */
+  windowTokens: number;
+  /** Cache-weighted essence of the open window so far (the engine's feed metric). */
+  windowEssence: number;
+  /** Rolling baseline mean essence per window — the pet's normal appetite. */
+  baselineEssence: number;
+  /** Closed windows observed across the pet's life (lifetime feedings). */
+  windowsObserved: number;
+}
+
 export interface RenderContext {
   buf: FrameBuffer;
   hits: HitRegistry;
@@ -74,4 +91,6 @@ export interface RenderContext {
   info?: ShellInfo;
   /** Live, editable adapter state for the Settings page (undefined in tests). */
   settings?: SettingsState;
+  /** Real-time token-consumption readout for the pet page (undefined in tests). */
+  live?: LiveStats;
 }

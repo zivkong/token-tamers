@@ -13,7 +13,14 @@ import { HitRegistry } from './render/hit';
 import { decode, type InputEvent } from './terminal/input';
 import { computeLayout } from './render/layout';
 import { menuCells, renderFrame, type FrameInput } from './render/frame';
-import type { AdapterInfo, PageId, PageUiState, ShellInfo, SettingsState } from './pages/types';
+import type {
+  AdapterInfo,
+  LiveStats,
+  PageId,
+  PageUiState,
+  ShellInfo,
+  SettingsState,
+} from './pages/types';
 import { buildDexRows } from './pages/dex';
 import { cycleSelectedField, settingsFieldCount } from './pages/settings';
 import type { ContentPack, GameEffect, GameState } from '@token-tamers/core';
@@ -24,6 +31,11 @@ export interface ShellHost {
   getState(): GameState;
   advance(now: number): GameEffect[];
   completion(): { overall: number };
+  /**
+   * Optional real-time token-consumption readout for the pet vitals panel,
+   * derived from the engine's open window. Called once per rendered frame.
+   */
+  liveStats?(): LiveStats;
 }
 
 export interface ShellOptions {
@@ -222,6 +234,7 @@ function renderOnce(
     flash: rt.flash,
     info: rt.info,
     settings: rt.settings,
+    live: host.liveStats?.(),
   };
   renderFrame(buf, hits, input);
   buf.flush(writer);

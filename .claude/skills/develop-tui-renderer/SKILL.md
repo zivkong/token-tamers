@@ -17,20 +17,24 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   stack from row 0 with **no letterbox gutters, no side padding**; the menu is a **grid
   docked immediately AFTER the canvas**, not at the terminal bottom. Slack falls below it.
   (This supersedes the old centered-4:3-canvas + bottom-bar model.)
-- Section order (pet page): **header band** (`headerRows`) → _divider_ → **game canvas** →
-  _labeled `VITALS` divider_ → **vitals panel** (`panelRows`: stats + token nourishment +
-  diet) → _divider_ → **menu grid**. `petSections(layout)` carves the bands + divider rows;
-  `render/divider.ts` draws the rules. `canvasX=0`, `canvasCols=termCols`.
+- Section order (pet page): **header band** (`headerRows`) → _divider+gap_ → **game canvas** →
+  _labeled `VITALS` divider+gap_ → **vitals panel** (`panelRows`: stats / gap / feeding / gap /
+  diet) → _divider+gap_ → **menu grid**. `petSections(layout)` carves the bands + divider rows;
+  every divider is followed by a `GAP_ROWS` blank for spacing. `render/divider.ts` draws rules.
+  `canvasX=0`, `canvasCols=termCols`.
 - **Evolution-mystery rule:** the pet screen must NOT show the stage word, molt count, or any
   "progress to next evolution" — evolution stays a surprise. Stage/molt still drive the engine
   and show in achievements/Archive; keep the `calibrating` cue (data readiness, not evolution).
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
-- **Vitals panel** (`pages/pet-vitals.ts`) is a pure function of GameState: stat bars from
-  `pet.stats`, nourishment from `state.baselines` (windows + avg tokens/window), diet from
-  `pet.dietGenes` resolved to House tints via `pack.models`. Keep grade-roll odds shown here
-  (transparency invariant).
+- **Vitals panel** (`pages/pet-vitals.ts`): stat bars from `pet.stats`; the **Feeding row is
+  REAL-TIME** from `ctx.live` (`LiveStats`) — open-window tokens vs baseline appetite (ratio
+  drives the next molt's odds); diet from `pet.dietGenes` → House tints via `pack.models`. Keep
+  grade-roll odds shown (transparency invariant). `LiveStats` flows `ShellHost.liveStats()` →
+  shell → `FrameInput.live` → `RenderContext.live`; the cli derives it from
+  `engine.pendingEvents()` + `eventEssence` + baselines. Undefined in golden tests → the
+  feeding row falls back to a static baseline summary (keeps frames deterministic).
 - Cells are ~1:2 w:h; half-blocks give 2 vertical px/cell. Habitat scenes are 96×48 px
   (96 cols × 24 rows → 4:1 cell aspect). The canvas is full width and `sceneRows ≈ cols/4`
   (capped to fit), so the backdrop **scales uniformly to fill the width** via `drawSprite`'s

@@ -1,15 +1,19 @@
 /**
  * Pet vitals panel — the section between the game canvas and the menu.
  *
- * Three full-width rows, deliberately free of any evolution/stage hints (those
- * stay a mystery — see pet.ts):
+ * Stat / feeding / diet rows separated by blank spacer rows, deliberately free
+ * of any evolution/stage hints (those stay a mystery — see pet.ts):
  *
- *   STATS   PWR ████░ 12   SPD ███░░ 9   WIS █████ 15   GRT ███░░ 11
- *   Intake  ▕███████░░░▏  6 windows fed · ~24.3k/window      last roll: …
- *   Diet    ▕██████░░░░▏  aether 70% · cipher 30%
+ *   PWR ████░ 12   SPD ███░░ 9   WIS █████ 15   GRT ███░░ 11
  *
- * Everything is a pure function of GameState (stats, token baselines, diet
- * genes) so golden frames stay deterministic.
+ *   Feeding ▕███████░░░▏ this window 24.3k tok · 1.3× baseline ↑   fed 6 windows
+ *
+ *   Diet    ▕██████░░░░▏ Aether 70% · Cipher 30%            last roll: C→B 38%
+ *
+ * The feeding row is REAL-TIME: it reads `ctx.live` (the engine's open window),
+ * so token usage visibly feeds the pet and previews the next molt's odds. The
+ * rest is a pure function of GameState; without `ctx.live` (golden tests) the
+ * feeding row falls back to a static baseline summary, keeping frames stable.
  */
 
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
@@ -29,14 +33,11 @@ const MUTED: Rgb = { r: 120, g: 126, b: 146 };
 const BAR_EMPTY: Rgb = { r: 44, g: 50, b: 70 };
 const UNKNOWN_TINT: Rgb = { r: 96, g: 102, b: 122 };
 
-/** A "full" active-window intake used to scale the appetite gauge. */
-const WINDOW_TOKENS_FULL = 150_000;
-
-/** Draw the three-row vitals panel into `panel`. */
+/** Draw the vitals panel into `panel`: stats / (gap) / feeding / (gap) / diet. */
 export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
   drawStatsRow(ctx, panel, panel.y);
-  drawIntakeRow(ctx, panel, panel.y + 1);
-  drawDietRow(ctx, panel, panel.y + 2);
+  drawFeedingRow(ctx, panel, panel.y + 2);
+  drawDietRow(ctx, panel, panel.y + 4);
 }
 
 /** Row 1 — the four stat bars across the full width. */
@@ -64,40 +65,60 @@ function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   });
 }
 
-/** Row 2 — token-consumption appetite gauge + lifetime nourishment + odds. */
-function drawIntakeRow(ctx: RenderContext, panel: SceneRect, y: number): void {
+/**
+ * Row 2 — REAL-TIME feeding: the open window's tokens vs the pet's baseline
+ * appetite. The gauge climbs as usage lands; passing the baseline (1×) means the
+ * next molt rolls grade at better odds. Falls back to a static baseline summary
+ * when no live readout is available (golden tests).
+ */
+function drawFeedingRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf, state } = ctx;
-  const { windows, avgTokens } = consumptionSummary(state);
+  const live = ctx.live;
   const fill = mix(hexToRgb(houseTint(ctx.pack, state.pet.house)), VALUE, 0.15);
 
-  buf.text(panel.x + 1, y, 'Intake', LABEL, null);
+  buf.text(panel.x + 1, y, 'Feeding', LABEL, null);
+  const gaugeX = panel.x + 9;
 
-  // Reserve the right edge for the grade-roll odds (transparency invariant).
-  const odds = renderGradeOddsLine(state);
-  const oddsX = panel.x + panel.cols - odds.length - 1;
-  buf.text(oddsX, y, odds, MUTED, null);
+  // Right edge: lifetime feedings (windows the pet has closed).
+  const windows = live ? live.windowsObserved : consumptionSummary(state).windows;
+  const right = `fed ${windows} window${windows === 1 ? '' : 's'}`;
+  const rightX = panel.x + panel.cols - right.length - 1;
+  buf.text(rightX, y, right, MUTED, null);
 
-  const gaugeX = panel.x + 8;
-  if (windows === 0) {
-    buf.text(gaugeX, y, 'awaiting first usage', MUTED, null);
+  if (!live) {
+    const { windows: w, avgTokens } = consumptionSummary(state);
+    const text =
+      w > 0 ? `~${fmtTokens(avgTokens)} essence/window baseline` : 'awaiting first usage';
+    buf.text(gaugeX, y, text, MUTED, null);
     return;
   }
+
   const gaugeW = 12;
-  drawBar(buf, { x: gaugeX, y, w: gaugeW }, avgTokens / WINDOW_TOKENS_FULL, fill);
-  // Fit the nourishment text in the gap between the gauge and the odds.
   const textX = gaugeX + gaugeW + 2;
-  const avail = oddsX - 1 - textX;
-  if (avail > 0) {
-    const text = `${windows} window${windows === 1 ? '' : 's'} fed · ~${fmtTokens(avgTokens)}/window`;
-    buf.text(textX, y, text.slice(0, avail), VALUE, null);
+  const avail = rightX - 1 - textX;
+  if (live.baselineEssence > 0) {
+    const ratio = live.windowEssence / live.baselineEssence;
+    drawBar(buf, { x: gaugeX, y, w: gaugeW }, Math.min(1, ratio), fill);
+    const arrow = ratio >= 1.05 ? ' ↑' : ratio < 0.95 ? ' ↓' : '';
+    const text = `this window ${fmtTokens(live.windowTokens)} tok · ${ratio.toFixed(1)}× baseline${arrow}`;
+    if (avail > 0) buf.text(textX, y, text.slice(0, avail), VALUE, null);
+  } else {
+    drawBar(buf, { x: gaugeX, y, w: gaugeW }, 0, fill);
+    const text = `this window ${fmtTokens(live.windowTokens)} tok · building baseline…`;
+    if (avail > 0) buf.text(textX, y, text.slice(0, avail), MUTED, null);
   }
 }
 
-/** Row 3 — the diet composition: a tinted stacked bar + a percentage legend. */
+/** Row 3 — diet composition (tinted stacked bar + legend) + grade-roll odds. */
 function drawDietRow(ctx: RenderContext, panel: SceneRect, y: number): void {
-  const { buf } = ctx;
+  const { buf, state } = ctx;
   buf.text(panel.x + 1, y, 'Diet', LABEL, null);
-  const barX = panel.x + 8;
+  const barX = panel.x + 9;
+
+  // Grade-roll odds stay visible (transparency invariant), right-aligned.
+  const odds = renderGradeOddsLine(state);
+  const oddsX = panel.x + panel.cols - odds.length - 1;
+  buf.text(oddsX, y, odds, MUTED, null);
 
   const diet = dietBreakdown(ctx);
   if (diet.length === 0) {
@@ -115,11 +136,13 @@ function drawDietRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   }
   while (bx < barX + barW) buf.set(bx++, y, { ch: LIGHT, fg: BAR_EMPTY, bg: null });
 
+  const legendX = barX + barW + 2;
   const legend = diet
     .slice(0, 3)
     .map((s) => `${s.name} ${Math.round(s.frac * 100)}%`)
     .join(' · ');
-  buf.text(barX + barW + 2, y, legend, VALUE, null);
+  const avail = oddsX - 1 - legendX;
+  if (avail > 0) buf.text(legendX, y, legend.slice(0, avail), VALUE, null);
 }
 
 // ---------------------------------------------------------------------------

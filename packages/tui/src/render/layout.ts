@@ -27,10 +27,15 @@ export const MIN_ROWS = 24;
 
 /** Rows the header band occupies at the very top (pet name + identity). */
 export const HEADER_ROWS = 2;
-/** Rows the vitals panel occupies (stats row + nourishment row + diet row). */
-export const PANEL_ROWS = 3;
+/**
+ * Rows the vitals panel occupies: a stat row, a blank, a feeding row, a blank,
+ * and a diet row — the blanks give the panel internal breathing room.
+ */
+export const PANEL_ROWS = 5;
 /** Divider rules drawn between the stacked sections (header|scene|panel|menu). */
 export const DIVIDER_ROWS = 3;
+/** Blank padding rows that follow each divider, for spacing between sections. */
+export const GAP_ROWS = 1;
 /** Smallest scene height we will draw before the terminal counts as too small. */
 export const MIN_SCENE_ROWS = 6;
 /**
@@ -93,13 +98,14 @@ export function computeLayout(cols: number, rows: number): Layout {
 
   // Scene height tracks the habitat's native 4:1 cell aspect (96 cols : 24
   // rows) so a full-width backdrop scales uniformly, capped to what fits above
-  // the menu after the header band, the vitals panel and the section dividers.
-  const chrome = HEADER_ROWS + PANEL_ROWS + DIVIDER_ROWS + menuRows;
+  // the menu after the header band, the vitals panel, the section dividers and
+  // their padding gaps.
+  const chrome = HEADER_ROWS + PANEL_ROWS + DIVIDER_ROWS * (1 + GAP_ROWS) + menuRows;
   const availForScene = rows - chrome;
   const sceneTarget = Math.round(cols / 4);
   const sceneRows = Math.max(MIN_SCENE_ROWS, Math.min(sceneTarget, availForScene));
 
-  const canvasRows = HEADER_ROWS + PANEL_ROWS + DIVIDER_ROWS + sceneRows;
+  const canvasRows = chrome - menuRows + sceneRows;
   const menuY = canvasRows;
 
   return {
@@ -139,19 +145,21 @@ export interface PetSections {
 /**
  * Carve the pet page's section bands out of the content region. The scene flexes
  * to fill whatever is left between the fixed header (top) and vitals panel
- * (bottom); a 1-row divider sits between each section.
+ * (bottom); each section is separated by a divider rule FOLLOWED by a blank
+ * padding gap, so sections breathe instead of touching.
  */
 export function petSections(l: Layout): PetSections {
   const x = l.canvasX;
   const cols = l.canvasCols;
-  const sceneRows = l.canvasRows - l.headerRows - l.panelRows - DIVIDER_ROWS;
+  const sceneRows =
+    l.canvasRows - l.headerRows - l.panelRows - DIVIDER_ROWS - DIVIDER_ROWS * GAP_ROWS;
 
   const headerY = l.canvasY;
-  const dHeader = headerY + l.headerRows;
-  const sceneY = dHeader + 1;
-  const dScene = sceneY + sceneRows;
-  const panelY = dScene + 1;
-  const dPanel = panelY + l.panelRows;
+  const dHeader = headerY + l.headerRows; // divider, then a gap
+  const sceneY = dHeader + 1 + GAP_ROWS;
+  const dScene = sceneY + sceneRows; // labeled divider, then a gap
+  const panelY = dScene + 1 + GAP_ROWS;
+  const dPanel = panelY + l.panelRows; // divider, then a gap, then the menu
 
   return {
     header: { x, y: headerY, cols, rows: l.headerRows },
