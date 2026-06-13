@@ -125,6 +125,11 @@ export function sgrReset(): string {
   return `${CSI}0m`;
 }
 
+/** Bold (increased-intensity) SGR; a no-op in monochrome mode. */
+export function boldSgr(mode: ColorMode): string {
+  return mode === 'none' ? '' : `${CSI}1m`;
+}
+
 // ---------------------------------------------------------------------------
 // Color encoding with degradation
 // ---------------------------------------------------------------------------

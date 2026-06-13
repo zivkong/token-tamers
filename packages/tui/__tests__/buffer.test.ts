@@ -62,4 +62,37 @@ describe('FrameBuffer diff flush', () => {
     const moves = out.match(MOVE_RE) ?? [];
     expect(moves.length).toBe(1);
   });
+
+  it('emits the bold SGR for bold text in a color mode', () => {
+    const { writer } = makeWriter();
+    const buf = new FrameBuffer(20, 1);
+    buf.clear();
+    buf.textBold(0, 0, 'NAME', { r: 74, g: 222, b: 128 });
+    const out = buf.flush(writer);
+    expect(out).toContain('[1m'); // bold on
+    expect(out).toContain('NAME');
+  });
+
+  it('omits the bold SGR in monochrome mode', () => {
+    const sink = new StringSink();
+    const writer = new Writer(sink, 'none');
+    const buf = new FrameBuffer(20, 1);
+    buf.clear();
+    buf.textBold(0, 0, 'NAME', { r: 74, g: 222, b: 128 });
+    const out = buf.flush(writer);
+    expect(out).not.toContain('[1m');
+    expect(out).toContain('NAME');
+  });
+
+  it('treats a bold change as a dirty cell on re-flush', () => {
+    const { writer } = makeWriter();
+    const buf = new FrameBuffer(20, 1);
+    buf.clear();
+    buf.text(0, 0, 'A', { r: 200, g: 200, b: 200 });
+    buf.flush(writer);
+    buf.clear();
+    buf.textBold(0, 0, 'A', { r: 200, g: 200, b: 200 }); // same char/color, now bold
+    const out = buf.flush(writer);
+    expect(out).toContain('[1m');
+  });
 });

@@ -384,14 +384,14 @@ function drawHeaderBand(ctx: RenderContext, header: SceneRect, name: string): vo
     }
   }
 
-  const badge = `[${pet.grade}]${GRADE_BADGE[pet.grade]}`;
+  // Grade is conveyed by the name's COLOR + a trailing SYMBOL — no '[B]' text.
+  // The whole name is rendered bold in the grade accent (green B, purple A, …).
+  const title = `${name} ${GRADE_BADGE[pet.grade]}`;
   let x = header.x + 1;
-  buf.text(x, header.y, name, BRIGHT, HEADER_BG);
-  x += name.length + 1;
-  buf.text(x, header.y, badge, GRADE_ACCENT[pet.grade], HEADER_BG);
-  x += badge.length + 1;
+  buf.textBold(x, header.y, title, GRADE_ACCENT[pet.grade], HEADER_BG);
+  x += title.length + 1;
   // Keep the calibration cue (it is about data readiness, not evolution).
-  if (pet.calibrating) buf.text(x + 1, header.y, '· calibrating', DIM, HEADER_BG);
+  if (pet.calibrating) buf.text(x, header.y, '· calibrating', DIM, HEADER_BG);
 
   // Right side: home habitat (no gen/molt — evolution is hidden).
   const habitatDef = findHabitat(pack, state.selectedHabitat);

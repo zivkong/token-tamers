@@ -23,8 +23,11 @@ All UI is mouse-clickable — menu first and foremost — with full keyboard par
 The frame is a column of full-width sections separated by divider rules (see
 `packages/tui/src/render/layout.ts` → `petSections()` and `render/divider.ts`):
 
-1. **Header band** (top, `headerRows`) — pet name + grade + home habitat, then identity
-   (pattern + traits). **No evolution information** — see the mystery rule below.
+1. **Header band** (top, `headerRows`) — pet name + home habitat, then identity (pattern +
+   traits). **Grade is shown by the name itself**: the whole name is rendered **bold in the
+   grade's accent color** (C grey · B green · A purple · S gold) with a trailing grade
+   **symbol** (`○ ● ◆ ★`) — there is no `[B]`-style text. **No evolution information** — see
+   the mystery rule below.
 2. _divider_
 3. **Game canvas** (full width) — the habitat scene scaled to fill edge-to-edge.
 4. _divider — labeled `VITALS`_
@@ -97,7 +100,7 @@ lookup; zero impact on the 30fps budget.
 
 ```
 ┌────────────────────────────────────────────────┐ row 0
-│ Oraclet [B]●                        ⌂ Beach Cove │  <- header band (NO stage/molt)
+│ Oraclet ●                           ⌂ Beach Cove │  <- name bold+grade-colored (no [B])
 │ Tempest pattern  ✦  marathoner · deepdiver       │
 ├────────────────────────────────────────────────┤  <- divider
 │            habitat · pet · trinkets              │  <- game canvas  (full-bleed,

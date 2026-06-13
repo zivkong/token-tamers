@@ -24,6 +24,9 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 - **Evolution-mystery rule:** the pet screen must NOT show the stage word, molt count, or any
   "progress to next evolution" — evolution stays a surprise. Stage/molt still drive the engine
   and show in achievements/Archive; keep the `calibrating` cue (data readiness, not evolution).
+- **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
+  **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
+  `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
 - **Vitals panel** (`pages/pet-vitals.ts`) is a pure function of GameState: stat bars from
   `pet.stats`, nourishment from `state.baselines` (windows + avg tokens/window), diet from
   `pet.dietGenes` resolved to House tints via `pack.models`. Keep grade-roll odds shown here
