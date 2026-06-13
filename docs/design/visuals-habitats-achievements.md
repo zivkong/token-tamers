@@ -341,8 +341,8 @@ Achievements are the formal layer that couples progression to the habitat & trin
   achievements, habitats, trinkets**
 - Per-page breakdowns included
 - The endgame is driving this to 100%
-- The live Completion Meter is also displayed on the right edge of the bottom menu bar in the
-  main TUI shell (e.g., `67.4%`)
+- The live Completion Meter is also displayed as the last cell of the menu grid (a mini bar +
+  `67.4%`) in the main TUI shell (the menu sits directly after the canvas, not at the bottom)
 
   > Weighting formula: backlog item — see `docs/design/` and GitHub issues.
 

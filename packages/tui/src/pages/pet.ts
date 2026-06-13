@@ -22,11 +22,15 @@ import {
 } from '../render/sprite';
 import { findHabitat, findSpecies, findSprite, houseTint } from '../helpers/lookup';
 import { renderGradeOddsLine } from '../helpers/status';
+import { sceneRect, type SceneRect } from '../render/layout';
 import type { RenderContext } from './types';
 import type { ContentPack, SpriteDef } from '@token-tamers/core';
 
 const DIM: Rgb = { r: 90, g: 96, b: 120 };
 const BRIGHT: Rgb = { r: 230, g: 235, b: 245 };
+/** Subtle band backgrounds that set the header/status sections off the scene. */
+const HEADER_BG: Rgb = { r: 18, g: 21, b: 31 };
+const STATUS_BG: Rgb = { r: 16, g: 19, b: 28 };
 
 // ---------------------------------------------------------------------------
 // Organic wander — a deterministic value-noise walk.
@@ -260,41 +264,39 @@ function dwellState(a: DwellArgs): WanderState {
 
 export function renderPetPage(ctx: RenderContext): void {
   const { layout, state, pack } = ctx;
-  const { canvasX, canvasY, canvasCols, canvasRows } = layout;
   const pet = state.pet;
+  const scene = sceneRect(layout);
 
-  drawBackdrop(ctx);
+  drawBackdrop(ctx, scene);
 
   const species = findSpecies(pack, pet.speciesId);
   const sprite = species ? findSprite(pack, species.spriteId) : undefined;
   if (sprite) {
-    drawWanderingPet(ctx, sprite);
+    drawWanderingPet(ctx, sprite, scene);
   }
 
-  drawTitleStrip(ctx, species?.name ?? '???');
-  drawIdentityStrip(ctx);
-  drawBottomStrip(ctx);
+  drawHeaderBand(ctx, species?.name ?? '???');
+  drawStatusBand(ctx);
 
-  // The whole pet area is a clickable region (e.g. to pet it; no-op for MVP).
-  ctx.hits.add('pet:canvas', canvasX, canvasY, canvasCols, canvasRows);
+  // The whole scene is a clickable region (e.g. to pet it; no-op for MVP).
+  ctx.hits.add('pet:canvas', scene.x, scene.y, scene.cols, scene.rows);
 }
 
 /** Draw the pet (and, during play, its trinket + S aura) along the wander path. */
-function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef): void {
-  const { buf, layout, state, pack, mode, frame } = ctx;
-  const { canvasX, canvasY, canvasCols, canvasRows } = layout;
+function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRect): void {
+  const { buf, state, pack, mode, frame } = ctx;
   const pet = state.pet;
 
   const spriteCols = sprite.width;
   const spriteRows = Math.ceil(sprite.height / 2);
   const geo: WanderGeometry = {
-    canvasX,
-    canvasY,
-    canvasCols,
-    canvasRows,
+    canvasX: scene.x,
+    canvasY: scene.y,
+    canvasCols: scene.cols,
+    canvasRows: scene.rows,
     spriteCols,
     spriteRows,
-    floorY: sceneFloorRow(ctx),
+    floorY: sceneFloorRow(scene),
   };
   // The egg is pre-hatch and legless: keep it stationary (no wander/hop/play).
   const w = petPlacement(frame, geo, pet.stage !== 'egg');
@@ -306,7 +308,7 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef): void {
 
   const tint = houseTint(pack, pet.house);
   const pal = buildPalette(tint, pet.grade, frame);
-  const clip = { x: canvasX, y: canvasY, w: canvasCols, h: canvasRows };
+  const clip = { x: scene.x, y: scene.y, w: scene.cols, h: scene.rows };
   drawSprite(buf, sprite, pal, {
     x: w.px,
     y: w.py,
@@ -327,23 +329,13 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef): void {
 
 /**
  * Cell-row of the habitat floor line (where the pet's feet rest). The backdrop
- * is drawn CENTERED in the canvas, so the floor is inside the backdrop — not at
- * the canvas bottom. We mirror `drawBackdrop`'s vertical placement and add the
- * scene's floor row. Falls back to a sensible canvas-relative line when there is
- * no habitat sprite (the gradient fallback fills the whole canvas).
+ * is scaled to FILL the scene region, so the floor line is the same fraction of
+ * the scene height as in the native art (`SCENE_FLOOR_PX / HABITAT_PX_H`).
+ * Falls back to a near-bottom line when there is no habitat sprite (the gradient
+ * fallback fills the whole scene).
  */
-function sceneFloorRow(ctx: RenderContext): number {
-  const { layout, state, pack } = ctx;
-  const { canvasY, canvasRows } = layout;
-  const habitat = findHabitat(pack, state.selectedHabitat);
-  const habSprite = habitat ? findSprite(pack, habitat.spriteId) : undefined;
-  if (!habSprite) {
-    // No backdrop: stand near the canvas bottom with a small margin.
-    return canvasY + canvasRows - 4;
-  }
-  const h = Math.ceil(habSprite.height / 2);
-  const by = canvasY + Math.floor((canvasRows - h) / 2);
-  return by + Math.floor((SCENE_FLOOR_PX * h) / HABITAT_PX_H);
+function sceneFloorRow(scene: SceneRect): number {
+  return scene.y + Math.floor((SCENE_FLOOR_PX * scene.rows) / HABITAT_PX_H);
 }
 
 /** Draw the selected trinket at the floor anchor beside the play spot. */
@@ -369,44 +361,55 @@ function drawPlayTrinket(ctx: RenderContext, trinketX: number, geo: WanderGeomet
 }
 
 // ---------------------------------------------------------------------------
-// Strips (unchanged in spirit; extracted for clarity).
+// Section bands — full-width header (above the scene) and status (below it).
 // ---------------------------------------------------------------------------
 
-function drawTitleStrip(ctx: RenderContext, name: string): void {
-  const { buf, layout, state } = ctx;
-  const { canvasX, canvasY, canvasCols } = layout;
-  const pet = state.pet;
-  const badge = `[${pet.grade}]${GRADE_BADGE[pet.grade]}`;
-  const stageLabel = pet.calibrating ? 'calibrating' : pet.stage;
-  buf.text(canvasX + 1, canvasY, name, BRIGHT, null);
-  buf.text(canvasX + 1 + name.length + 1, canvasY, badge, GRADE_ACCENT[pet.grade], null);
-  buf.text(canvasX + 1 + name.length + badge.length + 2, canvasY, stageLabel, DIM, null);
-  const info = `gen ${pet.generation} · molt ${pet.moltCount}`;
-  buf.text(canvasX + canvasCols - info.length - 1, canvasY, info, DIM, null);
+/** Fill a full-width band [y, y+rows) with a flat background. */
+function fillBand(ctx: RenderContext, y: number, rows: number, bg: Rgb): void {
+  const { buf, layout } = ctx;
+  for (let ry = 0; ry < rows; ry++) {
+    for (let x = 0; x < layout.canvasCols; x++) {
+      buf.set(layout.canvasX + x, y + ry, { ch: ' ', fg: null, bg });
+    }
+  }
 }
 
-function drawIdentityStrip(ctx: RenderContext): void {
+/** Top header band: name/grade/stage + gen/molt on row 0, identity on row 1. */
+function drawHeaderBand(ctx: RenderContext, name: string): void {
   const { buf, layout, state } = ctx;
-  const { canvasX, canvasY } = layout;
+  const { canvasX, canvasY, canvasCols, headerRows } = layout;
   const pet = state.pet;
+  fillBand(ctx, canvasY, headerRows, HEADER_BG);
+
+  const badge = `[${pet.grade}]${GRADE_BADGE[pet.grade]}`;
+  const stageLabel = pet.calibrating ? 'calibrating' : pet.stage;
+  buf.text(canvasX + 1, canvasY, name, BRIGHT, HEADER_BG);
+  buf.text(canvasX + 1 + name.length + 1, canvasY, badge, GRADE_ACCENT[pet.grade], HEADER_BG);
+  buf.text(canvasX + 1 + name.length + badge.length + 2, canvasY, stageLabel, DIM, HEADER_BG);
+  const info = `gen ${pet.generation} · molt ${pet.moltCount}`;
+  buf.text(canvasX + canvasCols - info.length - 1, canvasY, info, DIM, HEADER_BG);
+
   const identity = [
     pet.pattern ? `${pet.pattern[0]?.toUpperCase()}${pet.pattern.slice(1)} pattern` : null,
     pet.traits.length > 0 ? pet.traits.join(' · ') : null,
   ]
     .filter(Boolean)
     .join('  ✦  ');
-  if (identity) buf.text(canvasX + 1, canvasY + 1, identity, DIM, null);
+  if (identity && headerRows > 1) buf.text(canvasX + 1, canvasY + 1, identity, DIM, HEADER_BG);
 }
 
-function drawBottomStrip(ctx: RenderContext): void {
+/** Bottom status band: last grade-roll odds + the home habitat name. */
+function drawStatusBand(ctx: RenderContext): void {
   const { buf, layout, state, pack } = ctx;
-  const { canvasX, canvasY, canvasCols, canvasRows } = layout;
-  const odds = renderGradeOddsLine(state);
-  buf.text(canvasX + 1, canvasY + canvasRows - 1, odds, DIM, null);
+  const { canvasX, canvasCols, canvasRows, canvasY, statusRows } = layout;
+  const y = canvasY + canvasRows - statusRows;
+  fillBand(ctx, y, statusRows, STATUS_BG);
+
+  buf.text(canvasX + 1, y, renderGradeOddsLine(state), DIM, STATUS_BG);
   const habitatDef = findHabitat(pack, state.selectedHabitat);
   if (habitatDef) {
     const home = `⌂ ${habitatDef.name}`;
-    buf.text(canvasX + canvasCols - home.length - 1, canvasY + canvasRows - 1, home, DIM, null);
+    buf.text(canvasX + canvasCols - home.length - 1, y, home, DIM, STATUS_BG);
   }
 }
 
@@ -414,31 +417,31 @@ function drawBottomStrip(ctx: RenderContext): void {
 // Backdrop.
 // ---------------------------------------------------------------------------
 
-function drawBackdrop(ctx: RenderContext): void {
-  const { buf, layout, state, pack, mode, frame } = ctx;
-  const { canvasX, canvasY, canvasCols, canvasRows } = layout;
+function drawBackdrop(ctx: RenderContext, scene: SceneRect): void {
+  const { buf, state, pack, mode, frame } = ctx;
 
   const habitat = findHabitat(pack, state.selectedHabitat);
   const habSprite = habitat ? findSprite(pack, habitat.spriteId) : undefined;
   if (habSprite) {
     const pal = backdropPalette(pack, state, habitat?.palette, habitat?.tint);
-    const w = habSprite.width;
-    const h = Math.ceil(habSprite.height / 2);
-    const bx = canvasX + Math.floor((canvasCols - w) / 2);
-    const by = canvasY + Math.floor((canvasRows - h) / 2);
+    // Scale the scene to FILL the full-width canvas (no side padding). The
+    // habitat's native 4:1 cell aspect matches the scene rect's, so the scale
+    // is uniform and undistorted.
     drawSprite(buf, habSprite, pal, {
-      x: bx,
-      y: by,
-      // The compositor now advances the bank at the sprite's own fps, so the
+      x: scene.x,
+      y: scene.y,
+      destW: scene.cols,
+      destH: scene.rows,
+      // The compositor advances the bank at the sprite's own fps, so the
       // backdrop no longer needs to pre-divide the counter to slow itself.
       frame,
       mode,
-      clip: { x: canvasX, y: canvasY, w: canvasCols, h: canvasRows },
+      clip: { x: scene.x, y: scene.y, w: scene.cols, h: scene.rows },
     });
     return;
   }
 
-  drawFallbackGradient(ctx);
+  drawFallbackGradient(ctx, scene);
 }
 
 /**
@@ -459,14 +462,13 @@ function backdropPalette(
   return buildPalette(tint, 'A', 0).map((c) => (c ? mix(c, { r: 8, g: 10, b: 18 }, 0.18) : c));
 }
 
-function drawFallbackGradient(ctx: RenderContext): void {
-  const { buf, layout } = ctx;
-  const { canvasX, canvasY, canvasCols, canvasRows } = layout;
-  for (let y = 0; y < canvasRows; y++) {
-    const t = y / Math.max(1, canvasRows - 1);
+function drawFallbackGradient(ctx: RenderContext, scene: SceneRect): void {
+  const { buf } = ctx;
+  for (let y = 0; y < scene.rows; y++) {
+    const t = y / Math.max(1, scene.rows - 1);
     const bg = mix({ r: 18, g: 20, b: 30 }, { r: 30, g: 34, b: 50 }, t);
-    for (let x = 0; x < canvasCols; x++) {
-      buf.set(canvasX + x, canvasY + y, { ch: ' ', fg: null, bg });
+    for (let x = 0; x < scene.cols; x++) {
+      buf.set(scene.x + x, scene.y + y, { ch: ' ', fg: null, bg });
     }
   }
 }

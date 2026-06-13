@@ -19,9 +19,11 @@ export {
 export {
   renderFrame,
   renderFrameToString,
+  menuCells,
   MENU_ITEMS,
   type FrameInput,
   type MenuItem,
+  type MenuCell,
 } from './render/frame';
 
 // Status one-liners (tt watch / tt status).
@@ -76,11 +78,15 @@ export { HitRegistry, type HitRegion } from './render/hit';
 // Layout.
 export {
   computeLayout,
+  sceneRect,
   tooSmallMessage,
   MIN_COLS,
   MIN_ROWS,
-  MENU_ROWS,
+  HEADER_ROWS,
+  STATUS_ROWS,
+  MENU_GRID_BREAKPOINT,
   type Layout,
+  type SceneRect,
 } from './render/layout';
 
 // Pages.

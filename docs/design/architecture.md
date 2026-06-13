@@ -7,30 +7,45 @@ to a pointer (CLAUDE.md and CONTRIBUTING.md now own it); the CLAUDE.md/skills/wi
 
 ---
 
-## TUI Shell: Clickable 4:3 Canvas, Bottom Menu (design baseline §15)
+## TUI Shell: Top-Oriented Full-Width Stack, Menu-After-Canvas (design baseline §15, layout rev 1.1)
 
-**Layout law:** the game renders in a **4:3 game canvas** with the **menu bar OUTSIDE the
-canvas, docked at the bottom** of the terminal. All UI is mouse-clickable — menu first and
-foremost — with full keyboard parity.
+**Layout law:** the UI is a **top-oriented, full-width vertical stack** — sections stack from
+row 0 with **no letterbox gutters and no side padding**, and the menu is a **grid docked
+immediately AFTER the canvas**, not at the terminal bottom. Any slack falls below the menu.
+All UI is mouse-clickable — menu first and foremost — with full keyboard parity.
 
-### 4:3 Canvas Math
+> Layout rev 1.1 supersedes the original "centered 4:3 canvas + bottom-docked menu bar". The
+> game canvas is now full-bleed (edge-to-edge); the prior centered-canvas/letterbox model is
+> retired. The pixel-art _scene aspect_ is preserved by scaling, not by letterboxing.
 
-Cells aren't square (~1:2 w:h), and half-blocks give 2 vertical pixels per cell — so a 4:3
-_visual_ canvas uses a cols:rows grid of ~8:3 (e.g. 128 px × 96 px → 128 cols × 48 rows;
-small terminals scale to 80×30, minimum 64×24). On launch/resize the shell computes the
-largest 4:3 pixel area that fits above the menu bar and letterboxes the remainder with
-habitat-tinted gutters. Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and
-full-screen pages (Dex, Achievements) drawn inside the same frame.
+### Section Stack & Canvas Math
 
-### Bottom Menu Bar Spec
+The frame is a column of full-width sections (see `packages/tui/src/render/layout.ts`):
 
-1–2 rows, outside the canvas:
+1. **Header band** (top, `headerRows`) — pet name/grade/stage + gen/molt, then identity/traits.
+2. **Game canvas** (full width) — the habitat scene scaled to fill edge-to-edge.
+3. **Status band** (`statusRows`) — last grade-roll odds + the home habitat.
+4. **Menu grid** — placed right after the canvas.
+
+Cells aren't square (~1:2 w:h) and half-blocks give 2 vertical pixels per cell. Habitat
+scenes are fixed 96×48 px art (96 cols × 24 cell-rows → a 4:1 cell aspect). The canvas spans
+the **full terminal width** and the scene height tracks that 4:1 aspect (`sceneRows ≈
+cols/4`), capped to the rows available above the menu, so the backdrop **scales uniformly to
+fill the width with no padding and no distortion** (nearest-neighbor, via `drawSprite`'s
+`destW`/`destH`). Minimum terminal 64×24. Canvas hosts: pet + habitat + trinkets, cutscenes,
+battle view, and full-screen pages (Dex, Archive, Settings) drawn in the same content region.
+
+### Menu Grid Spec
+
+A responsive grid docked immediately after the canvas (never the terminal bottom):
 
 ```
-[♥ Pet] [☰ Dex] [★ Achv] [⌂ Deco] [🧬 DNA] [⚔ Battle] [⚑ League] [⚙ Settings] [⏻ Quit] · 67.4%
+[♥ Pet] [☰ Dex] [◆ Archive] [⚙ Settings] [⏻ Quit] [ ███░░░░ 67.4% ]   <- 6 columns (wide)
 ```
 
-Always visible, never overlaps the canvas. Right edge shows the live Completion Meter. Click
+The 5 nav buttons plus the live Completion Meter flow across **6 columns on wide terminals
+(≥72 cols), wrapping to 3 columns over 2 rows on narrow ones**. The meter cell shows a mini
+bar + `NN.N%`. Click
 to switch pages; active page highlighted; hover highlight on mouse-move. The `⚙ Settings`
 button opens a board of build/config facts (version, runtime, display, data-dir path, the
 keybinding help) plus the shell's one editable surface: per-adapter **plan**
@@ -68,14 +83,18 @@ lookup; zero impact on the 30fps budget.
 ### ASCII Layout Diagram
 
 ```
-┌──────────────────────────────────────────────┐
-│ ╔══════════════ 4:3 CANVAS ══════════════╗   │
-│ ║   habitat · pet · trinkets · pages     ║   │  <- letterbox gutters
-│ ║                                        ║   │     (habitat-tinted)
-│ ╚════════════════════════════════════════╝   │
-├──────────────────────────────────────────────┤
-│ [♥Pet][☰Dex][★Achv][⌂Deco][🧬DNA][⚔Btl][⚙Set][⏻Quit] 67%│  <- clickable menu (outside)
-└──────────────────────────────────────────────┘
+┌────────────────────────────────────────────────┐ row 0
+│ Oraclet [B]● evolved              gen 1 · molt 3 │  <- header band  (full width)
+│ Marbled pattern  ✦  marathoner · deepdiver       │
+├────────────────────────────────────────────────┤
+│            habitat · pet · trinkets              │  <- game canvas  (full-bleed,
+│        (scene scaled to fill full width)         │      scene scaled to width)
+├────────────────────────────────────────────────┤
+│ last roll: C→B 38% (succeeded)      ⌂ Beach Cove │  <- status band  (full width)
+├────────────────────────────────────────────────┤
+│ [♥ Pet 1] [☰ Dex 2] [◆ Archive 3] [⚙ Set 4] … % │  <- menu grid (after canvas)
+└────────────────────────────────────────────────┘
+                                                       (slack falls below the menu)
 ```
 
 ---
