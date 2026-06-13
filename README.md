@@ -238,6 +238,15 @@ pnpm install
 pnpm dev:watch        # run the shell from source with hot reload
 ```
 
+Quickest sandboxed loop — runs against a throwaway store so it never touches your real
+pet, and drops you straight into the hot-reloading shell:
+
+```sh
+pnpm install
+TOKENTAMERS_HOME=/tmp/tt-dev pnpm dev init       # one-time, sandboxed
+TOKENTAMERS_HOME=/tmp/tt-dev pnpm dev:watch      # hot-reloading shell — press 4 for Settings
+```
+
 | Command           | What it does                                                                          |
 | ----------------- | ------------------------------------------------------------------------------------- |
 | `pnpm dev`        | Run `tt` straight from TypeScript source via `tsx` — no build step                    |
