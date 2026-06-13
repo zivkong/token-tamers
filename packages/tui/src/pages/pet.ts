@@ -3,10 +3,10 @@
  * counter (golden-test safe), plus the name/stage/grade badge, identity line,
  * grade-roll odds and home-habitat strips.
  *
- * The pet is no longer statically centered: it runs a deterministic wander loop
- * (idle -> walk right -> hop -> walk left -> play beside a trinket) whose every
- * frame is a pure function of the frame counter, so golden snapshots stay
- * reproducible. See `petPlacement` for the cycle math.
+ * The pet is not statically centered: it runs a deterministic, non-repeating
+ * organic wander — pausing to idle / sit / look around / hop / play, then
+ * strolling to the next random spot — whose every frame is a pure function of
+ * the frame counter, so golden snapshots stay reproducible. See `petPlacement`.
  */
 
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
@@ -29,25 +29,37 @@ const DIM: Rgb = { r: 90, g: 96, b: 120 };
 const BRIGHT: Rgb = { r: 230, g: 235, b: 245 };
 
 // ---------------------------------------------------------------------------
-// Wander cycle — a pure function of the frame counter.
+// Organic wander — a deterministic value-noise walk.
+//
+// The path is a pure function of the frame counter (golden-snapshot safe) yet
+// effectively never repeats. Position is driven by per-NODE random anchors and
+// per-node dwell behaviors, both derived from an integer hash of the node
+// index: at each node the pet pauses (idle / sit / look around / hop / play),
+// then strolls to the next random anchor with an eased gait. Because anchor(i)
+// varies with `i` forever and nothing chains off earlier nodes, placement is
+// O(1) per frame and never retraces the old fixed 5-beat loop.
 // ---------------------------------------------------------------------------
 
-/** Total frames in one full wander cycle. */
-export const CYCLE = 144;
-/** Per-phase frame budgets; they sum to CYCLE. */
-const IDLE_LEN = 24;
-const WALK_LEN = 40;
-const JUMP_LEN = 16;
-// The final play segment (24 frames) runs from PLAY_AT to the end of the cycle.
-/** Phase start offsets within the cycle. */
-const WALK_R_AT = IDLE_LEN; // 24
-const JUMP_AT = WALK_R_AT + WALK_LEN; // 64
-const WALK_L_AT = JUMP_AT + JUMP_LEN; // 80
-const PLAY_AT = WALK_L_AT + WALK_LEN; // 120 -> play runs 120..143 (24 frames)
+/** Frames a single node occupies — one dwell plus one stroll to the next anchor. */
+const NODE_FRAMES = 54;
+/**
+ * A coarse multi-node window. Exported for consumers/tests that want "a few
+ * behaviors' worth" of frames — the motion itself does NOT loop on this; the
+ * pet's path never repeats (see the section comment above).
+ */
+export const CYCLE = NODE_FRAMES * 4;
 /** Inset (cells) from the canvas edges that bounds the wander path. */
 const EDGE_INSET = 8;
 /** Peak hop height in cells. */
 const HOP_CELLS = 2;
+/** Distinct hash seeds keep position / behavior / dwell / hop-count independent. */
+const SEED_X = 0x1f3d;
+const SEED_BEHAVIOR = 0x2b9c;
+const SEED_DWELL = 0x7c41;
+const SEED_HOPS = 0x51e7;
+
+/** What the pet does while paused at a node. */
+type Dwell = 'idle' | 'sit' | 'look' | 'hop' | 'play';
 /**
  * Pixel row of the scene floor line within a 48px-tall habitat. Every habitat
  * scene lays its ground strip starting at `HH - 10` (= pixel row 38), so the
@@ -89,72 +101,157 @@ export interface WanderState {
   trinketX: number;
 }
 
-/** Linear interpolation clamped to [a,b] by t in [0,1]. */
-function lerp(a: number, b: number, t: number): number {
-  return Math.round(a + (b - a) * Math.max(0, Math.min(1, t)));
+/** Deterministic 32-bit integer hash -> [0, 1). No clock, no Math.random. */
+function hash01(n: number, seed: number): number {
+  let h = (Math.imul(n + 1, 0x9e3779b1) ^ Math.imul(seed + 1, 0x85ebca77)) >>> 0;
+  h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 0x297a2d39) >>> 0;
+  return ((h ^ (h >>> 16)) >>> 0) / 0x1_0000_0000;
 }
 
 /**
- * Pure placement of the pet for a given frame. Position, bank and facing are a
- * deterministic function of `frame % CYCLE` and the geometry — no clock, no RNG.
+ * Smootherstep (eases in AND out) so the pet decelerates to a near-stop at each
+ * anchor instead of snapping — this is what reads as a natural gait.
+ */
+function smootherstep(t: number): number {
+  const x = t < 0 ? 0 : t > 1 ? 1 : t;
+  return x * x * x * (x * (x * 6 - 15) + 10);
+}
+
+/** Floor-anchored x (float) the pet rests at for node `i`. */
+function anchorX(i: number, leftX: number, rightX: number): number {
+  if (rightX <= leftX) return leftX;
+  return leftX + hash01(i, SEED_X) * (rightX - leftX);
+}
+
+/** The behavior the pet performs while dwelling at node `i`. */
+function dwellBehavior(i: number): Dwell {
+  const r = hash01(i, SEED_BEHAVIOR);
+  if (r < 0.34) return 'idle';
+  if (r < 0.52) return 'sit';
+  if (r < 0.7) return 'look';
+  if (r < 0.86) return 'hop';
+  return 'play';
+}
+
+/**
+ * Fraction of a node spent dwelling vs strolling. Varies by behavior so pacing
+ * never feels metronomic — rests linger, restless idles move on quickly.
+ */
+function dwellFraction(behavior: Dwell, i: number): number {
+  const j = hash01(i, SEED_DWELL);
+  switch (behavior) {
+    case 'sit':
+      return 0.55 + j * 0.25;
+    case 'play':
+      return 0.5 + j * 0.2;
+    case 'look':
+      return 0.4 + j * 0.2;
+    case 'hop':
+      return 0.4 + j * 0.15;
+    default:
+      return 0.25 + j * 0.2;
+  }
+}
+
+/** Inputs to a single dwell frame (grouped to honor max-params). */
+interface DwellArgs {
+  i: number;
+  behavior: Dwell;
+  /** 0..1 progress through the dwell. */
+  phase: number;
+  /** Float anchor x the pet rests at. */
+  x: number;
+  /** Next node's anchor — used to anticipate the upcoming stroll direction. */
+  next: number;
+  groundY: number;
+  geo: WanderGeometry;
+}
+
+/**
+ * Pure placement of the pet for a given frame — position, bank and facing are a
+ * deterministic function of `frame` and the geometry (no clock, no RNG), via a
+ * value-noise walk over per-node random anchors:
  *
- *   idle (24)  -> stand at the left bound
- *   walk R (40) -> stride to the right bound (walk bank)
- *   hop (16)   -> a 1-2 cell hop in place (jump bank)
- *   walk L (40) -> stride back to the play spot (walk bank, flipX)
- *   play (24)  -> bob beside the trinket anchor (play bank)
+ *   node i: dwell at anchor(i) [idle / sit / look / hop / play], then stroll to
+ *           anchor(i+1) with an eased gait, facing the direction of travel.
  *
  * `mobile` is false for pre-hatch stages (the egg): a legless egg never walks,
  * hops, or plays — it sits centered on the floor and only breathes via its idle
  * sprite frames. Locomoting an egg across the canvas reads as jitter.
  */
 export function petPlacement(frame: number, geo: WanderGeometry, mobile = true): WanderState {
-  const f = ((frame % CYCLE) + CYCLE) % CYCLE;
   // Top-left y so the sprite's bottom row lands on the scene floor line.
   const groundY = geo.floorY - (geo.spriteRows - 1);
   const leftX = geo.canvasX + EDGE_INSET;
   const rightX = geo.canvasX + geo.canvasCols - EDGE_INSET - geo.spriteCols;
-  // The play spot sits left-of-center; the trinket anchors just to the pet's right.
-  const playX = geo.canvasX + Math.floor((geo.canvasCols - geo.spriteCols) / 2) - 4;
-  const trinketX = playX + geo.spriteCols + 1;
 
   if (!mobile) {
     // Stationary: centered on the floor, idle frames only (no wander, no hop).
     const centerX = geo.canvasX + Math.floor((geo.canvasCols - geo.spriteCols) / 2);
-    return { px: centerX, py: groundY, anim: 'idle', flipX: false, playing: false, trinketX };
-  }
-
-  if (f < WALK_R_AT) {
-    return { px: leftX, py: groundY, anim: 'idle', flipX: false, playing: false, trinketX };
-  }
-  if (f < JUMP_AT) {
-    const t = (f - WALK_R_AT) / WALK_LEN;
     return {
-      px: lerp(leftX, rightX, t),
+      px: centerX,
       py: groundY,
-      anim: 'walk',
+      anim: 'idle',
       flipX: false,
       playing: false,
-      trinketX,
+      trinketX: centerX + geo.spriteCols + 1,
     };
   }
-  if (f < WALK_L_AT) {
-    const t = (f - JUMP_AT) / JUMP_LEN;
-    const hop = Math.round(Math.sin(t * Math.PI) * HOP_CELLS);
-    return { px: rightX, py: groundY - hop, anim: 'jump', flipX: false, playing: false, trinketX };
+
+  const t = frame / NODE_FRAMES;
+  const i = Math.floor(t);
+  const local = t - i; // 0..1 within node i
+  const here = anchorX(i, leftX, rightX);
+  const next = anchorX(i + 1, leftX, rightX);
+  const behavior = dwellBehavior(i);
+  const dwell = dwellFraction(behavior, i);
+
+  if (local < dwell) {
+    const phase = dwell > 0 ? local / dwell : 0;
+    return dwellState({ i, behavior, phase, x: here, next, groundY, geo });
   }
-  if (f < PLAY_AT) {
-    const t = (f - WALK_L_AT) / WALK_LEN;
-    return {
-      px: lerp(rightX, playX, t),
-      py: groundY,
-      anim: 'walk',
-      flipX: true,
-      playing: false,
-      trinketX,
-    };
+
+  // Strolling from `here` to `next` with an eased gait.
+  const stroll = smootherstep((local - dwell) / (1 - dwell));
+  const px = Math.round(here + (next - here) * stroll);
+  return {
+    px,
+    py: groundY,
+    anim: 'walk',
+    flipX: next < here,
+    playing: false,
+    trinketX: px + geo.spriteCols + 1,
+  };
+}
+
+/** Resolve a single frame of dwelling-at-a-node behavior. */
+function dwellState(a: DwellArgs): WanderState {
+  const px = Math.round(a.x);
+  const trinketX = px + a.geo.spriteCols + 1;
+  const faceNext = a.next < a.x; // anticipate the next stroll's direction
+  switch (a.behavior) {
+    case 'hop': {
+      const hops = 1 + Math.floor(hash01(a.i, SEED_HOPS) * 2); // 1 or 2 bounces
+      const arc = Math.abs(Math.sin(a.phase * Math.PI * hops));
+      return {
+        px,
+        py: a.groundY - Math.round(arc * HOP_CELLS),
+        anim: 'jump',
+        flipX: faceNext,
+        playing: false,
+        trinketX,
+      };
+    }
+    case 'play':
+      // Face the toy, which sits just to the pet's right.
+      return { px, py: a.groundY, anim: 'play', flipX: false, playing: true, trinketX };
+    case 'look':
+      // Glance one way, then the other, across the pause.
+      return { px, py: a.groundY, anim: 'idle', flipX: a.phase >= 0.5, playing: false, trinketX };
+    default:
+      return { px, py: a.groundY, anim: 'idle', flipX: faceNext, playing: false, trinketX };
   }
-  return { px: playX, py: groundY, anim: 'play', flipX: true, playing: true, trinketX };
 }
 
 // ---------------------------------------------------------------------------

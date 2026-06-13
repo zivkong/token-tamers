@@ -58,11 +58,11 @@ const state: GameState = {
 
 const COLS = 118;
 const ROWS = 36;
-// One full wander cycle (pet.ts CYCLE = 144): idle -> walk right -> hop ->
-// walk left -> play beside the trinket. The sin-based shimmer/glint/twinkle are
-// seamless at any frame count, so 144 loops cleanly while showing Aurelion
-// WANDERING the rooftop rather than standing still.
-const FRAMES = 144;
+// A showcase window of the organic wander (pet.ts no longer loops on a fixed
+// cycle — the path is non-repeating value noise). ~4 nodes' worth captures a
+// spread of behaviors (idle / sit / look / hop / play + strolls between random
+// anchors); the sin-based shimmer/glint/twinkle stay seamless at any count.
+const FRAMES = 216;
 const FPS = 12;
 
 const frameToSvg = (frame: number): string =>
