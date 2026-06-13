@@ -129,6 +129,9 @@ node tt.js --version
 git clone https://github.com/zivkong/token-tamers.git && cd token-tamers
 pnpm install && pnpm build
 node apps/cli/dist/tt.js --version
+
+# or run straight from source, no build (see Contributing → Local development)
+pnpm install && pnpm dev --version
 ```
 
 </details>
@@ -224,6 +227,39 @@ honest by mechanical gates — import-boundary lint, determinism tests, golden-f
 snapshots, zero-network and spoiler checks, supply-chain pins. Humans own architecture;
 CI owns quality; AI writes the code. Start at [CONTRIBUTING.md](CONTRIBUTING.md) —
 your agent will feel right at home.
+
+### Local development
+
+Prereqs: **Node ≥ 20** and **pnpm** (via Corepack — `corepack enable`). Then:
+
+```sh
+git clone https://github.com/zivkong/token-tamers.git && cd token-tamers
+pnpm install
+pnpm dev:watch        # run the shell from source with hot reload
+```
+
+| Command           | What it does                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| `pnpm dev`        | Run `tt` straight from TypeScript source via `tsx` — no build step                    |
+| `pnpm dev:watch`  | Same, with **hot reload**: restarts on any source edit, in any workspace package      |
+| `pnpm dev <args>` | Forward a command/flag, e.g. `pnpm dev status`, `pnpm dev init`, `pnpm dev --version` |
+| `pnpm test:watch` | Run the test suite in watch mode                                                      |
+| `pnpm build`      | Bundle the standalone binary → run it with `node apps/cli/dist/tt.js`                 |
+| `pnpm check`      | The full gate CI runs: typecheck · lint · format · test · build                       |
+
+A few things worth knowing:
+
+- **No per-package build.** Every workspace package exports its `src/index.ts`, so `tsx`
+  resolves the whole app from source — edits anywhere under `packages/*/src` or
+  `apps/cli/src` are picked up on the next `dev:watch` restart.
+- **Bare `pnpm dev` opens the interactive shell**, which needs a one-time `pnpm dev init`
+  first. The TUI takes over the terminal; `q` or `Ctrl-C` exits, and `dev:watch`
+  re-launches it after each save.
+- **Sandbox your dev pet.** Dev writes to the same `~/.tokentamers/` store as a real
+  install. Point `TOKENTAMERS_HOME` at a throwaway dir to keep them separate:
+  `TOKENTAMERS_HOME=/tmp/tt-dev pnpm dev init`.
+- **Before pushing**, run `pnpm check` (plus `pnpm check:network` and `pnpm check:spoilers`);
+  the git hooks run these for you, but running them early is faster.
 
 <div align="center">
 

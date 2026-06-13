@@ -8,6 +8,8 @@
     "node": ">=20"
   },
   "scripts": {
+    "dev": "pnpm --filter token-tamers dev",
+    "dev:watch": "pnpm --filter token-tamers dev:watch",
     "build": "pnpm --filter token-tamers build",
     "test": "vitest run",
     "test:watch": "vitest",

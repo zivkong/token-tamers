@@ -49,7 +49,9 @@ Key contracts live in `packages/core/src/types.ts`.
 
 - `pnpm install` · `pnpm check` (typecheck+lint+format+test+build)
 - `pnpm test` / `pnpm test:watch` · `pnpm lint` · `pnpm typecheck` · `pnpm build`
-- Run dev build: `pnpm --filter token-tamers dev` (or `node apps/cli/dist/tt.js`)
+- Dev from source (no build, `tsx`): `pnpm dev [args]` · hot reload: `pnpm dev:watch`
+  (e.g. `pnpm dev status`; sandbox with `TOKENTAMERS_HOME=/tmp/tt-dev`). Built bundle:
+  `pnpm build` then `node apps/cli/dist/tt.js`
 - Zero-network / spoiler gates: `pnpm check:network` · `pnpm check:spoilers`
 
 ## Code structure (KISS / DRY / SOLID — mechanically enforced)
