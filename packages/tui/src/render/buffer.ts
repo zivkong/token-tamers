@@ -9,6 +9,7 @@
 
 import {
   bgSgr,
+  boldSgr,
   cursorTo,
   fgSgr,
   sgrReset,
@@ -17,11 +18,13 @@ import {
   type Writer,
 } from '../terminal/ansi';
 
-/** A single terminal cell: a character with optional fg/bg color. */
+/** A single terminal cell: a character with optional fg/bg color + bold. */
 export interface Cell {
   ch: string;
   fg: Rgb | null;
   bg: Rgb | null;
+  /** Render with the bold/increased-intensity attribute (color modes only). */
+  bold?: boolean;
 }
 
 export const BLANK_CELL: Cell = { ch: ' ', fg: null, bg: null };
@@ -30,6 +33,7 @@ function cellsEqual(a: Cell, b: Cell): boolean {
   if (a.ch !== b.ch) return false;
   if (!colorEq(a.fg, b.fg)) return false;
   if (!colorEq(a.bg, b.bg)) return false;
+  if ((a.bold ?? false) !== (b.bold ?? false)) return false;
   return true;
 }
 
@@ -79,6 +83,14 @@ export class FrameBuffer {
     const chars = [...s];
     for (let i = 0; i < chars.length; i++) {
       this.set(x + i, y, { ch: chars[i] ?? ' ', fg, bg });
+    }
+  }
+
+  /** Draw a bold string (color modes only) starting at (x,y). Clips to width. */
+  textBold(x: number, y: number, s: string, fg: Rgb | null = null, bg: Rgb | null = null): void {
+    const chars = [...s];
+    for (let i = 0; i < chars.length; i++) {
+      this.set(x + i, y, { ch: chars[i] ?? ' ', fg, bg, bold: true });
     }
   }
 
@@ -151,14 +163,18 @@ function emitRun(x: number, y: number, cells: Cell[], mode: ColorMode): string {
   let s = cursorTo(x + 1, y + 1);
   let curFg: Rgb | null | undefined = undefined;
   let curBg: Rgb | null | undefined = undefined;
+  let curBold: boolean | undefined = undefined;
   for (const cell of cells) {
-    if (!colorEqLoose(curFg, cell.fg) || !colorEqLoose(curBg, cell.bg)) {
-      // Reset then re-apply so a previous color doesn't bleed into a null.
+    const bold = cell.bold ?? false;
+    if (!colorEqLoose(curFg, cell.fg) || !colorEqLoose(curBg, cell.bg) || curBold !== bold) {
+      // Reset then re-apply so a previous attribute doesn't bleed into a null.
       s += sgrReset();
+      if (bold) s += boldSgr(mode);
       if (cell.fg) s += fgSgr(cell.fg, mode);
       if (cell.bg) s += bgSgr(cell.bg, mode);
       curFg = cell.fg;
       curBg = cell.bg;
+      curBold = bold;
     }
     s += cell.ch;
   }

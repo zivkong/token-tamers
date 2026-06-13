@@ -78,15 +78,16 @@ export { HitRegistry, type HitRegion } from './render/hit';
 // Layout.
 export {
   computeLayout,
-  sceneRect,
+  petSections,
   tooSmallMessage,
   MIN_COLS,
   MIN_ROWS,
   HEADER_ROWS,
-  STATUS_ROWS,
+  PANEL_ROWS,
   MENU_GRID_BREAKPOINT,
   type Layout,
   type SceneRect,
+  type PetSections,
 } from './render/layout';
 
 // Pages.

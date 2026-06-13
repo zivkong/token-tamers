@@ -17,13 +17,27 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   stack from row 0 with **no letterbox gutters, no side padding**; the menu is a **grid
   docked immediately AFTER the canvas**, not at the terminal bottom. Slack falls below it.
   (This supersedes the old centered-4:3-canvas + bottom-bar model.)
-- Section order: **header band** (`headerRows`) → **game canvas** (full width) → **status
-  band** (`statusRows`) → **menu grid**. `sceneRect(layout)` carves the scene (canvas
-  proper) out of the content region between the bands. `canvasX=0`, `canvasCols=termCols`.
+- Section order (pet page): **header band** (`headerRows`) → _divider_ → **game canvas** →
+  _labeled `VITALS` divider_ → **vitals panel** (`panelRows`: stats + token nourishment +
+  diet) → _divider_ → **menu grid**. `petSections(layout)` carves the bands + divider rows;
+  `render/divider.ts` draws the rules. `canvasX=0`, `canvasCols=termCols`.
+- **Evolution-mystery rule:** the pet screen must NOT show the stage word, molt count, or any
+  "progress to next evolution" — evolution stays a surprise. Stage/molt still drive the engine
+  and show in achievements/Archive; keep the `calibrating` cue (data readiness, not evolution).
+- **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
+  **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
+  `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
+- **Vitals panel** (`pages/pet-vitals.ts`) is a pure function of GameState: stat bars from
+  `pet.stats`, nourishment from `state.baselines` (windows + avg tokens/window), diet from
+  `pet.dietGenes` resolved to House tints via `pack.models`. Keep grade-roll odds shown here
+  (transparency invariant).
 - Cells are ~1:2 w:h; half-blocks give 2 vertical px/cell. Habitat scenes are 96×48 px
   (96 cols × 24 rows → 4:1 cell aspect). The canvas is full width and `sceneRows ≈ cols/4`
   (capped to fit), so the backdrop **scales uniformly to fill the width** via `drawSprite`'s
-  `destW`/`destH` (nearest-neighbor) — no padding, no distortion. Minimum terminal 64×24.
+  `destW`/`destH` (nearest-neighbor) — no padding, no distortion. The **pet + trinkets scale
+  by the same `scene.cols / HABITAT_COLS` factor** so they stay proportionate at any width
+  (`sceneScale` in pet.ts; pass scaled dims into the wander geometry AND `drawSprite`).
+  Minimum terminal 64×24.
 - Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
   (Dex, Archive, Settings, Achievements) inside the same content region.
 - Menu grid (`menuCells(layout)`, shared by the renderer and the shell's mouse hit-testing):
@@ -80,9 +94,10 @@ visual change is intended and reviewed.
 ## Module map (current)
 
 `ansi.ts` (Writer/sinks/SGR), `buffer.ts` (FrameBuffer+diff), `sprite.ts`
-(compositor+palette ladder), `input.ts` (key/mouse decode), `hit.ts`, `layout.ts`,
-`render.ts` (frame+menu), `shell.ts` (runShell loop), `status.ts` (one-liners),
-`pages/` (pet/dex/archive/settings), `lookup.ts` (pack helpers).
+(compositor+palette ladder, `destW`/`destH` scaling), `input.ts` (key/mouse decode),
+`hit.ts`, `layout.ts` (`computeLayout`/`petSections`/`menuCols`), `divider.ts` (section
+rules), `frame.ts` (frame + `menuCells` grid), `shell.ts` (runShell loop), `status.ts`
+(one-liners), `pages/` (pet, pet-vitals, dex/archive/settings), `lookup.ts` (pack helpers).
 
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
 

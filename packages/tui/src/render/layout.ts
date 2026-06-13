@@ -2,16 +2,16 @@
  * Layout math: a TOP-ORIENTED, FULL-WIDTH vertical stack.
  *
  * The frame is a column of full-width sections stacked from the top — no
- * letterbox gutters, no side padding:
+ * letterbox gutters, no side padding — with a divider rule between sections:
  *
  *   ┌───────────────────────────────┐ row 0
- *   │ header band (title / identity) │  headerRows
- *   ├───────────────────────────────┤
- *   │ game canvas (scene, full width)│  sceneRows  ── canvas region ──┐
- *   ├───────────────────────────────┤                                │ canvasRows
- *   │ status band (last roll / home) │  statusRows ───────────────────┘
- *   ├───────────────────────────────┤ menuY
- *   │ menu grid (6 cols → 3 on narrow)│ menuRows
+ *   │ header band (name / identity)  │  headerRows
+ *   ├───────────────────────────────┤  ← divider
+ *   │ game canvas (scene, full width)│  sceneRows   ── canvas region ──┐
+ *   ├──── VITALS ───────────────────┤  ← labeled divider              │ canvasRows
+ *   │ stats + token nourishment      │  panelRows                      │
+ *   ├───────────────────────────────┤  ← divider ─────────────────────┘
+ *   │ menu grid (6 cols → 3 on narrow)│ menuRows  (menuY)
  *   └───────────────────────────────┘
  *   (any slack falls BELOW the menu — the UI hugs the top)
  *
@@ -19,18 +19,20 @@
  * cells) so a backdrop scaled to fill the full width stays undistorted; it is
  * capped to the rows available above the menu. Pages render into the canvas
  * region [canvasY, canvasY+canvasRows); the pet page sub-divides it into the
- * header / scene / status bands via `headerRows`/`statusRows`.
+ * header / scene / vitals bands via `petSections()`.
  */
 
 export const MIN_COLS = 64;
 export const MIN_ROWS = 24;
 
-/** Rows the header band occupies at the very top (pet title + identity). */
+/** Rows the header band occupies at the very top (pet name + identity). */
 export const HEADER_ROWS = 2;
-/** Rows the status band occupies at the bottom of the canvas region. */
-export const STATUS_ROWS = 1;
+/** Rows the vitals panel occupies (stats row + nourishment row + diet row). */
+export const PANEL_ROWS = 3;
+/** Divider rules drawn between the stacked sections (header|scene|panel|menu). */
+export const DIVIDER_ROWS = 3;
 /** Smallest scene height we will draw before the terminal counts as too small. */
-export const MIN_SCENE_ROWS = 8;
+export const MIN_SCENE_ROWS = 6;
 /**
  * Width at/above which the menu lays out as a single row of 6 columns; below it
  * the menu wraps to 3 columns over 2 rows.
@@ -46,10 +48,10 @@ export interface Layout {
   canvasY: number;
   canvasCols: number;
   canvasRows: number;
-  /** Rows reserved at the top of the canvas region for section headers. */
+  /** Rows reserved at the top of the canvas region for the header band. */
   headerRows: number;
-  /** Rows reserved at the bottom of the canvas region for the status line. */
-  statusRows: number;
+  /** Rows the pet vitals panel occupies near the bottom of the canvas region. */
+  panelRows: number;
   /** First row of the menu band (immediately after the canvas region). */
   menuY: number;
   /** Menu band height (1 when 6 columns fit, else 2). */
@@ -77,7 +79,7 @@ export function computeLayout(cols: number, rows: number): Layout {
       canvasCols: 0,
       canvasRows: 0,
       headerRows: 0,
-      statusRows: 0,
+      panelRows: 0,
       menuY: menuRow,
       menuRows: 1,
       menuCols: 1,
@@ -91,13 +93,13 @@ export function computeLayout(cols: number, rows: number): Layout {
 
   // Scene height tracks the habitat's native 4:1 cell aspect (96 cols : 24
   // rows) so a full-width backdrop scales uniformly, capped to what fits above
-  // the menu after the header + status bands.
-  const chrome = HEADER_ROWS + STATUS_ROWS + menuRows;
+  // the menu after the header band, the vitals panel and the section dividers.
+  const chrome = HEADER_ROWS + PANEL_ROWS + DIVIDER_ROWS + menuRows;
   const availForScene = rows - chrome;
   const sceneTarget = Math.round(cols / 4);
   const sceneRows = Math.max(MIN_SCENE_ROWS, Math.min(sceneTarget, availForScene));
 
-  const canvasRows = HEADER_ROWS + sceneRows + STATUS_ROWS;
+  const canvasRows = HEADER_ROWS + PANEL_ROWS + DIVIDER_ROWS + sceneRows;
   const menuY = canvasRows;
 
   return {
@@ -108,7 +110,7 @@ export function computeLayout(cols: number, rows: number): Layout {
     canvasCols: cols,
     canvasRows,
     headerRows: HEADER_ROWS,
-    statusRows: STATUS_ROWS,
+    panelRows: PANEL_ROWS,
     menuY,
     menuRows,
     menuCols,
@@ -117,7 +119,7 @@ export function computeLayout(cols: number, rows: number): Layout {
   };
 }
 
-/** The scene sub-region (game canvas proper) within the content region. */
+/** A full-width band [y, y+rows) of `cols` columns starting at `x`. */
 export interface SceneRect {
   x: number;
   y: number;
@@ -125,13 +127,37 @@ export interface SceneRect {
   rows: number;
 }
 
-/** Carve the scene rect (between the header and status bands) from a layout. */
-export function sceneRect(layout: Layout): SceneRect {
+/** The pet page's stacked bands + the divider rows that separate them. */
+export interface PetSections {
+  header: SceneRect;
+  scene: SceneRect;
+  panel: SceneRect;
+  /** Divider rows: [after header, labeled (after scene), before menu]. */
+  dividerYs: [number, number, number];
+}
+
+/**
+ * Carve the pet page's section bands out of the content region. The scene flexes
+ * to fill whatever is left between the fixed header (top) and vitals panel
+ * (bottom); a 1-row divider sits between each section.
+ */
+export function petSections(l: Layout): PetSections {
+  const x = l.canvasX;
+  const cols = l.canvasCols;
+  const sceneRows = l.canvasRows - l.headerRows - l.panelRows - DIVIDER_ROWS;
+
+  const headerY = l.canvasY;
+  const dHeader = headerY + l.headerRows;
+  const sceneY = dHeader + 1;
+  const dScene = sceneY + sceneRows;
+  const panelY = dScene + 1;
+  const dPanel = panelY + l.panelRows;
+
   return {
-    x: layout.canvasX,
-    y: layout.canvasY + layout.headerRows,
-    cols: layout.canvasCols,
-    rows: layout.canvasRows - layout.headerRows - layout.statusRows,
+    header: { x, y: headerY, cols, rows: l.headerRows },
+    scene: { x, y: sceneY, cols, rows: sceneRows },
+    panel: { x, y: panelY, cols, rows: l.panelRows },
+    dividerYs: [dHeader, dScene, dPanel],
   };
 }
 

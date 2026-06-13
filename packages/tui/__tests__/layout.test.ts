@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   computeLayout,
-  sceneRect,
+  petSections,
   MIN_COLS,
   MIN_ROWS,
   MENU_GRID_BREAKPOINT,
@@ -43,20 +43,28 @@ describe('computeLayout', () => {
 
   it('keeps the scene near the habitat 4:1 cell aspect', () => {
     const l = computeLayout(160, 60);
-    const scene = sceneRect(l);
+    const { scene } = petSections(l);
     const aspect = scene.cols / scene.rows;
     expect(aspect).toBeGreaterThan(3.4);
     expect(aspect).toBeLessThan(4.6);
   });
 
-  it('reserves header and status bands inside the canvas region', () => {
+  it('stacks header, scene, and vitals panel with dividers between them', () => {
     const l = computeLayout(100, 30);
     expect(l.headerRows).toBeGreaterThanOrEqual(1);
-    expect(l.statusRows).toBeGreaterThanOrEqual(1);
-    const scene = sceneRect(l);
-    expect(scene.y).toBe(l.canvasY + l.headerRows);
-    expect(scene.rows).toBe(l.canvasRows - l.headerRows - l.statusRows);
-    expect(scene.rows).toBeGreaterThan(0);
+    expect(l.panelRows).toBeGreaterThanOrEqual(1);
+    const s = petSections(l);
+    // Header at top, then a divider, then the scene, a labeled divider, the
+    // panel, a divider, then the menu — all contiguous, no gaps or overlaps.
+    expect(s.header.y).toBe(l.canvasY);
+    expect(s.dividerYs[0]).toBe(s.header.y + s.header.rows);
+    expect(s.scene.y).toBe(s.dividerYs[0] + 1);
+    expect(s.dividerYs[1]).toBe(s.scene.y + s.scene.rows);
+    expect(s.panel.y).toBe(s.dividerYs[1] + 1);
+    expect(s.dividerYs[2]).toBe(s.panel.y + s.panel.rows);
+    expect(s.dividerYs[2]).toBe(l.menuY - 1);
+    expect(s.scene.rows).toBeGreaterThan(0);
+    expect(s.panel.rows).toBe(l.panelRows);
   });
 
   it('fits the whole stack within the terminal in both dimensions', () => {

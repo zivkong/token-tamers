@@ -21,16 +21,16 @@ import {
   type Palette,
 } from '../render/sprite';
 import { findHabitat, findSpecies, findSprite, houseTint } from '../helpers/lookup';
-import { renderGradeOddsLine } from '../helpers/status';
-import { sceneRect, type SceneRect } from '../render/layout';
+import { petSections, type SceneRect } from '../render/layout';
+import { drawDivider } from '../render/divider';
+import { renderVitals } from './pet-vitals';
 import type { RenderContext } from './types';
 import type { ContentPack, SpriteDef } from '@token-tamers/core';
 
 const DIM: Rgb = { r: 90, g: 96, b: 120 };
 const BRIGHT: Rgb = { r: 230, g: 235, b: 245 };
-/** Subtle band backgrounds that set the header/status sections off the scene. */
+/** Subtle band background that sets the header section off the scene. */
 const HEADER_BG: Rgb = { r: 18, g: 21, b: 31 };
-const STATUS_BG: Rgb = { r: 16, g: 19, b: 28 };
 
 // ---------------------------------------------------------------------------
 // Organic wander — a deterministic value-noise walk.
@@ -74,6 +74,13 @@ type Dwell = 'idle' | 'sit' | 'look' | 'hop' | 'play';
 const SCENE_FLOOR_PX = 38;
 /** Habitat backdrop pixel height (matches scenes.ts HH). */
 const HABITAT_PX_H = 48;
+/**
+ * Habitat backdrop width in cells (= the 96-px scene, 1 px per column). The
+ * backdrop is scaled to fill `scene.cols`, so `scene.cols / HABITAT_COLS` is the
+ * background's scale factor — the pet and trinkets multiply by it too so they
+ * stay proportionate to the scene at any terminal width.
+ */
+const HABITAT_COLS = 96;
 
 export interface WanderGeometry {
   /** Left/top cell of the canvas region. */
@@ -263,23 +270,34 @@ function dwellState(a: DwellArgs): WanderState {
 // ---------------------------------------------------------------------------
 
 export function renderPetPage(ctx: RenderContext): void {
-  const { layout, state, pack } = ctx;
+  const { buf, layout, state, pack } = ctx;
   const pet = state.pet;
-  const scene = sceneRect(layout);
+  const sec = petSections(layout);
 
-  drawBackdrop(ctx, scene);
+  drawBackdrop(ctx, sec.scene);
 
   const species = findSpecies(pack, pet.speciesId);
   const sprite = species ? findSprite(pack, species.spriteId) : undefined;
   if (sprite) {
-    drawWanderingPet(ctx, sprite, scene);
+    drawWanderingPet(ctx, sprite, sec.scene);
   }
 
-  drawHeaderBand(ctx, species?.name ?? '???');
-  drawStatusBand(ctx);
+  drawHeaderBand(ctx, sec.header, species?.name ?? '???');
+
+  // Section dividers: header | scene | VITALS panel | menu.
+  drawDivider(buf, sec.dividerYs[0]);
+  drawDivider(buf, sec.dividerYs[1], { label: 'VITALS' });
+  drawDivider(buf, sec.dividerYs[2]);
+
+  renderVitals(ctx, sec.panel);
 
   // The whole scene is a clickable region (e.g. to pet it; no-op for MVP).
-  ctx.hits.add('pet:canvas', scene.x, scene.y, scene.cols, scene.rows);
+  ctx.hits.add('pet:canvas', sec.scene.x, sec.scene.y, sec.scene.cols, sec.scene.rows);
+}
+
+/** The scale factor the backdrop is drawn at, so sprites match its proportions. */
+function sceneScale(scene: SceneRect): number {
+  return scene.cols / HABITAT_COLS;
 }
 
 /** Draw the pet (and, during play, its trinket + S aura) along the wander path. */
@@ -287,8 +305,11 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRec
   const { buf, state, pack, mode, frame } = ctx;
   const pet = state.pet;
 
-  const spriteCols = sprite.width;
-  const spriteRows = Math.ceil(sprite.height / 2);
+  // Scale the pet by the same factor as the backdrop so it stays proportionate
+  // to the scene as the terminal width changes.
+  const scale = sceneScale(scene);
+  const spriteCols = Math.max(1, Math.round(sprite.width * scale));
+  const spriteRows = Math.max(1, Math.round(Math.ceil(sprite.height / 2) * scale));
   const geo: WanderGeometry = {
     canvasX: scene.x,
     canvasY: scene.y,
@@ -303,7 +324,7 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRec
 
   // Trinket drawn at its floor anchor during the play segment.
   if (w.playing) {
-    drawPlayTrinket(ctx, w.trinketX, geo);
+    drawPlayTrinket(ctx, w.trinketX, geo, scale);
   }
 
   const tint = houseTint(pack, pet.house);
@@ -312,6 +333,8 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRec
   drawSprite(buf, sprite, pal, {
     x: w.px,
     y: w.py,
+    destW: spriteCols,
+    destH: spriteRows,
     frame,
     mode,
     anim: w.anim,
@@ -339,7 +362,12 @@ function sceneFloorRow(scene: SceneRect): number {
 }
 
 /** Draw the selected trinket at the floor anchor beside the play spot. */
-function drawPlayTrinket(ctx: RenderContext, trinketX: number, geo: WanderGeometry): void {
+function drawPlayTrinket(
+  ctx: RenderContext,
+  trinketX: number,
+  geo: WanderGeometry,
+  scale: number,
+): void {
   const { buf, state, pack, mode, frame } = ctx;
   const trinketId = state.selectedTrinkets[0];
   if (!trinketId) return;
@@ -347,13 +375,17 @@ function drawPlayTrinket(ctx: RenderContext, trinketX: number, geo: WanderGeomet
   const sprite = def ? findSprite(pack, def.spriteId) : undefined;
   if (!sprite) return;
 
-  const rows = Math.ceil(sprite.height / 2);
+  // Match the pet's scale so the toy stays proportionate to the scene.
+  const cols = Math.max(1, Math.round(sprite.width * scale));
+  const rows = Math.max(1, Math.round(Math.ceil(sprite.height / 2) * scale));
   // Bottom-align the trinket on the same floor line as the pet's feet.
   const ty = geo.floorY - (rows - 1);
   const pal = buildPalette('#9aa0b5', 'B', frame);
   drawSprite(buf, sprite, pal, {
     x: trinketX,
     y: ty,
+    destW: cols,
+    destH: rows,
     frame,
     mode,
     clip: { x: geo.canvasX, y: geo.canvasY, w: geo.canvasCols, h: geo.canvasRows },
@@ -361,55 +393,47 @@ function drawPlayTrinket(ctx: RenderContext, trinketX: number, geo: WanderGeomet
 }
 
 // ---------------------------------------------------------------------------
-// Section bands — full-width header (above the scene) and status (below it).
+// Header band — name + grade + identity, full width. Intentionally carries NO
+// evolution information (stage, molt count): evolution stays a mystery.
 // ---------------------------------------------------------------------------
 
-/** Fill a full-width band [y, y+rows) with a flat background. */
-function fillBand(ctx: RenderContext, y: number, rows: number, bg: Rgb): void {
-  const { buf, layout } = ctx;
-  for (let ry = 0; ry < rows; ry++) {
-    for (let x = 0; x < layout.canvasCols; x++) {
-      buf.set(layout.canvasX + x, y + ry, { ch: ' ', fg: null, bg });
+/** Top header band: name + grade (+ calibrating tag) and home habitat on row 0,
+ *  pattern + traits on row 1. */
+function drawHeaderBand(ctx: RenderContext, header: SceneRect, name: string): void {
+  const { buf, state, pack } = ctx;
+  const pet = state.pet;
+
+  // Flat band background.
+  for (let ry = 0; ry < header.rows; ry++) {
+    for (let x = 0; x < header.cols; x++) {
+      buf.set(header.x + x, header.y + ry, { ch: ' ', fg: null, bg: HEADER_BG });
     }
   }
-}
 
-/** Top header band: name/grade/stage + gen/molt on row 0, identity on row 1. */
-function drawHeaderBand(ctx: RenderContext, name: string): void {
-  const { buf, layout, state } = ctx;
-  const { canvasX, canvasY, canvasCols, headerRows } = layout;
-  const pet = state.pet;
-  fillBand(ctx, canvasY, headerRows, HEADER_BG);
+  // Grade is conveyed by the name's COLOR + a trailing SYMBOL — no '[B]' text.
+  // The whole name is rendered bold in the grade accent (green B, purple A, …).
+  const title = `${name} ${GRADE_BADGE[pet.grade]}`;
+  let x = header.x + 1;
+  buf.textBold(x, header.y, title, GRADE_ACCENT[pet.grade], HEADER_BG);
+  x += title.length + 1;
+  // Keep the calibration cue (it is about data readiness, not evolution).
+  if (pet.calibrating) buf.text(x, header.y, '· calibrating', DIM, HEADER_BG);
 
-  const badge = `[${pet.grade}]${GRADE_BADGE[pet.grade]}`;
-  const stageLabel = pet.calibrating ? 'calibrating' : pet.stage;
-  buf.text(canvasX + 1, canvasY, name, BRIGHT, HEADER_BG);
-  buf.text(canvasX + 1 + name.length + 1, canvasY, badge, GRADE_ACCENT[pet.grade], HEADER_BG);
-  buf.text(canvasX + 1 + name.length + badge.length + 2, canvasY, stageLabel, DIM, HEADER_BG);
-  const info = `gen ${pet.generation} · molt ${pet.moltCount}`;
-  buf.text(canvasX + canvasCols - info.length - 1, canvasY, info, DIM, HEADER_BG);
-
-  const identity = [
-    pet.pattern ? `${pet.pattern[0]?.toUpperCase()}${pet.pattern.slice(1)} pattern` : null,
-    pet.traits.length > 0 ? pet.traits.join(' · ') : null,
-  ]
-    .filter(Boolean)
-    .join('  ✦  ');
-  if (identity && headerRows > 1) buf.text(canvasX + 1, canvasY + 1, identity, DIM, HEADER_BG);
-}
-
-/** Bottom status band: last grade-roll odds + the home habitat name. */
-function drawStatusBand(ctx: RenderContext): void {
-  const { buf, layout, state, pack } = ctx;
-  const { canvasX, canvasCols, canvasRows, canvasY, statusRows } = layout;
-  const y = canvasY + canvasRows - statusRows;
-  fillBand(ctx, y, statusRows, STATUS_BG);
-
-  buf.text(canvasX + 1, y, renderGradeOddsLine(state), DIM, STATUS_BG);
+  // Right side: home habitat (no gen/molt — evolution is hidden).
   const habitatDef = findHabitat(pack, state.selectedHabitat);
   if (habitatDef) {
     const home = `⌂ ${habitatDef.name}`;
-    buf.text(canvasX + canvasCols - home.length - 1, y, home, DIM, STATUS_BG);
+    buf.text(header.x + header.cols - home.length - 1, header.y, home, DIM, HEADER_BG);
+  }
+
+  if (header.rows > 1) {
+    const identity = [
+      pet.pattern ? `${pet.pattern[0]?.toUpperCase()}${pet.pattern.slice(1)} pattern` : null,
+      pet.traits.length > 0 ? pet.traits.join(' · ') : null,
+    ]
+      .filter(Boolean)
+      .join('  ✦  ');
+    if (identity) buf.text(header.x + 1, header.y + 1, identity, DIM, HEADER_BG);
   }
 }
 
