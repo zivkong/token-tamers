@@ -424,3 +424,29 @@ export interface UserConfig {
   adapters: AdapterConfig[];
   render?: { fps?: number; color?: 'truecolor' | '256' | '8' | 'none' };
 }
+
+// ---------------------------------------------------------------------------
+// User settings (~/.tokentamers/settings.json)
+// ---------------------------------------------------------------------------
+
+/** Color preference; 'auto' = enable when stdout is a TTY. */
+export type ColorPreference = 'auto' | 'truecolor' | '256' | '8' | 'none';
+
+/**
+ * User-owned preferences, separate from generated game state. This is the
+ * file-based home for everything Token Tamers used to read from environment
+ * variables (NO_COLOR, CLAUDE_CONFIG_DIR, OPENCODE_DATA_DIR, XDG_*): the cli
+ * reads it and threads the values down, so adapters and core never touch
+ * `process.env`. Hand-editable; absent file ⇒ all defaults.
+ */
+export interface SettingsFile {
+  schemaVersion: number;
+  /** ANSI color preference (default 'auto'). The `--no-color` flag always wins. */
+  color: ColorPreference;
+  /**
+   * Override scan roots per adapter id, used at detection time (`tt init`).
+   * Empty/absent ⇒ each adapter's built-in default locations. Replaces the
+   * former CLAUDE_CONFIG_DIR / OPENCODE_DATA_DIR / XDG_* env overrides.
+   */
+  adapterRoots: Record<string, string[]>;
+}

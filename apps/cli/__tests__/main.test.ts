@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseArgs, dispatch, VERSION } from '../src/main';
+import { setDataDirForTesting } from '../src/stores';
 
 describe('parseArgs', () => {
   it('defaults to the shell command when no positional is given', () => {
@@ -62,8 +63,7 @@ describe('dispatch', () => {
 
   it('status before init prints a friendly message and returns 1', async () => {
     // Point at an empty home so no config exists.
-    const prev = process.env['TOKENTAMERS_HOME'];
-    process.env['TOKENTAMERS_HOME'] = `/tmp/tt-nonexistent-${process.pid}-${Date.now()}`;
+    setDataDirForTesting(`/tmp/tt-nonexistent-${process.pid}-${Date.now()}`);
     try {
       let out = '';
       const code = await dispatch(parseArgs(['status']), (s) => {
@@ -72,8 +72,7 @@ describe('dispatch', () => {
       expect(code).toBe(1);
       expect(out.toLowerCase()).toContain('tt init');
     } finally {
-      if (prev === undefined) delete process.env['TOKENTAMERS_HOME'];
-      else process.env['TOKENTAMERS_HOME'] = prev;
+      setDataDirForTesting(null);
     }
   });
 });

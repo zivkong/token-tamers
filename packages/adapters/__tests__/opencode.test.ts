@@ -308,21 +308,13 @@ describe('parseLegacyMessageFile — unit', () => {
 
 describe('openCodeAdapter SQLite scan', () => {
   let tmpDb: TmpDb | undefined;
-  const originalEnv = process.env['OPENCODE_DATA_DIR'];
 
   beforeEach(async () => {
     if (!sqliteAvailable) return;
     tmpDb = await makeTmpDb();
-    // Point the adapter at the temp dir containing opencode.db
-    process.env['OPENCODE_DATA_DIR'] = path.dirname(tmpDb.dbPath);
   });
 
   afterEach(async () => {
-    if (originalEnv === undefined) {
-      delete process.env['OPENCODE_DATA_DIR'];
-    } else {
-      process.env['OPENCODE_DATA_DIR'] = originalEnv;
-    }
     if (tmpDb) {
       await tmpDb.cleanup();
       tmpDb = undefined;
@@ -451,17 +443,7 @@ describe('openCodeAdapter SQLite scan', () => {
 // ---------------------------------------------------------------------------
 
 describe('openCodeAdapter.detect()', () => {
-  const originalEnv = process.env['OPENCODE_DATA_DIR'];
-
-  afterEach(() => {
-    if (originalEnv === undefined) {
-      delete process.env['OPENCODE_DATA_DIR'];
-    } else {
-      process.env['OPENCODE_DATA_DIR'] = originalEnv;
-    }
-  });
-
-  it('returns installed:true when OPENCODE_DATA_DIR points at a dir with opencode.db', async () => {
+  it('returns installed:true when the given root has opencode.db', async () => {
     if (!sqliteAvailable) return;
 
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tt-oc-detect-'));
@@ -473,8 +455,7 @@ describe('openCodeAdapter.detect()', () => {
       db.exec('CREATE TABLE session (id TEXT)');
       db.close();
 
-      process.env['OPENCODE_DATA_DIR'] = tmpDir;
-      const result = await openCodeAdapter.detect();
+      const result = await openCodeAdapter.detect([tmpDir]);
 
       expect(result.installed).toBe(true);
       expect(result.paths).toContain(tmpDir);
@@ -483,14 +464,13 @@ describe('openCodeAdapter.detect()', () => {
     }
   });
 
-  it('returns installed:true when OPENCODE_DATA_DIR points at a dir with legacy storage/message/', async () => {
+  it('returns installed:true when the given root has a legacy storage/message/ tree', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tt-oc-detect-legacy-'));
 
     try {
       await fs.mkdir(path.join(tmpDir, 'storage', 'message'), { recursive: true });
 
-      process.env['OPENCODE_DATA_DIR'] = tmpDir;
-      const result = await openCodeAdapter.detect();
+      const result = await openCodeAdapter.detect([tmpDir]);
 
       expect(result.installed).toBe(true);
       expect(result.paths).toContain(tmpDir);
@@ -503,8 +483,7 @@ describe('openCodeAdapter.detect()', () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tt-oc-detect-empty-'));
 
     try {
-      process.env['OPENCODE_DATA_DIR'] = tmpDir;
-      const result = await openCodeAdapter.detect();
+      const result = await openCodeAdapter.detect([tmpDir]);
 
       expect(result.installed).toBe(false);
       expect(result.warnings.length).toBeGreaterThan(0);
@@ -513,14 +492,13 @@ describe('openCodeAdapter.detect()', () => {
     }
   });
 
-  it('returns installed:false when OPENCODE_DATA_DIR points at nonexistent path', async () => {
-    process.env['OPENCODE_DATA_DIR'] = '/nonexistent/path/for/tt/test';
-    const result = await openCodeAdapter.detect();
+  it('returns installed:false when the given root is a nonexistent path', async () => {
+    const result = await openCodeAdapter.detect(['/nonexistent/path/for/tt/test']);
     expect(result.installed).toBe(false);
     expect(result.paths).toHaveLength(0);
   });
 
-  it('supports comma-separated multi-roots in OPENCODE_DATA_DIR', async () => {
+  it('supports multiple roots passed in', async () => {
     if (!sqliteAvailable) return;
 
     const tmpDir1 = await fs.mkdtemp(path.join(os.tmpdir(), 'tt-oc-multi1-'));
@@ -534,8 +512,7 @@ describe('openCodeAdapter.detect()', () => {
 
       await fs.mkdir(path.join(tmpDir2, 'storage', 'message'), { recursive: true });
 
-      process.env['OPENCODE_DATA_DIR'] = `${tmpDir1},${tmpDir2}`;
-      const result = await openCodeAdapter.detect();
+      const result = await openCodeAdapter.detect([tmpDir1, tmpDir2]);
 
       expect(result.installed).toBe(true);
       expect(result.paths).toContain(tmpDir1);
@@ -552,18 +529,7 @@ describe('openCodeAdapter.detect()', () => {
 // ---------------------------------------------------------------------------
 
 describe('openCodeAdapter legacy tree scan (fixtures)', () => {
-  const originalEnv = process.env['OPENCODE_DATA_DIR'];
-
-  afterEach(() => {
-    if (originalEnv === undefined) {
-      delete process.env['OPENCODE_DATA_DIR'];
-    } else {
-      process.env['OPENCODE_DATA_DIR'] = originalEnv;
-    }
-  });
-
   it('extracts UsageEvents from the legacy fixture tree', async () => {
-    process.env['OPENCODE_DATA_DIR'] = FIXTURES_DIR;
     const result = await openCodeAdapter.scan([FIXTURES_DIR]);
 
     // Fixtures have 2 completed assistant messages
@@ -572,7 +538,6 @@ describe('openCodeAdapter legacy tree scan (fixtures)', () => {
   });
 
   it('correctly parses the deepseek fixture including reasoning tokens', async () => {
-    process.env['OPENCODE_DATA_DIR'] = FIXTURES_DIR;
     const result = await openCodeAdapter.scan([FIXTURES_DIR]);
 
     const deepseekEv = result.events.find(
@@ -588,7 +553,6 @@ describe('openCodeAdapter legacy tree scan (fixtures)', () => {
   });
 
   it('tags subagent sessions from parentID in legacy files', async () => {
-    process.env['OPENCODE_DATA_DIR'] = FIXTURES_DIR;
     const result = await openCodeAdapter.scan([FIXTURES_DIR]);
 
     const subEv = result.events.find(
@@ -599,8 +563,6 @@ describe('openCodeAdapter legacy tree scan (fixtures)', () => {
   });
 
   it('returns no duplicates on re-scan with an up-to-date checkpoint', async () => {
-    process.env['OPENCODE_DATA_DIR'] = FIXTURES_DIR;
-
     const first = await openCodeAdapter.scan([FIXTURES_DIR]);
     expect(first.events.length).toBeGreaterThan(0);
 

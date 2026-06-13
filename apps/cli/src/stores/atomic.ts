@@ -1,19 +1,30 @@
 /**
  * Shared helpers for the on-disk store: data-dir resolution and atomic JSON writes.
  *
- * Data dir = $TOKENTAMERS_HOME || ~/.tokentamers.
- * Writes are atomic (write to a temp file, then rename) so a crash mid-write
- * never corrupts an existing file.
+ * Data dir = ~/.tokentamers (fixed). No environment variable controls it — the
+ * project reads zero config from `process.env`. Writes are atomic (write to a
+ * temp file, then rename) so a crash mid-write never corrupts an existing file.
  */
 
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-/** Resolve the Token Tamers data directory (honours TOKENTAMERS_HOME). */
+/**
+ * Test-only override for the data dir. NOT a user-facing knob (no env, no flag)
+ * — only the test suite sets it, via `setDataDirForTesting`, so suites can run
+ * against a temp dir without touching the real `~/.tokentamers`. null ⇒ default.
+ */
+let dataDirOverride: string | null = null;
+
+/** TEST-ONLY: redirect the data dir (or pass null to restore the default). */
+export function setDataDirForTesting(dir: string | null): void {
+  dataDirOverride = dir;
+}
+
+/** Resolve the Token Tamers data directory — fixed at ~/.tokentamers. */
 export function dataDir(): string {
-  const override = process.env['TOKENTAMERS_HOME'];
-  if (override && override.length > 0) return override;
+  if (dataDirOverride !== null) return dataDirOverride;
   return path.join(os.homedir(), '.tokentamers');
 }
 

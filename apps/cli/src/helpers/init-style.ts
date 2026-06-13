@@ -1,14 +1,15 @@
 /**
  * Presentation helpers for `tt init`.
  *
- * All styled output is gated on `styled === true` (caller checks TTY + NO_COLOR).
- * When `styled` is false every function returns plain text that reads well in CI
- * and tests. The caller (init.ts) writes through the injected `out` sink so tests
- * capture output exactly.
+ * All styled output is gated on `styled === true` (caller checks the color
+ * preference + TTY). When `styled` is false every function returns plain text
+ * that reads well in CI and tests. The caller (init.ts) writes through the
+ * injected `out` sink so tests capture output exactly.
  *
  * No side effects, no I/O — pure string builders.
  */
 
+import type { ColorPreference } from '@token-tamers/core';
 import { fgSgr, hexToRgb, sgrReset, type ColorMode } from '@token-tamers/tui';
 
 // ---------------------------------------------------------------------------
@@ -288,7 +289,15 @@ export function renderWarnings(warnings: string[], styled: boolean): string {
 // TTY detection
 // ---------------------------------------------------------------------------
 
-/** True when color output is appropriate for the current process stdout. */
-export function shouldStyle(): boolean {
-  return Boolean(process.stdout.isTTY) && !process.env['NO_COLOR'];
+/**
+ * True when color output is appropriate. Resolved from the color preference
+ * (settings.json) — never an environment variable:
+ *   'none'         → never style
+ *   'auto'         → style only when stdout is a TTY
+ *   explicit color → style (the chosen depth is honored downstream)
+ */
+export function shouldStyle(pref: ColorPreference): boolean {
+  if (pref === 'none') return false;
+  if (pref === 'auto') return Boolean(process.stdout.isTTY);
+  return true;
 }

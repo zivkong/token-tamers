@@ -33,7 +33,13 @@ export interface ProviderAdapter {
    * 'api' = static (no inherent limits, user sets their own anchor).
    */
   defaultPlan?: 'subscription' | 'api';
-  detect(): Promise<AdapterDetection>;
+  /**
+   * Discover this adapter's data roots. `roots` (optional) are user-supplied
+   * override locations from settings.json (`adapterRoots[<id>]`); when omitted
+   * or empty, the adapter uses its built-in default locations. The cli reads
+   * settings and passes them — adapters never read `process.env` themselves.
+   */
+  detect(roots?: string[]): Promise<AdapterDetection>;
   /** Scan data roots for usage newer than the checkpoint. Read-only, always. */
   scan(paths: string[], checkpoint?: AdapterCheckpoint): Promise<ScanResult>;
 }

@@ -31,27 +31,14 @@ import { ADAPTER_ID, parseLegacyMessageFile, parseMessageRow, type MessageRow } 
 /**
  * Resolve the list of OpenCode data roots.
  *
- * Precedence:
- *   1. OPENCODE_DATA_DIR env var (comma-separated, supports multiple roots)
- *   2. $XDG_DATA_HOME/opencode when XDG_DATA_HOME is set
- *   3. ~/.local/share/opencode (Linux/macOS default)
- *
- * Returns an array (always at least one path even if it does not exist yet).
+ * `roots` (from settings.json `adapterRoots["opencode"]`) override the default
+ * when non-empty; otherwise the built-in `~/.local/share/opencode`
+ * (Linux/macOS) is used. No environment variables are consulted. Returns an
+ * array (always at least one path even if it does not exist yet).
  */
-function resolveDataRoots(): string[] {
-  const envOverride = process.env['OPENCODE_DATA_DIR'];
-  if (envOverride) {
-    return envOverride
-      .split(',')
-      .map((p) => p.trim())
-      .filter((p) => p.length > 0);
-  }
-
-  const xdgDataHome = process.env['XDG_DATA_HOME'];
-  if (xdgDataHome) {
-    return [path.join(xdgDataHome, 'opencode')];
-  }
-
+function resolveDataRoots(roots?: string[]): string[] {
+  const override = (roots ?? []).map((p) => p.trim()).filter((p) => p.length > 0);
+  if (override.length > 0) return override;
   return [path.join(os.homedir(), '.local', 'share', 'opencode')];
 }
 
@@ -330,8 +317,8 @@ export const openCodeAdapter: ProviderAdapter & { defaultPlan: 'api' } = {
   // OpenCode has no inherent rate limits or session windows → static/api policy.
   defaultPlan: 'api',
 
-  async detect(): Promise<AdapterDetection> {
-    const roots = resolveDataRoots();
+  async detect(overrideRoots?: string[]): Promise<AdapterDetection> {
+    const roots = resolveDataRoots(overrideRoots);
     const allPaths: string[] = [];
     const allWarnings: string[] = [];
     let installed = false;

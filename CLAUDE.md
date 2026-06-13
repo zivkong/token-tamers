@@ -50,8 +50,7 @@ Key contracts live in `packages/core/src/types.ts`.
 - `pnpm install` · `pnpm check` (typecheck+lint+format+test+build)
 - `pnpm test` / `pnpm test:watch` · `pnpm lint` · `pnpm typecheck` · `pnpm build`
 - Dev from source (no build, `tsx`): `pnpm dev [args]` · hot reload: `pnpm dev:watch`
-  (e.g. `pnpm dev status`; sandbox with `TOKENTAMERS_HOME=/tmp/tt-dev`). Built bundle:
-  `pnpm build` then `node apps/cli/dist/tt.js`
+  (e.g. `pnpm dev status`). Built bundle: `pnpm build` then `node apps/cli/dist/tt.js`
 - Zero-network / spoiler gates: `pnpm check:network` · `pnpm check:spoilers`
 
 ## Code structure (KISS / DRY / SOLID — mechanically enforced)
@@ -91,7 +90,12 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - Renderer tests are golden frames (string-buffer snapshots); adapter tests use
   fixtures of real (anonymized) logs; engine tests assert determinism properties.
 - Game-state schema changes need a `schemaVersion` bump + migration in the cli store.
-- User data: `~/.tokentamers/config.json` (UserConfig) + `state.json` (GameState).
+- User data: `~/.tokentamers/config.json` (UserConfig) + `state.json` (GameState) +
+  `settings.json` (SettingsFile: `color` + per-adapter `adapterRoots`). **Zero env config:**
+  the project reads nothing from `process.env` — the data dir is fixed at `~/.tokentamers`
+  and all knobs live in `settings.json` (the cli reads it and threads values down; adapters
+  get scan roots via `detect(roots)`, core/adapters never touch `process.env`). Tests
+  redirect the data dir with `setDataDirForTesting`, not an env var.
 - Canonical cycle rule: molts (5-h window close) are the evolution checkpoints (egg→sprite
   fast-hatches ~10 min after first usage); weekly rebirth never evolves the pet —
   it archives and re-eggs it.

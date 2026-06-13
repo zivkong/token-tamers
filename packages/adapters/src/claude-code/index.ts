@@ -27,20 +27,16 @@ import {
  * Resolve candidate Claude config roots. Claude Code's data dir varies by
  * version and platform, and after a version migration sessions can be SPLIT
  * across roots — so every existing root is scanned, not just the first hit.
- * Precedence: CLAUDE_CONFIG_DIR (comma-separated, multi-root) →
- * $XDG_CONFIG_HOME/claude (newer builds; ~/.config/claude default) +
- * ~/.claude (legacy default; %USERPROFILE%\.claude on Windows).
+ *
+ * `roots` (from settings.json `adapterRoots["claude-code"]`) override the
+ * defaults when non-empty; otherwise the built-in locations are used:
+ * `~/.config/claude` (newer builds) + `~/.claude` (legacy / Windows
+ * %USERPROFILE%\.claude). No environment variables are consulted.
  */
-function resolveConfigRoots(): string[] {
-  const env = process.env['CLAUDE_CONFIG_DIR'];
-  if (env && env.trim().length > 0) {
-    return env
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-  }
-  const xdgBase = process.env['XDG_CONFIG_HOME'] ?? path.join(os.homedir(), '.config');
-  return [path.join(xdgBase, 'claude'), path.join(os.homedir(), '.claude')];
+function resolveConfigRoots(roots?: string[]): string[] {
+  const override = (roots ?? []).map((s) => s.trim()).filter((s) => s.length > 0);
+  if (override.length > 0) return override;
+  return [path.join(os.homedir(), '.config', 'claude'), path.join(os.homedir(), '.claude')];
 }
 
 // ---------------------------------------------------------------------------
@@ -133,11 +129,11 @@ export const claudeCodeAdapter: ProviderAdapter & { defaultPlan: 'subscription' 
   // Claude Code subscriptions use a 5-hour session window → dynamic cycle policy.
   defaultPlan: 'subscription',
 
-  async detect(): Promise<AdapterDetection> {
+  async detect(roots?: string[]): Promise<AdapterDetection> {
     const warnings: string[] = [];
     const paths: string[] = [];
 
-    for (const configDir of resolveConfigRoots()) {
+    for (const configDir of resolveConfigRoots(roots)) {
       const projectsDir = path.join(configDir, 'projects');
       const projectsStat = await statOrNull(projectsDir);
       if (!projectsStat) continue;

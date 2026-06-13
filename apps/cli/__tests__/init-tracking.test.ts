@@ -5,7 +5,12 @@ import path from 'node:path';
 import { runInit } from '../src/commands/init';
 import { catchUp } from '../src/services/catchup';
 import { createShellHost } from '../src/services/shell-host';
-import { loadCheckpoints } from '../src/stores';
+import {
+  defaultSettings,
+  loadCheckpoints,
+  saveSettings,
+  setDataDirForTesting,
+} from '../src/stores';
 import { loadState } from '../src/stores/state';
 import { loadPending } from '../src/stores/pending';
 
@@ -19,9 +24,6 @@ import { loadPending } from '../src/stores/pending';
 let home: string;
 let claudeDir: string;
 let opencodeDir: string;
-let savedHome: string | undefined;
-let savedClaude: string | undefined;
-let savedOpencode: string | undefined;
 
 /** Write `count` assistant messages on `dayCount` days starting at `baseIso`. */
 function writeFixture(claudeRoot: string, baseIso: string, dayCount: number): void {
@@ -57,26 +59,21 @@ function writeFixture(claudeRoot: string, baseIso: string, dayCount: number): vo
 }
 
 beforeEach(() => {
-  savedHome = process.env['TOKENTAMERS_HOME'];
-  savedClaude = process.env['CLAUDE_CONFIG_DIR'];
-  savedOpencode = process.env['OPENCODE_DATA_DIR'];
   home = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-home-'));
   claudeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-claude-'));
   opencodeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-opencode-'));
-  process.env['TOKENTAMERS_HOME'] = home;
-  process.env['CLAUDE_CONFIG_DIR'] = claudeDir;
-  // Point the OpenCode adapter at an empty temp root so tests never touch a
-  // real ~/.local/share/opencode on a developer machine (hermeticity).
-  process.env['OPENCODE_DATA_DIR'] = opencodeDir;
+  setDataDirForTesting(home);
+  // Point both adapters at temp roots via settings.json (file-based, no env).
+  // The empty opencode root keeps tests hermetic — they never touch a real
+  // ~/.local/share/opencode on a developer machine.
+  saveSettings({
+    ...defaultSettings(),
+    adapterRoots: { 'claude-code': [claudeDir], opencode: [opencodeDir] },
+  });
 });
 
 afterEach(() => {
-  if (savedHome === undefined) delete process.env['TOKENTAMERS_HOME'];
-  else process.env['TOKENTAMERS_HOME'] = savedHome;
-  if (savedClaude === undefined) delete process.env['CLAUDE_CONFIG_DIR'];
-  else process.env['CLAUDE_CONFIG_DIR'] = savedClaude;
-  if (savedOpencode === undefined) delete process.env['OPENCODE_DATA_DIR'];
-  else process.env['OPENCODE_DATA_DIR'] = savedOpencode;
+  setDataDirForTesting(null);
   fs.rmSync(home, { recursive: true, force: true });
   fs.rmSync(claudeDir, { recursive: true, force: true });
   fs.rmSync(opencodeDir, { recursive: true, force: true });

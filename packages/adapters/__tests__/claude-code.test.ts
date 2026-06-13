@@ -8,7 +8,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { claudeCodeAdapter } from '../src/claude-code/index';
 import type { AdapterCheckpoint } from '../src/index';
 
@@ -19,8 +19,8 @@ import type { AdapterCheckpoint } from '../src/index';
 const FIXTURES_DIR = path.join(import.meta.dirname ?? __dirname, 'fixtures', 'claude-code');
 
 /**
- * Build a CLAUDE_CONFIG_DIR pointing at a temp dir that mirrors the fixture
- * structure (or a custom layout). Callers must clean up.
+ * Build a temp config root that mirrors the fixture structure (or a custom
+ * layout), to pass directly to `detect([...])`. Callers must clean up.
  */
 async function makeTmpConfigDir(
   layout: Record<string, string>,
@@ -47,33 +47,21 @@ async function makeTmpConfigDir(
 // ---------------------------------------------------------------------------
 
 describe('claudeCodeAdapter.detect()', () => {
-  const originalEnv = process.env['CLAUDE_CONFIG_DIR'];
-
-  afterEach(() => {
-    if (originalEnv === undefined) {
-      delete process.env['CLAUDE_CONFIG_DIR'];
-    } else {
-      process.env['CLAUDE_CONFIG_DIR'] = originalEnv;
-    }
-  });
-
-  it('returns installed:true when projects/ dir exists under CLAUDE_CONFIG_DIR', async () => {
-    process.env['CLAUDE_CONFIG_DIR'] = FIXTURES_DIR;
-    const result = await claudeCodeAdapter.detect();
+  it('returns installed:true when projects/ dir exists under the given root', async () => {
+    const result = await claudeCodeAdapter.detect([FIXTURES_DIR]);
     expect(result.installed).toBe(true);
     expect(result.paths).toHaveLength(1);
     expect(result.paths[0]).toContain('projects');
     expect(result.warnings).toHaveLength(0);
   });
 
-  it('returns installed:false when CLAUDE_CONFIG_DIR points at a dir with no projects/ subdir', async () => {
+  it('returns installed:false when the given root has no projects/ subdir', async () => {
     const { configDir, cleanup } = await makeTmpConfigDir({});
     // Remove the projects/ dir that makeTmpConfigDir created
     await fs.rm(path.join(configDir, 'projects'), { recursive: true, force: true });
 
     try {
-      process.env['CLAUDE_CONFIG_DIR'] = configDir;
-      const result = await claudeCodeAdapter.detect();
+      const result = await claudeCodeAdapter.detect([configDir]);
       expect(result.installed).toBe(false);
       expect(result.paths).toHaveLength(0);
     } finally {
@@ -85,8 +73,7 @@ describe('claudeCodeAdapter.detect()', () => {
     const { configDir, cleanup } = await makeTmpConfigDir({});
 
     try {
-      process.env['CLAUDE_CONFIG_DIR'] = configDir;
-      const result = await claudeCodeAdapter.detect();
+      const result = await claudeCodeAdapter.detect([configDir]);
       expect(result.installed).toBe(true);
       expect(result.warnings.length).toBeGreaterThan(0);
       expect(result.warnings[0]).toMatch(/No project directories/i);
@@ -95,7 +82,7 @@ describe('claudeCodeAdapter.detect()', () => {
     }
   });
 
-  it('honors CLAUDE_CONFIG_DIR env var pointing at a temp dir', async () => {
+  it('honors an explicit config root pointing at a temp dir', async () => {
     const { configDir, cleanup } = await makeTmpConfigDir({
       'proj-x/abc123.jsonl':
         [
@@ -120,8 +107,7 @@ describe('claudeCodeAdapter.detect()', () => {
     });
 
     try {
-      process.env['CLAUDE_CONFIG_DIR'] = configDir;
-      const result = await claudeCodeAdapter.detect();
+      const result = await claudeCodeAdapter.detect([configDir]);
       expect(result.installed).toBe(true);
       expect(result.paths[0]).toBe(path.join(configDir, 'projects'));
       expect(result.warnings).toHaveLength(0);
@@ -281,13 +267,11 @@ describe('claudeCodeAdapter.scan() — malformed line tolerance', () => {
     });
 
     try {
-      process.env['CLAUDE_CONFIG_DIR'] = tmpDir;
       const result = await claudeCodeAdapter.scan([path.join(tmpDir, 'projects')]);
       // Only the two valid events should be present; the bad line is skipped.
       const evts = result.events.filter((ev) => ev.sessionKey === sessionId);
       expect(evts).toHaveLength(2);
     } finally {
-      delete process.env['CLAUDE_CONFIG_DIR'];
       await tmpCleanup();
     }
   });
@@ -363,8 +347,6 @@ describe('claudeCodeAdapter.scan() — incremental checkpoint', () => {
     const filePath = path.join(configDir, 'projects', 'proj-b', `${sessionId}.jsonl`);
 
     try {
-      process.env['CLAUDE_CONFIG_DIR'] = configDir;
-
       // First scan — sees only the initial line.
       const first = await claudeCodeAdapter.scan([path.join(configDir, 'projects')]);
       expect(first.events.filter((ev) => ev.sessionKey === sessionId)).toHaveLength(1);
@@ -397,7 +379,6 @@ describe('claudeCodeAdapter.scan() — incremental checkpoint', () => {
       expect(newEvents).toHaveLength(1);
       expect(newEvents[0]!.inputTokens).toBe(80);
     } finally {
-      delete process.env['CLAUDE_CONFIG_DIR'];
       await cleanup();
     }
   });
@@ -453,7 +434,6 @@ describe('claudeCodeAdapter.scan() — lang hints', () => {
     });
 
     try {
-      process.env['CLAUDE_CONFIG_DIR'] = configDir;
       const result = await claudeCodeAdapter.scan([path.join(configDir, 'projects')]);
       const ev = result.events.find((e) => e.sessionKey === sessionId);
       expect(ev).toBeDefined();
@@ -461,7 +441,6 @@ describe('claudeCodeAdapter.scan() — lang hints', () => {
       expect(ev!.langHints).toContain('.ts');
       expect(ev!.langHints).toContain('.py');
     } finally {
-      delete process.env['CLAUDE_CONFIG_DIR'];
       await cleanup();
     }
   });
@@ -492,13 +471,11 @@ describe('claudeCodeAdapter.scan() — lang hints', () => {
     });
 
     try {
-      process.env['CLAUDE_CONFIG_DIR'] = configDir;
       const result = await claudeCodeAdapter.scan([path.join(configDir, 'projects')]);
       const ev = result.events.find((e) => e.sessionKey === sessionId);
       expect(ev).toBeDefined();
       expect(ev!.langHints).toBeUndefined();
     } finally {
-      delete process.env['CLAUDE_CONFIG_DIR'];
       await cleanup();
     }
   });
@@ -534,12 +511,10 @@ describe('claudeCodeAdapter.scan() — record type filtering', () => {
     });
 
     try {
-      process.env['CLAUDE_CONFIG_DIR'] = configDir;
       const result = await claudeCodeAdapter.scan([path.join(configDir, 'projects')]);
       const evts = result.events.filter((ev) => ev.sessionKey === sessionId);
       expect(evts).toHaveLength(0);
     } finally {
-      delete process.env['CLAUDE_CONFIG_DIR'];
       await cleanup();
     }
   });
@@ -565,12 +540,10 @@ describe('claudeCodeAdapter.scan() — record type filtering', () => {
     });
 
     try {
-      process.env['CLAUDE_CONFIG_DIR'] = configDir;
       const result = await claudeCodeAdapter.scan([path.join(configDir, 'projects')]);
       const evts = result.events.filter((ev) => ev.sessionKey === sessionId);
       expect(evts).toHaveLength(0);
     } finally {
-      delete process.env['CLAUDE_CONFIG_DIR'];
       await cleanup();
     }
   });
@@ -706,19 +679,11 @@ describe('claudeCodeAdapter.scan() — message-id dedup', () => {
 // ---------------------------------------------------------------------------
 
 describe('claudeCodeAdapter.detect() — multiple config roots', () => {
-  const savedConfig = process.env['CLAUDE_CONFIG_DIR'];
-
-  afterEach(() => {
-    if (savedConfig === undefined) delete process.env['CLAUDE_CONFIG_DIR'];
-    else process.env['CLAUDE_CONFIG_DIR'] = savedConfig;
-  });
-
-  it('scans every root from a comma-separated CLAUDE_CONFIG_DIR', async () => {
+  it('scans every root passed in', async () => {
     const a = await makeTmpConfigDir({ 'proj-a/aaaa.jsonl': '' });
     const b = await makeTmpConfigDir({ 'proj-b/bbbb.jsonl': '' });
     try {
-      process.env['CLAUDE_CONFIG_DIR'] = `${a.configDir}, ${b.configDir}`;
-      const result = await claudeCodeAdapter.detect();
+      const result = await claudeCodeAdapter.detect([a.configDir, b.configDir]);
       expect(result.installed).toBe(true);
       expect(result.paths).toEqual([
         path.join(a.configDir, 'projects'),
@@ -730,21 +695,12 @@ describe('claudeCodeAdapter.detect() — multiple config roots', () => {
     }
   });
 
-  it('probes $XDG_CONFIG_HOME/claude when CLAUDE_CONFIG_DIR is unset', async () => {
-    const savedXdg = process.env['XDG_CONFIG_HOME'];
-    const xdgRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'tt-xdg-'));
-    await fs.mkdir(path.join(xdgRoot, 'claude', 'projects', 'proj-x'), { recursive: true });
-    try {
-      delete process.env['CLAUDE_CONFIG_DIR'];
-      process.env['XDG_CONFIG_HOME'] = xdgRoot;
-      const result = await claudeCodeAdapter.detect();
-      expect(result.installed).toBe(true);
-      // ~/.claude may also exist on the host machine; assert membership only.
-      expect(result.paths).toContain(path.join(xdgRoot, 'claude', 'projects'));
-    } finally {
-      if (savedXdg === undefined) delete process.env['XDG_CONFIG_HOME'];
-      else process.env['XDG_CONFIG_HOME'] = savedXdg;
-      await fs.rm(xdgRoot, { recursive: true, force: true });
-    }
+  it('falls back to built-in default roots when none are passed', async () => {
+    // No override roots → built-in defaults (~/.config/claude, ~/.claude). The
+    // call must resolve without throwing and return a well-formed result; we do
+    // not assert `installed` (it depends on the host having Claude Code data).
+    const result = await claudeCodeAdapter.detect();
+    expect(Array.isArray(result.paths)).toBe(true);
+    expect(typeof result.installed).toBe('boolean');
   });
 });

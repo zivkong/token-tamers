@@ -1,5 +1,13 @@
-export { dataDir, pathFor, readJsonOrNull, writeJsonAtomic } from './atomic';
+export { dataDir, pathFor, readJsonOrNull, writeJsonAtomic, setDataDirForTesting } from './atomic';
 export { CONFIG_FILE, loadConfig, saveConfig, configExists } from './config';
+export {
+  SETTINGS_FILE,
+  SETTINGS_SCHEMA_VERSION,
+  defaultSettings,
+  loadSettings,
+  saveSettings,
+  settingsRootsFor,
+} from './settings';
 export { STATE_FILE, loadState, saveState } from './state';
 export {
   CHECKPOINTS_FILE,

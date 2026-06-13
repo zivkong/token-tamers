@@ -6,17 +6,17 @@ import { runInit } from '../src/commands/init';
 import { statusCommand } from '../src/commands/status';
 import { loadConfig } from '../src/stores/config';
 import { loadState } from '../src/stores/state';
+import { defaultSettings, saveSettings, setDataDirForTesting } from '../src/stores';
 
 /**
- * End-to-end: set TOKENTAMERS_HOME + CLAUDE_CONFIG_DIR to temp dirs with a small
- * JSONL fixture, run init --yes, then assert state.json exists and the status
- * output mentions the pet.
+ * End-to-end: redirect the data dir to a temp home, point the Claude Code
+ * adapter at a temp fixture root via settings.json (the file-based replacement
+ * for CLAUDE_CONFIG_DIR), run init --yes, then assert state.json exists and the
+ * status output mentions the pet.
  */
 
 let home: string;
 let claudeDir: string;
-let savedHome: string | undefined;
-let savedClaude: string | undefined;
 
 function writeFixture(claudeRoot: string): void {
   const projectDir = path.join(claudeRoot, 'projects', 'encoded-path-test');
@@ -53,20 +53,16 @@ function writeFixture(claudeRoot: string): void {
 }
 
 beforeEach(() => {
-  savedHome = process.env['TOKENTAMERS_HOME'];
-  savedClaude = process.env['CLAUDE_CONFIG_DIR'];
   home = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-home-'));
   claudeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-claude-'));
-  process.env['TOKENTAMERS_HOME'] = home;
-  process.env['CLAUDE_CONFIG_DIR'] = claudeDir;
+  setDataDirForTesting(home);
   writeFixture(claudeDir);
+  // Point the Claude Code adapter at the fixture root via settings.json.
+  saveSettings({ ...defaultSettings(), adapterRoots: { 'claude-code': [claudeDir] } });
 });
 
 afterEach(() => {
-  if (savedHome === undefined) delete process.env['TOKENTAMERS_HOME'];
-  else process.env['TOKENTAMERS_HOME'] = savedHome;
-  if (savedClaude === undefined) delete process.env['CLAUDE_CONFIG_DIR'];
-  else process.env['CLAUDE_CONFIG_DIR'] = savedClaude;
+  setDataDirForTesting(null);
   fs.rmSync(home, { recursive: true, force: true });
   fs.rmSync(claudeDir, { recursive: true, force: true });
 });

@@ -216,7 +216,7 @@ adapter patch, not engine change). Each adapter handles its own quirks:
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **claude-code** | JSONL tail; subagent files (`agent-{uuid}.jsonl`); 30-day auto-deletion → incremental ingest mandatory                                                                     |
 | **codex**       | Cumulative `token_count` → delta computation required; 3 format generations (≥0.44, mid, 2025/08); `archived_sessions/` present; sessions/ wins over archive on duplicates |
-| **opencode**    | Per-message JSON tree walk; `OPENCODE_DATA_DIR` multi-root (comma-separated); project/global storage split; prune-tolerant ingestion                                       |
+| **opencode**    | Per-message JSON tree walk; multi-root via settings.json `adapterRoots` (no env); project/global storage split; prune-tolerant ingestion                                   |
 
 Engine consumes only UsageEvents + CyclePolicy events; it is provider-blind.
 

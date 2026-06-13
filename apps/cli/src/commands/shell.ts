@@ -4,16 +4,32 @@
 
 import os from 'node:os';
 import { runShell, type AdapterInfo, type ColorMode, type ShellInfo } from '@token-tamers/tui';
-import type { AdapterConfig, CyclePolicyKind, UserConfig } from '@token-tamers/core';
+import type {
+  AdapterConfig,
+  ColorPreference,
+  CyclePolicyKind,
+  UserConfig,
+} from '@token-tamers/core';
 import { catchUp, NotInitializedError } from '../services/catchup';
 import { createShellHost } from '../services/shell-host';
 import { VERSION } from '../version';
-import { dataDir, saveConfig } from '../stores';
+import { dataDir, loadSettings, saveConfig } from '../stores';
 
 type Out = (s: string) => void;
 
 const NOT_INIT_MSG = 'Token Tamers is not set up yet. Run `tt init` first.\n';
 const DEFAULT_FPS = 30;
+
+/**
+ * Resolve the shell's color mode. The `--no-color` flag always wins; otherwise
+ * the preference from settings.json applies, with 'auto' mapping to truecolor
+ * for the interactive shell (always a TTY here). No environment variables.
+ */
+function resolveColorMode(noColor: boolean, pref: ColorPreference): ColorMode {
+  if (noColor || pref === 'none') return 'none';
+  if (pref === 'auto') return 'truecolor';
+  return pref;
+}
 
 /** Collapse the home prefix to `~` for a compact, privacy-friendly path. */
 function tildePath(abs: string): string {
@@ -75,7 +91,7 @@ export async function runShellCommand(noColor: boolean, out: Out): Promise<void>
   }
   const { config, engine } = caught;
   const { host, persist } = createShellHost(config, engine);
-  const color: ColorMode = noColor ? 'none' : 'truecolor';
+  const color = resolveColorMode(noColor, loadSettings().color);
   try {
     await runShell({
       host,

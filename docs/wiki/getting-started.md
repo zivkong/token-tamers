@@ -34,6 +34,13 @@ never shifts mid-session under your pet). Adding or removing an agent, or changi
 paths, is still done by re-running `tt init`. You can also print the version
 non-interactively with `tt --version`.
 
+Token Tamers reads **no environment variables** — every preference lives in a file under
+`~/.tokentamers/`. `settings.json` (hand-editable, created on demand) holds your `color`
+choice (`auto` · `truecolor` · `256` · `8` · `none`; the `--no-color` flag always wins) and
+`adapterRoots`, which override where an adapter scans if your agent stores logs somewhere
+non-standard — e.g. `{"adapterRoots": {"claude-code": ["/custom/path"]}}`. The data
+directory itself is always `~/.tokentamers`.
+
 ## Troubleshooting adapter detection
 
 - `tt adapters` shows each adapter's detected paths, last scan, and warnings.

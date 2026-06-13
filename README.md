@@ -237,16 +237,8 @@ Prereqs: **Node ≥ 20** and **pnpm** (via Corepack — `corepack enable`). Then
 ```sh
 git clone https://github.com/zivkong/token-tamers.git && cd token-tamers
 pnpm install
-pnpm dev:watch        # run the shell from source with hot reload
-```
-
-Quickest sandboxed loop — runs against a throwaway store so it never touches your real
-pet, and drops you straight into the hot-reloading shell:
-
-```sh
-pnpm install
-TOKENTAMERS_HOME=/tmp/tt-dev pnpm dev init       # one-time, sandboxed
-TOKENTAMERS_HOME=/tmp/tt-dev pnpm dev:watch      # hot-reloading shell — press 4 for Settings
+pnpm dev init         # one-time setup (writes to ~/.tokentamers)
+pnpm dev:watch        # run the shell from source with hot reload — press 4 for Settings
 ```
 
 | Command           | What it does                                                                          |
@@ -266,9 +258,11 @@ A few things worth knowing:
 - **Bare `pnpm dev` opens the interactive shell**, which needs a one-time `pnpm dev init`
   first. The TUI takes over the terminal; `q` or `Ctrl-C` exits, and `dev:watch`
   re-launches it after each save.
-- **Sandbox your dev pet.** Dev writes to the same `~/.tokentamers/` store as a real
-  install. Point `TOKENTAMERS_HOME` at a throwaway dir to keep them separate:
-  `TOKENTAMERS_HOME=/tmp/tt-dev pnpm dev init`.
+- **Config lives in files, never environment variables.** Token Tamers reads zero config
+  from `process.env`. Preferences go in `~/.tokentamers/settings.json` (hand-editable):
+  `color` (`auto` · `truecolor` · `256` · `8` · `none`) and `adapterRoots` — override where
+  each adapter scans, e.g. point `claude-code` at a fixture dir. The data dir itself is
+  fixed at `~/.tokentamers`; dev shares your real store, so inspect/commit with that in mind.
 - **Before pushing**, run `pnpm check` (plus `pnpm check:network` and `pnpm check:spoilers`);
   the git hooks run these for you, but running them early is faster.
 

@@ -25,11 +25,13 @@ import { adapterFor } from '../services/catchup';
 import {
   loadCheckpoints,
   loadPending,
+  loadSettings,
   loadState,
   saveCheckpoints,
   saveConfig,
   savePending,
   saveState,
+  settingsRootsFor,
   type CheckpointMap,
 } from '../stores';
 import {
@@ -108,9 +110,10 @@ function yesish(s: string): boolean {
 export async function runInit(options: InitOptions): Promise<InitResult> {
   const now = options.now ?? Date.now;
   const out = options.out ?? ((s: string) => process.stdout.write(s));
-  // Styling is gated on TTY + NO_COLOR; when `out` is injected (tests/CI) the
-  // process stdout isTTY check still works correctly.
-  const styled = shouldStyle();
+  const settings = loadSettings();
+  // Styling is gated on settings.color + TTY (no env). When `out` is injected
+  // (tests/CI) the process stdout isTTY check still works correctly.
+  const styled = shouldStyle(settings.color);
   const { ask, close } = makeAsker(options.yes);
 
   const warnings: string[] = [];
@@ -121,7 +124,7 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     out(renderBanner(styled));
 
     for (const adapter of allAdapters) {
-      const detection = await adapter.detect();
+      const detection = await adapter.detect(settingsRootsFor(settings, adapter.id));
       for (const w of detection.warnings) warnings.push(`[${adapter.id}] ${w}`);
 
       if (!detection.installed) {

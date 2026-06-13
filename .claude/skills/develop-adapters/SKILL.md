@@ -20,14 +20,20 @@ drift in any provider = adapter patch, never an engine change.
 - `detect()` must be cheap (stat data dirs) and surface warnings (missing dirs,
   persistence disabled) for `tt init` / `tt adapters`.
 - Tolerate live files: skip malformed/partial trailing JSONL lines silently.
-- Windows: resolve homes via `os.homedir()` (%USERPROFILE%), honor env overrides.
+- Windows: resolve homes via `os.homedir()` (%USERPROFILE%).
+- **No `process.env`.** Adapters never read environment variables. `detect(roots?)`
+  takes optional override roots; the cli reads `~/.tokentamers/settings.json`
+  (`adapterRoots[<id>]`) and passes them, falling back to each adapter's built-in
+  default locations. `scan(paths)` always takes explicit paths (sourced from the
+  config the user confirmed at `tt init`).
 
 ## Claude Code — SHIPPED (reference adapter, `src/claude-code/`)
 
 - Source: `{config-root}/projects/{encoded-path}/*.jsonl`. Config roots vary by
-  version and sessions can be SPLIT across roots after a migration — probe ALL of:
-  `CLAUDE_CONFIG_DIR` (comma-separated multi-root) → `$XDG_CONFIG_HOME/claude`
-  (newer builds; `~/.config/claude` default) + `~/.claude` (legacy default).
+  version and sessions can be SPLIT across roots after a migration — probe ALL
+  roots. Override roots come from settings.json `adapterRoots["claude-code"]` (passed
+  to `detect`); the built-in defaults are `~/.config/claude` (newer builds) + `~/.claude`
+  (legacy). No env vars (XDG / `CLAUDE_CONFIG_DIR` are no longer consulted).
   Assistant records carry `message.usage` (input_tokens, output_tokens,
   cache_creation_input_tokens → cacheWriteTokens, cache_read_input_tokens →
   cacheReadTokens) and `message.model` (full model ID). Auxiliary local sources
@@ -65,9 +71,9 @@ drift in any provider = adapter patch, never an engine change.
 
 **Primary source: SQLite** (migrated from JSON tree in ~v1.x).
 
-- DB at `~/.local/share/opencode/opencode.db` (WAL mode; `-wal`/`-shm` siblings present).
-  Override: `OPENCODE_DATA_DIR` env var (comma-separated multi-roots).
-  Also honors `$XDG_DATA_HOME/opencode`.
+- DB at `~/.local/share/opencode/opencode.db` (WAL mode; `-wal`/`-shm` siblings present),
+  the built-in default root. Override via settings.json `adapterRoots["opencode"]` (passed
+  to `detect`); no env vars (`OPENCODE_DATA_DIR` / `XDG_DATA_HOME` are no longer consulted).
 - Tables: `message(id, session_id, time_created, time_updated, data JSON)`,
   `session(id, project_id, parent_id, ...)`, `part`, `project`.
 - `message.data` JSON shape (assistant): `{"role":"assistant","modelID":"deepseek-v4-pro",
