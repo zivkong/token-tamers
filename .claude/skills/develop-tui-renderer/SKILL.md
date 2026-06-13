@@ -14,13 +14,15 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 ## Layout law (rev 1.1 — top-oriented, full-width)
 
 - The UI is a **top-oriented, full-width vertical stack** (`render/layout.ts`): sections
-  stack from row 0 with **no letterbox gutters, no side padding**; the menu is a **grid
-  docked immediately AFTER the canvas**, not at the terminal bottom. Slack falls below it.
-  (This supersedes the old centered-4:3-canvas + bottom-bar model.)
-- Section order (pet page): **header band** (`headerRows`) → _divider+gap_ → **game canvas** →
-  _labeled `VITALS` divider+gap_ → **vitals panel** (`panelRows`: stats / gap / feeding / gap /
-  diet) → _divider+gap_ → **menu grid**. `petSections(layout)` carves the bands + divider rows;
-  every divider is followed by a `GAP_ROWS` blank for spacing. `render/divider.ts` draws rules.
+  stack from row 0 with **no letterbox gutters, no side padding**; the menu is a **left-aligned
+  button flow docked immediately AFTER the canvas** (wraps rows as needed), not at the terminal
+  bottom. Slack falls below it. **Min terminal 34×24** (`MIN_COLS=34`); layouts degrade with
+  compact bars/labels and a wrapping menu. (Supersedes the old centered-4:3 + bottom-bar model.)
+- Section order (pet page): **header** (`headerRows`) → _divider+gap_ → **game canvas** →
+  _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=7`: stats / gap /
+  charge / gap / diet / gap / progress) → _divider+gap_ → **menu**. `petSections(layout)`
+  carves the bands + divider rows; a `GAP_ROWS` blank follows every divider AND precedes the
+  VITALS divider (request: canvas↔VITALS spacing). `render/divider.ts` draws rules.
   `canvasX=0`, `canvasCols=termCols`.
 - **Evolution-mystery rule:** the pet screen must NOT show the stage word, molt count, or any
   "progress to next evolution" — evolution stays a surprise. Stage/molt still drive the engine
@@ -28,27 +30,30 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
-- **Vitals panel** (`pages/pet-vitals.ts`): stat bars from `pet.stats`; the **Feeding row is
-  REAL-TIME** from `ctx.live` (`LiveStats`) — open-window tokens vs baseline appetite (ratio
-  drives the next molt's odds); diet from `pet.dietGenes` → House tints via `pack.models`. Keep
-  grade-roll odds shown (transparency invariant). `LiveStats` flows `ShellHost.liveStats()` →
-  shell → `FrameInput.live` → `RenderContext.live`; the cli derives it from
-  `engine.pendingEvents()` + `eventEssence` + baselines. Undefined in golden tests → the
-  feeding row falls back to a static baseline summary (keeps frames deterministic).
+- **Vitals panel** (`pages/pet-vitals.ts`) — 4 rows: **Stats** (bars normalized to
+  `STAT_BAR_MAX`≈120 so the empty track shows), **Charge** (REAL-TIME FOMO: open-window tokens
+  fill toward `VITALITY_FULL_TOKENS`=200M, tinted by diet, `+N% molt` = real `vitalityBonus`
+  preview; token counts only), **Diet** (House-share legend + grade-roll odds), **Progress**
+  (the completion meter, moved out of the menu). Every bar renders its empty track.
+  `LiveStats` flows `ShellHost.liveStats()` → `FrameInput.live` → `RenderContext.live`; the cli
+  derives it from `engine.pendingEvents()` + `eventTokens`/`eventEssence` + baselines. Undefined
+  in golden tests → the Charge row shows an empty/awaiting state (frames stay deterministic).
+  `completionPct` rides on `RenderContext`.
 - Cells are ~1:2 w:h; half-blocks give 2 vertical px/cell. Habitat scenes are 96×48 px
   (96 cols × 24 rows → 4:1 cell aspect). The canvas is full width and `sceneRows ≈ cols/4`
   (capped to fit), so the backdrop **scales uniformly to fill the width** via `drawSprite`'s
   `destW`/`destH` (nearest-neighbor) — no padding, no distortion. The **pet + trinkets scale
   by the same `scene.cols / HABITAT_COLS` factor** so they stay proportionate at any width
   (`sceneScale` in pet.ts; pass scaled dims into the wander geometry AND `drawSprite`).
-  Minimum terminal 64×24.
+  Minimum terminal 34×24.
 - Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
   (Dex, Archive, Settings, Achievements) inside the same content region.
-- Menu grid (`menuCells(layout)`, shared by the renderer and the shell's mouse hit-testing):
-  the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) + the live Completion Meter flow across
-  **6 columns (≥72 cols) or 3 columns over 2 rows (narrow)**; active page highlighted.
-  Adding a page = extend the `PageId` union, push a `MENU_ITEMS` entry (icon + hotkey), add a
-  `freshUi` slot, a `handleKey` case, and a `renderFrame` switch arm — keep all five in lockstep.
+- Menu flow (`render/menu.ts` → `packMenu(cols)`, shared by `layout` for `menuRows`, `frame` to
+  draw, and `shell` to hit-test): the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) pack
+  LEFT-ALIGNED and wrap; labels are left-aligned, NOT centered. The completion meter is NOT in
+  the menu (it's the VITALS Progress row). Adding a page = extend the `PageId` union, push a
+  `MENU_ITEMS` entry (icon + hotkey), add a `freshUi` slot, a `handleKey` case, and a
+  `renderFrame` switch arm — keep all five in lockstep.
 - **Keyboard parity is mandatory:** every click has a hotkey; with no mouse
   reporting the game is 100% playable by keys.
 - **Idle purity:** the entire UI is optional browsing — nothing gameplay-critical
@@ -99,9 +104,10 @@ visual change is intended and reviewed.
 
 `ansi.ts` (Writer/sinks/SGR), `buffer.ts` (FrameBuffer+diff), `sprite.ts`
 (compositor+palette ladder, `destW`/`destH` scaling), `input.ts` (key/mouse decode),
-`hit.ts`, `layout.ts` (`computeLayout`/`petSections`/`menuCols`), `divider.ts` (section
-rules), `frame.ts` (frame + `menuCells` grid), `shell.ts` (runShell loop), `status.ts`
-(one-liners), `pages/` (pet, pet-vitals, dex/archive/settings), `lookup.ts` (pack helpers).
+`hit.ts`, `layout.ts` (`computeLayout`/`petSections`), `menu.ts` (`packMenu` left-aligned
+flow), `divider.ts` (section rules), `frame.ts` (frame + menu draw), `shell.ts` (runShell
+loop), `status.ts` (one-liners), `pages/` (pet, pet-vitals, dex/archive/settings),
+`lookup.ts` (pack helpers).
 
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
 

@@ -16,15 +16,10 @@ export {
 } from './shell';
 
 // Pure frame rendering helpers.
-export {
-  renderFrame,
-  renderFrameToString,
-  menuCells,
-  MENU_ITEMS,
-  type FrameInput,
-  type MenuItem,
-  type MenuCell,
-} from './render/frame';
+export { renderFrame, renderFrameToString, type FrameInput } from './render/frame';
+
+// Menu model + left-aligned flow packing.
+export { packMenu, buttonText, MENU_ITEMS, type MenuItem, type MenuButton } from './render/menu';
 
 // Status one-liners (tt watch / tt status).
 export { renderStatusLine, renderGradeOddsLine, progressBar } from './helpers/status';
@@ -84,7 +79,7 @@ export {
   MIN_ROWS,
   HEADER_ROWS,
   PANEL_ROWS,
-  MENU_GRID_BREAKPOINT,
+  GAP_ROWS,
   type Layout,
   type SceneRect,
   type PetSections,

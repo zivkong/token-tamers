@@ -2,47 +2,53 @@
  * Layout math: a TOP-ORIENTED, FULL-WIDTH vertical stack.
  *
  * The frame is a column of full-width sections stacked from the top — no
- * letterbox gutters, no side padding — with a divider rule between sections:
+ * letterbox gutters, no side padding — with a divider rule AND blank padding
+ * gaps between sections so they breathe:
  *
  *   ┌───────────────────────────────┐ row 0
  *   │ header band (name / identity)  │  headerRows
  *   ├───────────────────────────────┤  ← divider
+ *   │ (gap)                          │
  *   │ game canvas (scene, full width)│  sceneRows   ── canvas region ──┐
- *   ├──── VITALS ───────────────────┤  ← labeled divider              │ canvasRows
- *   │ stats + token nourishment      │  panelRows                      │
- *   ├───────────────────────────────┤  ← divider ─────────────────────┘
- *   │ menu grid (6 cols → 3 on narrow)│ menuRows  (menuY)
+ *   │ (gap)                          │                                 │ canvasRows
+ *   ├──── VITALS ───────────────────┤  ← labeled divider              │
+ *   │ (gap)                          │                                 │
+ *   │ stats · charge · diet · prog.  │  panelRows                      │
+ *   ├───────────────────────────────┤  ← divider                      ┘
+ *   │ (gap)                          │
+ *   │ menu (left-aligned, wraps)     │  menuRows  (menuY)
  *   └───────────────────────────────┘
  *   (any slack falls BELOW the menu — the UI hugs the top)
  *
- * The scene keeps the habitat's native 4:1 cell aspect (96×24 px-grid → 96:24
- * cells) so a backdrop scaled to fill the full width stays undistorted; it is
- * capped to the rows available above the menu. Pages render into the canvas
- * region [canvasY, canvasY+canvasRows); the pet page sub-divides it into the
- * header / scene / vitals bands via `petSections()`.
+ * The scene keeps the habitat's native 4:1 cell aspect so a full-width backdrop
+ * scales uniformly; it is capped to the rows available above the menu. The pet
+ * page sub-divides the content region via `petSections()`.
  */
 
-export const MIN_COLS = 64;
+import { packMenu } from './menu';
+
+/** Minimum supported terminal size. The UI degrades gracefully down to here. */
+export const MIN_COLS = 34;
 export const MIN_ROWS = 24;
 
 /** Rows the header band occupies at the very top (pet name + identity). */
 export const HEADER_ROWS = 2;
 /**
- * Rows the vitals panel occupies: a stat row, a blank, a feeding row, a blank,
- * and a diet row — the blanks give the panel internal breathing room.
+ * Rows the vitals panel occupies: stats / gap / charge / gap / diet / gap /
+ * progress — three content rows interleaved with blank spacers, plus a fourth.
  */
-export const PANEL_ROWS = 5;
+export const PANEL_ROWS = 7;
 /** Divider rules drawn between the stacked sections (header|scene|panel|menu). */
 export const DIVIDER_ROWS = 3;
-/** Blank padding rows that follow each divider, for spacing between sections. */
+/** Blank padding rows used around dividers for spacing between sections. */
 export const GAP_ROWS = 1;
-/** Smallest scene height we will draw before the terminal counts as too small. */
-export const MIN_SCENE_ROWS = 6;
 /**
- * Width at/above which the menu lays out as a single row of 6 columns; below it
- * the menu wraps to 3 columns over 2 rows.
+ * Total gap rows in the stack: one after each divider (3) plus one BEFORE the
+ * VITALS divider (so the canvas and the panel both breathe). See `petSections`.
  */
-export const MENU_GRID_BREAKPOINT = 72;
+const TOTAL_GAP_ROWS = 4 * GAP_ROWS;
+/** Smallest scene height we will draw before the terminal counts as too small. */
+export const MIN_SCENE_ROWS = 4;
 
 export interface Layout {
   /** Whole terminal size. */
@@ -59,10 +65,8 @@ export interface Layout {
   panelRows: number;
   /** First row of the menu band (immediately after the canvas region). */
   menuY: number;
-  /** Menu band height (1 when 6 columns fit, else 2). */
+  /** Menu band height (number of wrapped rows for the left-aligned flow). */
   menuRows: number;
-  /** Menu grid column count (6 wide, 3 narrow). */
-  menuCols: number;
   /** Back-compat alias for the first menu row. */
   menuRow: number;
   /** True if the terminal is below the minimum size. */
@@ -87,26 +91,23 @@ export function computeLayout(cols: number, rows: number): Layout {
       panelRows: 0,
       menuY: menuRow,
       menuRows: 1,
-      menuCols: 1,
       menuRow,
       tooSmall: true,
     };
   }
 
-  const menuCols = cols >= MENU_GRID_BREAKPOINT ? 6 : 3;
-  const menuRows = menuCols === 6 ? 1 : 2;
+  // The left-aligned menu flow wraps to as many rows as the width needs.
+  const menuRows = packMenu(cols).rows;
 
   // Scene height tracks the habitat's native 4:1 cell aspect (96 cols : 24
   // rows) so a full-width backdrop scales uniformly, capped to what fits above
-  // the menu after the header band, the vitals panel, the section dividers and
-  // their padding gaps.
-  const chrome = HEADER_ROWS + PANEL_ROWS + DIVIDER_ROWS * (1 + GAP_ROWS) + menuRows;
-  const availForScene = rows - chrome;
+  // the menu after the header band, the vitals panel, the dividers and gaps.
+  const fixed = HEADER_ROWS + PANEL_ROWS + DIVIDER_ROWS + TOTAL_GAP_ROWS;
+  const availForScene = rows - fixed - menuRows;
   const sceneTarget = Math.round(cols / 4);
   const sceneRows = Math.max(MIN_SCENE_ROWS, Math.min(sceneTarget, availForScene));
 
-  const canvasRows = chrome - menuRows + sceneRows;
-  const menuY = canvasRows;
+  const canvasRows = fixed + sceneRows;
 
   return {
     termCols: cols,
@@ -117,10 +118,9 @@ export function computeLayout(cols: number, rows: number): Layout {
     canvasRows,
     headerRows: HEADER_ROWS,
     panelRows: PANEL_ROWS,
-    menuY,
+    menuY: canvasRows,
     menuRows,
-    menuCols,
-    menuRow: menuY,
+    menuRow: canvasRows,
     tooSmall: false,
   };
 }
@@ -138,28 +138,28 @@ export interface PetSections {
   header: SceneRect;
   scene: SceneRect;
   panel: SceneRect;
-  /** Divider rows: [after header, labeled (after scene), before menu]. */
+  /** Divider rows: [after header, labeled (between scene & panel), before menu]. */
   dividerYs: [number, number, number];
 }
 
 /**
- * Carve the pet page's section bands out of the content region. The scene flexes
- * to fill whatever is left between the fixed header (top) and vitals panel
- * (bottom); each section is separated by a divider rule FOLLOWED by a blank
- * padding gap, so sections breathe instead of touching.
+ * Carve the pet page's section bands out of the content region. Dividers are
+ * separated from their neighbours by blank gaps: a gap follows every divider,
+ * and an extra gap precedes the VITALS divider so the scene and panel both
+ * breathe (request #1). The scene flexes to fill the remaining height.
  */
 export function petSections(l: Layout): PetSections {
   const x = l.canvasX;
   const cols = l.canvasCols;
-  const sceneRows =
-    l.canvasRows - l.headerRows - l.panelRows - DIVIDER_ROWS - DIVIDER_ROWS * GAP_ROWS;
+  const g = GAP_ROWS;
+  const sceneRows = l.canvasRows - (l.headerRows + l.panelRows + DIVIDER_ROWS + TOTAL_GAP_ROWS);
 
   const headerY = l.canvasY;
-  const dHeader = headerY + l.headerRows; // divider, then a gap
-  const sceneY = dHeader + 1 + GAP_ROWS;
-  const dScene = sceneY + sceneRows; // labeled divider, then a gap
-  const panelY = dScene + 1 + GAP_ROWS;
-  const dPanel = panelY + l.panelRows; // divider, then a gap, then the menu
+  const dHeader = headerY + l.headerRows;
+  const sceneY = dHeader + 1 + g;
+  const dScene = sceneY + sceneRows + g; // extra gap BEFORE the VITALS divider
+  const panelY = dScene + 1 + g;
+  const dPanel = panelY + l.panelRows;
 
   return {
     header: { x, y: headerY, cols, rows: l.headerRows },

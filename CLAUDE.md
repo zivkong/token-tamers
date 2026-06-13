@@ -25,7 +25,12 @@ Key contracts live in `packages/core/src/types.ts`.
    `scripts/check-zero-network.sh` + ESLint ban network modules.
 3. **No model judgment** — model IDs map to Houses (identity/cosmetics) via
    `models.json`; they must NEVER affect stats, grades, rarity, or speed.
-   All power normalizes to the player's own per-adapter baseline.
+   Grade odds normalize to the player's own per-adapter baseline (the activity
+   modifier stays model- AND volume-blind). The ONE sanctioned exception is the
+   **capped vitality bonus**: a separate, additive, hard-capped grade-roll bonus
+   from the session's raw token volume (full at `VITALITY_FULL_TOKENS` = 200M,
+   max `+VITALITY_MAX_BONUS` = 0.15) — never model-dependent, never able to
+   dominate base odds (see `evolution-grades-lineage.md` §12).
 4. **Import boundaries** — `core` imports nothing (not even `node:*`); `tui`/`adapters`
    import `core` only, never each other; ESLint enforces.
 5. **Deterministic core** — no `Date.now()`/`new Date()`/`Math.random()` in
@@ -122,7 +127,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - **Houses (identity ONLY):** Aether `claude-*` WIS · Cipher `gpt-*`/`o*` PWR ·
   Flux `gemini-*` SPD · Forge open-weight GRT · Wild unmatched ("???" dormant gene).
 - **Grades:** C→B 25%, B→A 10%, A→S 3% base; activity modifier ×0.5–2.0 (model- and
-  volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI.
+  volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI. Plus a
+  capped vitality bonus (+0.15 max at 200M session tokens) — the only volume input.
 - **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C;
   Archive keeps one strictly-best record per species.
 - **Scope:** M1 (shipped) = Claude Code + OpenCode adapters, Aether+Cipher lines, shell with

@@ -17,6 +17,7 @@ export {
   dominantTraitClass,
   evaluateTraits,
   eventEssence,
+  eventTokens,
   type RhythmKind,
   type TraitClass,
   type WindowSignals,
@@ -29,4 +30,7 @@ export {
   matchModelRule,
   SCHEMA_VERSION,
   seedBaselinesFromHistory,
+  vitalityBonus,
+  VITALITY_FULL_TOKENS,
+  VITALITY_MAX_BONUS,
 } from './engine';

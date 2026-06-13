@@ -12,7 +12,8 @@ import { FrameBuffer } from './render/buffer';
 import { HitRegistry } from './render/hit';
 import { decode, type InputEvent } from './terminal/input';
 import { computeLayout } from './render/layout';
-import { menuCells, renderFrame, type FrameInput } from './render/frame';
+import { renderFrame, type FrameInput } from './render/frame';
+import { packMenu } from './render/menu';
 import type {
   AdapterInfo,
   LiveStats,
@@ -317,11 +318,11 @@ function handleMouse(
   const cx = ev.x - 1;
   const cy = ev.y - 1;
 
-  // Menu grid clicks: hit-test the same cells the renderer drew.
-  for (const cell of menuCells(layout)) {
-    if (cell.id === 'meter') continue;
-    if (cx >= cell.x && cx < cell.x + cell.w && cy >= cell.y && cy < cell.y + cell.h) {
-      activate(rt, cell.id);
+  // Menu clicks: hit-test the same left-aligned flow the renderer drew.
+  for (const btn of packMenu(layout.termCols).buttons) {
+    const y = layout.menuY + btn.row;
+    if (cx >= btn.x && cx < btn.x + btn.w && cy === y) {
+      activate(rt, btn.id);
       return;
     }
   }

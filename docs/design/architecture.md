@@ -10,9 +10,12 @@ to a pointer (CLAUDE.md and CONTRIBUTING.md now own it); the CLAUDE.md/skills/wi
 ## TUI Shell: Top-Oriented Full-Width Stack, Menu-After-Canvas (design baseline §15, layout rev 1.1)
 
 **Layout law:** the UI is a **top-oriented, full-width vertical stack** — sections stack from
-row 0 with **no letterbox gutters and no side padding**, and the menu is a **grid docked
-immediately AFTER the canvas**, not at the terminal bottom. Any slack falls below the menu.
-All UI is mouse-clickable — menu first and foremost — with full keyboard parity.
+row 0 with **no letterbox gutters and no side padding**, separated by divider rules with blank
+padding gaps, and the menu is a **left-aligned button flow docked immediately AFTER the
+canvas** (wrapping rows as the width demands), not at the terminal bottom. Any slack falls
+below the menu. All UI is mouse-clickable — menu first and foremost — with full keyboard
+parity. Minimum terminal **34×24**; everything below degrades gracefully (compact bars,
+single-letter stat labels, a wrapping menu).
 
 > Layout rev 1.1 supersedes the original "centered 4:3 canvas + bottom-docked menu bar". The
 > game canvas is now full-bleed (edge-to-edge); the prior centered-canvas/letterbox model is
@@ -32,23 +35,28 @@ padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `
 2. _divider + gap_
 3. **Game canvas** (full width) — the habitat scene scaled to fill edge-to-edge.
 4. _divider (labeled `VITALS`) + gap_
-5. **Vitals panel** (`panelRows`) — three rows separated by blank spacer rows:
-   - **Stats** — PWR/SPD/WIS/GRT bars.
-   - **Feeding (REAL-TIME)** — the engine's OPEN window vs the pet's baseline appetite: a
-     gauge that climbs as usage lands, `this window N tok · R× baseline ↑/↓`, and lifetime
-     feedings. Fed by `ShellHost.liveStats()` → `RenderContext.live` (see token-impact note).
-   - **Diet** — House-tinted stacked bar by feeding model-gene + the grade-roll odds
+5. **Vitals panel** (`panelRows`, `pages/pet-vitals.ts`) — four rows separated by blank spacer
+   rows; every bar shows its empty track:
+   - **Stats** — PWR/SPD/WIS/GRT bars, normalized to a fixed cap (`STAT_BAR_MAX` ≈ half the
+     240 stage budget) so headroom is visible.
+   - **Charge (REAL-TIME, FOMO)** — the open window's raw tokens fill toward a **200M "full"
+     cap** (`VITALITY_FULL_TOKENS`), the filled portion tinted by the diet mix, plus the live
+     **molt-boost preview** (`+N% molt ↑` = the real capped `vitalityBonus`). Token counts
+     only (`84.2M / 200M`). Fed by `ShellHost.liveStats()` → `RenderContext.live`.
+   - **Diet** — House-share legend (`Aether 72% · Cipher 28%`) + the grade-roll odds
      (transparency invariant).
+   - **Progress** — the overall **completion meter** (bar + `NN.N%`), moved here from the menu.
 6. _divider + gap_
-7. **Menu grid** — placed right after the panel.
+7. **Menu** — a left-aligned button flow placed right after the panel (see Menu Spec).
 
-**Real-time token impact:** the cli host derives `LiveStats` each frame from
+**Real-time token impact + FOMO:** the cli host derives `LiveStats` each frame from
 `engine.pendingEvents()` (events whose 5-h window has not closed) — summing raw tokens and
-cache-weighted `eventEssence` — plus the rolling per-adapter baseline. As usage scans fold
-new events in, the open window's tokens/essence climb live; the engine judges that window's
-essence ÷ baseline to set the next molt's activity modifier (grade-roll odds). So the Feeding
-gauge is exactly "how your tokens are shaping the pet right now." `LiveStats` is optional —
-absent in golden tests, where the row falls back to a static baseline summary.
+cache-weighted `eventEssence` — plus the rolling per-adapter baseline. As usage scans fold new
+events in, the open window's tokens climb live, the Charge gauge fills toward 200M, and the
+molt-boost preview rises (capped) — so there is a real reason to keep pushing tokens before the
+window closes. At the molt the engine applies that same capped `vitalityBonus` on top of the
+baseline-normalized odds (see `evolution-grades-lineage.md` §12). `LiveStats` is optional —
+absent in golden tests, where the Charge row shows an empty/awaiting state.
 
 **Evolution-mystery rule:** the pet screen never shows the evolution stage word, molt count,
 or any "progress toward the next evolution" — evolution is a surprise the player discovers,
@@ -62,21 +70,23 @@ cols/4`), capped to the rows available above the menu, so the backdrop **scales 
 fill the width with no padding and no distortion** (nearest-neighbor, via `drawSprite`'s
 `destW`/`destH`). The **pet and its trinkets scale by the same factor** (`scene.cols /
 HABITAT_COLS`) so they stay proportionate to the backdrop at any width. Minimum terminal
-64×24. Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
+34×24. Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
 (Dex, Archive, Settings) drawn in the same content region.
 
-### Menu Grid Spec
+### Menu Spec
 
-A responsive grid docked immediately after the canvas (never the terminal bottom):
+A **left-aligned flow** of nav buttons docked immediately after the canvas (never the terminal
+bottom). Buttons pack from the left edge and **wrap to the next row** when the next one would
+overflow the width (`render/menu.ts` → `packMenu`), so it adapts from one row on a wide
+terminal down to two-plus rows at 34 cols:
 
 ```
-[♥ Pet] [☰ Dex] [◆ Archive] [⚙ Settings] [⏻ Quit] [ ███░░░░ 67.4% ]   <- 6 columns (wide)
+♥ Pet 1  ☰ Dex 2  ◆ Archive 3  ⚙ Settings 4  ⏻ Quit q      <- left-aligned, wraps when narrow
 ```
 
-The 5 nav buttons plus the live Completion Meter flow across **6 columns on wide terminals
-(≥72 cols), wrapping to 3 columns over 2 rows on narrow ones**. The meter cell shows a mini
-bar + `NN.N%`. Click
-to switch pages; active page highlighted; hover highlight on mouse-move. The `⚙ Settings`
+Each button is its label + hotkey, left-aligned (not centered). The live **Completion Meter is
+NOT in the menu** — it lives in the pet VITALS "Progress" row. Click to switch pages; active
+page highlighted; hover highlight on mouse-move. The `⚙ Settings`
 button opens a board of build/config facts (version, runtime, display, data-dir path, the
 keybinding help) plus the shell's one editable surface: per-adapter **plan**
 (subscription/api) and **cycle policy** (dynamic/static) toggles — ↑↓ to focus a field, ←→
@@ -119,14 +129,18 @@ lookup; zero impact on the 30fps budget.
 ├────────────────────────────────────────────────┤  <- divider
 │            habitat · pet · trinkets              │  <- game canvas  (full-bleed,
 │        (scene scaled to fill full width)         │      scene scaled to width)
-├──── VITALS ────────────────────────────────────┤  <- labeled divider (+ gap)
-│ PWR ███░ 12  SPD ██░ 9  WIS ████ 15  GRT ███ 11  │  <- stats
+│                                                  │  <- gap before VITALS
+├──── VITALS ────────────────────────────────────┤  <- labeled divider
+│                                                  │  <- gap
+│ PWR ███░░ 72  SPD ██░ 48  WIS ████ 96  GRT ██░ 60│  <- stats (empty track shown)
 │                                                  │  <- spacer
-│ Feeding ███░ this window 31.2k · 1.3× baseline ↑ │  <- REAL-TIME token feeding
+│ Charge ████░░░░░░ 84.2M / 200M  +6% molt ↑       │  <- REAL-TIME FOMO charge
 │                                                  │  <- spacer
-│ Diet   ████  Aether 72% · Cipher 28%   …odds     │  <- diet + grade odds
-├────────────────────────────────────────────────┤  <- divider (+ gap)
-│ [♥ Pet 1] [☰ Dex 2] [◆ Archive 3] [⚙ Set 4] … % │  <- menu grid (after canvas)
+│ Diet  Aether 72% · Cipher 28%       last roll: … │  <- diet share + grade odds
+│                                                  │  <- spacer
+│ Progress ██░░░░░░░░ 16.7%                        │  <- completion meter (moved here)
+├────────────────────────────────────────────────┤  <- divider + gap
+│ ♥ Pet 1  ☰ Dex 2  ◆ Archive 3  ⚙ Settings 4  …  │  <- left-aligned menu (wraps)
 └────────────────────────────────────────────────┘
                                                        (slack falls below the menu)
 ```

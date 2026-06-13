@@ -209,8 +209,10 @@ describe('engine — normalization (model-neutral, pillar 2)', () => {
       eng.advanceTo(WEEK_ANCHOR + WEEK_MS - HOUR);
       return eng.state().pet.grade;
     };
-    // Baseline is self-relative, so scaling all volume equally must not change
-    // the grade outcome (same RNG stream, same odds buckets).
+    // Base odds are self-relative (volume-blind), and the separate vitality
+    // bonus is hard-capped and negligible at these token scales (denseWeek×10
+    // is far below VITALITY_FULL_TOKENS), so scaling ordinary volume equally
+    // must not change the grade outcome (same RNG stream, same odds buckets).
     expect(run(1)).toBe(run(10));
   });
 

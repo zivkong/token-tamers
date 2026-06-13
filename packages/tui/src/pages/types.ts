@@ -93,4 +93,6 @@ export interface RenderContext {
   settings?: SettingsState;
   /** Real-time token-consumption readout for the pet page (undefined in tests). */
   live?: LiveStats;
+  /** Overall completion meter percent (0..100); surfaced in the pet VITALS panel. */
+  completionPct: number;
 }
