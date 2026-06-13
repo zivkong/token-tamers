@@ -92,8 +92,8 @@ fusion-locked specials (hidden) + 12 reserved/Ancient slots.
 
 ### Stage 0 — universal egg (design baseline §7)
 
-- **Mote** — every lineage hatches as a Mote; first molt commits it to a House by the window's
-  dominant model-ID gene.
+- **Mote** — every lineage hatches as a Mote ~10 min after the week's first usage (the egg
+  fast-hatch); first molt commits it to a House by the window's dominant model-ID gene.
 
 ### House lines (design baseline §7)
 
@@ -210,8 +210,8 @@ hint; Dex shows "???" silhouettes only. Discovery is community content.
 
 Roll-per-evolution, monotonic.
 
-- Every pet hatches at **C**. At **every molt (evolution checkpoint)**, the pet rolls a
-  **grade-up chance**: C→B→A→S, one step at a time.
+- Every pet hatches at **C** ~10 min into the week. At **every molt (including the
+  fast-hatch molt)** the pet rolls a **grade-up chance**: C→B→A→S, one step at a time.
 - **Monotonic rule:** grade can only ever increase during a lifetime. It NEVER downgrades — not
   from a bad session, not from Dormancy, not at any molt. A failed roll simply keeps the current
   grade.

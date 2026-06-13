@@ -13,11 +13,12 @@ changes in the same PR.
 ## Page map (target)
 
 Home/philosophy · Getting started (`tt init`, per-provider setup, plan types,
-static vs dynamic cycles, adapter troubleshooting) · Game guide (lifecycle, stages,
-Houses, traits table, patterns, mutations, Dormant) · Grades & the Archive (formula
-concepts, overwrite rules, record→DNA economy) · Battles (M2: type wheel, trait
-counters, determinism, replays) · DNA & breeding (M2) · Hash format spec ·
-Content-pack authoring · Adapter authoring · Architecture.
+static vs dynamic cycles, 10-min egg fast-hatch, adapter troubleshooting) · Game
+guide (lifecycle, egg→sprite hatch, stages, Houses, traits table, patterns,
+mutations, Dormant) · Grades & the Archive (formula concepts, overwrite rules,
+record→DNA economy) · Battles (M2: type wheel, trait counters, determinism,
+replays) · DNA & breeding (M2) · Hash format spec · Content-pack authoring ·
+Adapter authoring · Architecture.
 
 ## Tone & rules
 

@@ -2,8 +2,9 @@
 
 ## The grade roll (transparent by design)
 
-Every pet hatches at **C**. At every molt it rolls a grade-up chance, one step at a
-time, and the grade **never goes down** — not from a bad week, not from Dormancy.
+Every pet hatches at **C** ~10 minutes after the week's first usage. At every molt
+it rolls a grade-up chance, one step at a time, and the grade **never goes down** —
+not from a bad week, not from Dormancy.
 
 | Roll  | Base chance | With activity modifier (×0.5 – ×2.0) |
 | ----- | ----------- | ------------------------------------ |

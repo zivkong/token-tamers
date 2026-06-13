@@ -90,8 +90,9 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   fixtures of real (anonymized) logs; engine tests assert determinism properties.
 - Game-state schema changes need a `schemaVersion` bump + migration in the cli store.
 - User data: `~/.tokentamers/config.json` (UserConfig) + `state.json` (GameState).
-- Canonical cycle rule: molts (5-h window close) are the ONLY evolution checkpoints;
-  weekly rebirth never evolves the pet — it archives and re-eggs it.
+- Canonical cycle rule: molts (5-h window close) are the evolution checkpoints (egg→sprite
+  fast-hatches ~10 min after first usage); weekly rebirth never evolves the pet —
+  it archives and re-eggs it.
 - Releases: tag `v*` → GitHub Actions builds binaries + GitHub Release.
 - Git hooks (husky, auto-installed): pre-commit = lint-staged + fast invariant
   gates; commit-msg = Conventional Commits check — `<type>(<scope>)?: <description>`
@@ -106,8 +107,9 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   agnostic (hashes outlive versions) · provider agnostic · social by DNA codes ·
   fully local/zero internet · completionist North Star (100% = Dex + achievements +
   habitats + trinkets; meter weighting 40/40/10/10).
-- **Cycle:** molt = 5-h session-window close (the ONLY evolution/trait/mutation/
-  grade moment); rebirth = week boundary (archive + new egg, never evolves).
+- **Cycle:** molt = 5-h session-window close (the evolution/trait/mutation/grade
+  moment; eggs fast-hatch ~10 min after first usage); rebirth = week boundary
+  (archive + new egg, never evolves).
   Dynamic policy (subscriptions, inferred windows) vs static (API/fixed anchor).
 - **Stages:** egg(Mote) → sprite → rookie → evolved → prime → apex; branch by
   rhythm / trait class / consistency / arc — all data-driven (`evolvesTo`).

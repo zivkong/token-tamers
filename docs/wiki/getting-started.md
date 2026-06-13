@@ -16,6 +16,9 @@ See the [README](../../README.md#install) for per-OS install instructions
 3. **Backfill** — scans existing logs to establish your normalization baseline.
    Your first week hatches a **Calibration Egg**: it plays normally, but grades are
    provisional until a baseline exists.
+4. **Egg hatch** — your egg fast-hatches **~10 minutes** after your first session
+   closes (the only exception to the usual 5-hour molt window). You'll see your
+   sprite in the shell right away — no waiting half a day.
 
 Re-running `tt init` adds/removes adapters without touching pet state.
 

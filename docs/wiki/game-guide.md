@@ -2,7 +2,10 @@
 
 ## The canonical cycle rule
 
-- **Molt = the 5-hour session window close.** The ONLY moment a pet can change stage,
+- **Egg fast-hatch (the one exception).** ~10 minutes after your first usage of the
+  week, the egg hatches into a Sprite — this is the only molt that doesn't wait
+  for a 5-h window close. Every later molt obeys the 5-h cycle.
+- **Molt = the 5-hour session window close.** The moment a pet can change stage,
   roll a trait, mutate, evolve, or attempt a grade-up.
 - **Rebirth = the week boundary.** Ascension, Archive record, inheritance roll, new
   egg. Rebirth never evolves the pet — its final form is whatever it became at the
@@ -10,7 +13,8 @@
 
 ## Stages
 
-Egg (Mote) → Sprite → Rookie → Evolved → Prime → Apex. First molt commits the Mote to a
+Egg (Mote) → Sprite → Rookie → Evolved → Prime → Apex. The egg fast-hatches
+~10 min after your first usage of the week. The first true molt commits the Mote to a
 House by the window's dominant model-ID gene.
 
 ## Houses (identity & cosmetics only — equal stat budgets)

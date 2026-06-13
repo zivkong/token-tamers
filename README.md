@@ -46,9 +46,10 @@ turns your real work patterns into a creature:
 ```text
  you ship code ──▶ tokens & sessions ──▶ 🥚 essence
       ▲                                      │
-      │            every 5-hour window close = MOLT 🐣
-      │            the only moment your pet can evolve,
-      │            roll a trait, mutate, or grade up
+      │            🥚 egg fast-hatches ~10 min after first usage
+      │            🐣 every 5-hour window close = MOLT
+      │            the moment your pet evolves, rolls a trait,
+      │            mutates, or grades up
       │                                      │
       └── new egg ◀── REBIRTH (weekly) ◀─────┘
             lineage carries 30–70% forward, forever
@@ -141,8 +142,9 @@ tt          # the shell — meet your egg 🥚 (q to quit)
 ```
 
 `tt init` is the **only required interaction, ever** (pillar one: the game is your
-job). Your first week hatches a **Calibration Egg** while it learns what "normal" looks
-like for _you_ — then the real lineage begins.
+job). Your egg hatches ~10 minutes after your first session closes. Your first week
+hatches a **Calibration Egg** while it learns what "normal" looks like for _you_ —
+then the real lineage begins.
 
 | Command       | What it does                                          |
 | ------------- | ----------------------------------------------------- |
