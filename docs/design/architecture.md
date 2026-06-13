@@ -20,12 +20,25 @@ All UI is mouse-clickable — menu first and foremost — with full keyboard par
 
 ### Section Stack & Canvas Math
 
-The frame is a column of full-width sections (see `packages/tui/src/render/layout.ts`):
+The frame is a column of full-width sections separated by divider rules (see
+`packages/tui/src/render/layout.ts` → `petSections()` and `render/divider.ts`):
 
-1. **Header band** (top, `headerRows`) — pet name/grade/stage + gen/molt, then identity/traits.
-2. **Game canvas** (full width) — the habitat scene scaled to fill edge-to-edge.
-3. **Status band** (`statusRows`) — last grade-roll odds + the home habitat.
-4. **Menu grid** — placed right after the canvas.
+1. **Header band** (top, `headerRows`) — pet name + grade + home habitat, then identity
+   (pattern + traits). **No evolution information** — see the mystery rule below.
+2. _divider_
+3. **Game canvas** (full width) — the habitat scene scaled to fill edge-to-edge.
+4. _divider — labeled `VITALS`_
+5. **Vitals panel** (`panelRows`) — current pet **stats** (PWR/SPD/WIS/GRT bars),
+   **token-consumption nourishment** (appetite gauge + windows fed + avg tokens/window), and
+   **diet composition** (House-tinted stacked bar by feeding model-gene). The grade-roll odds
+   stay shown here (transparency invariant).
+6. _divider_
+7. **Menu grid** — placed right after the panel.
+
+**Evolution-mystery rule:** the pet screen never shows the evolution stage word, molt count,
+or any "progress toward the next evolution" — evolution is a surprise the player discovers,
+not a progress bar. (Stage/molt still drive the engine and appear in achievements/Archive;
+the calibration cue is kept, as it is about data readiness, not evolution.)
 
 Cells aren't square (~1:2 w:h) and half-blocks give 2 vertical pixels per cell. Habitat
 scenes are fixed 96×48 px art (96 cols × 24 cell-rows → a 4:1 cell aspect). The canvas spans
@@ -84,14 +97,16 @@ lookup; zero impact on the 30fps budget.
 
 ```
 ┌────────────────────────────────────────────────┐ row 0
-│ Oraclet [B]● evolved              gen 1 · molt 3 │  <- header band  (full width)
-│ Marbled pattern  ✦  marathoner · deepdiver       │
-├────────────────────────────────────────────────┤
+│ Oraclet [B]●                        ⌂ Beach Cove │  <- header band (NO stage/molt)
+│ Tempest pattern  ✦  marathoner · deepdiver       │
+├────────────────────────────────────────────────┤  <- divider
 │            habitat · pet · trinkets              │  <- game canvas  (full-bleed,
 │        (scene scaled to fill full width)         │      scene scaled to width)
-├────────────────────────────────────────────────┤
-│ last roll: C→B 38% (succeeded)      ⌂ Beach Cove │  <- status band  (full width)
-├────────────────────────────────────────────────┤
+├──── VITALS ────────────────────────────────────┤  <- labeled divider
+│ PWR ███░ 12  SPD ██░ 9  WIS ████ 15  GRT ███ 11  │  <- stats
+│ Intake ██░░  6 windows fed · ~24.3k/window  …odds│  <- token nourishment
+│ Diet   ████  Aether 72% · Cipher 28%             │  <- diet composition
+├────────────────────────────────────────────────┤  <- divider
 │ [♥ Pet 1] [☰ Dex 2] [◆ Archive 3] [⚙ Set 4] … % │  <- menu grid (after canvas)
 └────────────────────────────────────────────────┘
                                                        (slack falls below the menu)
