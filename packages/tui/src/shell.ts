@@ -13,8 +13,9 @@ import { HitRegistry } from './render/hit';
 import { decode, type InputEvent } from './terminal/input';
 import { computeLayout } from './render/layout';
 import { MENU_ITEMS, renderFrame, type FrameInput } from './render/frame';
-import type { PageId, PageUiState } from './pages/types';
+import type { AdapterInfo, PageId, PageUiState, ShellInfo, SettingsState } from './pages/types';
 import { buildDexRows } from './pages/dex';
+import { cycleSelectedField, settingsFieldCount } from './pages/settings';
 import type { ContentPack, GameEffect, GameState } from '@token-tamers/core';
 
 // Re-exported shell host/options contract (kept identical to src/index.ts).
@@ -29,6 +30,15 @@ export interface ShellOptions {
   host: ShellHost;
   fps?: number;
   color?: ColorMode;
+  /** Static build/config facts surfaced on the Settings page. */
+  info?: ShellInfo;
+  /** Initial adapter configs (a working copy is edited on the Settings page). */
+  adapters?: AdapterInfo[];
+  /**
+   * Persist edited adapter plan/cycle toggles. Called on each change with the
+   * full working copy; the host writes config.json (applied on next launch).
+   */
+  onAdaptersChange?: (adapters: AdapterInfo[]) => void;
   // --- additive testing/IO hooks (all optional; defaults wire real stdio) ---
   /** Injected clock; defaults to Date.now. Single time source for the loop. */
   now?: () => number;
@@ -63,6 +73,12 @@ interface ShellRuntime {
   flash: string | null;
   flashUntilFrame: number;
   quit: boolean;
+  /** Static build/config facts for the Settings page (from options). */
+  info?: ShellInfo;
+  /** Live, editable adapter state for the Settings page. */
+  settings: SettingsState;
+  /** Persist hook for adapter edits (from options). */
+  onAdaptersChange?: (adapters: AdapterInfo[]) => void;
 }
 
 /** Resolved loop dependencies (injected once, passed as a unit). */
@@ -79,7 +95,14 @@ function freshUi(): Record<PageId, PageUiState> {
     pet: { selected: 0, scroll: 0 },
     dex: { selected: 0, scroll: 0 },
     archive: { selected: 0, scroll: 0 },
+    settings: { selected: 0, scroll: 0 },
   };
+}
+
+/** Seed the editable Settings state from a working copy of the adapter configs. */
+function initialSettings(adapters: AdapterInfo[] | undefined): SettingsState {
+  const copy = (adapters ?? []).map((a) => ({ ...a }));
+  return { adapters: copy, selected: copy.length > 0 ? 0 : -1 };
 }
 
 /**
@@ -104,6 +127,9 @@ export async function runShell(options: ShellOptions): Promise<void> {
     flash: null,
     flashUntilFrame: 0,
     quit: false,
+    info: options.info,
+    settings: initialSettings(options.adapters),
+    onAdaptersChange: options.onAdaptersChange,
   };
 
   const inputSource = options.input ?? (manageTerminal ? stdinSource() : nullSource());
@@ -194,6 +220,8 @@ function renderOnce(
     ui: rt.ui[rt.page],
     completionPct: host.completion().overall,
     flash: rt.flash,
+    info: rt.info,
+    settings: rt.settings,
   };
   renderFrame(buf, hits, input);
   buf.flush(writer);
@@ -226,15 +254,32 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
     case '3':
       rt.page = 'archive';
       return;
+    case '4':
+      rt.page = 'settings';
+      return;
     case 'up':
       moveSelection(rt, host, -1);
       return;
     case 'down':
       moveSelection(rt, host, +1);
       return;
+    case 'left':
+      adjustSetting(rt, -1);
+      return;
+    case 'right':
+      adjustSetting(rt, +1);
+      return;
     default:
       return;
   }
+}
+
+/** Cycle the focused Settings field and persist (no-op off the Settings page). */
+function adjustSetting(rt: ShellRuntime, delta: number): void {
+  if (rt.page !== 'settings') return;
+  if (settingsFieldCount(rt.settings) === 0) return;
+  cycleSelectedField(rt.settings, delta);
+  rt.onAdaptersChange?.(rt.settings.adapters);
 }
 
 function handleMouse(
@@ -296,6 +341,12 @@ function activate(rt: ShellRuntime, id: PageId | 'quit'): void {
 }
 
 function moveSelection(rt: ShellRuntime, host: ShellHost, delta: number): void {
+  if (rt.page === 'settings') {
+    const max = settingsFieldCount(rt.settings) - 1;
+    if (max < 0) return;
+    rt.settings.selected = Math.max(0, Math.min(max, rt.settings.selected + delta));
+    return;
+  }
   if (rt.page !== 'dex' && rt.page !== 'archive') return;
   const ui = rt.ui[rt.page];
   const max = rowCount(rt, host) - 1;

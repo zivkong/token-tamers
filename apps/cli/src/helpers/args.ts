@@ -27,7 +27,7 @@ Usage: tt [command] [flags]
 
 Commands:
   init        Set up Token Tamers (detect agents, plan, week anchor).
-  (none)      Open the interactive shell (Pet / Dex / Archive).
+  (none)      Open the interactive shell (Pet / Dex / Archive / Settings).
   watch       Slim live status line (statusline-friendly).
   status      One-shot text status.
   dex         List discovered species.

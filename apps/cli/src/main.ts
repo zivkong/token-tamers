@@ -1,7 +1,7 @@
 /**
  * Entry point for the `tt` binary. Commands (MVP):
  *   tt init      one-time wizard: detect adapters, plan type, week anchor, backfill
- *   tt           the clickable 4:3 shell (Pet / Dex / Archive pages)
+ *   tt           the clickable 4:3 shell (Pet / Dex / Archive / Settings pages)
  *   tt watch     slim live view (statusline-friendly)
  *   tt status    one-shot text status
  *   tt dex       text Dex listing
@@ -14,6 +14,7 @@
  */
 
 import { NotInitializedError } from './services/catchup';
+import { VERSION } from './version';
 import { parseArgs, KNOWN_COMMANDS, HELP, type ParsedArgs } from './helpers/args';
 import {
   runInit,
@@ -27,6 +28,7 @@ import {
 } from './commands';
 
 export { parseArgs, type ParsedArgs } from './helpers/args';
+export { VERSION } from './version';
 
 // node:sqlite (used by the OpenCode adapter) is experimental on Node 22.x and
 // emits one ExperimentalWarning on first import. Node's default printer is a
@@ -38,9 +40,6 @@ process.on('warning', (warning) => {
   if (warning.name === 'ExperimentalWarning' && warning.message.includes('SQLite')) return;
   process.stderr.write(`(node:${process.pid}) ${warning.name}: ${warning.message}\n`);
 });
-
-/** Kept in sync with apps/cli/package.json "version". */
-export const VERSION = '0.1.0';
 
 type Out = (s: string) => void;
 

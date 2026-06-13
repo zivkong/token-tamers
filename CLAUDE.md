@@ -49,7 +49,9 @@ Key contracts live in `packages/core/src/types.ts`.
 
 - `pnpm install` · `pnpm check` (typecheck+lint+format+test+build)
 - `pnpm test` / `pnpm test:watch` · `pnpm lint` · `pnpm typecheck` · `pnpm build`
-- Run dev build: `pnpm --filter token-tamers dev` (or `node apps/cli/dist/tt.js`)
+- Dev from source (no build, `tsx`): `pnpm dev [args]` · hot reload: `pnpm dev:watch`
+  (e.g. `pnpm dev status`; sandbox with `TOKENTAMERS_HOME=/tmp/tt-dev`). Built bundle:
+  `pnpm build` then `node apps/cli/dist/tt.js`
 - Zero-network / spoiler gates: `pnpm check:network` · `pnpm check:spoilers`
 
 ## Code structure (KISS / DRY / SOLID — mechanically enforced)
@@ -120,7 +122,7 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C;
   Archive keeps one strictly-best record per species.
 - **Scope:** M1 (shipped) = Claude Code adapter, Aether+Cipher lines, shell with
-  Pet/Dex/Archive. M2 = Codex/OpenCode adapters, Flux/Forge/hybrids, DNA, battles,
+  Pet/Dex/Archive/Settings. M2 = Codex/OpenCode adapters, Flux/Forge/hybrids, DNA, battles,
   leagues. M3 = seasons, weather events, sprite compiler.
 
 ## AI-native development policy (full text: docs/design/architecture.md)

@@ -1,7 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import { renderFrameToString } from '../src/render/frame';
 import type { FrameInput } from '../src/render/frame';
+import type { ShellInfo, SettingsState } from '../src/pages/types';
 import { makePack, makeState } from './fixtures';
+
+/** A deterministic ShellInfo for the Settings golden frame. */
+const TEST_INFO: ShellInfo = {
+  version: '0.1.0',
+  runtime: 'node v22.11.0',
+  fps: 30,
+  dataDir: '~/.tokentamers',
+};
+
+/** A deterministic editable adapter state, second adapter's plan focused. */
+const TEST_SETTINGS: SettingsState = {
+  adapters: [
+    { provider: 'claude-code', plan: 'subscription', policy: 'dynamic' },
+    { provider: 'codex', plan: 'api', policy: 'static' },
+  ],
+  selected: 2,
+};
 
 function input(over: Partial<FrameInput>): FrameInput {
   return {
@@ -33,6 +51,22 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
+  it('renders the settings page with editable adapters', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({ page: 'settings', info: TEST_INFO, settings: TEST_SETTINGS }),
+    );
+    expect(out).toContain('SETTINGS');
+    expect(out).toContain('v0.1.0');
+    expect(out).toContain('claude-code');
+    expect(out).toContain('codex');
+    expect(out).toContain('subscription');
+    expect(out).toContain('change');
+    expect(out).not.toContain('zero network');
+    expect(out).toMatchSnapshot();
+  });
+
   it('renders a gradeshift flash banner', () => {
     const out = renderFrameToString(
       100,
@@ -51,11 +85,12 @@ describe('golden frames (100x30, no-color)', () => {
 });
 
 describe('menu + completion meter', () => {
-  it('shows all four menu items and the completion percent', () => {
+  it('shows all menu items and the completion percent', () => {
     const out = renderFrameToString(100, 30, input({ completionPct: 12.3 }));
     expect(out).toContain('Pet');
     expect(out).toContain('Dex');
     expect(out).toContain('Archive');
+    expect(out).toContain('Settings');
     expect(out).toContain('Quit');
     expect(out).toContain('12.3%');
   });

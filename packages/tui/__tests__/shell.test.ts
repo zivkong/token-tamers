@@ -108,4 +108,54 @@ describe('runShell loop', () => {
     // The dex header should appear in the captured output.
     expect(sink.toString()).toContain('☰ Dex');
   });
+
+  it('opens the settings page on the 4 hotkey', async () => {
+    const input = manualInput();
+    const host = makeHost();
+    const sink = new StringSink();
+    const done = runShell({
+      host,
+      color: 'none',
+      now: steppedClock(40),
+      out: sink,
+      input,
+      size: () => ({ cols: 100, rows: 30 }),
+      manageTerminal: false,
+      maxFrames: 3,
+    });
+    input.push({ type: 'key', name: '4' }); // settings
+    await done;
+    expect(sink.toString()).toContain('SETTINGS');
+  });
+
+  it('edits an adapter plan with ←→ and persists the change', async () => {
+    const input = manualInput();
+    const host = makeHost();
+    const sink = new StringSink();
+    let savedPlan: string | null = null;
+    let savedPolicy: string | null = null;
+    let saveCount = 0;
+    const done = runShell({
+      host,
+      color: 'none',
+      now: steppedClock(40),
+      out: sink,
+      input,
+      size: () => ({ cols: 100, rows: 30 }),
+      manageTerminal: false,
+      maxFrames: 4,
+      adapters: [{ provider: 'claude-code', plan: 'subscription', policy: 'dynamic' }],
+      onAdaptersChange: (a) => {
+        saveCount += 1;
+        savedPlan = a[0]?.plan ?? null;
+        savedPolicy = a[0]?.policy ?? null;
+      },
+    });
+    input.push({ type: 'key', name: '4' }); // open settings (plan field focused)
+    input.push({ type: 'key', name: 'right' }); // cycle plan subscription -> api
+    await done;
+    expect(saveCount).toBe(1);
+    expect(savedPlan).toBe('api'); // plan cycled
+    expect(savedPolicy).toBe('dynamic'); // cycle policy untouched
+  });
 });

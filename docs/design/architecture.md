@@ -27,11 +27,19 @@ full-screen pages (Dex, Achievements) drawn inside the same frame.
 1–2 rows, outside the canvas:
 
 ```
-[♥ Pet] [☰ Dex] [★ Achv] [⌂ Deco] [🧬 DNA] [⚔ Battle] [⚑ League] [⚙] · 67.4%
+[♥ Pet] [☰ Dex] [★ Achv] [⌂ Deco] [🧬 DNA] [⚔ Battle] [⚑ League] [⚙ Settings] [⏻ Quit] · 67.4%
 ```
 
 Always visible, never overlaps the canvas. Right edge shows the live Completion Meter. Click
-to switch pages; active page highlighted; hover highlight on mouse-move.
+to switch pages; active page highlighted; hover highlight on mouse-move. The `⚙ Settings`
+button opens a board of build/config facts (version, runtime, display, data-dir path, the
+keybinding help) plus the shell's one editable surface: per-adapter **plan**
+(subscription/api) and **cycle policy** (dynamic/static) toggles — ↑↓ to focus a field, ←→
+to change it. Edits persist to `~/.tokentamers/config.json` and apply on the next launch
+(cycle policy reshapes molt windows, which must not shift under a running pet). Adding or
+removing adapters and editing scan paths stays in `tt init`. Everything else is read-only;
+the pet game stays fully idle (pillar one — Settings is optional config, never gameplay).
+M1 ships `⚙ Settings` and `⏻ Quit`; the cosmetic/social buttons land in M2.
 
 ### Mouse Support Details
 
@@ -66,7 +74,7 @@ lookup; zero impact on the 30fps budget.
 │ ║                                        ║   │     (habitat-tinted)
 │ ╚════════════════════════════════════════╝   │
 ├──────────────────────────────────────────────┤
-│ [♥Pet][☰Dex][★Achv][⌂Deco][🧬DNA][⚔Btl][⚙] 67%│  <- clickable menu (outside)
+│ [♥Pet][☰Dex][★Achv][⌂Deco][🧬DNA][⚔Btl][⚙Set][⏻Quit] 67%│  <- clickable menu (outside)
 └──────────────────────────────────────────────┘
 ```
 

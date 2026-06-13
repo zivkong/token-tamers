@@ -18,9 +18,11 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   cell, so a 4:3 visual canvas uses a cols:rows grid of ~8:3 (128×48 → 128×96 px).
   Minimum terminal 64×24; letterbox the remainder with habitat-tinted gutters.
 - Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen
-  pages (Dex, Archive, Achievements) inside the same frame.
-- Bottom menu (1–2 rows): clickable buttons + live Completion Meter on the right;
-  active page highlighted.
+  pages (Dex, Archive, Settings, Achievements) inside the same frame.
+- Bottom menu (1–2 rows): clickable buttons (Pet/Dex/Archive/Settings/Quit) + live
+  Completion Meter on the right; active page highlighted. Adding a page = extend the
+  `PageId` union, push a `MENU_ITEMS` entry (icon + hotkey), add a `freshUi` slot, a
+  `handleKey` case, and a `renderFrame` switch arm — keep all five in lockstep.
 - **Keyboard parity is mandatory:** every click has a hotkey; with no mouse
   reporting the game is 100% playable by keys.
 - **Idle purity:** the entire UI is optional browsing — nothing gameplay-critical
@@ -72,4 +74,26 @@ visual change is intended and reviewed.
 `ansi.ts` (Writer/sinks/SGR), `buffer.ts` (FrameBuffer+diff), `sprite.ts`
 (compositor+palette ladder), `input.ts` (key/mouse decode), `hit.ts`, `layout.ts`,
 `render.ts` (frame+menu), `shell.ts` (runShell loop), `status.ts` (one-liners),
-`pages/` (pet/dex/archive), `lookup.ts` (pack helpers).
+`pages/` (pet/dex/archive/settings), `lookup.ts` (pack helpers).
+
+## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
+
+The Settings page mixes **read-only facts** with the shell's **only editable surface**
+(per-adapter `plan` and `cycle` toggles). Two contracts, two responsibilities:
+
+- **`ShellInfo`** — static facts (version, runtime, fps, dataDir). The page must stay
+  deterministic for golden frames, so it NEVER reads the wall clock, `process.*`, or the
+  filesystem itself. The cli composes these once and passes `runShell({ info })`; the
+  shell threads it into `RenderContext.info` (optional — undefined in tests, where the
+  page falls back to `—`). The app version is the single `apps/cli/src/version.ts` const
+  (kept in sync with package.json), re-exported from `main.ts`. Rule for any future info
+  page: derive process/fs facts in the cli, pass them in — never reach for them in `tui`.
+- **`SettingsState`** — a live working copy of the adapter configs plus `selected` (a flat
+  field index, two fields per adapter). The page renders it and a hit region per field but
+  owns NO mutation. The shell drives editing: ↑↓ move `selected` (`moveSelection`), ←→
+  cycle the focused value (`cycleSelectedField` in `pages/settings.ts`). On each change the
+  shell calls `options.onAdaptersChange(adapters)`; the cli persists to config.json. Edits
+  apply on the **next launch**, never mid-session — cycle policy reshapes molt windows,
+  which must not shift under a running pet. Adding/removing adapters and editing scan paths
+  stays in `tt init` (needs detection + text input). The pet game itself stays fully idle:
+  Settings is optional config, never gameplay.

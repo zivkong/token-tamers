@@ -22,6 +22,18 @@ See the [README](../../README.md#install) for per-OS install instructions
 
 Re-running `tt init` adds/removes adapters without touching pet state.
 
+## Settings & version
+
+Open `tt` and press **4** (or click **⚙ Settings**) to see what's in effect: the version
+number, your runtime, the active color mode and fps, where your data lives
+(`~/.tokentamers/`), and each configured adapter. Adapter **plan** (subscription/api) and
+**cycle policy** (dynamic/static) are editable right there — press **↑↓** to focus a field
+and **←→** to change it. Your choice is saved to `~/.tokentamers/config.json` and applies
+the next time you launch `tt` (changing the cycle policy reshapes molt windows, so it
+never shifts mid-session under your pet). Adding or removing an agent, or changing scan
+paths, is still done by re-running `tt init`. You can also print the version
+non-interactively with `tt --version`.
+
 ## Troubleshooting adapter detection
 
 - `tt adapters` shows each adapter's detected paths, last scan, and warnings.
