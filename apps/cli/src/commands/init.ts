@@ -10,25 +10,30 @@
  */
 
 import readline from 'node:readline';
-import { adapters as allAdapters } from '@token-tamers/adapters';
+import os from 'node:os';
+import { adapters as allAdapters, type ProviderAdapter } from '@token-tamers/adapters';
 import { contentPackV1 } from '@token-tamers/content';
 import {
   createEngine,
   SCHEMA_VERSION,
   type AdapterConfig,
+  type ColorPreference,
   type EngineConfig,
   type GameState,
+  type SettingsFile,
   type UsageEvent,
   type UserConfig,
 } from '@token-tamers/core';
 import { adapterFor } from '../services/catchup';
 import {
+  dataDir,
   loadCheckpoints,
   loadPending,
   loadSettings,
   loadState,
   saveCheckpoints,
   saveConfig,
+  saveSettings,
   savePending,
   saveState,
   settingsRootsFor,
@@ -36,20 +41,28 @@ import {
 } from '../stores';
 import {
   shouldStyle,
+  formatEnableQuestion,
+  formatPlanQuestion,
+  formatColorQuestion,
+  formatPathQuestion,
+  parseColorChoice,
+} from '../helpers/init-style';
+import {
   renderBanner,
+  renderStepHeader,
   renderAdapterFound,
   renderAdapterMissing,
   renderAdapterSkipped,
   renderAdapterEnabled,
+  renderCustomPathSet,
+  renderColorChoice,
   renderNoAdapters,
   renderRerunBackfill,
   renderRerunMessage,
   renderNextStepsLine,
   renderFirstInitSummary,
   renderWarnings,
-  formatEnableQuestion,
-  formatPlanQuestion,
-} from '../helpers/init-style';
+} from '../helpers/init-render';
 
 export interface InitOptions {
   /** Take defaults non-interactively. */
@@ -106,6 +119,8 @@ function yesish(s: string): boolean {
   return v === '' || v === 'y' || v === 'yes';
 }
 
+type Asker = (question: string, fallback: string) => Promise<string>;
+
 /** Run the init wizard. Exported so tests can drive it without spawning a process. */
 export async function runInit(options: InitOptions): Promise<InitResult> {
   const now = options.now ?? Date.now;
@@ -119,50 +134,34 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   const warnings: string[] = [];
   const adapterConfigs: AdapterConfig[] = [];
   const enabled: string[] = [];
+  let settingsDirty = false;
 
   try {
     out(renderBanner(styled));
 
+    out(renderStepHeader(1, 3, 'Detecting agents', styled));
     for (const adapter of allAdapters) {
-      const detection = await adapter.detect(settingsRootsFor(settings, adapter.id));
-      for (const w of detection.warnings) warnings.push(`[${adapter.id}] ${w}`);
-
-      if (!detection.installed) {
-        out(renderAdapterMissing(adapter.displayName, styled));
-        continue;
+      const res = await configureAdapter({ adapter, settings, ask, out, styled, now });
+      warnings.push(...res.warnings);
+      if (res.settingsChanged) settingsDirty = true;
+      if (res.config) {
+        adapterConfigs.push(res.config);
+        enabled.push(adapter.id);
       }
+    }
 
-      out(renderAdapterFound(adapter.displayName, detection.paths, styled));
-      const enableQ = formatEnableQuestion(adapter.displayName, styled);
-      const enable = await ask(enableQ, 'y');
-      if (!yesish(enable)) {
-        out(renderAdapterSkipped(styled));
-        continue;
-      }
-
-      const planDefault = adapter.defaultPlan ?? 'subscription';
-      const planFallback = planDefault === 'api' ? 'a' : 's';
-      const planQ = formatPlanQuestion(adapter.defaultPlan, styled);
-      const planRaw = await ask(planQ, planFallback);
-      const isApi = planRaw.trim().toLowerCase().startsWith('a');
-      const plan = isApi ? 'api' : 'subscription';
-      const cyclePolicy = isApi ? 'static' : 'dynamic';
-      const weekAnchor = nextMondayLocal(now());
-
-      out(renderAdapterEnabled(plan, styled));
-
-      adapterConfigs.push({
-        provider: adapter.id,
-        paths: detection.paths,
-        plan,
-        cyclePolicy,
-        weekAnchor,
-      });
-      enabled.push(adapter.id);
+    out(renderStepHeader(2, 3, 'Display', styled));
+    const nextColor = await askColor(settings.color, styled, ask);
+    out(renderColorChoice(nextColor, nextColor !== settings.color, styled));
+    if (nextColor !== settings.color) {
+      settings.color = nextColor;
+      settingsDirty = true;
     }
   } finally {
     close();
   }
+
+  if (settingsDirty) saveSettings(settings);
 
   if (adapterConfigs.length === 0) {
     out(renderNoAdapters(styled));
@@ -170,10 +169,7 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     return { enabled, warnings, wrote: false };
   }
 
-  const config: UserConfig = {
-    schemaVersion: SCHEMA_VERSION,
-    adapters: adapterConfigs,
-  };
+  const config: UserConfig = { schemaVersion: SCHEMA_VERSION, adapters: adapterConfigs };
   saveConfig(config);
 
   // Re-run semantics (design §4): re-init adds/removes adapters WITHOUT touching
@@ -181,6 +177,7 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   // and seeds the normalization baseline. Adapters newly added by a re-run still
   // get their own history backfilled into a baseline, like a first init would.
   const savedState = loadState();
+  out(renderStepHeader(3, 3, savedState ? 'Updating' : 'Hatching', styled));
   if (savedState !== null) {
     out(renderRerunMessage(styled));
     await backfillNewAdapters({ adapterConfigs, saved: savedState, now, out, styled });
@@ -192,6 +189,102 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   await firstInitBackfill(adapterConfigs, now, out, styled);
   out(renderWarnings(warnings, styled));
   return { enabled, warnings, wrote: true };
+}
+
+interface ConfigureAdapterOptions {
+  adapter: ProviderAdapter;
+  settings: SettingsFile;
+  ask: Asker;
+  out: (s: string) => void;
+  styled: boolean;
+  now: () => number;
+}
+
+interface ConfigureAdapterResult {
+  config: AdapterConfig | null;
+  warnings: string[];
+  /** True if a custom scan root was written into `settings.adapterRoots`. */
+  settingsChanged: boolean;
+}
+
+/**
+ * Detect, optionally recover, and confirm one adapter. When detection fails at
+ * the default (or settings-configured) roots, offer a custom path: a non-empty
+ * answer is saved to settings.json `adapterRoots` and detection retries there.
+ * Returns the AdapterConfig to persist (or null if missing/skipped).
+ */
+async function configureAdapter(o: ConfigureAdapterOptions): Promise<ConfigureAdapterResult> {
+  const { adapter, settings, ask, out, styled, now } = o;
+  const warnings: string[] = [];
+  let settingsChanged = false;
+
+  let detection = await adapter.detect(settingsRootsFor(settings, adapter.id));
+  for (const w of detection.warnings) warnings.push(`[${adapter.id}] ${w}`);
+
+  if (detection.installed) {
+    out(renderAdapterFound(adapter.displayName, detection.paths, adapter.id, styled));
+  } else {
+    out(renderAdapterMissing(adapter.displayName, styled));
+    const custom = (await ask(formatPathQuestion(adapter.displayName, styled), '')).trim();
+    if (custom) {
+      settings.adapterRoots = { ...settings.adapterRoots, [adapter.id]: [custom] };
+      settingsChanged = true;
+      detection = await adapter.detect([custom]);
+      for (const w of detection.warnings) warnings.push(`[${adapter.id}] ${w}`);
+      if (detection.installed) out(renderCustomPathSet(detection.paths, styled));
+    }
+  }
+
+  if (!detection.installed) {
+    out(renderAdapterSkipped(styled));
+    return { config: null, warnings, settingsChanged };
+  }
+
+  const enable = await ask(formatEnableQuestion(adapter.displayName, styled), 'y');
+  if (!yesish(enable)) {
+    out(renderAdapterSkipped(styled));
+    return { config: null, warnings, settingsChanged };
+  }
+
+  const planDefault = adapter.defaultPlan ?? 'subscription';
+  const planRaw = await ask(
+    formatPlanQuestion(adapter.defaultPlan, styled),
+    planDefault === 'api' ? 'a' : 's',
+  );
+  const isApi = planRaw.trim().toLowerCase().startsWith('a');
+  const plan = isApi ? 'api' : 'subscription';
+  out(renderAdapterEnabled(plan, styled));
+  return {
+    config: {
+      provider: adapter.id,
+      paths: detection.paths,
+      plan,
+      cyclePolicy: isApi ? 'static' : 'dynamic',
+      weekAnchor: nextMondayLocal(now()),
+    },
+    warnings,
+    settingsChanged,
+  };
+}
+
+/**
+ * Ask for a color preference. The empty answer (also the `--yes` fallback) keeps
+ * the current value, so non-interactive runs never change settings.json.
+ */
+async function askColor(
+  current: ColorPreference,
+  styled: boolean,
+  ask: Asker,
+): Promise<ColorPreference> {
+  const raw = await ask(formatColorQuestion(current, styled), '');
+  return parseColorChoice(raw, current);
+}
+
+/** Tilde-collapsed data dir for display in the summary. */
+function tildeDataDir(): string {
+  const dir = dataDir();
+  const home = os.homedir();
+  return dir === home || dir.startsWith(`${home}/`) ? `~${dir.slice(home.length)}` : dir;
 }
 
 /**
@@ -274,7 +367,12 @@ async function firstInitBackfill(
   savePending(engine.pendingEvents());
 
   const windowsObserved = totalWindowsObserved(engine);
-  out(renderFirstInitSummary(events.length, windowsObserved, styled));
+  out(
+    renderFirstInitSummary(
+      { eventCount: events.length, windowsObserved, dataDir: tildeDataDir() },
+      styled,
+    ),
+  );
   out(renderNextStepsLine(styled));
 }
 

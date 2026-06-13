@@ -43,6 +43,9 @@ directory itself is always `~/.tokentamers`.
 
 ## Troubleshooting adapter detection
 
+- When `tt init` can't find an agent at its default locations, it offers a one-time prompt
+  to type a custom data path — your answer is saved to `settings.json` `adapterRoots` and
+  detection retries there. (Press Enter to skip.)
 - `tt adapters` shows each adapter's detected paths, last scan, and warnings.
 - Claude Code sessions older than ~30 days are auto-deleted by Claude Code itself —
   that's fine; Token Tamers persists what it has ingested into its own store
