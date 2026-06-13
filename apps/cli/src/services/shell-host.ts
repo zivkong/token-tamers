@@ -10,13 +10,15 @@
 import { contentPackV1 } from '@token-tamers/content';
 import {
   createEngine,
+  eventEssence,
   type Engine,
   type EngineConfig,
   type GameEffect,
   type GameState,
+  type UsageEvent,
   type UserConfig,
 } from '@token-tamers/core';
-import type { ShellHost } from '@token-tamers/tui';
+import type { LiveStats, ShellHost } from '@token-tamers/tui';
 import { scanAll } from './catchup';
 import {
   loadCheckpoints,
@@ -79,6 +81,9 @@ export function createShellHost(config: UserConfig, engine: Engine): ShellHostHa
     completion(): { overall: number } {
       return engine.completion();
     },
+    liveStats(): LiveStats {
+      return computeLiveStats(engine.pendingEvents(), engine.state());
+    },
   };
 
   return {
@@ -89,6 +94,34 @@ export function createShellHost(config: UserConfig, engine: Engine): ShellHostHa
       savePending(engine.pendingEvents());
     },
   };
+}
+
+/**
+ * Derive the real-time token readout from the engine's OPEN window (events whose
+ * 5-h window has not closed yet) plus the rolling baselines. As the player keeps
+ * using their agent, scans fold new events into `pendingEvents`, so the open
+ * window's tokens/essence climb live — and the engine judges that window's
+ * essence against `baselineEssence` to set the next molt's grade-roll odds.
+ */
+function computeLiveStats(pending: readonly UsageEvent[], state: GameState): LiveStats {
+  let windowTokens = 0;
+  let windowEssence = 0;
+  for (const ev of pending) {
+    windowTokens +=
+      ev.inputTokens +
+      ev.outputTokens +
+      (ev.reasoningTokens ?? 0) +
+      ev.cacheReadTokens +
+      ev.cacheWriteTokens;
+    windowEssence += eventEssence(ev);
+  }
+  let baselineEssence = 0;
+  let windowsObserved = 0;
+  for (const b of Object.values(state.baselines)) {
+    baselineEssence += b.meanWindowTokens;
+    windowsObserved = Math.max(windowsObserved, b.windowsObserved);
+  }
+  return { windowTokens, windowEssence, baselineEssence, windowsObserved };
 }
 
 /** Re-create an engine from a saved state for the shell (used after catchUp). */

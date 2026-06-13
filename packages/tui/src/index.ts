@@ -102,6 +102,7 @@ export type {
   ShellInfo,
   AdapterInfo,
   SettingsState,
+  LiveStats,
 } from './pages/types';
 
 // Pack lookups (used by render + cli wiring).

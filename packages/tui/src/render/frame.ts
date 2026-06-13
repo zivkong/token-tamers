@@ -16,7 +16,14 @@ import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
 import { renderArchivePage } from '../pages/archive';
 import { renderSettingsPage } from '../pages/settings';
-import type { PageId, PageUiState, RenderContext, ShellInfo, SettingsState } from '../pages/types';
+import type {
+  LiveStats,
+  PageId,
+  PageUiState,
+  RenderContext,
+  ShellInfo,
+  SettingsState,
+} from '../pages/types';
 import type { ContentPack, GameState } from '@token-tamers/core';
 
 const MENU_FG: Rgb = { r: 196, g: 203, b: 220 };
@@ -87,6 +94,8 @@ export interface FrameInput {
   info?: ShellInfo;
   /** Live, editable adapter state for the Settings page (optional). */
   settings?: SettingsState;
+  /** Real-time token-consumption readout for the pet page (optional). */
+  live?: LiveStats;
 }
 
 /**
@@ -115,6 +124,7 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
     flash: input.flash,
     info: input.info,
     settings: input.settings,
+    live: input.live,
   };
 
   switch (input.page) {

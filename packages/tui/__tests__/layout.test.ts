@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   computeLayout,
   petSections,
+  GAP_ROWS,
   MIN_COLS,
   MIN_ROWS,
   MENU_GRID_BREAKPOINT,
@@ -49,20 +50,20 @@ describe('computeLayout', () => {
     expect(aspect).toBeLessThan(4.6);
   });
 
-  it('stacks header, scene, and vitals panel with dividers between them', () => {
+  it('stacks header, scene, and vitals panel with a divider + gap between them', () => {
     const l = computeLayout(100, 30);
     expect(l.headerRows).toBeGreaterThanOrEqual(1);
     expect(l.panelRows).toBeGreaterThanOrEqual(1);
     const s = petSections(l);
-    // Header at top, then a divider, then the scene, a labeled divider, the
-    // panel, a divider, then the menu — all contiguous, no gaps or overlaps.
+    // Each section is followed by a divider then a blank padding gap, so the
+    // next section starts `1 + GAP_ROWS` below the divider.
     expect(s.header.y).toBe(l.canvasY);
     expect(s.dividerYs[0]).toBe(s.header.y + s.header.rows);
-    expect(s.scene.y).toBe(s.dividerYs[0] + 1);
+    expect(s.scene.y).toBe(s.dividerYs[0] + 1 + GAP_ROWS);
     expect(s.dividerYs[1]).toBe(s.scene.y + s.scene.rows);
-    expect(s.panel.y).toBe(s.dividerYs[1] + 1);
+    expect(s.panel.y).toBe(s.dividerYs[1] + 1 + GAP_ROWS);
     expect(s.dividerYs[2]).toBe(s.panel.y + s.panel.rows);
-    expect(s.dividerYs[2]).toBe(l.menuY - 1);
+    expect(s.dividerYs[2]).toBe(l.menuY - 1 - GAP_ROWS);
     expect(s.scene.rows).toBeGreaterThan(0);
     expect(s.panel.rows).toBe(l.panelRows);
   });

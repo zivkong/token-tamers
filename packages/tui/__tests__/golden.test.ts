@@ -67,6 +67,26 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
+  it('renders the pet page with a real-time feeding readout', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'pet',
+        live: {
+          windowTokens: 31200,
+          windowEssence: 31800,
+          baselineEssence: 24300,
+          windowsObserved: 6,
+        },
+      }),
+    );
+    expect(out).toContain('Feeding');
+    expect(out).toContain('this window');
+    expect(out).toContain('baseline');
+    expect(out).toMatchSnapshot();
+  });
+
   it('renders a gradeshift flash banner', () => {
     const out = renderFrameToString(
       100,

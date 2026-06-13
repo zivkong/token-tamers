@@ -20,23 +20,35 @@ All UI is mouse-clickable — menu first and foremost — with full keyboard par
 
 ### Section Stack & Canvas Math
 
-The frame is a column of full-width sections separated by divider rules (see
-`packages/tui/src/render/layout.ts` → `petSections()` and `render/divider.ts`):
+The frame is a column of full-width sections; **each divider rule is followed by a blank
+padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `GAP_ROWS`, and
+`render/divider.ts`):
 
 1. **Header band** (top, `headerRows`) — pet name + home habitat, then identity (pattern +
    traits). **Grade is shown by the name itself**: the whole name is rendered **bold in the
    grade's accent color** (C grey · B green · A purple · S gold) with a trailing grade
    **symbol** (`○ ● ◆ ★`) — there is no `[B]`-style text. **No evolution information** — see
    the mystery rule below.
-2. _divider_
+2. _divider + gap_
 3. **Game canvas** (full width) — the habitat scene scaled to fill edge-to-edge.
-4. _divider — labeled `VITALS`_
-5. **Vitals panel** (`panelRows`) — current pet **stats** (PWR/SPD/WIS/GRT bars),
-   **token-consumption nourishment** (appetite gauge + windows fed + avg tokens/window), and
-   **diet composition** (House-tinted stacked bar by feeding model-gene). The grade-roll odds
-   stay shown here (transparency invariant).
-6. _divider_
+4. _divider (labeled `VITALS`) + gap_
+5. **Vitals panel** (`panelRows`) — three rows separated by blank spacer rows:
+   - **Stats** — PWR/SPD/WIS/GRT bars.
+   - **Feeding (REAL-TIME)** — the engine's OPEN window vs the pet's baseline appetite: a
+     gauge that climbs as usage lands, `this window N tok · R× baseline ↑/↓`, and lifetime
+     feedings. Fed by `ShellHost.liveStats()` → `RenderContext.live` (see token-impact note).
+   - **Diet** — House-tinted stacked bar by feeding model-gene + the grade-roll odds
+     (transparency invariant).
+6. _divider + gap_
 7. **Menu grid** — placed right after the panel.
+
+**Real-time token impact:** the cli host derives `LiveStats` each frame from
+`engine.pendingEvents()` (events whose 5-h window has not closed) — summing raw tokens and
+cache-weighted `eventEssence` — plus the rolling per-adapter baseline. As usage scans fold
+new events in, the open window's tokens/essence climb live; the engine judges that window's
+essence ÷ baseline to set the next molt's activity modifier (grade-roll odds). So the Feeding
+gauge is exactly "how your tokens are shaping the pet right now." `LiveStats` is optional —
+absent in golden tests, where the row falls back to a static baseline summary.
 
 **Evolution-mystery rule:** the pet screen never shows the evolution stage word, molt count,
 or any "progress toward the next evolution" — evolution is a surprise the player discovers,
@@ -107,11 +119,13 @@ lookup; zero impact on the 30fps budget.
 ├────────────────────────────────────────────────┤  <- divider
 │            habitat · pet · trinkets              │  <- game canvas  (full-bleed,
 │        (scene scaled to fill full width)         │      scene scaled to width)
-├──── VITALS ────────────────────────────────────┤  <- labeled divider
+├──── VITALS ────────────────────────────────────┤  <- labeled divider (+ gap)
 │ PWR ███░ 12  SPD ██░ 9  WIS ████ 15  GRT ███ 11  │  <- stats
-│ Intake ██░░  6 windows fed · ~24.3k/window  …odds│  <- token nourishment
-│ Diet   ████  Aether 72% · Cipher 28%             │  <- diet composition
-├────────────────────────────────────────────────┤  <- divider
+│                                                  │  <- spacer
+│ Feeding ███░ this window 31.2k · 1.3× baseline ↑ │  <- REAL-TIME token feeding
+│                                                  │  <- spacer
+│ Diet   ████  Aether 72% · Cipher 28%   …odds     │  <- diet + grade odds
+├────────────────────────────────────────────────┤  <- divider (+ gap)
 │ [♥ Pet 1] [☰ Dex 2] [◆ Archive 3] [⚙ Set 4] … % │  <- menu grid (after canvas)
 └────────────────────────────────────────────────┘
                                                        (slack falls below the menu)
