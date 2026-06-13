@@ -38,8 +38,8 @@ implementation starts (GitHub + Claude Code)).
 4. Core evolution: Houses via models.json, stage track to Apex, traits, pattern locking, mutations,
    grade roll system (monotonic, odds-transparent)
 5. Rebirth + lineage carry-over; Archive records (best-per-species)
-6. TUI shell: clickable 4:3 canvas, bottom menu, Pet + Dex + Archive pages; 30fps renderer with
-   half-block sprites, grade beauty ladder, Gradeshift
+6. TUI shell: clickable 4:3 canvas, bottom menu, Pet + Dex + Archive + Settings pages; 30fps
+   renderer with half-block sprites, grade beauty ladder, Gradeshift
 7. Starter content pack: Aether + Cipher lines complete (egg→Apex), 3 habitats, 6 trinkets, ~30
    achievements, Completion Meter
 8. `tt watch` + statusline one-liner; `--no-color` fallback

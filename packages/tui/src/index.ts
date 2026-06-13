@@ -87,7 +87,15 @@ export {
 export { renderPetPage } from './pages/pet';
 export { renderDexPage, buildDexRows, clampScroll, type DexRow } from './pages/dex';
 export { renderArchivePage } from './pages/archive';
-export type { PageId, PageUiState, RenderContext } from './pages/types';
+export { renderSettingsPage } from './pages/settings';
+export type {
+  PageId,
+  PageUiState,
+  RenderContext,
+  ShellInfo,
+  AdapterInfo,
+  SettingsState,
+} from './pages/types';
 
 // Pack lookups (used by render + cli wiring).
 export { findSpecies, findSprite, habitatSpriteId, houseTint } from './helpers/lookup';

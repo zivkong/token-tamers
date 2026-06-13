@@ -144,15 +144,15 @@ tt          # the shell — meet your egg 🥚 (q to quit)
 job). Your first week hatches a **Calibration Egg** while it learns what "normal" looks
 like for _you_ — then the real lineage begins.
 
-| Command       | What it does                                          |
-| ------------- | ----------------------------------------------------- |
-| `tt`          | The clickable shell: Pet, Dex, and Archive pages      |
-| `tt watch`    | Slim live view                                        |
-| `tt status`   | One-line status — drop it in your prompt / statusline |
-| `tt dex`      | Collection progress, "???" silhouettes included       |
-| `tt archive`  | Hall of Fame: your best record per species            |
-| `tt complete` | The completion meter, your % toward 100               |
-| `tt adapters` | Adapter health, paths, warnings                       |
+| Command       | What it does                                           |
+| ------------- | ------------------------------------------------------ |
+| `tt`          | The clickable shell: Pet, Dex, Archive, Settings pages |
+| `tt watch`    | Slim live view                                         |
+| `tt status`   | One-line status — drop it in your prompt / statusline  |
+| `tt dex`      | Collection progress, "???" silhouettes included        |
+| `tt archive`  | Hall of Fame: your best record per species             |
+| `tt complete` | The completion meter, your % toward 100                |
+| `tt adapters` | Adapter health, paths, warnings                        |
 
 Everything honors `--no-color` and degrades gracefully: truecolor → 256 → 8 → ASCII.
 

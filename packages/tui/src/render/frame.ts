@@ -11,7 +11,8 @@ import { computeLayout, tooSmallMessage, type Layout } from './layout';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
 import { renderArchivePage } from '../pages/archive';
-import type { PageId, PageUiState, RenderContext } from '../pages/types';
+import { renderSettingsPage } from '../pages/settings';
+import type { PageId, PageUiState, RenderContext, ShellInfo, SettingsState } from '../pages/types';
 import type { ContentPack, GameState } from '@token-tamers/core';
 
 const MENU_FG: Rgb = { r: 196, g: 203, b: 220 };
@@ -34,7 +35,8 @@ export const MENU_ITEMS: MenuItem[] = [
   { id: 'pet', label: '♥ Pet', hotkey: '1' },
   { id: 'dex', label: '☰ Dex', hotkey: '2' },
   { id: 'archive', label: '◆ Archive', hotkey: '3' },
-  { id: 'quit', label: '⚙ Quit', hotkey: 'q' },
+  { id: 'settings', label: '⚙ Settings', hotkey: '4' },
+  { id: 'quit', label: '⏻ Quit', hotkey: 'q' },
 ];
 
 export interface FrameInput {
@@ -46,6 +48,10 @@ export interface FrameInput {
   ui: PageUiState;
   completionPct: number;
   flash: string | null;
+  /** Static build/config facts for the Settings page (optional). */
+  info?: ShellInfo;
+  /** Live, editable adapter state for the Settings page (optional). */
+  settings?: SettingsState;
 }
 
 /**
@@ -72,6 +78,8 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
     frame: input.frame,
     ui: input.ui,
     flash: input.flash,
+    info: input.info,
+    settings: input.settings,
   };
 
   switch (input.page) {
@@ -83,6 +91,9 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
       break;
     case 'archive':
       renderArchivePage(ctx);
+      break;
+    case 'settings':
+      renderSettingsPage(ctx);
       break;
   }
 
