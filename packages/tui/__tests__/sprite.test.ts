@@ -69,6 +69,50 @@ describe('half-block compositor', () => {
   });
 });
 
+describe('animation cadence honors sprite.fps', () => {
+  // A 2-cell-wide, 1-cell-tall sprite whose two frames swap which cell is
+  // opaque, so we can detect exactly which frame is being drawn.
+  const blinker = {
+    id: 'blinker',
+    width: 2,
+    height: 2,
+    fps: 4, // advance once every 30/4 = 7.5 render frames
+    frames: [
+      [
+        [2, 0],
+        [2, 0],
+      ], // frame 0: left cell opaque
+      [
+        [0, 2],
+        [0, 2],
+      ], // frame 1: right cell opaque
+    ],
+  };
+
+  const opaqueLeft = (frame: number): boolean => {
+    const buf = new FrameBuffer(2, 1);
+    buf.clear();
+    drawSprite(buf, blinker, buildPalette('#8a7cff', 'C'), {
+      x: 0,
+      y: 0,
+      frame,
+      mode: 'truecolor',
+    });
+    return buf.get(0, 0).fg !== null;
+  };
+
+  it('holds a frame steady across the whole fps window (no per-render jitter)', () => {
+    // render frames 0..7 all fall in tick 0 -> frame 0 stays drawn the whole time.
+    for (let f = 0; f <= 7; f++) expect(opaqueLeft(f)).toBe(true);
+  });
+
+  it('advances the bank only when the fps tick rolls over', () => {
+    expect(opaqueLeft(0)).toBe(true); // tick 0 -> frame 0
+    expect(opaqueLeft(8)).toBe(false); // tick 1 -> frame 1
+    expect(opaqueLeft(15)).toBe(true); // tick 2 -> frame 0 again
+  });
+});
+
 describe('--no-color degradation', () => {
   it('maps palette index to an ASCII ramp glyph', () => {
     expect(indexToChar(0, 16)).toBe(' ');

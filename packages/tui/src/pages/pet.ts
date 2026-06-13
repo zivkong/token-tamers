@@ -332,7 +332,9 @@ function drawBackdrop(ctx: RenderContext): void {
     drawSprite(buf, habSprite, pal, {
       x: bx,
       y: by,
-      frame: Math.floor(frame / 8),
+      // The compositor now advances the bank at the sprite's own fps, so the
+      // backdrop no longer needs to pre-divide the counter to slow itself.
+      frame,
       mode,
       clip: { x: canvasX, y: canvasY, w: canvasCols, h: canvasRows },
     });

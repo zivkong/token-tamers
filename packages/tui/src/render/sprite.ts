@@ -129,11 +129,23 @@ export interface DrawOptions {
   anim?: AnimBank;
 }
 
+/**
+ * Nominal shell render cadence (frames/sec) the `frame` counter ticks at — kept
+ * in sync with the shell loop (`FRAME_MS = 1000 / 30`). Animation banks advance
+ * at the sprite's own `fps`, NOT once per render frame: dividing the render
+ * counter down to `sprite.fps` is what stops a 2-frame breathe/bob from flipping
+ * ~15×/sec (which reads as the pet jittering "in place").
+ */
+const NOMINAL_FPS = 30;
+
 /** Select the frame grid for the requested bank/frame, honoring fallback. */
 function selectGrid(sprite: SpriteDef, anim: AnimBank, frame: number): number[][] | undefined {
   const bank = anim === 'idle' ? sprite.frames : (sprite[anim] ?? sprite.frames);
   if (bank.length === 0) return sprite.frames[0];
-  return bank[frame % bank.length] ?? bank[0];
+  // Advance the bank at the sprite's declared fps, not the render cadence. Pure
+  // function of (frame, sprite.fps) so golden frames stay deterministic.
+  const tick = Math.floor((frame * sprite.fps) / NOMINAL_FPS);
+  return bank[tick % bank.length] ?? bank[0];
 }
 
 /**
