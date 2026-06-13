@@ -1,7 +1,7 @@
 /**
  * The interactive shell: a 30fps fixed-timestep loop that renders the active
- * page into the canvas, draws a clickable bottom menu, and drives the host's
- * simulation about once per second.
+ * page into the canvas, draws a clickable menu grid below it, and drives the
+ * host's simulation about once per second.
  *
  * All wall-clock reads go through a single injected `now()` so golden tests can
  * fake time. All terminal output goes through one `Writer`.
@@ -12,7 +12,7 @@ import { FrameBuffer } from './render/buffer';
 import { HitRegistry } from './render/hit';
 import { decode, type InputEvent } from './terminal/input';
 import { computeLayout } from './render/layout';
-import { MENU_ITEMS, renderFrame, type FrameInput } from './render/frame';
+import { menuCells, renderFrame, type FrameInput } from './render/frame';
 import type { AdapterInfo, PageId, PageUiState, ShellInfo, SettingsState } from './pages/types';
 import { buildDexRows } from './pages/dex';
 import { cycleSelectedField, settingsFieldCount } from './pages/settings';
@@ -304,21 +304,17 @@ function handleMouse(
   const cx = ev.x - 1;
   const cy = ev.y - 1;
 
-  // Menu row clicks.
-  if (cy === layout.menuRow) {
-    let x = 1;
-    for (const item of MENU_ITEMS) {
-      const text = `[${item.label}]`;
-      if (cx >= x && cx < x + text.length) {
-        activate(rt, item.id);
-        return;
-      }
-      x += text.length + 1;
+  // Menu grid clicks: hit-test the same cells the renderer drew.
+  for (const cell of menuCells(layout)) {
+    if (cell.id === 'meter') continue;
+    if (cx >= cell.x && cx < cell.x + cell.w && cy >= cell.y && cy < cell.y + cell.h) {
+      activate(rt, cell.id);
+      return;
     }
   }
 
-  // List-row clicks (Dex/Archive): map by canvas geometry.
-  if (rt.page === 'dex' || rt.page === 'archive') {
+  // List-row clicks (Dex/Archive): map by canvas geometry, ignoring the menu.
+  if ((rt.page === 'dex' || rt.page === 'archive') && cy < layout.menuY) {
     const listTop = layout.canvasY + 2;
     const idxOnScreen = cy - listTop;
     if (idxOnScreen >= 0) {

@@ -11,18 +11,26 @@ TUI core — NO framework (Ink/OpenTUI rejected by design; OpenTUI is the docume
 fallback if the renderer hits a wall). Zero runtime dependencies; works on any Node
 LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or content.
 
-## Layout law
+## Layout law (rev 1.1 — top-oriented, full-width)
 
-- The game renders in a **4:3 game canvas** with the **menu bar OUTSIDE the canvas,
-  docked at the bottom**. Cells are ~1:2 w:h and half-blocks give 2 vertical px per
-  cell, so a 4:3 visual canvas uses a cols:rows grid of ~8:3 (128×48 → 128×96 px).
-  Minimum terminal 64×24; letterbox the remainder with habitat-tinted gutters.
-- Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen
-  pages (Dex, Archive, Settings, Achievements) inside the same frame.
-- Bottom menu (1–2 rows): clickable buttons (Pet/Dex/Archive/Settings/Quit) + live
-  Completion Meter on the right; active page highlighted. Adding a page = extend the
-  `PageId` union, push a `MENU_ITEMS` entry (icon + hotkey), add a `freshUi` slot, a
-  `handleKey` case, and a `renderFrame` switch arm — keep all five in lockstep.
+- The UI is a **top-oriented, full-width vertical stack** (`render/layout.ts`): sections
+  stack from row 0 with **no letterbox gutters, no side padding**; the menu is a **grid
+  docked immediately AFTER the canvas**, not at the terminal bottom. Slack falls below it.
+  (This supersedes the old centered-4:3-canvas + bottom-bar model.)
+- Section order: **header band** (`headerRows`) → **game canvas** (full width) → **status
+  band** (`statusRows`) → **menu grid**. `sceneRect(layout)` carves the scene (canvas
+  proper) out of the content region between the bands. `canvasX=0`, `canvasCols=termCols`.
+- Cells are ~1:2 w:h; half-blocks give 2 vertical px/cell. Habitat scenes are 96×48 px
+  (96 cols × 24 rows → 4:1 cell aspect). The canvas is full width and `sceneRows ≈ cols/4`
+  (capped to fit), so the backdrop **scales uniformly to fill the width** via `drawSprite`'s
+  `destW`/`destH` (nearest-neighbor) — no padding, no distortion. Minimum terminal 64×24.
+- Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
+  (Dex, Archive, Settings, Achievements) inside the same content region.
+- Menu grid (`menuCells(layout)`, shared by the renderer and the shell's mouse hit-testing):
+  the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) + the live Completion Meter flow across
+  **6 columns (≥72 cols) or 3 columns over 2 rows (narrow)**; active page highlighted.
+  Adding a page = extend the `PageId` union, push a `MENU_ITEMS` entry (icon + hotkey), add a
+  `freshUi` slot, a `handleKey` case, and a `renderFrame` switch arm — keep all five in lockstep.
 - **Keyboard parity is mandatory:** every click has a hotkey; with no mouse
   reporting the game is 100% playable by keys.
 - **Idle purity:** the entire UI is optional browsing — nothing gameplay-critical

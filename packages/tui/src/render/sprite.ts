@@ -127,6 +127,19 @@ export interface DrawOptions {
    * bank is absent on the sprite. 'idle' always uses `frames`.
    */
   anim?: AnimBank;
+  /**
+   * Destination width in cells. When set, the sprite is nearest-neighbor scaled
+   * horizontally to exactly this many columns; omit for native width. Used to
+   * fill a full-width backdrop with no side padding.
+   */
+  destW?: number;
+  /**
+   * Destination height in cells. When set, the sprite is nearest-neighbor scaled
+   * vertically to exactly this many cell-rows (2 px each); omit for native
+   * height. Setting `destW`/`destH` together to the scene's cell aspect scales
+   * the backdrop uniformly (no distortion).
+   */
+  destH?: number;
 }
 
 /**
@@ -165,26 +178,50 @@ export function drawSprite(
   const grid = selectGrid(sprite, opts.anim ?? 'idle', frame);
   if (!grid) return;
 
-  const cellRows = Math.ceil(grid.length / 2);
-  for (let cy = 0; cy < cellRows; cy++) {
-    drawSpriteRow(buf, grid, pal, opts, cy);
+  // Source grid dimensions (rectangular palette grids; max guards ragged rows).
+  let srcCols = 0;
+  for (const row of grid) srcCols = Math.max(srcCols, row.length);
+  const srcPixelH = grid.length;
+
+  // Destination size in cells; defaults reproduce the native 1:1 draw exactly
+  // (floor sampling is the identity when src and dest sizes match).
+  const destW = opts.destW ?? srcCols;
+  const destH = opts.destH ?? Math.ceil(srcPixelH / 2);
+  const rd: RowDraw = {
+    grid,
+    pal,
+    opts,
+    srcCols,
+    srcPixelH,
+    destW,
+    destPixelH: destH * 2,
+  };
+
+  for (let cy = 0; cy < destH; cy++) {
+    drawSpriteRow(buf, rd, cy);
   }
 }
 
-/** Composite one cell-row (two pixel rows) of a sprite grid. */
-function drawSpriteRow(
-  buf: FrameBuffer,
-  grid: number[][],
-  pal: Palette,
-  opts: DrawOptions,
-  cy: number,
-): void {
+/** Everything a single scaled row-draw needs, grouped to honor max-params. */
+interface RowDraw {
+  grid: number[][];
+  pal: Palette;
+  opts: DrawOptions;
+  srcCols: number;
+  srcPixelH: number;
+  destW: number;
+  destPixelH: number;
+}
+
+/** Composite one destination cell-row (two scaled pixel rows) of a sprite. */
+function drawSpriteRow(buf: FrameBuffer, rd: RowDraw, cy: number): void {
+  const { grid, pal, opts } = rd;
   const mode = opts.mode ?? 'truecolor';
-  const topRow = grid[cy * 2];
-  const botRow = grid[cy * 2 + 1];
-  const width = Math.max(topRow?.length ?? 0, botRow?.length ?? 0);
-  for (let cx = 0; cx < width; cx++) {
-    const src = opts.flipX ? width - 1 - cx : cx;
+  const topRow = grid[Math.floor((cy * 2 * rd.srcPixelH) / rd.destPixelH)];
+  const botRow = grid[Math.floor(((cy * 2 + 1) * rd.srcPixelH) / rd.destPixelH)];
+  for (let cx = 0; cx < rd.destW; cx++) {
+    const sampled = rd.destW === rd.srcCols ? cx : Math.floor((cx * rd.srcCols) / rd.destW);
+    const src = opts.flipX ? rd.srcCols - 1 - sampled : sampled;
     const topIdx = topRow?.[src] ?? 0;
     const botIdx = botRow?.[src] ?? 0;
     const top = resolveIndex(pal, topIdx);

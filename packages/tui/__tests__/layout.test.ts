@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { computeLayout, MIN_COLS, MIN_ROWS } from '../src/render/layout';
+import {
+  computeLayout,
+  sceneRect,
+  MIN_COLS,
+  MIN_ROWS,
+  MENU_GRID_BREAKPOINT,
+} from '../src/render/layout';
 
 describe('computeLayout', () => {
   it('flags too-small terminals', () => {
@@ -9,27 +15,51 @@ describe('computeLayout', () => {
     expect(l2.tooSmall).toBe(true);
   });
 
-  it('produces a canvas above a 1-row menu', () => {
-    const l = computeLayout(100, 30);
-    expect(l.tooSmall).toBe(false);
-    expect(l.menuRow).toBe(29);
-    expect(l.canvasY + l.canvasRows).toBeLessThanOrEqual(l.menuRow);
-  });
-
-  it('keeps a roughly 8:3 canvas aspect', () => {
-    const l = computeLayout(160, 50);
-    const aspect = l.canvasCols / l.canvasRows;
-    expect(aspect).toBeGreaterThan(2.4);
-    expect(aspect).toBeLessThan(3.2);
-  });
-
-  it('centers the canvas with letterbox gutters', () => {
+  it('is top-oriented and full-width (no gutters, no padding)', () => {
     const l = computeLayout(120, 40);
-    const rightGutter = l.termCols - (l.canvasX + l.canvasCols);
-    expect(Math.abs(l.canvasX - rightGutter)).toBeLessThanOrEqual(1);
+    expect(l.tooSmall).toBe(false);
+    expect(l.canvasX).toBe(0);
+    expect(l.canvasY).toBe(0);
+    expect(l.canvasCols).toBe(120);
   });
 
-  it('fits within the available area in both dimensions', () => {
+  it('docks the menu immediately after the canvas, not at the bottom', () => {
+    const l = computeLayout(100, 30);
+    expect(l.menuY).toBe(l.canvasY + l.canvasRows);
+    expect(l.menuRow).toBe(l.menuY);
+    // The whole stack fits, with any slack falling BELOW the menu.
+    expect(l.menuY + l.menuRows).toBeLessThanOrEqual(l.termRows);
+  });
+
+  it('lays the menu out as a 6-column grid, wrapping to 3 on narrow widths', () => {
+    const wide = computeLayout(MENU_GRID_BREAKPOINT + 8, 30);
+    expect(wide.menuCols).toBe(6);
+    expect(wide.menuRows).toBe(1);
+
+    const narrow = computeLayout(MENU_GRID_BREAKPOINT - 1, 30);
+    expect(narrow.menuCols).toBe(3);
+    expect(narrow.menuRows).toBe(2);
+  });
+
+  it('keeps the scene near the habitat 4:1 cell aspect', () => {
+    const l = computeLayout(160, 60);
+    const scene = sceneRect(l);
+    const aspect = scene.cols / scene.rows;
+    expect(aspect).toBeGreaterThan(3.4);
+    expect(aspect).toBeLessThan(4.6);
+  });
+
+  it('reserves header and status bands inside the canvas region', () => {
+    const l = computeLayout(100, 30);
+    expect(l.headerRows).toBeGreaterThanOrEqual(1);
+    expect(l.statusRows).toBeGreaterThanOrEqual(1);
+    const scene = sceneRect(l);
+    expect(scene.y).toBe(l.canvasY + l.headerRows);
+    expect(scene.rows).toBe(l.canvasRows - l.headerRows - l.statusRows);
+    expect(scene.rows).toBeGreaterThan(0);
+  });
+
+  it('fits the whole stack within the terminal in both dimensions', () => {
     for (const [c, r] of [
       [64, 24],
       [80, 24],
@@ -37,8 +67,8 @@ describe('computeLayout', () => {
       [100, 30],
     ] as const) {
       const l = computeLayout(c, r);
-      expect(l.canvasCols).toBeLessThanOrEqual(c);
-      expect(l.canvasRows).toBeLessThanOrEqual(r - 1);
+      expect(l.canvasCols).toBe(c);
+      expect(l.menuY + l.menuRows).toBeLessThanOrEqual(r);
     }
   });
 });

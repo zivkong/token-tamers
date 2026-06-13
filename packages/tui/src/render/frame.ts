@@ -1,7 +1,11 @@
 /**
- * Pure frame rendering: draw the active page + bottom menu into a frame buffer
+ * Pure frame rendering: draw the active page + the menu grid into a frame buffer
  * and register hit regions. Shared by the live shell loop and golden tests
  * (which call `renderFrameToString` against a fake stdout).
+ *
+ * Layout is a top-oriented, full-width stack (see render/layout.ts): pages fill
+ * the content region edge-to-edge, and the menu is a 6-column grid (3 on narrow
+ * terminals) docked immediately AFTER the canvas rather than at the very bottom.
  */
 
 import { StringSink, Writer, type ColorMode, type Rgb } from '../terminal/ansi';
@@ -22,7 +26,6 @@ const MENU_ACTIVE_BG: Rgb = { r: 56, g: 50, b: 18 };
 const MENU_BG: Rgb = { r: 22, g: 26, b: 38 };
 const FLASH_FG: Rgb = { r: 255, g: 226, b: 140 };
 const FLASH_BG: Rgb = { r: 56, g: 46, b: 12 };
-const BORDER: Rgb = { r: 58, g: 66, b: 92 };
 const METER_FILL: Rgb = { r: 240, g: 196, b: 80 };
 
 export interface MenuItem {
@@ -38,6 +41,38 @@ export const MENU_ITEMS: MenuItem[] = [
   { id: 'settings', label: '⚙ Settings', hotkey: '4' },
   { id: 'quit', label: '⏻ Quit', hotkey: 'q' },
 ];
+
+/** One laid-out menu grid cell: a nav button or the completion meter. */
+export interface MenuCell {
+  id: PageId | 'quit' | 'meter';
+  label: string;
+  hotkey: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Lay out the menu as a grid placed right after the canvas: the 5 nav buttons
+ * plus the completion meter flow across `layout.menuCols` columns (6 on wide
+ * terminals, 3 on narrow → 2 rows). Shared by the renderer and the shell's
+ * mouse hit-testing so clicks always match what's drawn.
+ */
+export function menuCells(layout: Layout): MenuCell[] {
+  const entries: Array<Pick<MenuCell, 'id' | 'label' | 'hotkey'>> = [
+    ...MENU_ITEMS,
+    { id: 'meter', label: '', hotkey: '' },
+  ];
+  const cols = Math.max(1, layout.menuCols);
+  const cellW = Math.floor(layout.termCols / cols);
+  return entries.map((e, i) => {
+    const col = i % cols;
+    const x = col * cellW;
+    const w = col === cols - 1 ? layout.termCols - x : cellW;
+    return { ...e, x, y: layout.menuY + Math.floor(i / cols), w, h: 1 };
+  });
+}
 
 export interface FrameInput {
   page: PageId;
@@ -97,38 +132,16 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
       break;
   }
 
-  drawCanvasBorder(buf, layout);
-
   // Transient flash toast, centered just above the menu (e.g. gradeshift).
   if (input.flash) {
-    const row = layout.menuRow - 1;
+    const row = Math.max(0, layout.menuY - 1);
     const text = ` ${input.flash} `;
-    const x = Math.max(0, layout.canvasX + Math.floor((layout.canvasCols - text.length) / 2));
+    const x = Math.max(0, Math.floor((layout.termCols - text.length) / 2));
     buf.text(x, row, text, FLASH_FG, FLASH_BG);
   }
 
   drawMenu(buf, hits, layout, input.page, input.completionPct);
   return layout;
-}
-
-/** Thin frame around the 4:3 canvas so the play area reads as a stage. */
-function drawCanvasBorder(buf: FrameBuffer, layout: Layout): void {
-  const x0 = layout.canvasX - 1;
-  const y0 = layout.canvasY - 1;
-  const x1 = layout.canvasX + layout.canvasCols;
-  const y1 = layout.canvasY + layout.canvasRows;
-  for (let x = layout.canvasX; x < x1; x++) {
-    buf.set(x, y0, { ch: '─', fg: BORDER, bg: null });
-    buf.set(x, y1, { ch: '─', fg: BORDER, bg: null });
-  }
-  for (let y = layout.canvasY; y < y1; y++) {
-    buf.set(x0, y, { ch: '│', fg: BORDER, bg: null });
-    buf.set(x1, y, { ch: '│', fg: BORDER, bg: null });
-  }
-  buf.set(x0, y0, { ch: '┌', fg: BORDER, bg: null });
-  buf.set(x1, y0, { ch: '┐', fg: BORDER, bg: null });
-  buf.set(x0, y1, { ch: '└', fg: BORDER, bg: null });
-  buf.set(x1, y1, { ch: '┘', fg: BORDER, bg: null });
 }
 
 function drawMenu(
@@ -138,32 +151,47 @@ function drawMenu(
   page: PageId,
   completionPct: number,
 ): void {
-  const row = layout.menuRow;
-  // Paint the whole menu row.
-  for (let x = 0; x < buf.cols; x++) {
-    buf.set(x, row, { ch: ' ', fg: null, bg: MENU_BG });
+  // Paint the whole menu band.
+  for (let ry = 0; ry < layout.menuRows; ry++) {
+    for (let x = 0; x < buf.cols; x++) {
+      buf.set(x, layout.menuY + ry, { ch: ' ', fg: null, bg: MENU_BG });
+    }
   }
-  let x = 1;
-  for (const item of MENU_ITEMS) {
-    const active = item.id === page;
-    const label = ` ${item.label} `;
-    const hint = `${item.hotkey} `;
-    const block = label.length + hint.length;
-    const bg = active ? MENU_ACTIVE_BG : MENU_BG;
-    buf.text(x, row, label, active ? MENU_ACTIVE : MENU_FG, bg);
-    buf.text(x + label.length, row, hint, active ? MENU_ACTIVE : MENU_DIM, bg);
-    hits.add(`menu:${item.id}`, x, row, block, 1);
-    x += block + 1;
+  for (const cell of menuCells(layout)) {
+    if (cell.id === 'meter') {
+      drawMeterCell(buf, cell, completionPct);
+      continue;
+    }
+    drawMenuButton(buf, cell, cell.id === page);
+    hits.add(`menu:${cell.id}`, cell.x, cell.y, cell.w, cell.h);
   }
-  // Completion meter, right-aligned: mini bar + 'NN.N%'.
+}
+
+/** Draw one centered nav button, highlighting the active page. */
+function drawMenuButton(buf: FrameBuffer, cell: MenuCell, active: boolean): void {
+  const bg = active ? MENU_ACTIVE_BG : MENU_BG;
+  for (let x = 0; x < cell.w; x++) {
+    buf.set(cell.x + x, cell.y, { ch: ' ', fg: null, bg });
+  }
+  const text = `${cell.label} ${cell.hotkey}`;
+  const tx = cell.x + Math.max(1, Math.floor((cell.w - text.length) / 2));
+  buf.text(tx, cell.y, cell.label, active ? MENU_ACTIVE : MENU_FG, bg);
+  buf.text(tx + cell.label.length + 1, cell.y, cell.hotkey, active ? MENU_ACTIVE : MENU_DIM, bg);
+}
+
+/** Draw the completion meter cell: a mini bar (when it fits) + 'NN.N%'. */
+function drawMeterCell(buf: FrameBuffer, cell: MenuCell, completionPct: number): void {
+  for (let x = 0; x < cell.w; x++) {
+    buf.set(cell.x + x, cell.y, { ch: ' ', fg: null, bg: MENU_BG });
+  }
   const pct = `${completionPct.toFixed(1)}%`;
-  const filled = Math.max(0, Math.min(10, Math.round(completionPct / 10)));
-  const barX = buf.cols - pct.length - 13;
-  if (barX > x) {
-    buf.text(barX, row, '█'.repeat(filled), METER_FILL, MENU_BG);
-    buf.text(barX + filled, row, '░'.repeat(10 - filled), MENU_DIM, MENU_BG);
-    buf.text(buf.cols - pct.length - 1, row, pct, MENU_FG, MENU_BG);
+  const barMax = Math.max(0, Math.min(10, cell.w - pct.length - 3));
+  if (barMax > 0) {
+    const filled = Math.max(0, Math.min(barMax, Math.round((completionPct / 100) * barMax)));
+    buf.text(cell.x + 1, cell.y, '█'.repeat(filled), METER_FILL, MENU_BG);
+    buf.text(cell.x + 1 + filled, cell.y, '░'.repeat(barMax - filled), MENU_DIM, MENU_BG);
   }
+  buf.text(cell.x + cell.w - pct.length - 1, cell.y, pct, MENU_FG, MENU_BG);
 }
 
 function drawTooSmall(buf: FrameBuffer, layout: Layout): void {
