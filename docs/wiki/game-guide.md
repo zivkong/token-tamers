@@ -29,15 +29,39 @@ House by the window's dominant model-ID gene.
 
 No House is stronger; no model is better food. "Lean" redistributes an equal budget.
 
-## Food (feed for a better molt)
+## The vitals panel: Food, Diet, Odds
 
-The pet screen's **Food** meter fills with the tokens you've used in the current session
-window, toward a **200M "full"** mark. The more it fills before the window closes, the
-bigger that molt's grade-roll **bonus** — up to a cap, then it stops mattering. So if a
-window is about to close, a last push of real work sweetens the roll. It's a small,
-**capped** bonus on top of your baseline-judged odds; model choice never changes it (see
-[Grades](grades-and-archive.md)). The **Diet** row beside it shows _what_ fed the pet
-(the model-House mix), as colored shares.
+Under the pet sit three readouts. None of them ask anything of you — they just show what
+your real usage is doing to the pet. They read top-to-bottom as **now → life → next**:
+
+```
+ Food   ▕█████▒▒▒▒▒▒▒▏  84.2M / 200M   +6% molt ↑
+ Diet   ▕███████▒▒▒▒▒▏  Aether 72% · Cipher 28%
+ Odds   B → A 18%                       rolls at next molt
+```
+
+The Food and Diet bars are the **same width** at every terminal size, so they line up — but
+they move in opposite ways, which is the whole point.
+
+**Food — how much you're feeding it _now_.** A bar that fills with the tokens used in the
+current 5-hour session window toward a **200M "full"** mark, then **resets** when the window
+closes. The fuller it gets, the bigger that molt's grade-roll **bonus**, shown live as
+`+N% molt`, up to a cap — then it stops mattering. So a last push of real work before a
+window closes sweetens the roll. It's a small, **capped** bonus on top of your
+baseline-judged odds; model choice never changes it (see [Grades](grades-and-archive.md)).
+
+**Diet — what you've fed it over its _life_.** An **always-full** bar split into colored
+House shares (e.g. `Aether 72% · Cipher 28%`), with the percentages beside it. Unlike Food
+it never empties — its proportions simply drift as your model mix accumulates across molts.
+This is **identity only**: it tints the pet and steers which species line it grows into, and
+**never** touches stats, grades, or speed. (Houses, not raw model names — see the table
+above.)
+
+**Odds — your _next_ grade roll.** The single live chance for the **current → next** grade,
+the only jump that can fire at the next molt, e.g. `B → A 18%`. The grade letters are colored
+by the grade ladder (C grey · B green · A violet · S gold). The number moves with your
+activity _and_ your Food bonus, so you always see the exact odds before they roll — no hidden
+math, no pity. Once a pet reaches the top it reads `S ★ apex — no further rolls`.
 
 ## Traits (rolled once per molt, up to ~5 slots)
 

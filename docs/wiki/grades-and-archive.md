@@ -21,10 +21,12 @@ before the window closes, the more it adds to that molt's roll — up to **+15 p
 200M tokens**, then it stops climbing. It's the one place raw volume helps; it can never
 dominate your baseline-judged odds, the A→S 6% cap still holds after it, and model choice
 still never matters. The pet screen's **Food** meter shows it filling live (see the
-[Game Guide](game-guide.md#food-feed-for-a-better-molt)).
+[Game Guide](game-guide.md#the-vitals-panel-food-diet-odds)).
 
-There is no pity guarantee — every roll can fail, and the UI shows you the exact odds at
-every molt.
+There is no pity guarantee — every roll can fail. The pet screen's **Odds** row shows the
+exact live chance for your current → next grade (e.g. `B → A 18%`), grade-colored and updated
+as your activity and Food move it — so the number you see is the number that rolls. At the
+top it reads `S ★ apex — no further rolls`.
 
 A successful roll is a **Gradeshift**: the pet's palette visibly upgrades live.
 

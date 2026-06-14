@@ -170,7 +170,9 @@ requires the seasonal cadence below — added to plan.**
   deterministic calendar seed. Every machine on the same month produces the identical code, fully
   offline — solo players get a rotating slice of fusion content with zero network and zero publishing.
 - **Transparency UI:** show current grade-up odds + modifier at every molt (defuses RNG resentment;
-  respects the no-guarantee rule).
+  respects the no-guarantee rule). _Shipped (post-M1): the pet page's **Odds** row shows the live
+  current→next grade chance (grade-colored, `(capped)` at the A→S ceiling, `S ★ apex` at the top),
+  driven by `core.gradeOdds`. Surfacing the raw modifier breakdown is still backlog._
 - **12-month content calendar** drafted before launch; packs prepared one season ahead.
 
 ---

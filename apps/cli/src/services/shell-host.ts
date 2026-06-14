@@ -11,6 +11,7 @@ import { contentPackV1 } from '@token-tamers/content';
 import {
   createEngine,
   eventEssence,
+  gradeOdds,
   type Engine,
   type EngineConfig,
   type GameEffect,
@@ -121,7 +122,10 @@ function computeLiveStats(pending: readonly UsageEvent[], state: GameState): Liv
     baselineEssence += b.meanWindowTokens;
     windowsObserved = Math.max(windowsObserved, b.windowsObserved);
   }
-  return { windowTokens, windowEssence, baselineEssence, windowsObserved };
+  // Forecast the next grade roll from the SAME open window the readout shows, so
+  // the Odds row tracks Food/activity live (null at the S cap). Core owns the math.
+  const nextGrade = gradeOdds(state, pending);
+  return { windowTokens, windowEssence, baselineEssence, windowsObserved, nextGrade };
 }
 
 /** Re-create an engine from a saved state for the shell (used after catchUp). */

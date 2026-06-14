@@ -19,8 +19,8 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   bottom. Slack falls below it. **Min terminal 34×24** (`MIN_COLS=34`); layouts degrade with
   compact bars/labels and a wrapping menu. (Supersedes the old centered-4:3 + bottom-bar model.)
 - Section order (pet page): **header** (`headerRows`) → _divider+gap_ → **game canvas** →
-  _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=5`: stats / gap /
-  food / gap / diet) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
+  _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=7`: stats / gap /
+  food / gap / diet / gap / odds) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
   `petSections(layout)` carves the bands and the pet's TWO dividers (header, VITALS) with gaps
   around them plus a bottom-padding gap below the panel; the **`── Menu ──` divider is GLOBAL
   chrome** drawn by the frame at `layout.menuDividerY` on every page (so the menu is its own
@@ -36,16 +36,22 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
-- **Vitals panel** (`pages/pet-vitals.ts`) — 3 rows: **Stats** (`icon LABEL: value` readouts
+- **Vitals panel** (`pages/pet-vitals.ts`) — 4 rows: **Stats** (`icon LABEL: value` readouts
   spread space-between across the full width, NO bar — stats are a fixed equal budget, not
-  progress), **Food** (REAL-TIME growth: open-window tokens
-  fill toward `VITALITY_FULL_TOKENS`=200M, tinted by diet, `+N% molt` = real `vitalityBonus`
-  preview; token counts only), **Diet** (House-share legend + grade-roll odds). Every bar renders
-  its remaining track via the shared `components/meter.ts` (`drawMeter`; the food uses
-  `drawSegmentedMeter` for its diet-tinted fill). `LiveStats` flows `ShellHost.liveStats()` →
-  `FrameInput.live` → `RenderContext.live`; the cli derives it from `engine.pendingEvents()` +
-  `eventTokens`/`eventEssence` + baselines. Undefined in golden tests → the Food row shows an
-  empty/awaiting state (frames stay deterministic). Completion is per-page (NOT in this panel).
+  progress), **Food** (REAL-TIME growth: open-window tokens fill toward `VITALITY_FULL_TOKENS`=200M,
+  SINGLE-tinted, `+N% molt` = real `vitalityBonus` preview; token counts only), **Diet** (the
+  ALWAYS-FULL House-share bar — composition not progress — + a House-name legend), **Odds** (the
+  LIVE current→next grade forecast only: `from → to NN%`, grade-tinted via `GRADE_ACCENT`, ` (capped)`
+  at the A→S ceiling, `S ★ apex` at the top). Food and Diet share ONE bar geometry (`barGeom`) so
+  they line up at every width; the Food bar uses `drawMeter` (single tint), the Diet bar
+  `drawSegmentedMeter` at 100% fill (House tints). The Odds number comes from `ctx.live.nextGrade`
+  (the host's `gradeOdds(state, pending)` — core owns the math, shared with the engine's roll), and
+  falls back to the published base odds (`gradeOdds(state)`) when there's no live readout so golden
+  frames stay deterministic. `LiveStats` flows `ShellHost.liveStats()` → `FrameInput.live` →
+  `RenderContext.live`; the cli derives it from the open window (`engine.pendingEvents()`), the
+  `eventTokens`/`eventEssence` helpers, the baselines, and `gradeOdds`. Undefined in golden tests →
+  Food shows an empty/awaiting state and Odds shows the base-odds fallback (frames stay
+  deterministic). Completion is per-page (NOT in this panel).
 - Cells are ~1:2 w:h; half-blocks give 2 vertical px/cell. Habitat scenes are 96×48 px
   (96 cols × 24 rows → 4:1 cell aspect). The canvas is full width and `sceneRows ≈ cols/4`
   (capped to fit), so the backdrop **scales uniformly to fill the width** via `drawSprite`'s

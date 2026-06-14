@@ -343,7 +343,8 @@ Achievements are the formal layer that couples progression to the habitat & trin
 - The endgame is driving this to 100%
 - In the TUI shell the meter is shown **per-page** (not in the menu): the Dex page's header
   bar shows species discovered, the Archive page's shows species recorded — each a mini bar +
-  `NN.N%` top-right. The pet page shows the pet's own vitals (Food/Diet), not a completion bar.
+  `NN.N%` top-right. The pet page shows the pet's own vitals (Food / Diet / Odds), not a
+  completion bar — a four-row panel (Stats, Food, Diet, Odds) below the canvas.
 
   > Weighting formula: backlog item — see `docs/design/` and GitHub issues.
 

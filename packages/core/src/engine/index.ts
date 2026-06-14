@@ -50,8 +50,6 @@ import { hasFullWeekBaseline, seedBaselinesFromHistory, updateBaseline } from '.
 import { consistencyBand, pickBranch, type BranchInputs } from './branches';
 import { computeCompletion } from './completion';
 import {
-  A_TO_S_CAP,
-  GRADE_BASE,
   INHERIT_BASE,
   INHERIT_CAP,
   INHERIT_PER_TIER,
@@ -59,7 +57,7 @@ import {
   MUTATION_CHANCE,
   MUTATION_IDS,
 } from './constants';
-import { round4, vitalityBonus } from './grades';
+import { gradeRollChance, round4 } from './grades';
 import {
   cloneStats,
   matchModelRule,
@@ -71,7 +69,7 @@ import { isStrictlyBetter, scaleStats } from './rebirth';
 import { cloneState, freshPet, initialState } from './state';
 
 export { SCHEMA_VERSION, VITALITY_FULL_TOKENS, VITALITY_MAX_BONUS } from './constants';
-export { vitalityBonus } from './grades';
+export { gradeOdds, vitalityBonus, type GradeOddsPreview } from './grades';
 export { hasFullWeekBaseline, seedBaselinesFromHistory } from './baseline';
 export { matchModelRule } from './houses';
 
@@ -360,13 +358,11 @@ class GameEngine implements Engine {
     }
     const from = pet.grade;
     const to = GRADE_ORDER[idx + 1]!;
-    const base = GRADE_BASE[from] ?? 0;
     const mod = activityModifier(signals, pet.traits);
     // Baseline-normalized odds (volume-blind) PLUS a separate capped vitality
-    // bonus from the session's raw token volume (hybrid growth design).
-    let p = base * mod + vitalityBonus(signals.totalTokens);
-    if (from === 'A') p = Math.min(p, A_TO_S_CAP);
-    p = Math.max(0, Math.min(1, p));
+    // bonus from the session's raw token volume (hybrid growth design). The
+    // formula is shared with the UI forecast (`gradeOdds`) so they never drift.
+    const p = gradeRollChance(from, mod, signals.totalTokens);
 
     const succeeded = chance(rng, p);
     pet.lastGradeRoll = { from, to, chance: round4(p), succeeded };

@@ -239,8 +239,11 @@ flat bonus to the roll, **full at 200M tokens** (`VITALITY_FULL_TOKENS`) and cla
 it gives developers a reason to keep feeding before the window closes, but it is hard-capped so it
 can never dominate the self-normalized base odds, the A→S ceiling still applies after it, and it
 is purely additive (the modifier itself stays volume-blind). The pet screen surfaces it live as a
-"Food" gauge filling toward 200M with a molt-boost preview (see architecture.md). Model choice
-still never enters power (pillar 2 / invariant 3).
+single-tinted **"Food"** gauge filling toward 200M with a `+N% molt` preview, while a separate
+**"Odds"** row shows the resulting live chance for the current → next grade only (grade-colored,
+e.g. `B → A 18%`; `S ★ apex` at the cap) — the transparency the player acts on (see
+architecture.md). The **"Diet"** row between them is the always-full House-share bar (identity,
+not power). Model choice still never enters power (pillar 2 / invariant 3).
 
 **Gradeshift moment:** a successful roll plays a molt cutscene where the pet's palette visibly
 upgrades to the new grade live (see §13) — the mid-week jackpot moment worth screenshotting.

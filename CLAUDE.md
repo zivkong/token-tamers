@@ -128,7 +128,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - **Houses (identity ONLY):** Aether `claude-*` WIS · Cipher `gpt-*`/`o*` PWR ·
   Flux `gemini-*` SPD · Forge open-weight GRT · Wild unmatched ("???" dormant gene).
 - **Grades:** C→B 25%, B→A 10%, A→S 3% base; activity modifier ×0.5–2.0 (model- and
-  volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI. Plus a
+  volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI (the pet
+  page's **Odds** row = the live current→next forecast via `core.gradeOdds`). Plus a
   capped vitality bonus (+0.15 max at 200M session tokens) — the only volume input.
 - **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C;
   Archive keeps one strictly-best record per species.

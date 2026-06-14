@@ -3,7 +3,7 @@
  * the frame buffer, registers hit regions, and reads from a render context.
  */
 
-import type { ContentPack, GameState } from '@token-tamers/core';
+import type { ContentPack, GameState, GradeOddsPreview } from '@token-tamers/core';
 import type { ColorMode } from '../terminal/ansi';
 import type { FrameBuffer } from '../render/buffer';
 import type { HitRegistry } from '../render/hit';
@@ -73,6 +73,12 @@ export interface LiveStats {
   baselineEssence: number;
   /** Closed windows observed across the pet's life (lifetime feedings). */
   windowsObserved: number;
+  /**
+   * Forecast of the next grade roll from the open window (the `Odds` row), or
+   * null at the S cap (no further rolls). Undefined when the host can't compute
+   * it; the panel then falls back to the published base odds from GameState.
+   */
+  nextGrade?: GradeOddsPreview | null;
 }
 
 export interface RenderContext {

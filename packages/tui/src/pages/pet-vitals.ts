@@ -3,26 +3,29 @@
  *
  * Four rows, one per blank-spaced slot, deliberately free of evolution hints:
  *
- *   ◆ PWR: 12 | ↯ SPD: 9 | ✦ WIS: 15 | ▣ GRT: 11
+ *   ◆ PWR: 12      ↯ SPD: 9      ✦ WIS: 15      ▣ GRT: 11
  *
  *   Food   ▕████▒▒▒▒▒▒▒▒▏ 84.2M / 200M  +6% molt ↑
  *
- *   Diet   Aether 72% · Cipher 28%              last roll: C→B 38%
+ *   Diet   ▕██████▒▒▒▒▒▒▏ Aether 72% · Cipher 28%
  *
- *   Progress ▕███░░░░░░░░▏ 16.7%
+ *   Odds   B → A 38%                          rolls at next molt
  *
- * The Food row is the growth meter: the open window's raw tokens fill toward a
- * 200M "full" cap (segmented by the diet's House tints), and the molt-boost
- * preview is the REAL capped vitality bonus the engine will apply at the molt
- * (`vitalityBonus`). Everything else is a pure function of GameState; without a
- * live readout (golden tests) the Food row shows an empty/awaiting state.
+ * The two bars share ONE geometry (`barGeom`) so Food and Diet line up at every
+ * width. They read as opposite motions: the Food bar GROWS toward the 200M
+ * vitality cap and resets each window (single tint, owns the `+N% molt` vitality
+ * preview); the Diet bar is ALWAYS FULL and only its House-tinted proportions
+ * drift as intake accumulates over the pet's life. The Odds row shows just the
+ * live current→next grade forecast (`ctx.live.nextGrade`, computed by the host;
+ * see core's `gradeOdds`), grade-tinted, with the published base odds as the
+ * deterministic fallback when there is no live readout (golden tests).
  */
 
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
-import { VITALITY_FULL_TOKENS, vitalityBonus } from '@token-tamers/core';
-import { drawSegmentedMeter } from '../components';
+import { gradeOdds, VITALITY_FULL_TOKENS, vitalityBonus, type Grade } from '@token-tamers/core';
+import { drawMeter, drawSegmentedMeter } from '../components';
 import { houseTint } from '../helpers/lookup';
-import { renderGradeOddsLine } from '../helpers/status';
+import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
 import type { FrameBuffer } from '../render/buffer';
 import type { RenderContext } from './types';
 import type { SceneRect } from '../render/layout';
@@ -33,8 +36,23 @@ const MUTED: Rgb = { r: 120, g: 126, b: 146 };
 const UNKNOWN_TINT: Rgb = { r: 96, g: 102, b: 122 };
 const FOOD_FILL: Rgb = { r: 240, g: 196, b: 80 };
 
+/** → between grades on the Odds row (by codepoint to survive encoding). */
+const ARROW = String.fromCodePoint(0x2192);
+
 /** Below this width we drop to compact labels. */
 const NARROW = 64;
+
+/** Column where every bar / readout starts (after the 5-cell label gutter). */
+const CONTENT_X = 6;
+
+/** Shared bar geometry so the Food and Diet bars are identical at every width. */
+function barGeom(
+  panel: SceneRect,
+  y: number,
+  narrow: boolean,
+): { x: number; y: number; w: number } {
+  return { x: panel.x + CONTENT_X, y, w: narrow ? 8 : 12 };
+}
 
 /** Per-stat icon (by codepoint to survive encoding): PWR ◆ · SPD ↯ · WIS ✦ · GRT ▣. */
 const STAT_ICON = {
@@ -44,11 +62,12 @@ const STAT_ICON = {
   GRT: String.fromCodePoint(0x25a3),
 } as const;
 
-/** Draw the vitals panel: stats / food / diet (blank-spaced). */
+/** Draw the vitals panel: stats / food / diet / odds (blank-spaced). */
 export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
   drawStatsRow(ctx, panel, panel.y);
   drawFoodRow(ctx, panel, panel.y + 2);
   drawDietRow(ctx, panel, panel.y + 4);
+  drawOddsRow(ctx, panel, panel.y + 6);
 }
 
 // ---------------------------------------------------------------------------
@@ -127,6 +146,24 @@ function drawParts(buf: FrameBuffer, x: number, y: number, parts: readonly TextP
   }
 }
 
+/** Like `drawParts` but stops once `avail` cells are used (clips, never overflows). */
+function drawPartsClipped(
+  buf: FrameBuffer,
+  x: number,
+  y: number,
+  parts: readonly TextPart[],
+  avail: number,
+): void {
+  let used = 0;
+  for (const p of parts) {
+    for (const ch of [...p.text]) {
+      if (used >= avail) return;
+      buf.text(x + used, y, ch, p.color, null);
+      used += 1;
+    }
+  }
+}
+
 /** Place segments space-between across the width: first at x0, last flush-right. */
 function drawJustified(
   buf: FrameBuffer,
@@ -145,24 +182,21 @@ function drawJustified(
 }
 
 /**
- * Row 2 — the growth FOOD meter: open-window tokens toward 200M, segmented by
- * diet, with the real capped molt-boost preview. Token counts only. (`Food` =
- * how much you've eaten this session; the `Diet` row below = what you've eaten.)
+ * Row 2 — the growth FOOD meter: the open window's raw tokens fill toward the
+ * 200M vitality cap, single-tinted (the Diet row owns the House colors), with the
+ * REAL capped molt-boost preview. Token counts only. (`Food` = how much you've
+ * eaten this session; the `Diet` row below = what you've eaten over your life.)
  */
 function drawFoodRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf } = ctx;
   const narrow = panel.cols < NARROW;
   buf.text(panel.x + 1, y, 'Food', LABEL, null);
-  const barX = panel.x + 6;
-  const barW = narrow ? 8 : 12;
+  const bar = barGeom(panel, y, narrow);
 
   const tokens = ctx.live?.windowTokens ?? 0;
-  const frac = tokens / VITALITY_FULL_TOKENS;
-  // The filled portion is tinted by the diet mix; the rest is the standard track.
-  const segments = dietBreakdown(ctx).map((d) => ({ frac: d.frac, color: d.tint }));
-  drawSegmentedMeter(buf, { x: barX, y, w: barW }, frac, segments, FOOD_FILL);
+  drawMeter(buf, bar, tokens / VITALITY_FULL_TOKENS, FOOD_FILL);
 
-  const textX = barX + barW + 2;
+  const textX = bar.x + bar.w + 2;
   const avail = panel.x + panel.cols - 1 - textX;
   if (!ctx.live) {
     buf.text(textX, y, 'no food yet'.slice(0, Math.max(0, avail)), MUTED, null);
@@ -174,30 +208,81 @@ function drawFoodRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   if (avail > 0) buf.text(textX, y, text.slice(0, avail), bonusPct > 0 ? VALUE : MUTED, null);
 }
 
-/** Row 3 — diet composition legend + the grade-roll odds (transparency). */
+/**
+ * Row 3 — the DIET composition bar: an always-full strip tinted by the pet's
+ * lifetime House shares (same geometry as Food), plus a House-name legend. The
+ * bar never empties — only its proportions drift as intake accumulates.
+ */
 function drawDietRow(ctx: RenderContext, panel: SceneRect, y: number): void {
-  const { buf, state } = ctx;
+  const { buf } = ctx;
   const narrow = panel.cols < NARROW;
   buf.text(panel.x + 1, y, 'Diet', LABEL, null);
-  const legendX = panel.x + 6;
-
-  // Grade-roll odds stay visible (transparency invariant), right-aligned.
-  const odds = renderGradeOddsLine(state);
-  const oddsX = panel.x + panel.cols - odds.length - 1;
-  if (!narrow) buf.text(oddsX, y, odds, MUTED, null);
+  const bar = barGeom(panel, y, narrow);
+  const textX = bar.x + bar.w + 2;
+  const avail = panel.x + panel.cols - 1 - textX;
 
   const diet = dietBreakdown(ctx);
-  const rightLimit = narrow ? panel.x + panel.cols - 1 : oddsX - 1;
   if (diet.length === 0) {
-    buf.text(legendX, y, 'no intake yet', MUTED, null);
+    drawMeter(buf, bar, 0, UNKNOWN_TINT);
+    buf.text(textX, y, 'no intake yet'.slice(0, Math.max(0, avail)), MUTED, null);
     return;
   }
+  // Always 100% full: the House shares ARE the bar (composition, not progress).
+  const segments = diet.map((d) => ({ frac: d.frac, color: d.tint }));
+  drawSegmentedMeter(buf, bar, 1, segments, diet[0]!.tint);
+
   const legend = diet
     .slice(0, 3)
-    .map((d) => `${narrow ? d.name.slice(0, 1) : d.name} ${Math.round(d.frac * 100)}%`)
-    .join(narrow ? ' ' : ' · ');
-  const avail = rightLimit - legendX;
-  if (avail > 0) buf.text(legendX, y, legend.slice(0, avail), VALUE, null);
+    .map((d) => `${narrow ? d.name.slice(0, 4) : d.name} ${Math.round(d.frac * 100)}%`)
+    .join(narrow ? ' · ' : ' · ');
+  if (avail > 0) buf.text(textX, y, legend.slice(0, avail), VALUE, null);
+}
+
+/**
+ * Row 4 — the ODDS forecast: just the LIVE current→next grade roll (the only
+ * transition that can actually fire next), grade-tinted. Uses the host's
+ * `ctx.live.nextGrade`; with no live readout it falls back to the published base
+ * odds (`gradeOdds(state)`) so golden frames stay deterministic. At the S cap it
+ * shows the apex state instead of a roll.
+ */
+function drawOddsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
+  const { buf, state } = ctx;
+  const narrow = panel.cols < NARROW;
+  buf.text(panel.x + 1, y, 'Odds', LABEL, null);
+  const x = panel.x + CONTENT_X;
+  const avail = panel.x + panel.cols - 1 - x;
+
+  const odds = ctx.live?.nextGrade !== undefined ? ctx.live.nextGrade : gradeOdds(state);
+  const parts = oddsParts(odds);
+  drawPartsClipped(buf, x, y, parts, avail);
+
+  // A muted "rolls at next molt" hint, right-aligned when there is comfortable room.
+  if (odds && !narrow) {
+    const hint = 'rolls at next molt';
+    const hintX = panel.x + panel.cols - hint.length - 1;
+    if (hintX > x + partsLen(parts) + 1) buf.text(hintX, y, hint, MUTED, null);
+  }
+}
+
+/** Build the Odds row as grade-tinted parts: `from → to NN%`, or the apex state. */
+function oddsParts(
+  odds: { from: Grade; to: Grade; chance: number; capped: boolean } | null,
+): TextPart[] {
+  if (odds === null) {
+    return [
+      { text: 'S', color: GRADE_ACCENT.S },
+      { text: ` ${GRADE_BADGE.S}  apex — no further rolls`, color: MUTED },
+    ];
+  }
+  const pct = Math.round(odds.chance * 100);
+  const parts: TextPart[] = [
+    { text: odds.from, color: GRADE_ACCENT[odds.from] },
+    { text: ` ${ARROW} `, color: MUTED },
+    { text: odds.to, color: GRADE_ACCENT[odds.to] },
+    { text: ` ${pct}%`, color: MUTED },
+  ];
+  if (odds.capped) parts.push({ text: ' (capped)', color: MUTED });
+  return parts;
 }
 
 // ---------------------------------------------------------------------------

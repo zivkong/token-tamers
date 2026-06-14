@@ -13,7 +13,7 @@
  *   │ (gap)                          │                                 │ canvasRows
  *   ├──── VITALS ───────────────────┤  ← labeled divider              │
  *   │ (gap)                          │                                 │
- *   │ stats · food · diet            │  panelRows                      │
+ *   │ stats · food · diet · odds     │  panelRows                      │
  *   ├───────────────────────────────┤  ← divider                      ┘
  *   │ (gap)                          │
  *   │ menu (left-aligned, wraps)     │  menuRows  (menuY)
@@ -34,18 +34,18 @@ export const MIN_ROWS = 24;
 /** Rows the header band occupies at the very top (pet name + identity). */
 export const HEADER_ROWS = 2;
 /**
- * Rows the vitals panel occupies: stats / gap / food / gap / diet — three
- * content rows interleaved with blank spacers. (Completion lives per-page now.)
+ * Rows the vitals panel occupies: stats / gap / food / gap / diet / gap / odds —
+ * four content rows interleaved with blank spacers. (Completion lives per-page.)
  */
-export const PANEL_ROWS = 5;
+export const PANEL_ROWS = 7;
 /** Blank padding rows used around dividers for spacing between sections. */
 export const GAP_ROWS = 1;
 /** Divider rules the PET page draws inside the content region (header, VITALS). */
 const PET_DIVIDERS = 2;
 /**
  * Gap rows inside the content region: after the header divider, before AND after
- * the VITALS divider, and a bottom padding row below the panel (between Diet and
- * the global Menu divider). See `petSections`.
+ * the VITALS divider, and a bottom padding row below the panel (between the Odds
+ * row and the global Menu divider). See `petSections`.
  */
 const PET_GAPS = 4 * GAP_ROWS;
 /** The "── Menu ──" labeled divider row that opens the menu section (all pages). */
@@ -156,7 +156,7 @@ export interface PetSections {
 /**
  * Carve the pet page's section bands out of the content region. A gap follows the
  * header divider, brackets the VITALS divider on both sides, and a bottom-padding
- * gap sits below the panel (between Diet and the global "── Menu ──" divider). The
+ * gap sits below the panel (between Odds and the global "── Menu ──" divider). The
  * scene flexes to fill the remaining height. The menu divider is global chrome
  * (drawn by the frame for every page), so it is NOT in `dividerYs`.
  */

@@ -78,14 +78,60 @@ describe('golden frames (100x30, no-color)', () => {
           windowEssence: 90_000_000,
           baselineEssence: 24_300,
           windowsObserved: 6,
+          // The open window's food has lifted the C→B forecast above its 25% base.
+          nextGrade: { from: 'C', to: 'B', chance: 0.33, capped: false },
         },
       }),
     );
     expect(out).toContain('Food');
     expect(out).toContain('/ 200M');
     expect(out).toContain('molt');
+    // The Odds row shows the live, food-boosted current→next forecast.
+    expect(out).toContain('Odds');
+    expect(out).toContain('33%');
     // Completion is per-page now, so the pet page carries no completion meter.
     expect(out).not.toContain('Progress');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the Odds row apex state at the S-grade cap', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'pet',
+        live: {
+          windowTokens: 0,
+          windowEssence: 0,
+          baselineEssence: 0,
+          windowsObserved: 0,
+          nextGrade: null,
+        },
+      }),
+    );
+    expect(out).toContain('apex');
+    expect(out).not.toContain('rolls at next molt');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the Odds row with the A→S cap marked', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'pet',
+        live: {
+          windowTokens: 200_000_000,
+          windowEssence: 200_000_000,
+          baselineEssence: 24_300,
+          windowsObserved: 12,
+          nextGrade: { from: 'A', to: 'S', chance: 0.06, capped: true },
+        },
+      }),
+    );
+    expect(out).toContain('A');
+    expect(out).toContain('6%');
+    expect(out).toContain('(capped)');
     expect(out).toMatchSnapshot();
   });
 

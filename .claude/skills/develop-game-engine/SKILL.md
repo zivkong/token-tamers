@@ -94,11 +94,18 @@ power.
 - Activity modifier ×0.5–×2.0 from molt-eval signals ONLY (consistency vs own
   baseline, trait synergy, rhythm quality, diversity). Token volume and model id
   NEVER enter the modifier (pillar 2). A→S hard-capped at ~6%.
-- Capped vitality bonus (hybrid growth): `p = base*modifier + vitalityBonus(signals.totalTokens)`
-  where `vitalityBonus` ramps linearly to `VITALITY_MAX_BONUS` (0.15) at
-  `VITALITY_FULL_TOKENS` (200M) then clamps. This additive bonus is the ONLY place
-  absolute volume touches power; the modifier stays volume-blind and the A→S cap
-  applies AFTER it. Deterministic (pure fn of the window's raw tokens).
+- Capped vitality bonus (hybrid growth): the chance is `gradeRollChance(from, modifier,
+totalTokens)` = `base*modifier + vitalityBonus(totalTokens)`, A→S clamped to `A_TO_S_CAP`.
+  `vitalityBonus` ramps linearly to `VITALITY_MAX_BONUS` (0.15) at `VITALITY_FULL_TOKENS`
+  (200M) then clamps. This additive bonus is the ONLY place absolute volume touches power;
+  the modifier stays volume-blind and the A→S cap applies AFTER it. `gradeRollChance` is the
+  single source of truth — `rollGrade` (the real molt) and `gradeOdds` (the UI forecast) both
+  call it, so they can never drift. Deterministic (pure fn of the window's raw tokens).
+- **UI forecast:** `gradeOdds(state, pending?)` returns the next roll `{from, to, chance,
+capped}` (null at the S cap) — with the open window's events it folds in the live modifier +
+  vitality (what the molt will roll); with none it reports the published base odds. The pet
+  page's `Odds` row shows ONLY this current→next forecast (the only roll that can fire next).
+  Pure + deterministic: reads state + event timestamps, never the clock.
 - Grade NEVER downgrades — not from a bad window, not from Dormancy. No pity
   guarantee. Record `lastGradeRoll` (odds shown in UI — transparency defuses RNG
   resentment). A success is a Gradeshift (cutscene moment).

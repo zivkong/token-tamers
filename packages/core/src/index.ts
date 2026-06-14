@@ -26,6 +26,7 @@ export {
 // Engine — re-exported via engine/index barrel.
 export {
   createEngine,
+  gradeOdds,
   hasFullWeekBaseline,
   matchModelRule,
   SCHEMA_VERSION,
@@ -33,4 +34,5 @@ export {
   vitalityBonus,
   VITALITY_FULL_TOKENS,
   VITALITY_MAX_BONUS,
+  type GradeOddsPreview,
 } from './engine';
