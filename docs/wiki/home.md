@@ -10,6 +10,14 @@ AI coding-agent usage. Start here:
 - [Grades & the Archive](grades-and-archive.md) — the C→B→A→S roll system, records, odds
 - [Architecture](architecture.md) — adapters → engine → TUI, determinism, content packs
 
+### Reference
+
+- [Houses](houses.md) — the five Houses, your Diet, and why model choice is identity only
+- [Species](species.md) — the lineage shape, stage track, and Dex discovery (no spoilers)
+- [Achievements](achievements.md) — all 41 milestones and their rewards
+- [Trinkets](trinkets.md) — the six collectible habitat keepsakes
+- [Unlockables](unlockables.md) — habitats, titles, and the completionist meter
+
 ## The pledges
 
 1. **Read-only.** Token Tamers never calls an AI API and never spends your tokens or

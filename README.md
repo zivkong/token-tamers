@@ -224,6 +224,11 @@ screenshot it. That's the point.
 
 Full design reference: [`docs/design/`](docs/design/) · player wiki: [`docs/wiki/`](docs/wiki/)
 
+**Reference pages:** [Houses](docs/wiki/houses.md) · [Species](docs/wiki/species.md) ·
+[Achievements](docs/wiki/achievements.md) · [Trinkets](docs/wiki/trinkets.md) ·
+[Unlockables](docs/wiki/unlockables.md) — the five Houses, the lineage shape (no
+spoilers), all 41 achievements, the six trinkets, and every habitat and title.
+
 ## 🛠️ Contributing
 
 Token Tamers is **AI-native open source**: built entirely with AI coding agents, kept
