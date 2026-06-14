@@ -63,7 +63,9 @@ turns your real work patterns into a creature:
   models House **Forge** (ember). Identity only — no House is stronger.
 - **Grades are a slow, honest thrill** — every molt rolls C→B→A→S with **published
   odds** (25% / 10% / 3%, activity-modified, A→S hard-capped at 6%). Grades never go
-  down. No pity timer. The UI always shows your exact odds.
+  down. No pity timer. The UI always shows your exact odds. A heavy session also adds a
+  small, **capped Food bonus** to that molt's roll (full at 200M tokens) — push more before
+  a window closes; the on-screen **Food** meter shows it fill.
 
 | ○ C · Slate            | ● B · Verdant    | ◆ A · Violet                       | ★ S · Aurum                                       |
 | ---------------------- | ---------------- | ---------------------------------- | ------------------------------------------------- |
