@@ -37,8 +37,9 @@ padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `
 4. _divider (labeled `VITALS`) + gap_
 5. **Vitals panel** (`panelRows`, `pages/pet-vitals.ts`) — three rows separated by blank spacer
    rows; every bar shows its empty track:
-   - **Stats** — `icon LABEL: value` readouts (`◆ PWR: 12 | ↯ SPD: 9 | ✦ WIS: 15 | ▣ GRT: 11`).
-     No bar — stats are a fixed equal budget, not progress; icons drop on very narrow widths.
+   - **Stats** — `icon LABEL: value` readouts (`◆ PWR: 12  …  ▣ GRT: 11`), spread evenly across
+     the full width (space-between: first flush-left, last flush-right). No bar — stats are a
+     fixed equal budget, not progress; icons drop to a compact `PWR 12` form on narrow widths.
    - **Food (REAL-TIME, growth)** — the open window's raw tokens fill toward a **200M "full"
      cap** (`VITALITY_FULL_TOKENS`), the filled portion tinted by the diet mix, plus the live
      **molt-boost preview** (`+N% molt ↑` = the real capped `vitalityBonus`). Token counts
@@ -141,7 +142,7 @@ lookup; zero impact on the 30fps budget.
 │                                                  │  <- gap before VITALS
 ├──── VITALS ────────────────────────────────────┤  <- labeled divider
 │                                                  │  <- gap
-│ ◆ PWR: 72 | ↯ SPD: 9 | ✦ WIS: 108 | ▣ GRT: 51   │  <- stats (icon · label : value, no bar)
+│ ◆ PWR: 72    ↯ SPD: 9    ✦ WIS: 108    ▣ GRT: 51 │  <- stats spread full-width (no bar)
 │                                                  │  <- spacer
 │ Food ████▒▒▒▒▒▒ 84.2M / 200M  +6% molt ↑       │  <- REAL-TIME growth food
 │                                                  │  <- spacer

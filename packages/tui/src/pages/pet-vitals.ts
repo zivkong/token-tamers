@@ -57,8 +57,9 @@ export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
 
 /**
  * Row 1 — the four stats as plain readouts (no bar; stats are a fixed budget,
- * not progress): `◆ PWR: 12 | ↯ SPD: 9 | ✦ WIS: 15 | ▣ GRT: 11`. Drops icons and
- * tightens separators when the width can't fit the full form.
+ * not progress), spread evenly across the FULL width: `◆ PWR: 12` … `▣ GRT: 11`,
+ * first flush-left and last flush-right (space-between). Drops icons to a compact
+ * `PWR 12` form when the full form can't fit, and still spreads it.
  */
 function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf, pack, state } = ctx;
@@ -70,39 +71,76 @@ function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
     ['WIS', s.wis],
     ['GRT', s.grt],
   ];
-  // Full form: `◆ PWR: 12` joined by ` | `. Each label costs icon+space(2) +
-  // "NAME:"(4) + " "+value. If it overflows, fall back to compact name + value.
-  const fullLen =
-    stats.reduce((n, [nm, v]) => n + 2 + nm.length + 1 + 1 + String(v).length, 0) + 3 * 3;
-  if (fullLen <= panel.cols - 2) {
-    drawStatSegments(buf, panel.x + 1, y, stats, accent);
-    return;
+  const x0 = panel.x + 1;
+  const available = panel.cols - 2;
+
+  // Prefer the full `icon NAME: value` form; fall back to compact `NAME value`.
+  let segs = stats.map(([nm, v]) => statParts(nm, v, accent, true));
+  if (totalLen(segs) > available) segs = stats.map(([nm, v]) => statParts(nm, v, accent, false));
+
+  const slack = available - totalLen(segs);
+  if (slack >= 0) {
+    drawJustified(buf, x0, y, segs, slack);
+  } else {
+    // Below even the compact width: left-pack and let it clip.
+    let cx = x0;
+    for (const seg of segs) {
+      drawParts(buf, cx, y, seg);
+      cx += partsLen(seg) + 1;
+    }
   }
-  const compact = stats.map(([nm, v]) => `${nm} ${v}`).join('  ');
-  buf.text(panel.x + 1, y, compact.slice(0, Math.max(0, panel.cols - 2)), VALUE, null);
 }
 
-/** Draw `icon NAME: value` segments joined by ` | `, colored per part. */
-function drawStatSegments(
+interface TextPart {
+  text: string;
+  color: Rgb;
+}
+
+/** Build one stat readout as colored parts (full `◆ NAME: v` or compact `NAME v`). */
+function statParts(name: string, val: number, accent: Rgb, icons: boolean): TextPart[] {
+  if (icons) {
+    return [
+      { text: `${STAT_ICON[name as keyof typeof STAT_ICON]} `, color: accent },
+      { text: `${name}:`, color: LABEL },
+      { text: ` ${val}`, color: VALUE },
+    ];
+  }
+  return [
+    { text: `${name} `, color: LABEL },
+    { text: `${val}`, color: VALUE },
+  ];
+}
+
+function partsLen(parts: readonly TextPart[]): number {
+  return parts.reduce((n, p) => n + [...p.text].length, 0);
+}
+
+function totalLen(segs: ReadonlyArray<readonly TextPart[]>): number {
+  return segs.reduce((n, s) => n + partsLen(s), 0);
+}
+
+function drawParts(buf: FrameBuffer, x: number, y: number, parts: readonly TextPart[]): void {
+  let cx = x;
+  for (const p of parts) {
+    buf.text(cx, y, p.text, p.color, null);
+    cx += [...p.text].length;
+  }
+}
+
+/** Place segments space-between across the width: first at x0, last flush-right. */
+function drawJustified(
   buf: FrameBuffer,
-  startX: number,
+  x0: number,
   y: number,
-  stats: ReadonlyArray<[string, number]>,
-  accent: Rgb,
+  segs: ReadonlyArray<readonly TextPart[]>,
+  slack: number,
 ): void {
-  let x = startX;
-  stats.forEach(([name, val], i) => {
-    if (i > 0) {
-      buf.text(x, y, ' | ', MUTED, null);
-      x += 3;
-    }
-    buf.text(x, y, STAT_ICON[name as keyof typeof STAT_ICON], accent, null);
-    x += 2; // icon + a space
-    buf.text(x, y, `${name}:`, LABEL, null);
-    x += name.length + 1;
-    const v = ` ${val}`;
-    buf.text(x, y, v, VALUE, null);
-    x += v.length;
+  const gaps = segs.length - 1;
+  let prev = 0;
+  segs.forEach((seg, i) => {
+    const x = x0 + prev + (gaps > 0 ? Math.round((slack * i) / gaps) : 0);
+    drawParts(buf, x, y, seg);
+    prev += partsLen(seg);
   });
 }
 
