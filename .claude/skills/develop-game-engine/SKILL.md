@@ -94,7 +94,7 @@ power.
 - Activity modifier ×0.5–×2.0 from molt-eval signals ONLY (consistency vs own
   baseline, trait synergy, rhythm quality, diversity). Token volume and model id
   NEVER enter the modifier (pillar 2). A→S hard-capped at ~6%.
-- Capped vitality bonus (hybrid FOMO): `p = base*modifier + vitalityBonus(signals.totalTokens)`
+- Capped vitality bonus (hybrid growth): `p = base*modifier + vitalityBonus(signals.totalTokens)`
   where `vitalityBonus` ramps linearly to `VITALITY_MAX_BONUS` (0.15) at
   `VITALITY_FULL_TOKENS` (200M) then clamps. This additive bonus is the ONLY place
   absolute volume touches power; the modifier stays volume-blind and the A→S cap

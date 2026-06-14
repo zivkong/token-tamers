@@ -39,7 +39,7 @@ padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `
    rows; every bar shows its empty track:
    - **Stats** — PWR/SPD/WIS/GRT bars, normalized to a fixed cap (`STAT_BAR_MAX` ≈ half the
      240 stage budget) so headroom is visible.
-   - **Charge (REAL-TIME, FOMO)** — the open window's raw tokens fill toward a **200M "full"
+   - **Charge (REAL-TIME, growth)** — the open window's raw tokens fill toward a **200M "full"
      cap** (`VITALITY_FULL_TOKENS`), the filled portion tinted by the diet mix, plus the live
      **molt-boost preview** (`+N% molt ↑` = the real capped `vitalityBonus`). Token counts
      only (`84.2M / 200M`). Fed by `ShellHost.liveStats()` → `RenderContext.live`.
@@ -49,7 +49,7 @@ padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `
 6. _divider + gap_
 7. **Menu** — a left-aligned button flow placed right after the panel (see Menu Spec).
 
-**Real-time token impact + FOMO:** the cli host derives `LiveStats` each frame from
+**Real-time token impact + growth:** the cli host derives `LiveStats` each frame from
 `engine.pendingEvents()` (events whose 5-h window has not closed) — summing raw tokens and
 cache-weighted `eventEssence` — plus the rolling per-adapter baseline. As usage scans fold new
 events in, the open window's tokens climb live, the Charge gauge fills toward 200M, and the
@@ -134,7 +134,7 @@ lookup; zero impact on the 30fps budget.
 │                                                  │  <- gap
 │ PWR ███░░ 72  SPD ██░ 48  WIS ████ 96  GRT ██░ 60│  <- stats (empty track shown)
 │                                                  │  <- spacer
-│ Charge ████░░░░░░ 84.2M / 200M  +6% molt ↑       │  <- REAL-TIME FOMO charge
+│ Charge ████░░░░░░ 84.2M / 200M  +6% molt ↑       │  <- REAL-TIME growth charge
 │                                                  │  <- spacer
 │ Diet  Aether 72% · Cipher 28%       last roll: … │  <- diet share + grade odds
 │                                                  │  <- spacer

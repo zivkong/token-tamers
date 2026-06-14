@@ -11,7 +11,7 @@ export const GRADE_BASE: Partial<Record<Grade, number>> = { C: 0.25, B: 0.1, A: 
 export const A_TO_S_CAP = 0.06;
 
 /**
- * Capped "vitality bonus" (hybrid FOMO design). Grade odds stay baseline-
+ * Capped "vitality bonus" (hybrid growth design). Grade odds stay baseline-
  * normalized (volume-blind), but a SEPARATE bonus rewards a heavy session: the
  * closing window's raw token total ramps a flat additive bonus to the grade
  * roll, full at 200M tokens. This is the only place absolute volume touches

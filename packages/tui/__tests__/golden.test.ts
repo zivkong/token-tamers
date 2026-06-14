@@ -67,7 +67,7 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('renders the pet page with a real-time charge readout (FOMO)', () => {
+  it('renders the pet page with a real-time charge readout (growth)', () => {
     const out = renderFrameToString(
       100,
       30,

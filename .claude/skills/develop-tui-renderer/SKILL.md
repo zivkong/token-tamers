@@ -31,7 +31,7 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
 - **Vitals panel** (`pages/pet-vitals.ts`) — 4 rows: **Stats** (bars normalized to
-  `STAT_BAR_MAX`≈120 so the empty track shows), **Charge** (REAL-TIME FOMO: open-window tokens
+  `STAT_BAR_MAX`≈120 so the empty track shows), **Charge** (REAL-TIME growth: open-window tokens
   fill toward `VITALITY_FULL_TOKENS`=200M, tinted by diet, `+N% molt` = real `vitalityBonus`
   preview; token counts only), **Diet** (House-share legend + grade-roll odds), **Progress**
   (the completion meter, moved out of the menu). Every bar renders its empty track.

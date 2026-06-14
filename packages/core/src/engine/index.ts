@@ -363,7 +363,7 @@ class GameEngine implements Engine {
     const base = GRADE_BASE[from] ?? 0;
     const mod = activityModifier(signals, pet.traits);
     // Baseline-normalized odds (volume-blind) PLUS a separate capped vitality
-    // bonus from the session's raw token volume (hybrid FOMO design).
+    // bonus from the session's raw token volume (hybrid growth design).
     let p = base * mod + vitalityBonus(signals.totalTokens);
     if (from === 'A') p = Math.min(p, A_TO_S_CAP);
     p = Math.max(0, Math.min(1, p));
