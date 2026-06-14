@@ -20,9 +20,11 @@ describe('computeLayout', () => {
     expect(l.canvasCols).toBe(120);
   });
 
-  it('docks the menu immediately after the canvas, not at the bottom', () => {
+  it('docks the menu (its own labeled section) right after the canvas', () => {
     const l = computeLayout(100, 30);
-    expect(l.menuY).toBe(l.canvasY + l.canvasRows);
+    // A "── Menu ──" divider opens the menu section just after the content.
+    expect(l.menuDividerY).toBe(l.canvasY + l.canvasRows);
+    expect(l.menuY).toBe(l.menuDividerY + 1);
     expect(l.menuRow).toBe(l.menuY);
     // The whole stack fits, with any slack falling BELOW the menu.
     expect(l.menuY + l.menuRows).toBeLessThanOrEqual(l.termRows);
@@ -49,7 +51,7 @@ describe('computeLayout', () => {
     expect(aspect).toBeLessThan(4.6);
   });
 
-  it('stacks header, scene, vitals with a divider + gaps around each section', () => {
+  it('stacks header, scene, vitals with gaps, and a bottom-padded panel', () => {
     const l = computeLayout(100, 30);
     expect(l.headerRows).toBeGreaterThanOrEqual(1);
     expect(l.panelRows).toBeGreaterThanOrEqual(1);
@@ -58,12 +60,11 @@ describe('computeLayout', () => {
     expect(s.dividerYs[0]).toBe(s.header.y + s.header.rows);
     // gap AFTER the header divider.
     expect(s.scene.y).toBe(s.dividerYs[0] + 1 + GAP_ROWS);
-    // gap BEFORE the VITALS divider (request #1) AND after it.
+    // gap BEFORE the VITALS divider AND after it.
     expect(s.dividerYs[1]).toBe(s.scene.y + s.scene.rows + GAP_ROWS);
     expect(s.panel.y).toBe(s.dividerYs[1] + 1 + GAP_ROWS);
-    // gap after the final divider, before the menu.
-    expect(s.dividerYs[2]).toBe(s.panel.y + s.panel.rows);
-    expect(l.menuY).toBe(s.dividerYs[2] + 1 + GAP_ROWS);
+    // Bottom padding: a blank gap sits between the panel and the Menu divider.
+    expect(s.panel.y + s.panel.rows + GAP_ROWS).toBe(l.menuDividerY);
     expect(s.scene.rows).toBeGreaterThan(0);
     expect(s.panel.rows).toBe(l.panelRows);
   });

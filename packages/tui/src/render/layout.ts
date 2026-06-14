@@ -38,15 +38,18 @@ export const HEADER_ROWS = 2;
  * content rows interleaved with blank spacers. (Completion lives per-page now.)
  */
 export const PANEL_ROWS = 5;
-/** Divider rules drawn between the stacked sections (header|scene|panel|menu). */
-export const DIVIDER_ROWS = 3;
 /** Blank padding rows used around dividers for spacing between sections. */
 export const GAP_ROWS = 1;
+/** Divider rules the PET page draws inside the content region (header, VITALS). */
+const PET_DIVIDERS = 2;
 /**
- * Total gap rows in the stack: one after each divider (3) plus one BEFORE the
- * VITALS divider (so the canvas and the panel both breathe). See `petSections`.
+ * Gap rows inside the content region: after the header divider, before AND after
+ * the VITALS divider, and a bottom padding row below the panel (between Diet and
+ * the global Menu divider). See `petSections`.
  */
-const TOTAL_GAP_ROWS = 4 * GAP_ROWS;
+const PET_GAPS = 4 * GAP_ROWS;
+/** The "── Menu ──" labeled divider row that opens the menu section (all pages). */
+export const MENU_DIVIDER_ROWS = 1;
 /** Smallest scene height we will draw before the terminal counts as too small. */
 export const MIN_SCENE_ROWS = 4;
 
@@ -63,11 +66,13 @@ export interface Layout {
   headerRows: number;
   /** Rows the pet vitals panel occupies near the bottom of the canvas region. */
   panelRows: number;
-  /** First row of the menu band (immediately after the canvas region). */
+  /** Row of the "── Menu ──" labeled divider that opens the menu section. */
+  menuDividerY: number;
+  /** First row of the menu buttons (just below the menu divider). */
   menuY: number;
   /** Menu band height (number of wrapped rows for the left-aligned flow). */
   menuRows: number;
-  /** Back-compat alias for the first menu row. */
+  /** Back-compat alias for the first menu-button row. */
   menuRow: number;
   /** True if the terminal is below the minimum size. */
   tooSmall: boolean;
@@ -89,6 +94,7 @@ export function computeLayout(cols: number, rows: number): Layout {
       canvasRows: 0,
       headerRows: 0,
       panelRows: 0,
+      menuDividerY: menuRow,
       menuY: menuRow,
       menuRows: 1,
       menuRow,
@@ -101,9 +107,10 @@ export function computeLayout(cols: number, rows: number): Layout {
 
   // Scene height tracks the habitat's native 4:1 cell aspect (96 cols : 24
   // rows) so a full-width backdrop scales uniformly, capped to what fits above
-  // the menu after the header band, the vitals panel, the dividers and gaps.
-  const fixed = HEADER_ROWS + PANEL_ROWS + DIVIDER_ROWS + TOTAL_GAP_ROWS;
-  const availForScene = rows - fixed - menuRows;
+  // the menu after the header band, the vitals panel, the dividers and gaps —
+  // plus the "── Menu ──" divider and the menu buttons themselves.
+  const fixed = HEADER_ROWS + PANEL_ROWS + PET_DIVIDERS + PET_GAPS;
+  const availForScene = rows - fixed - MENU_DIVIDER_ROWS - menuRows;
   const sceneTarget = Math.round(cols / 4);
   const sceneRows = Math.max(MIN_SCENE_ROWS, Math.min(sceneTarget, availForScene));
 
@@ -118,9 +125,10 @@ export function computeLayout(cols: number, rows: number): Layout {
     canvasRows,
     headerRows: HEADER_ROWS,
     panelRows: PANEL_ROWS,
-    menuY: canvasRows,
+    menuDividerY: canvasRows,
+    menuY: canvasRows + MENU_DIVIDER_ROWS,
     menuRows,
-    menuRow: canvasRows,
+    menuRow: canvasRows + MENU_DIVIDER_ROWS,
     tooSmall: false,
   };
 }
@@ -138,34 +146,35 @@ export interface PetSections {
   header: SceneRect;
   scene: SceneRect;
   panel: SceneRect;
-  /** Divider rows: [after header, labeled (between scene & panel), before menu]. */
-  dividerYs: [number, number, number];
+  /** Divider rows the pet page draws: [after header, labeled VITALS]. */
+  dividerYs: [number, number];
 }
 
 /**
- * Carve the pet page's section bands out of the content region. Dividers are
- * separated from their neighbours by blank gaps: a gap follows every divider,
- * and an extra gap precedes the VITALS divider so the scene and panel both
- * breathe (request #1). The scene flexes to fill the remaining height.
+ * Carve the pet page's section bands out of the content region. A gap follows the
+ * header divider, brackets the VITALS divider on both sides, and a bottom-padding
+ * gap sits below the panel (between Diet and the global "── Menu ──" divider). The
+ * scene flexes to fill the remaining height. The menu divider is global chrome
+ * (drawn by the frame for every page), so it is NOT in `dividerYs`.
  */
 export function petSections(l: Layout): PetSections {
   const x = l.canvasX;
   const cols = l.canvasCols;
   const g = GAP_ROWS;
-  const sceneRows = l.canvasRows - (l.headerRows + l.panelRows + DIVIDER_ROWS + TOTAL_GAP_ROWS);
+  const sceneRows = l.canvasRows - (l.headerRows + l.panelRows + PET_DIVIDERS + PET_GAPS);
 
   const headerY = l.canvasY;
   const dHeader = headerY + l.headerRows;
   const sceneY = dHeader + 1 + g;
   const dScene = sceneY + sceneRows + g; // extra gap BEFORE the VITALS divider
   const panelY = dScene + 1 + g;
-  const dPanel = panelY + l.panelRows;
+  // panelY + panelRows + g (bottom padding) == canvasRows == menuDividerY.
 
   return {
     header: { x, y: headerY, cols, rows: l.headerRows },
     scene: { x, y: sceneY, cols, rows: sceneRows },
     panel: { x, y: panelY, cols, rows: l.panelRows },
-    dividerYs: [dHeader, dScene, dPanel],
+    dividerYs: [dHeader, dScene],
   };
 }
 

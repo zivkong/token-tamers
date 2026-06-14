@@ -14,6 +14,7 @@ import { FrameBuffer } from './buffer';
 import { HitRegistry } from './hit';
 import { computeLayout, tooSmallMessage, type Layout } from './layout';
 import { buttonText, packMenu, type MenuButton } from './menu';
+import { drawDivider } from './divider';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
 import { renderArchivePage } from '../pages/archive';
@@ -99,9 +100,9 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
       break;
   }
 
-  // Transient flash toast, centered just above the menu (e.g. gradeshift).
+  // Transient flash toast, centered just above the menu divider (e.g. gradeshift).
   if (input.flash) {
-    const row = Math.max(0, layout.menuY - 1);
+    const row = Math.max(0, layout.menuDividerY - 1);
     const text = ` ${input.flash} `;
     const x = Math.max(0, Math.floor((layout.termCols - text.length) / 2));
     buf.text(x, row, text, FLASH_FG, FLASH_BG);
@@ -112,7 +113,9 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
 }
 
 function drawMenu(buf: FrameBuffer, hits: HitRegistry, layout: Layout, page: PageId): void {
-  // Paint the whole menu band.
+  // The menu is its own labeled section ("── Menu ──") on every page.
+  drawDivider(buf, layout.menuDividerY, { label: 'Menu' });
+  // Paint the whole menu-button band.
   for (let ry = 0; ry < layout.menuRows; ry++) {
     for (let x = 0; x < buf.cols; x++) {
       buf.set(x, layout.menuY + ry, { ch: ' ', fg: null, bg: MENU_BG });
