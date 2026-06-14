@@ -42,6 +42,20 @@ choice (`auto` · `truecolor` · `256` · `8` · `none`; the `--no-color` flag a
 non-standard — e.g. `{"adapterRoots": {"claude-code": ["/custom/path"]}}`. The data
 directory itself is always `~/.tokentamers`.
 
+## Adding another agent later
+
+Start with one agent and add more whenever you like — Token Tamers handles it
+**forward-only**. The moment you enable a new agent (re-run `tt init`, or add it to
+`config.json`), the game reads its past logs to **calibrate that agent's baseline**, so
+its grade-roll odds are judged fairly against your own normal right away. But it never
+rewrites your pet's history: your pet keeps growing from the point you add the agent
+onward, and only usage from then feeds its molts, diet, and evolution. Your current pet
+is left exactly as it was — nothing is re-rolled.
+
+As always this is **read-only** (just reading local logs, never spending tokens or
+quota), and which agent you run is **identity only** — it tints your pet's House and diet,
+never how strong or rare it can become.
+
 ## Troubleshooting adapter detection
 
 - When `tt init` can't find an agent at its default locations, it offers a one-time prompt
