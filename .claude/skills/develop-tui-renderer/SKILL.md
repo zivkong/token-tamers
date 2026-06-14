@@ -25,8 +25,8 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   around them plus a bottom-padding gap below the panel; the **`── Menu ──` divider is GLOBAL
   chrome** drawn by the frame at `layout.menuDividerY` on every page (so the menu is its own
   named section everywhere). Menu buttons start at `layout.menuY` (= `menuDividerY + 1`).
-  `render/divider.ts` draws rules. `canvasX=0`, `canvasCols=termCols`.
-- **Completion is per-page, not global** (`render/bar.ts` → `drawCompletionHeader`): Dex shows
+  `components/divider.ts` draws rules. `canvasX=0`, `canvasCols=termCols`.
+- **Completion is per-page, not global** (`components/meter.ts` → `drawCompletionHeader`): Dex shows
   `completion.dex`, Archive shows `records/dexTotal`, top-right. The full `CompletionBreakdown`
   flows `ShellHost.completion()` → `RenderContext.completion`. The pet page has NO completion
   meter.
@@ -40,7 +40,7 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   `STAT_BAR_MAX`≈120 so the empty track shows), **Charge** (REAL-TIME growth: open-window tokens
   fill toward `VITALITY_FULL_TOKENS`=200M, tinted by diet, `+N% molt` = real `vitalityBonus`
   preview; token counts only), **Diet** (House-share legend + grade-roll odds). Every bar renders
-  its empty track via `render/bar.ts` `drawMeter`. `LiveStats` flows `ShellHost.liveStats()` →
+  its empty track via `components/meter.ts` `drawMeter`. `LiveStats` flows `ShellHost.liveStats()` →
   `FrameInput.live` → `RenderContext.live`; the cli derives it from `engine.pendingEvents()` +
   `eventTokens`/`eventEssence` + baselines. Undefined in golden tests → the Charge row shows an
   empty/awaiting state (frames stay deterministic). Completion is per-page (NOT in this panel).
@@ -111,9 +111,10 @@ visual change is intended and reviewed.
 `ansi.ts` (Writer/sinks/SGR), `buffer.ts` (FrameBuffer+diff), `sprite.ts`
 (compositor+palette ladder, `destW`/`destH` scaling), `input.ts` (key/mouse decode),
 `hit.ts`, `layout.ts` (`computeLayout`/`petSections`), `menu.ts` (`packMenu` left-aligned
-flow), `divider.ts` (section rules), `bar.ts` (`drawMeter`/`drawCompletionHeader`), `frame.ts`
-(frame + menu draw), `shell.ts` (runShell loop), `status.ts` (one-liners), `pages/` (pet,
-pet-vitals, dex/archive/settings), `lookup.ts` (pack helpers).
+flow), `frame.ts` (frame + menu draw), `shell.ts` (runShell loop), `status.ts` (one-liners),
+`pages/` (pet, pet-vitals, dex/archive/settings), `lookup.ts` (pack helpers). Shared UI lives
+under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after) and
+`meter.ts` (`drawMeter`/`drawCompletionHeader`). Reuse these — don't hand-roll rules/bars.
 
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
 

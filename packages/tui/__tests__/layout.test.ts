@@ -22,9 +22,10 @@ describe('computeLayout', () => {
 
   it('docks the menu (its own labeled section) right after the canvas', () => {
     const l = computeLayout(100, 30);
-    // A "── Menu ──" divider opens the menu section just after the content.
+    // A "── MENU ──" divider opens the menu section just after the content, with
+    // the standard gap-after before the buttons.
     expect(l.menuDividerY).toBe(l.canvasY + l.canvasRows);
-    expect(l.menuY).toBe(l.menuDividerY + 1);
+    expect(l.menuY).toBe(l.menuDividerY + 1 + GAP_ROWS);
     expect(l.menuRow).toBe(l.menuY);
     // The whole stack fits, with any slack falling BELOW the menu.
     expect(l.menuY + l.menuRows).toBeLessThanOrEqual(l.termRows);

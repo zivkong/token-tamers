@@ -110,7 +110,9 @@ export function computeLayout(cols: number, rows: number): Layout {
   // the menu after the header band, the vitals panel, the dividers and gaps —
   // plus the "── Menu ──" divider and the menu buttons themselves.
   const fixed = HEADER_ROWS + PANEL_ROWS + PET_DIVIDERS + PET_GAPS;
-  const availForScene = rows - fixed - MENU_DIVIDER_ROWS - menuRows;
+  // The menu section is a divider + its standard gap-after + the button rows.
+  const menuChrome = MENU_DIVIDER_ROWS + GAP_ROWS + menuRows;
+  const availForScene = rows - fixed - menuChrome;
   const sceneTarget = Math.round(cols / 4);
   const sceneRows = Math.max(MIN_SCENE_ROWS, Math.min(sceneTarget, availForScene));
 
@@ -126,9 +128,10 @@ export function computeLayout(cols: number, rows: number): Layout {
     headerRows: HEADER_ROWS,
     panelRows: PANEL_ROWS,
     menuDividerY: canvasRows,
-    menuY: canvasRows + MENU_DIVIDER_ROWS,
+    // Buttons sit a divider + a standard gap below the content region.
+    menuY: canvasRows + MENU_DIVIDER_ROWS + GAP_ROWS,
     menuRows,
-    menuRow: canvasRows + MENU_DIVIDER_ROWS,
+    menuRow: canvasRows + MENU_DIVIDER_ROWS + GAP_ROWS,
     tooSmall: false,
   };
 }

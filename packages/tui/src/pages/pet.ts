@@ -22,7 +22,7 @@ import {
 } from '../render/sprite';
 import { findHabitat, findSpecies, findSprite, houseTint } from '../helpers/lookup';
 import { petSections, type SceneRect } from '../render/layout';
-import { drawDivider } from '../render/divider';
+import { drawDivider } from '../components';
 import { renderVitals } from './pet-vitals';
 import type { RenderContext } from './types';
 import type { ContentPack, SpriteDef } from '@token-tamers/core';

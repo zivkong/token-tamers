@@ -21,7 +21,7 @@
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
 import { VITALITY_FULL_TOKENS, vitalityBonus } from '@token-tamers/core';
 import type { FrameBuffer } from '../render/buffer';
-import { BAR_EMPTY, drawMeter } from '../render/bar';
+import { BAR_EMPTY, drawMeter } from '../components';
 import { houseTint } from '../helpers/lookup';
 import { renderGradeOddsLine } from '../helpers/status';
 import type { RenderContext } from './types';

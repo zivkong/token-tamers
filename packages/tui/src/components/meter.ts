@@ -1,10 +1,11 @@
 /**
- * A simple horizontal meter — `filled` cells then an empty track — shared by the
- * vitals panel and the per-page completion bars (Dex/Archive). Pure buffer write.
+ * Meter — the one standard horizontal bar (`filled` cells then an empty track)
+ * plus the page-completion header that wraps it. Shared by the vitals panel and
+ * the per-page completion bars (Dex/Archive) so every bar looks identical.
  */
 
 import type { Rgb } from '../terminal/ansi';
-import type { FrameBuffer } from './buffer';
+import type { FrameBuffer } from '../render/buffer';
 
 const FULL = String.fromCodePoint(0x2588); // █
 const LIGHT = String.fromCodePoint(0x2591); // ░
