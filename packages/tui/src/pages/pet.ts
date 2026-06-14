@@ -9,7 +9,7 @@
  * the frame counter, so golden snapshots stay reproducible. See `petPlacement`.
  */
 
-import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
+import { mix, type Rgb } from '../terminal/ansi';
 import {
   buildPalette,
   drawSprite,
@@ -20,12 +20,12 @@ import {
   type AnimBank,
   type Palette,
 } from '../render/sprite';
-import { findHabitat, findSpecies, findSprite, houseTint } from '../helpers/lookup';
+import { findHabitat, findSpecies, findSprite, houseColor, houseTint } from '../helpers/lookup';
 import { petSections, type SceneRect } from '../render/layout';
 import { drawDivider } from '../components';
 import { drawStatsRow, renderVitals } from './pet-vitals';
 import type { RenderContext } from './types';
-import type { ContentPack, SpriteDef } from '@token-tamers/core';
+import type { SpriteDef } from '@token-tamers/core';
 
 const DIM: Rgb = { r: 90, g: 96, b: 120 };
 const BRIGHT: Rgb = { r: 230, g: 235, b: 245 };
@@ -302,7 +302,7 @@ function sceneScale(scene: SceneRect): number {
 
 /** Draw the pet (and, during play, its trinket + S aura) along the wander path. */
 function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRect): void {
-  const { buf, state, pack, mode, frame } = ctx;
+  const { buf, state, mode, frame } = ctx;
   const pet = state.pet;
 
   // Scale the pet by the same factor as the backdrop so it stays proportionate
@@ -327,7 +327,7 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRec
     drawPlayTrinket(ctx, w.trinketX, geo, scale);
   }
 
-  const tint = houseTint(pack, pet.house);
+  const tint = houseTint(pet.house);
   const pal = buildPalette(tint, pet.grade, frame);
   const clip = { x: scene.x, y: scene.y, w: scene.cols, h: scene.rows };
   drawSprite(buf, sprite, pal, {
@@ -451,7 +451,7 @@ function drawBackdrop(ctx: RenderContext, scene: SceneRect): void {
   const habitat = findHabitat(pack, state.selectedHabitat);
   const habSprite = habitat ? findSprite(pack, habitat.spriteId) : undefined;
   if (habSprite) {
-    const pal = backdropPalette(pack, state, habitat?.palette, habitat?.tint);
+    const pal = backdropPalette(state, habitat?.palette, habitat?.tint);
     // Scale the scene to FILL the full-width canvas (no side padding). The
     // habitat's native 4:1 cell aspect matches the scene rect's, so the scale
     // is uniform and undistorted.
@@ -478,7 +478,6 @@ function drawBackdrop(ctx: RenderContext, scene: SceneRect): void {
  * scene owns its colors. Otherwise we fall back to the dimmed tint ramp.
  */
 function backdropPalette(
-  pack: ContentPack,
   state: RenderContext['state'],
   palette: string[] | undefined,
   tintHex: string | undefined,
@@ -486,7 +485,7 @@ function backdropPalette(
   if (palette && palette.length > 0) {
     return paletteFromHexes(palette);
   }
-  const tint = tintHex ?? rgbHex(mix(hexToRgb(houseTint(pack, state.pet.house)), DIM, 0.6));
+  const tint = tintHex ?? rgbHex(mix(houseColor(state.pet.house), DIM, 0.6));
   return buildPalette(tint, 'A', 0).map((c) => (c ? mix(c, { r: 8, g: 10, b: 18 }, 0.18) : c));
 }
 

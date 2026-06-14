@@ -50,12 +50,14 @@ const ANIM_STRIP_BANKS: AnimBank[] = ['walk', 'jump', 'play'];
 // Tint resolution (species -> House -> tint; wild for scenery/egg).
 // ---------------------------------------------------------------------------
 
+// Mirror of the renderer's canonical HOUSE_ACCENT (packages/tui helpers/lookup.ts);
+// kept in sync by hand since content cannot import tui.
 const HOUSE_TINT: Record<House, string> = {
-  aether: '#a78bfa',
-  cipher: '#3fd0c9',
-  flux: '#fbbf24',
-  forge: '#fb923c',
-  wild: '#6fcf6f',
+  aether: '#38bdf8',
+  cipher: '#f87171',
+  flux: '#f472b6',
+  forge: '#f97316',
+  wild: '#7c849c',
 };
 
 interface SpeciesLike {

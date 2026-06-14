@@ -4,9 +4,9 @@
  * selectable; the selected row is highlighted.
  */
 
-import { hexToRgb, type Rgb } from '../terminal/ansi';
+import { type Rgb } from '../terminal/ansi';
 import { drawCompletionHeader, drawDivider } from '../components';
-import { houseTint } from '../helpers/lookup';
+import { houseColor } from '../helpers/lookup';
 import type { House } from '@token-tamers/core';
 import type { RenderContext } from './types';
 
@@ -97,7 +97,7 @@ export function renderDexPage(ctx: RenderContext): void {
     const dot = row.owned ? '●' : '·';
     const dotFg =
       row.owned && row.house && row.house !== 'hybrid' && row.house !== 'wild'
-        ? hexToRgb(houseTint(ctx.pack, row.house))
+        ? houseColor(row.house)
         : LOCKED;
     buf.text(canvasX + 9, y, dot, dotFg, bg);
     buf.text(canvasX + 11, y, row.label, fg, bg);

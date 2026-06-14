@@ -19,10 +19,16 @@
  * deterministic fallback when there is no live readout (golden tests).
  */
 
-import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
-import { gradeOdds, VITALITY_FULL_TOKENS, vitalityBonus, type Grade } from '@token-tamers/core';
+import { mix, type Rgb } from '../terminal/ansi';
+import {
+  gradeOdds,
+  VITALITY_FULL_TOKENS,
+  vitalityBonus,
+  type Grade,
+  type House,
+} from '@token-tamers/core';
 import { drawMeter, drawSegmentedMeter } from '../components';
-import { houseTint } from '../helpers/lookup';
+import { houseColor } from '../helpers/lookup';
 import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
 import type { FrameBuffer } from '../render/buffer';
 import type { RenderContext } from './types';
@@ -88,9 +94,9 @@ export function drawStatsRow(
   y: number,
   bg: Rgb | null = null,
 ): void {
-  const { buf, pack, state } = ctx;
+  const { buf, state } = ctx;
   const s = state.pet.stats;
-  const accent = mix(hexToRgb(houseTint(pack, state.pet.house)), VALUE, 0.1);
+  const accent = mix(houseColor(state.pet.house), VALUE, 0.1);
   const stats: Array<[string, number]> = [
     ['PWR', s.pwr],
     ['SPD', s.spd],
@@ -314,20 +320,28 @@ interface DietSegment {
   frac: number;
 }
 
-/** Resolve the pet's diet genes into named, tinted, normalized segments. */
+/**
+ * Resolve the pet's diet genes into per-HOUSE normalized segments: genes are
+ * grouped by their House and colored by the canonical `houseColor`, so the bar
+ * reads as House shares (one segment per House), not per-gene.
+ */
 function dietBreakdown(ctx: RenderContext): DietSegment[] {
-  const genes = Object.entries(ctx.state.pet.dietGenes).filter(([, v]) => v > 0);
-  const total = genes.reduce((sum, [, v]) => sum + v, 0);
+  const byHouse = new Map<House, number>();
+  let total = 0;
+  for (const [geneId, essence] of Object.entries(ctx.state.pet.dietGenes)) {
+    if (essence <= 0) continue;
+    const rule = ctx.pack.models.find((m) => m.geneId === geneId);
+    const house: House = rule ? rule.house : 'wild';
+    byHouse.set(house, (byHouse.get(house) ?? 0) + essence);
+    total += essence;
+  }
   if (total <= 0) return [];
-  return genes
-    .map(([geneId, essence]) => {
-      const rule = ctx.pack.models.find((m) => m.geneId === geneId);
-      return {
-        name: rule ? capitalize(rule.house) : '???',
-        tint: rule ? hexToRgb(rule.tint) : UNKNOWN_TINT,
-        frac: essence / total,
-      };
-    })
+  return [...byHouse.entries()]
+    .map(([house, essence]) => ({
+      name: house === 'wild' ? '???' : capitalize(house),
+      tint: houseColor(house),
+      frac: essence / total,
+    }))
     .sort((a, b) => b.frac - a.frac);
 }
 

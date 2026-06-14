@@ -1,15 +1,15 @@
 [
-  { "pattern": "claude-*", "house": "aether", "geneId": "gene-claude", "tint": "#a78bfa" },
+  { "pattern": "claude-*", "house": "aether", "geneId": "gene-claude", "tint": "#38bdf8" },
   { "pattern": "gpt-*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
   { "pattern": "o1*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
   { "pattern": "o3*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
   { "pattern": "o4*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
   { "pattern": "o*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
-  { "pattern": "gemini-*", "house": "flux", "geneId": "gene-gemini", "tint": "#fbbf24" },
-  { "pattern": "llama*", "house": "forge", "geneId": "gene-llama", "tint": "#fb923c" },
-  { "pattern": "qwen*", "house": "forge", "geneId": "gene-qwen", "tint": "#fb923c" },
-  { "pattern": "mistral*", "house": "forge", "geneId": "gene-mistral", "tint": "#fb923c" },
-  { "pattern": "deepseek*", "house": "forge", "geneId": "gene-deepseek", "tint": "#fb923c" },
-  { "pattern": "phi*", "house": "forge", "geneId": "gene-phi", "tint": "#fb923c" },
-  { "pattern": "gemma*", "house": "forge", "geneId": "gene-gemma", "tint": "#fb923c" }
+  { "pattern": "gemini-*", "house": "flux", "geneId": "gene-gemini", "tint": "#f472b6" },
+  { "pattern": "llama*", "house": "forge", "geneId": "gene-llama", "tint": "#f97316" },
+  { "pattern": "qwen*", "house": "forge", "geneId": "gene-qwen", "tint": "#f97316" },
+  { "pattern": "mistral*", "house": "forge", "geneId": "gene-mistral", "tint": "#f97316" },
+  { "pattern": "deepseek*", "house": "forge", "geneId": "gene-deepseek", "tint": "#f97316" },
+  { "pattern": "phi*", "house": "forge", "geneId": "gene-phi", "tint": "#f97316" },
+  { "pattern": "gemma*", "house": "forge", "geneId": "gene-gemma", "tint": "#f97316" }
 ]

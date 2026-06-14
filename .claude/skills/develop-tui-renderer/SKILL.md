@@ -36,6 +36,14 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
+- **Two disjoint color maps — keep them apart:** `GRADE_ACCENT` (render/sprite.ts) is the RARITY
+  ladder (C grey · B green · A violet · S gold) — it ALONE signals value. `HOUSE_ACCENT`
+  (helpers/lookup.ts) is the canonical per-House identity color (Aether cyan · Cipher red · Flux
+  rose · Forge orange · Wild slate) — a NEUTRAL categorical palette, equal-weight so no House looks
+  superior (invariant #3), deliberately sharing NO color with the grade ladder. ALL House coloring
+  goes through `houseTint(house)` (hex, for `buildPalette`) / `houseColor(house)` (Rgb) — never
+  per-gene `models.json` tints (those mirror `HOUSE_ACCENT` for content honesty but the UI ignores
+  them). New House-colored UI must use these helpers, and new colors must not collide with grades.
 - **Header band** (`drawHeaderBand` in `pages/pet.ts`, `HEADER_ROWS=3` on `HEADER_BG`) — the
   pet's IDENTITY card: row 0 name+grade (left) / habitat (right), row 1 pattern · traits, row 2 the
   **Stats** readout (`icon LABEL: value` for PWR/SPD/WIS/GRT, spread space-between across the full

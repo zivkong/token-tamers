@@ -4,6 +4,7 @@
  */
 
 import type { ContentPack, House, SpeciesDef, SpriteDef } from '@token-tamers/core';
+import { hexToRgb, type Rgb } from '../terminal/ansi';
 
 /** Find a species by id, or undefined. */
 export function findSpecies(pack: ContentPack, id: string): SpeciesDef | undefined {
@@ -26,20 +27,28 @@ export function findHabitat(pack: ContentPack, habitatId: string) {
 }
 
 /**
- * Resolve a House tint for a species. The pack's ModelRule carries tints keyed
- * by gene; a species only knows its House, so we pick the first model rule for
- * that House as the representative tint, falling back to a per-house default.
+ * The CANONICAL per-House color map — the single source of truth for House
+ * identity color everywhere in the UI (Diet bar, stats accent, pet sprite
+ * palette, Dex dot). Houses are identity/cosmetics ONLY (invariant #3): these
+ * colors never touch stats/grades, and they are a NEUTRAL categorical palette —
+ * five equal-weight hues so no House looks superior to another. They are kept
+ * DISJOINT from the grade rarity ladder (`GRADE_ACCENT`: C grey · B green ·
+ * A violet · S gold), which alone signals value — no House borrows gold/violet.
  */
-export function houseTint(pack: ContentPack, house: House): string {
-  const rule = pack.models.find((m) => m.house === house);
-  if (rule) return rule.tint;
-  return DEFAULT_HOUSE_TINT[house];
+export const HOUSE_ACCENT: Record<House, string> = {
+  aether: '#38bdf8', // ethereal / mind — sky cyan
+  cipher: '#f87171', // glyph / geometry — red
+  flux: '#f472b6', // light / current — rose magenta
+  forge: '#f97316', // metal / ember — orange
+  wild: '#7c849c', // ??? unknown — muted slate
+};
+
+/** House identity color as a hex string (for `buildPalette`). */
+export function houseTint(house: House): string {
+  return HOUSE_ACCENT[house];
 }
 
-const DEFAULT_HOUSE_TINT: Record<House, string> = {
-  aether: '#8a7cff',
-  cipher: '#3fd0c9',
-  flux: '#ff6fae',
-  forge: '#ff9645',
-  wild: '#6fcf6f',
-};
+/** House identity color as RGB (for direct buffer tinting). */
+export function houseColor(house: House): Rgb {
+  return hexToRgb(HOUSE_ACCENT[house]);
+}
