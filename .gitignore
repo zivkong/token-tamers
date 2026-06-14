@@ -6,6 +6,9 @@ coverage/
 *.tsbuildinfo
 .eslintcache
 
+# Worktrees (project-local isolation)
+.worktrees/
+
 # Claude Code session artifacts (.claude/skills/ IS tracked — project skills)
 .claude/worktrees/
 .claude/settings.local.json
