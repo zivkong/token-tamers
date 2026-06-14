@@ -138,8 +138,14 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   `pet.stageMolts` (deterministic; SCHEMA_VERSION 2, cli migrates). The Pet page's
   abstract "Grow" vitals row surfaces it via `growthProgress` WITHOUT leaking
   stage/count/next-form (evolution-mystery rule). See `engine/maturity.ts`.
-- **Houses (identity ONLY):** Aether `claude-*` WIS · Cipher `gpt-*`/`o*` PWR ·
-  Flux `gemini-*` SPD · Forge open-weight GRT · Wild unmatched ("???" dormant gene).
+- **Houses (identity ONLY; mixed-provenance, NOT provider brands):** each House blends
+  makers by theme, never all-Western/all-anything. Aether `claude-*`+MiniMax WIS ·
+  Cipher `gpt-*`/`o*`+GLM+MiMo PWR · Flux `gemini-*`+Qwen+Kimi SPD · Forge
+  `llama*`/`mistral*`+DeepSeek GRT · Wild unmapped ("???" dormant gene). Matching is
+  case-insensitive; popular families only (rest stay Wild); model→House is freely
+  re-balanced content data (NOT in `registry-freeze.json` — only ids are additive-only).
+  The maker→House grouping never affects stats/grades/speed (invariant 3). Full map:
+  `models.json` + `docs/design/evolution-grades-lineage.md` §Houses.
 - **Grades:** C→B 25%, B→A 10%, A→S 3% base; activity modifier ×0.5–2.0 (model- and
   volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI (the pet
   page's **Odds** row = the live current→next forecast via `core.gradeOdds`). Plus a

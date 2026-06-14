@@ -6,11 +6,17 @@
  */
 import type { ModelRule } from '@token-tamers/core';
 
-/** Simple glob match: only '*' wildcard supported (matches any sequence of chars). */
+/**
+ * Simple glob match: only '*' wildcard supported (matches any sequence of chars).
+ * CASE-INSENSITIVE, so one lowercase pattern (e.g. `minimax*`) matches a
+ * provider's CamelCase slug (`MiniMax-Text-01`). Mirror of core's `globMatch`;
+ * keep the two in lockstep.
+ */
 export function matchesGlob(input: string, pattern: string): boolean {
   // Escape regex special chars except '*', then replace '*' with '.*'
   const re = new RegExp(
     '^' + pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$',
+    'i',
   );
   return re.test(input);
 }

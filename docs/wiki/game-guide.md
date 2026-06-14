@@ -30,15 +30,17 @@ just grows more slowly, and a week with no usage at all rests as a [Dormant](#do
 
 ## Houses (identity & cosmetics only — equal stat budgets)
 
-| House  | Diet (model-ID family) | Theme            | Stat lean |
-| ------ | ---------------------- | ---------------- | --------- |
-| Aether | `claude-*`             | ethereal / mind  | WIS       |
-| Cipher | `gpt-*` / `o*`         | glyph / geometry | PWR       |
-| Flux   | `gemini-*`             | light / current  | SPD       |
-| Forge  | open-weight families   | metal / ember    | GRT       |
-| Wild   | anything unmatched     | "???" silhouette | neutral   |
+| House  | Diet (mixed model families)      | Theme            | Stat lean |
+| ------ | -------------------------------- | ---------------- | --------- |
+| Aether | `claude-*` · MiniMax             | ethereal / mind  | WIS       |
+| Cipher | `gpt-*` / `o*` · GLM · MiMo      | glyph / geometry | PWR       |
+| Flux   | `gemini-*` · Qwen · Kimi         | light / current  | SPD       |
+| Forge  | `llama*` · `mistral*` · DeepSeek | metal / ember    | GRT       |
+| Wild   | anything unmapped                | "???" silhouette | neutral   |
 
-No House is stronger; no model is better food. "Lean" redistributes an equal budget.
+Each House blends models from several makers, grouped by _vibe_, not brand — no House
+is all-Western or all-anything. No House is stronger; no model is better food. "Lean"
+redistributes an equal budget. (Full list + glob patterns: [Houses](houses.md).)
 
 ## The vitals panel: Food, Diet, Grow, Odds
 

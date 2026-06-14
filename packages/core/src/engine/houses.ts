@@ -13,12 +13,18 @@ export function matchModelRule(rules: readonly ModelRule[], modelId: string): Mo
   return null;
 }
 
-/** Minimal glob: '*' matches any run of chars. Anchored full-string match. */
+/**
+ * Minimal glob: '*' matches any run of chars. Anchored, CASE-INSENSITIVE match.
+ * Case folding lets one lowercase pattern (e.g. `minimax*`) match a provider's
+ * canonical CamelCase slug (`MiniMax-Text-01`, `MiMo-7B-RL`). Model ids carry no
+ * case-significant identity, so this never collides existing lowercase rules.
+ * Keep in lockstep with `@token-tamers/content`'s `matchesGlob`.
+ */
 function globMatch(pattern: string, value: string): boolean {
   if (pattern === '*') return true;
   // Build a regex from the glob, escaping regex metachars except '*'.
   const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
-  return new RegExp(`^${escaped}$`).test(value);
+  return new RegExp(`^${escaped}$`, 'i').test(value);
 }
 
 /** Distribute the stage budget across stats proportional to species weights. */

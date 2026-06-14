@@ -68,14 +68,15 @@ and **2 legendary Apex forms**. With the shared Mote egg, the two M1 lines total
 
 ## The shipped lines
 
-| House line | Diet (model-ID family) | Forms | Status       |
-| ---------- | ---------------------- | ----- | ------------ |
-| **Aether** | `claude-*`             | 11    | Shipped (M1) |
-| **Cipher** | `gpt-*` · `o*`         | 11    | Shipped (M1) |
-| **Flux**   | `gemini-*`             | 11    | Lines in M2  |
-| **Forge**  | open-weight families   | 11    | Lines in M2  |
+| House line | Diet (mixed model families)      | Forms | Status       |
+| ---------- | -------------------------------- | ----- | ------------ |
+| **Aether** | `claude-*` · MiniMax             | 11    | Shipped (M1) |
+| **Cipher** | `gpt-*` · `o*` · GLM · MiMo      | 11    | Shipped (M1) |
+| **Flux**   | `gemini-*` · Qwen · Kimi         | 11    | Lines in M2  |
+| **Forge**  | `llama*` · `mistral*` · DeepSeek | 11    | Lines in M2  |
 
-See [Houses](houses.md) for how your model usage picks which line you grow.
+Each line is fed by a _mix_ of model makers grouped by theme, not one brand — see
+[Houses](houses.md) for the full map and how your model usage picks which line you grow.
 
 ## Pattern overlays — the special forms
 

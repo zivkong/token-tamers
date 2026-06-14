@@ -173,10 +173,6 @@ describe('model rule house resolution', () => {
     expect(resolveHouse('gemini-2.5-pro', models)).toBe('flux');
   });
 
-  it('qwen2.5-coder -> forge', () => {
-    expect(resolveHouse('qwen2.5-coder', models)).toBe('forge');
-  });
-
   it('weird-local-model -> wild', () => {
     expect(resolveHouse('weird-local-model', models)).toBe('wild');
   });
@@ -197,12 +193,40 @@ describe('model rule house resolution', () => {
     expect(resolveHouse('deepseek-coder-v2', models)).toBe('forge');
   });
 
-  it('phi-3-mini -> forge', () => {
-    expect(resolveHouse('phi-3-mini', models)).toBe('forge');
+  // Scrambled, mixed-provenance Houses: every House blends providers, none is
+  // pure-Western or pure-Chinese (design: evolution-grades-lineage §House map).
+  it('minimax -> aether (with Claude)', () => {
+    expect(resolveHouse('minimax-01', models)).toBe('aether');
+    expect(resolveHouse('abab6.5-chat', models)).toBe('aether');
   });
 
-  it('gemma2-9b -> forge', () => {
-    expect(resolveHouse('gemma2-9b', models)).toBe('forge');
+  it('glm / mimo -> cipher (with GPT)', () => {
+    expect(resolveHouse('glm-4.6', models)).toBe('cipher');
+    expect(resolveHouse('codegeex-4', models)).toBe('cipher');
+    expect(resolveHouse('mimo-7b-rl', models)).toBe('cipher');
+  });
+
+  it('qwen / kimi -> flux (with Gemini)', () => {
+    expect(resolveHouse('qwen2.5-coder', models)).toBe('flux');
+    expect(resolveHouse('qwq-32b', models)).toBe('flux');
+    expect(resolveHouse('kimi-k2', models)).toBe('flux');
+    expect(resolveHouse('moonshot-v1-128k', models)).toBe('flux');
+  });
+
+  // CamelCase regression guard: case-insensitive matcher must fold these to
+  // their lowercase patterns, or the canonical provider slug falls to Wild.
+  it('matches CamelCase provider slugs case-insensitively', () => {
+    expect(resolveHouse('MiniMax-Text-01', models)).toBe('aether');
+    expect(resolveHouse('MiMo-7B-RL', models)).toBe('cipher');
+    expect(resolveHouse('GLM-4.6', models)).toBe('cipher');
+  });
+
+  // De-scoped to Wild — only popular families are mapped; the rest stay dormant.
+  it('phi / gemma / niche -> wild', () => {
+    expect(resolveHouse('phi-3-mini', models)).toBe('wild');
+    expect(resolveHouse('gemma2-9b', models)).toBe('wild');
+    expect(resolveHouse('yi-34b', models)).toBe('wild');
+    expect(resolveHouse('hunyuan-large', models)).toBe('wild');
   });
 });
 

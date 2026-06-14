@@ -1,15 +1,25 @@
 [
   { "pattern": "claude-*", "house": "aether", "geneId": "gene-claude", "tint": "#38bdf8" },
+  { "pattern": "minimax*", "house": "aether", "geneId": "gene-minimax", "tint": "#38bdf8" },
+  { "pattern": "abab*", "house": "aether", "geneId": "gene-minimax", "tint": "#38bdf8" },
+
   { "pattern": "gpt-*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
   { "pattern": "o1*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
   { "pattern": "o3*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
   { "pattern": "o4*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
   { "pattern": "o*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
+  { "pattern": "glm*", "house": "cipher", "geneId": "gene-glm", "tint": "#f87171" },
+  { "pattern": "codegeex*", "house": "cipher", "geneId": "gene-glm", "tint": "#f87171" },
+  { "pattern": "mimo*", "house": "cipher", "geneId": "gene-mimo", "tint": "#f87171" },
+
   { "pattern": "gemini-*", "house": "flux", "geneId": "gene-gemini", "tint": "#f472b6" },
+  { "pattern": "qwen*", "house": "flux", "geneId": "gene-qwen", "tint": "#f472b6" },
+  { "pattern": "qwq*", "house": "flux", "geneId": "gene-qwen", "tint": "#f472b6" },
+  { "pattern": "qvq*", "house": "flux", "geneId": "gene-qwen", "tint": "#f472b6" },
+  { "pattern": "kimi*", "house": "flux", "geneId": "gene-kimi", "tint": "#f472b6" },
+  { "pattern": "moonshot*", "house": "flux", "geneId": "gene-kimi", "tint": "#f472b6" },
+
   { "pattern": "llama*", "house": "forge", "geneId": "gene-llama", "tint": "#ff8c42" },
-  { "pattern": "qwen*", "house": "forge", "geneId": "gene-qwen", "tint": "#ff8c42" },
   { "pattern": "mistral*", "house": "forge", "geneId": "gene-mistral", "tint": "#ff8c42" },
-  { "pattern": "deepseek*", "house": "forge", "geneId": "gene-deepseek", "tint": "#ff8c42" },
-  { "pattern": "phi*", "house": "forge", "geneId": "gene-phi", "tint": "#ff8c42" },
-  { "pattern": "gemma*", "house": "forge", "geneId": "gene-gemma", "tint": "#ff8c42" }
+  { "pattern": "deepseek*", "house": "forge", "geneId": "gene-deepseek", "tint": "#ff8c42" }
 ]

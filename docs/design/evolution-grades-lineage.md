@@ -62,17 +62,28 @@ Species identity derives from **raw model IDs** via a data-driven registry — n
 classes, works for any provider and any future model:
 
 - `content/models.json` (single additive tree): ordered pattern rules →
-  `{ pattern: "claude-*", house: "aether", gene_id, tint }`, etc.
+  `{ pattern: "claude-*", house: "aether", gene_id, tint }`, etc. Matching is
+  **case-insensitive** (a lowercase pattern catches a provider's CamelCase slug, e.g.
+  `minimax*` ↔ `MiniMax-Text-01`).
 
-**Houses (v1)** — identity & cosmetics only, equal stat budgets:
+**Houses are mixed-provenance aesthetic families, NOT provider brands.** Each House
+deliberately blends models from several makers (Western and otherwise), grouped by
+_theme_ (mind, geometry, light, metal) — so no House is "the Claude house" or "the
+Chinese-models house." This stays pure identity/cosmetics: the maker→House grouping
+**never** touches stats, grades, rarity, or speed (invariant 3 holds). Model→House
+assignment is content data, freely re-balanced (model rules are **not** in
+`registry-freeze.json`); only the gene/House/species _ids_ are additive-only.
 
-| House      | Model-ID family                                                                                                                                | Stat flavor (content-tunable, always equal total budget) |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| **Aether** | `claude-*`                                                                                                                                     | WIS-lean                                                 |
-| **Cipher** | `gpt-*` / `o*`                                                                                                                                 | PWR-lean                                                 |
-| **Flux**   | `gemini-*`                                                                                                                                     | SPD-lean                                                 |
-| **Forge**  | open-weight/local families (llama, qwen, mistral, deepseek, …)                                                                                 | GRT-lean                                                 |
-| **Wild**   | unmatched model IDs → stored as a **dormant gene** ("???"), awakens when a registry update adds the pattern (version-agnostic by construction) | neutral                                                  |
+**Houses (v1)** — identity & cosmetics only, equal stat budgets. Only popular families
+are mapped; the rest stay **Wild** until a pack adopts them:
+
+| House      | Model families (mixed by design)                                                                                                              | Stat flavor (content-tunable, always equal total budget) |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| **Aether** | `claude-*` · MiniMax (`minimax*`, `abab*`)                                                                                                    | WIS-lean                                                 |
+| **Cipher** | `gpt-*` / `o*` · GLM (`glm*`, `codegeex*`) · MiMo (`mimo*`)                                                                                   | PWR-lean                                                 |
+| **Flux**   | `gemini-*` · Qwen (`qwen*`, `qwq*`, `qvq*`) · Kimi (`kimi*`, `moonshot*`)                                                                     | SPD-lean                                                 |
+| **Forge**  | `llama*` · `mistral*` · DeepSeek (`deepseek*`)                                                                                                | GRT-lean                                                 |
+| **Wild**   | unmapped model IDs → stored as a **dormant gene** ("???"), awakens when a registry update adds the pattern (version-agnostic by construction) | neutral                                                  |
 
 - Each distinct model ID consumed = a **gene** in the pet's diet profile. Dominant House →
   species line; cross-House diet → hybrid lines; high gene diversity feeds the Polyglot/Prism end
@@ -139,7 +150,7 @@ fusion-locked specials (hidden) + 12 reserved/Ancient slots.
 
 Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 
-**AETHER** (`claude-*` genes; WIS-lean; ethereal/mind theme)
+**AETHER** (`claude-*` + MiniMax genes; WIS-lean; ethereal/mind theme)
 
 - Sprite: **Wisp**
 - Rookie: **Aetherling** · **Murmur**
@@ -147,7 +158,7 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 - Prime: **Seraphix** · **Thoughtwarden** · **Halcyore**
 - Apex: **Aurelion** · **Mindspire**
 
-**CIPHER** (`gpt-*`/`o*` genes; PWR-lean; glyph/geometry theme)
+**CIPHER** (`gpt-*`/`o*` + GLM + MiMo genes; PWR-lean; glyph/geometry theme)
 
 - Sprite: **Glyphit**
 - Rookie: **Cipherling** · **Bitfang**
@@ -155,7 +166,7 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 - Prime: **Cryptarch** · **Matrixion** · **Sigilus**
 - Apex: **Enigmax** · **Keystrix**
 
-**FLUX** (`gemini-*` genes; SPD-lean; light/current theme)
+**FLUX** (`gemini-*` + Qwen + Kimi genes; SPD-lean; light/current theme)
 
 - Sprite: **Sparkit**
 - Rookie: **Fluxling** · **Voltby**
@@ -163,7 +174,7 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 - Prime: **Stormlynx** · **Luminaire** · **Ionyx**
 - Apex: **Voltaicore** · **Radiantus**
 
-**FORGE** (open-weight genes; GRT-lean; metal/ember theme)
+**FORGE** (`llama*`/`mistral*` + DeepSeek genes; GRT-lean; metal/ember theme)
 
 - Sprite: **Emberit**
 - Rookie: **Forgeling** · **Cindcub**
