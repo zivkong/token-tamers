@@ -4,9 +4,9 @@
  * call `renderFrameToString` against a fake stdout).
  *
  * Layout is a top-oriented, full-width stack (see render/layout.ts): pages fill
- * the content region edge-to-edge, and the menu is a LEFT-ALIGNED row of buttons
- * (wrapping as needed) docked immediately AFTER the canvas. The completion meter
- * lives in the pet VITALS panel, not the menu.
+ * the content region edge-to-edge, and the menu is an EQUAL-WIDTH row of buttons
+ * distributed across the width (wrapping as needed) docked immediately AFTER the
+ * canvas. The completion meter lives in the pet VITALS panel, not the menu.
  */
 
 import { StringSink, Writer, type ColorMode, type Rgb } from '../terminal/ansi';
@@ -128,16 +128,20 @@ function drawMenu(buf: FrameBuffer, hits: HitRegistry, layout: Layout, page: Pag
   }
 }
 
-/** Draw one LEFT-ALIGNED nav button ('label key'), highlighting the active page. */
+/** Draw one equal-width nav button ('label key'), label centered in its slot,
+ * highlighting the active page across the full uniform width. */
 function drawMenuButton(buf: FrameBuffer, btn: MenuButton, y: number, active: boolean): void {
   const bg = active ? MENU_ACTIVE_BG : MENU_BG;
   for (let x = 0; x < btn.w; x++) {
     buf.set(btn.x + x, y, { ch: ' ', fg: null, bg });
   }
-  buf.text(btn.x, y, btn.label, active ? MENU_ACTIVE : MENU_FG, bg);
+  // Center the `label key` text within the button's uniform width.
   const text = buttonText(btn);
+  const textLen = [...text].length;
+  const tx = btn.x + Math.max(0, Math.floor((btn.w - textLen) / 2));
+  buf.text(tx, y, btn.label, active ? MENU_ACTIVE : MENU_FG, bg);
   buf.text(
-    btn.x + text.length - btn.hotkey.length,
+    tx + textLen - [...btn.hotkey].length,
     y,
     btn.hotkey,
     active ? MENU_ACTIVE : MENU_DIM,

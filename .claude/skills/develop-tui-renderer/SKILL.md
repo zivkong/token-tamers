@@ -68,9 +68,12 @@ bg)` so it renders on the band background.
   (Dex, Archive, Settings, Achievements) inside the same content region.
 - Menu flow (`render/menu.ts` → `packMenu(cols)`, shared by `layout` for `menuRows`, `frame` to
   draw, and `shell` to hit-test): a labeled `── Menu ──` divider (frame, `menuDividerY`) then
-  the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) packed LEFT-ALIGNED and wrapping; labels are
-  left-aligned, NOT centered. The completion meter is NOT in the menu (it's shown per-page —
-  Dex/Archive). Adding a page = extend the `PageId` union, push a
+  the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) ALL at one uniform width (`menuButtonWidth()` =
+  the widest button) distributed SPACE-BETWEEN across the full width (first flush-left, last
+  flush-right); labels are CENTERED in each button. On narrow widths it wraps into a grid whose
+  columns stay aligned across rows (the partial last row fills the leftmost columns). The
+  completion meter is NOT in the menu (it's shown per-page — Dex/Archive). Adding a page = extend
+  the `PageId` union, push a
   `MENU_ITEMS` entry (icon + hotkey), add a `freshUi` slot, a `handleKey` case, and a
   `renderFrame` switch arm — keep all five in lockstep.
 - **Keyboard parity is mandatory:** every click has a hotkey; with no mouse

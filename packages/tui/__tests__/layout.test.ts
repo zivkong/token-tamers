@@ -31,16 +31,22 @@ describe('computeLayout', () => {
     expect(l.menuY + l.menuRows).toBeLessThanOrEqual(l.termRows);
   });
 
-  it('lays the menu out as a left-aligned flow that wraps when narrow', () => {
-    // Wide: every button fits on one row, starting at the left edge.
+  it('distributes equal-width menu buttons across the width, wrapping when narrow', () => {
+    // Wide: every button fits on one row, first flush-left at the inset.
     const wide = packMenu(120);
     expect(wide.rows).toBe(1);
     expect(wide.buttons[0]?.x).toBe(1);
+    // All buttons share one uniform width.
+    expect(new Set(wide.buttons.map((b) => b.w)).size).toBe(1);
+    // The row spans edge to edge: the last button is flush to the right inset.
+    const last = wide.buttons[wide.buttons.length - 1]!;
+    expect(last.x + last.w).toBe(120 - 1);
     expect(computeLayout(120, 30).menuRows).toBe(1);
 
-    // Narrow (34): the flow wraps to more than one row.
+    // Narrow (34): wraps to more than one row, still uniform width.
     const narrow = packMenu(34);
     expect(narrow.rows).toBeGreaterThan(1);
+    expect(new Set(narrow.buttons.map((b) => b.w)).size).toBe(1);
     expect(computeLayout(34, 24).menuRows).toBe(narrow.rows);
   });
 
