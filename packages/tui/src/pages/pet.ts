@@ -284,10 +284,10 @@ export function renderPetPage(ctx: RenderContext): void {
 
   drawHeaderBand(ctx, sec.header, species?.name ?? '???');
 
-  // Section dividers: header | scene | VITALS panel | menu.
+  // Section dividers: header | scene | VITALS. (The "Menu" divider is global
+  // chrome drawn by the frame, after the panel's bottom-padding gap.)
   drawDivider(buf, sec.dividerYs[0]);
   drawDivider(buf, sec.dividerYs[1], { label: 'VITALS' });
-  drawDivider(buf, sec.dividerYs[2]);
 
   renderVitals(ctx, sec.panel);
 

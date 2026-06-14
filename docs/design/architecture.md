@@ -45,8 +45,9 @@ padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `
      only (`84.2M / 200M`). Fed by `ShellHost.liveStats()` → `RenderContext.live`.
    - **Diet** — House-share legend (`Aether 72% · Cipher 28%`) + the grade-roll odds
      (transparency invariant).
-6. _divider + gap_
-7. **Menu** — a left-aligned button flow placed right after the panel (see Menu Spec).
+   - _a bottom-padding gap closes the panel below Diet._
+6. **Menu** — its own section, opened by a labeled **`── Menu ──` divider** (global chrome,
+   drawn on every page by the frame), then a left-aligned button flow (see Menu Spec).
 
 **Per-page completion (`render/bar.ts` → `drawCompletionHeader`):** the completion meter is NOT
 a single global widget — each collection page shows ITS OWN slice top-right: **Dex** → species
@@ -81,12 +82,14 @@ HABITAT_COLS`) so they stay proportionate to the backdrop at any width. Minimum 
 
 ### Menu Spec
 
-A **left-aligned flow** of nav buttons docked immediately after the canvas (never the terminal
-bottom). Buttons pack from the left edge and **wrap to the next row** when the next one would
-overflow the width (`render/menu.ts` → `packMenu`), so it adapts from one row on a wide
-terminal down to two-plus rows at 34 cols:
+The menu is **its own section**: a labeled `── Menu ──` divider (drawn on every page by the
+frame at `layout.menuDividerY`) then a **left-aligned flow** of nav buttons. Buttons pack from
+the left edge and **wrap to the next row** when the next one would overflow the width
+(`render/menu.ts` → `packMenu`), so it adapts from one row on a wide terminal down to two-plus
+rows at 34 cols:
 
 ```
+── Menu ──────────────────────────────────────────────
 ♥ Pet 1  ☰ Dex 2  ◆ Archive 3  ⚙ Settings 4  ⏻ Quit q      <- left-aligned, wraps when narrow
 ```
 
@@ -143,7 +146,8 @@ lookup; zero impact on the 30fps budget.
 │ Charge ████░░░░░░ 84.2M / 200M  +6% molt ↑       │  <- REAL-TIME growth charge
 │                                                  │  <- spacer
 │ Diet  Aether 72% · Cipher 28%       last roll: … │  <- diet share + grade odds
-├────────────────────────────────────────────────┤  <- divider + gap
+│                                                  │  <- bottom padding (gap)
+├──── Menu ──────────────────────────────────────┤  <- labeled Menu divider (global)
 │ ♥ Pet 1  ☰ Dex 2  ◆ Archive 3  ⚙ Settings 4  …  │  <- left-aligned menu (wraps)
 └────────────────────────────────────────────────┘
                                                        (slack falls below the menu)

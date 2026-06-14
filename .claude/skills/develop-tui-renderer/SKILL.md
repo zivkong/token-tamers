@@ -20,9 +20,12 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   compact bars/labels and a wrapping menu. (Supersedes the old centered-4:3 + bottom-bar model.)
 - Section order (pet page): **header** (`headerRows`) → _divider+gap_ → **game canvas** →
   _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=5`: stats / gap /
-  charge / gap / diet) → _divider+gap_ → **menu**. `petSections(layout)` carves the bands +
-  divider rows; a `GAP_ROWS` blank follows every divider AND precedes the VITALS divider
-  (canvas↔VITALS spacing). `render/divider.ts` draws rules. `canvasX=0`, `canvasCols=termCols`.
+  charge / gap / diet) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
+  `petSections(layout)` carves the bands and the pet's TWO dividers (header, VITALS) with gaps
+  around them plus a bottom-padding gap below the panel; the **`── Menu ──` divider is GLOBAL
+  chrome** drawn by the frame at `layout.menuDividerY` on every page (so the menu is its own
+  named section everywhere). Menu buttons start at `layout.menuY` (= `menuDividerY + 1`).
+  `render/divider.ts` draws rules. `canvasX=0`, `canvasCols=termCols`.
 - **Completion is per-page, not global** (`render/bar.ts` → `drawCompletionHeader`): Dex shows
   `completion.dex`, Archive shows `records/dexTotal`, top-right. The full `CompletionBreakdown`
   flows `ShellHost.completion()` → `RenderContext.completion`. The pet page has NO completion
@@ -51,9 +54,10 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 - Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
   (Dex, Archive, Settings, Achievements) inside the same content region.
 - Menu flow (`render/menu.ts` → `packMenu(cols)`, shared by `layout` for `menuRows`, `frame` to
-  draw, and `shell` to hit-test): the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) pack
-  LEFT-ALIGNED and wrap; labels are left-aligned, NOT centered. The completion meter is NOT in
-  the menu (it's shown per-page — Dex/Archive). Adding a page = extend the `PageId` union, push a
+  draw, and `shell` to hit-test): a labeled `── Menu ──` divider (frame, `menuDividerY`) then
+  the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) packed LEFT-ALIGNED and wrapping; labels are
+  left-aligned, NOT centered. The completion meter is NOT in the menu (it's shown per-page —
+  Dex/Archive). Adding a page = extend the `PageId` union, push a
   `MENU_ITEMS` entry (icon + hotkey), add a `freshUi` slot, a `handleKey` case, and a
   `renderFrame` switch arm — keep all five in lockstep.
 - **Keyboard parity is mandatory:** every click has a hotkey; with no mouse
