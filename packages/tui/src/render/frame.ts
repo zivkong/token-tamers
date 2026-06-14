@@ -14,7 +14,7 @@ import { FrameBuffer } from './buffer';
 import { HitRegistry } from './hit';
 import { computeLayout, tooSmallMessage, type Layout } from './layout';
 import { buttonText, packMenu, type MenuButton } from './menu';
-import { drawDivider } from './divider';
+import { drawDivider } from '../components';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
 import { renderArchivePage } from '../pages/archive';

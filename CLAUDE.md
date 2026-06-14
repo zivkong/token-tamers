@@ -72,7 +72,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   (signals, traits, modifier) · `engine/` (state, houses, branches, grades,
   rebirth, achievements, baseline, completion, constants, index)
 - `packages/tui/src/` — `terminal/` (ansi, input) · `render/` (buffer, sprite,
-  layout, hit, frame) · `pages/` · `helpers/` (status, lookup) · `shell.ts`
+  layout, hit, frame, menu) · `components/` (shared UI: divider, meter — one
+  standardized look) · `pages/` · `helpers/` (status, lookup) · `shell.ts`
 - `packages/adapters/src/` — `index.ts` (contracts + registry) · `helpers/`
   (jsonl incremental reading, shared by future adapters) · `<provider>/`
   (index = detect/scan, parse = record→UsageEvent)

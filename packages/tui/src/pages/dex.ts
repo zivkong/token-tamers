@@ -5,7 +5,7 @@
  */
 
 import { hexToRgb, type Rgb } from '../terminal/ansi';
-import { drawCompletionHeader } from '../render/bar';
+import { drawCompletionHeader, drawDivider } from '../components';
 import { houseTint } from '../helpers/lookup';
 import type { House } from '@token-tamers/core';
 import type { RenderContext } from './types';
@@ -15,6 +15,9 @@ const LOCKED: Rgb = { r: 88, g: 92, b: 112 };
 const SELECT_BG: Rgb = { r: 40, g: 48, b: 78 };
 const HEADER: Rgb = { r: 150, g: 200, b: 255 };
 const RULE: Rgb = { r: 52, g: 58, b: 80 };
+
+/** Rows above the list: title (1) + divider (1) + gap (1). Shared with the shell. */
+export const DEX_LIST_OFFSET = 3;
 
 export interface DexRow {
   num: number;
@@ -65,11 +68,10 @@ export function renderDexPage(ctx: RenderContext): void {
     fill: HEADER,
     dim: LOCKED,
   });
-  for (let x = 1; x < canvasCols - 1; x++) {
-    buf.set(canvasX + x, canvasY + 1, { ch: '─', fg: RULE, bg: null });
-  }
-  const listTop = canvasY + 2;
-  const visible = canvasRows - 3;
+  // Standard section divider (rule + a blank gap row after it) under the header.
+  drawDivider(buf, canvasY + 1, { x: canvasX + 1, width: canvasCols - 2 });
+  const listTop = canvasY + DEX_LIST_OFFSET;
+  const visible = canvasRows - DEX_LIST_OFFSET - 1;
 
   // Clamp scroll so the selection stays on screen.
   const scroll = clampScroll(ui.scroll, ui.selected, visible, rows.length);

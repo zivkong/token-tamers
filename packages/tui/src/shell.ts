@@ -23,7 +23,8 @@ import type {
   ShellInfo,
   SettingsState,
 } from './pages/types';
-import { buildDexRows } from './pages/dex';
+import { buildDexRows, DEX_LIST_OFFSET } from './pages/dex';
+import { ARCHIVE_LIST_OFFSET } from './pages/archive';
 import { cycleSelectedField, settingsFieldCount } from './pages/settings';
 import type { ContentPack, GameEffect, GameState } from '@token-tamers/core';
 
@@ -329,8 +330,9 @@ function handleMouse(
   }
 
   // List-row clicks (Dex/Archive): map by canvas geometry, ignoring the menu.
-  if ((rt.page === 'dex' || rt.page === 'archive') && cy < layout.menuY) {
-    const listTop = layout.canvasY + 2;
+  if ((rt.page === 'dex' || rt.page === 'archive') && cy < layout.menuDividerY) {
+    const offset = rt.page === 'dex' ? DEX_LIST_OFFSET : ARCHIVE_LIST_OFFSET;
+    const listTop = layout.canvasY + offset;
     const idxOnScreen = cy - listTop;
     if (idxOnScreen >= 0) {
       const ui = rt.ui[rt.page];

@@ -6,7 +6,7 @@
 import type { ArchiveRecord, Stats } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
 import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
-import { drawCompletionHeader } from '../render/bar';
+import { drawCompletionHeader, drawDivider } from '../components';
 import { findSpecies } from '../helpers/lookup';
 import { clampScroll } from './dex';
 import type { RenderContext } from './types';
@@ -16,10 +16,11 @@ const DIM: Rgb = { r: 96, g: 100, b: 120 };
 const SELECT_BG: Rgb = { r: 40, g: 48, b: 78 };
 const HEADER: Rgb = { r: 150, g: 200, b: 255 };
 
-const RULE: Rgb = { r: 52, g: 58, b: 80 };
-
 // Fixed column offsets (within the canvas): marker+#, name, grade, gen, stats.
 const COL = { num: 1, name: 8, grade: 25, gen: 31, stats: 37 } as const;
+
+/** Rows above the list: title (1) + columns (1) + divider (1) + gap (1). */
+export const ARCHIVE_LIST_OFFSET = 4;
 
 function statsBrief(s: Stats): string {
   return `PWR ${String(s.pwr).padStart(2)}  SPD ${String(s.spd).padStart(2)}  WIS ${String(s.wis).padStart(2)}  GRT ${String(s.grt).padStart(2)}`;
@@ -49,12 +50,11 @@ export function renderArchivePage(ctx: RenderContext): void {
   buf.text(canvasX + COL.grade, canvasY + 1, 'GRADE', DIM, null);
   buf.text(canvasX + COL.gen, canvasY + 1, 'GEN', DIM, null);
   buf.text(canvasX + COL.stats, canvasY + 1, 'BEST STATS', DIM, null);
-  for (let x = 1; x < canvasCols - 1; x++) {
-    buf.set(canvasX + x, canvasY + 2, { ch: '─', fg: RULE, bg: null });
-  }
+  // Standard section divider (rule + a blank gap row after it) under the columns.
+  drawDivider(buf, canvasY + 2, { x: canvasX + 1, width: canvasCols - 2 });
 
-  const listTop = canvasY + 3;
-  const visible = canvasRows - 4;
+  const listTop = canvasY + ARCHIVE_LIST_OFFSET;
+  const visible = canvasRows - ARCHIVE_LIST_OFFSET - 1;
 
   if (records.length === 0) {
     buf.text(canvasX + 1, listTop, 'No records yet — your first rebirth writes here.', DIM, null);

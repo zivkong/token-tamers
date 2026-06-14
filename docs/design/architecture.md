@@ -25,7 +25,7 @@ single-letter stat labels, a wrapping menu).
 
 The frame is a column of full-width sections; **each divider rule is followed by a blank
 padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `GAP_ROWS`, and
-`render/divider.ts`):
+`components/divider.ts`):
 
 1. **Header band** (top, `headerRows`) — pet name + home habitat, then identity (pattern +
    traits). **Grade is shown by the name itself**: the whole name is rendered **bold in the
@@ -49,7 +49,7 @@ padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `
 6. **Menu** — its own section, opened by a labeled **`── Menu ──` divider** (global chrome,
    drawn on every page by the frame), then a left-aligned button flow (see Menu Spec).
 
-**Per-page completion (`render/bar.ts` → `drawCompletionHeader`):** the completion meter is NOT
+**Per-page completion (`components/meter.ts` → `drawCompletionHeader`):** the completion meter is NOT
 a single global widget — each collection page shows ITS OWN slice top-right: **Dex** → species
 discovered (`completion.dex`), **Archive** → species with a best record (`records / dexTotal`).
 The full breakdown (`CompletionBreakdown`: overall/dex/achievements/habitats/trinkets, each
