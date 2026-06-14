@@ -3,6 +3,7 @@
 # a CI failure you could have caught locally.
 pnpm check
 bash scripts/check-zero-network.sh
+bash scripts/check-updater-isolation.sh
 bash scripts/check-runtime-deps.sh
 bash scripts/check-workflow-pins.sh
 bash scripts/check-spoilers.sh

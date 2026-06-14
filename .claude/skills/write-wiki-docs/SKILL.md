@@ -13,7 +13,8 @@ changes in the same PR.
 ## Page map (target)
 
 Home/philosophy · Getting started (`tt init`, per-provider setup, plan types,
-static vs dynamic cycles, 10-min egg fast-hatch, adapter troubleshooting) · Game
+static vs dynamic cycles, 10-min egg fast-hatch, adapter troubleshooting, updating
+— the opt-in, off-by-default `tt update`) · Game
 guide (lifecycle, egg→sprite hatch, stages, Houses, traits table, patterns,
 mutations, Dormant) · Grades & the Archive (formula concepts, overwrite rules,
 record→DNA economy) · Battles (M2: type wheel, trait counters, determinism,

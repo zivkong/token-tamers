@@ -6,3 +6,4 @@ export { completeCommand } from './complete';
 export { adaptersCommand } from './adapters';
 export { watchCommand } from './watch';
 export { runShellCommand } from './shell';
+export { updateCommand } from './update';

@@ -19,6 +19,7 @@
     "typecheck": "pnpm -r typecheck",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build",
     "check:network": "bash scripts/check-zero-network.sh",
+    "check:updater": "bash scripts/check-updater-isolation.sh",
     "check:spoilers": "bash scripts/check-spoilers.sh",
     "check:dup": "jscpd packages apps",
     "prepare": "husky"

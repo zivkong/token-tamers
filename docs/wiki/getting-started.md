@@ -56,6 +56,23 @@ As always this is **read-only** (just reading local logs, never spending tokens 
 quota), and which agent you run is **identity only** — it tints your pet's House and diet,
 never how strong or rare it can become.
 
+## Updating Token Tamers
+
+Token Tamers is **fully offline, and it stays that way by default** — checking for updates is
+strictly opt-in. Updates only ever come from the project's GitHub Releases, the download is
+**verified by SHA-256** before anything is applied, and **no data about you is ever sent** —
+the updater only fetches, it tells GitHub nothing.
+
+- **`tt update`** — check on demand and update now. Standalone binaries download the matched
+  release, verify it, and swap themselves in place; `tt.js` / Node runs print the release
+  page to update from. Run it whenever you like; nothing happens until you do.
+- **`update.mode` in `~/.tokentamers/settings.json`** (default `off`):
+  - `off` — never touches the network (the default).
+  - `notify` — checks ~once a day and shows a "vX available" hint on the Settings page.
+  - `auto` — `notify`, plus self-updating the standalone binary (verified) on next launch.
+
+So out of the box the game makes **zero network connections**; you opt in only if you want it.
+
 ## Troubleshooting adapter detection
 
 - When `tt init` can't find an agent at its default locations, it offers a one-time prompt

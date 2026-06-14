@@ -102,6 +102,11 @@ export function renderSettingsPage(ctx: RenderContext): void {
   row('Runtime', info?.runtime ?? UNKNOWN, DIM);
   row('Display', `${colorLabel(ctx.mode)} · ${info?.fps ?? UNKNOWN} fps`);
   row('Data', info?.dataDir ?? UNKNOWN, DIM);
+  // Opt-in update status: the mode, plus a 'vX available' hint after a check.
+  const updates = info?.updateAvailable
+    ? `${info.updateMode ?? 'off'} · ${info.updateAvailable} available`
+    : (info?.updateMode ?? UNKNOWN);
+  row('Updates', updates, info?.updateAvailable ? VALUE_SELECTED : DIM);
 
   // Editable adapters.
   y += 1;

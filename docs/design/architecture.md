@@ -231,18 +231,18 @@ apps/cli              the `tt` binary wiring everything (daemon, init, commands)
 
 ### CI Gates
 
-| Gate                   | Tool                                                                              |
-| ---------------------- | --------------------------------------------------------------------------------- |
-| Tests                  | Vitest                                                                            |
-| Typecheck              | `tsc --noEmit`                                                                    |
-| Lint                   | ESLint + Prettier                                                                 |
-| Dependency audit       | `npm audit --omit=dev`                                                            |
-| Zero-network check     | `scripts/check-zero-network.sh` — grep for network imports, fail on hit           |
-| Docs spoiler check     | `scripts/check-spoilers.sh` — no fusion-pool species IDs may appear under `docs/` |
-| Performance budgets    | Bench suite with hard gates (see AI-Native Policy below)                          |
-| Import-boundary        | ESLint rules as above                                                             |
-| Dependency-change gate | Any `package.json` dependency change fails unless linked to an approved issue     |
-| Dead-code advisory     | jscpd + knip advisory gates                                                       |
+| Gate                   | Tool                                                                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tests                  | Vitest                                                                                                                                           |
+| Typecheck              | `tsc --noEmit`                                                                                                                                   |
+| Lint                   | ESLint + Prettier                                                                                                                                |
+| Dependency audit       | `npm audit --omit=dev`                                                                                                                           |
+| Zero-network check     | `scripts/check-zero-network.sh` (+ `check-updater-isolation.sh`) — network code is confined to the one opt-in updater file; see `auto-update.md` |
+| Docs spoiler check     | `scripts/check-spoilers.sh` — no fusion-pool species IDs may appear under `docs/`                                                                |
+| Performance budgets    | Bench suite with hard gates (see AI-Native Policy below)                                                                                         |
+| Import-boundary        | ESLint rules as above                                                                                                                            |
+| Dependency-change gate | Any `package.json` dependency change fails unless linked to an approved issue                                                                    |
+| Dead-code advisory     | jscpd + knip advisory gates                                                                                                                      |
 
 ---
 
@@ -432,16 +432,16 @@ These rules live in CLAUDE.md and CONTRIBUTING:
 The following gates enforce the AI-Native policy specifically (in addition to the general CI
 gates listed above):
 
-| Gate                   | Enforcement                                                                                    |
-| ---------------------- | ---------------------------------------------------------------------------------------------- |
-| Import boundaries      | ESLint `no-restricted-imports` rules; core/tui/adapters isolation                              |
-| Zero-network           | `scripts/check-zero-network.sh` — grep for `fetch`/telemetry/network imports                   |
-| Docs spoiler check     | `scripts/check-spoilers.sh` — fusion-pool species IDs must never appear in `docs/`             |
-| Performance budgets    | Vitest bench suite — frame flush, RSS, bundle size, cold start (all hard gates)                |
-| Dependency-change gate | Any new `dependencies` entry in `package.json` requires an approved issue link                 |
-| Determinism tests      | Hash round-trip fuzz, same-inputs-same-battle, cross-version replay                            |
-| Invariant tests        | Tests assert design-doc contracts, not current behavior; weakening a test to pass fails review |
-| Type safety            | `tsc --noEmit` strict — no `any` escapes; no `Date.now()` / `Math.random()` in `packages/core` |
+| Gate                   | Enforcement                                                                                                                                  |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Import boundaries      | ESLint `no-restricted-imports` rules; core/tui/adapters isolation                                                                            |
+| Zero-network           | `scripts/check-zero-network.sh` + `check-updater-isolation.sh` — `fetch`/telemetry/network confined to the opt-in updater (`auto-update.md`) |
+| Docs spoiler check     | `scripts/check-spoilers.sh` — fusion-pool species IDs must never appear in `docs/`                                                           |
+| Performance budgets    | Vitest bench suite — frame flush, RSS, bundle size, cold start (all hard gates)                                                              |
+| Dependency-change gate | Any new `dependencies` entry in `package.json` requires an approved issue link                                                               |
+| Determinism tests      | Hash round-trip fuzz, same-inputs-same-battle, cross-version replay                                                                          |
+| Invariant tests        | Tests assert design-doc contracts, not current behavior; weakening a test to pass fails review                                               |
+| Type safety            | `tsc --noEmit` strict — no `any` escapes; no `Date.now()` / `Math.random()` in `packages/core`                                               |
 
 ---
 

@@ -16,3 +16,11 @@ export {
   saveCheckpoints,
 } from './checkpoints';
 export { PENDING_FILE, loadPending, savePending } from './pending';
+export {
+  UPDATES_FILE,
+  CHECK_INTERVAL_MS,
+  type UpdateState,
+  loadUpdateState,
+  saveUpdateState,
+  isCheckDue,
+} from './updates';

@@ -8,6 +8,7 @@
  *   tt archive   text Archive (best-record) listing
  *   tt complete  completion meter breakdown
  *   tt adapters  adapter health/paths
+ *   tt update    opt-in update check + self-replace (off by default)
  *   tt --version / tt --help
  *
  * Global flags: --no-color, --yes.
@@ -25,6 +26,7 @@ import {
   adaptersCommand,
   watchCommand,
   runShellCommand,
+  updateCommand,
 } from './commands';
 
 export { parseArgs, type ParsedArgs } from './helpers/args';
@@ -90,6 +92,9 @@ export async function dispatch(
       return guarded(() => completeCommand(out));
     case 'adapters':
       await adaptersCommand(out);
+      return 0;
+    case 'update':
+      await updateCommand(out);
       return 0;
     case 'watch':
       // Long-running; resolves when the process is interrupted.

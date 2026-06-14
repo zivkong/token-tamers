@@ -18,6 +18,7 @@ export const KNOWN_COMMANDS = new Set([
   'archive',
   'complete',
   'adapters',
+  'update',
   'shell',
 ]);
 
@@ -34,6 +35,7 @@ Commands:
   archive     List past lives.
   complete    Completion meter breakdown.
   adapters    Adapter detection + paths.
+  update      Check GitHub for a newer tt and update (opt-in; off by default).
 
 Flags:
   --yes, -y       Take defaults non-interactively (for init).

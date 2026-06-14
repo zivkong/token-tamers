@@ -34,6 +34,8 @@ jobs:
         run: pnpm build
       - name: Zero-network check
         run: bash scripts/check-zero-network.sh
+      - name: Updater-isolation check (network confined to the one updater file)
+        run: bash scripts/check-updater-isolation.sh
       - name: Spoiler check
         run: bash scripts/check-spoilers.sh
       - name: Zero-runtime-dependencies check

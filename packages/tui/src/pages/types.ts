@@ -42,6 +42,10 @@ export interface ShellInfo {
   fps: number;
   /** Display path of the data dir, e.g. '~/.tokentamers'. */
   dataDir: string;
+  /** Opt-in update mode ('off' | 'notify' | 'auto'); undefined in tests. */
+  updateMode?: string;
+  /** A newer version tag seen on the last opt-in check, if any (e.g. 'v1.3.0'). */
+  updateAvailable?: string;
 }
 
 /**

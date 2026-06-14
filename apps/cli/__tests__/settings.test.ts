@@ -25,7 +25,12 @@ afterEach(() => {
 describe('settings store', () => {
   it('returns all-defaults when settings.json is absent', () => {
     const s = loadSettings();
-    expect(s).toEqual({ schemaVersion: 1, color: 'auto', adapterRoots: {} });
+    expect(s).toEqual({
+      schemaVersion: 1,
+      color: 'auto',
+      adapterRoots: {},
+      update: { mode: 'off' },
+    });
   });
 
   it('round-trips a saved settings file', () => {

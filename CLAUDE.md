@@ -21,8 +21,13 @@ Key contracts live in `packages/core/src/types.ts`.
 ## Non-negotiable invariants (CI-enforced)
 
 1. **Read-only observer** — never call an AI API, never spend user tokens/quota.
-2. **Zero network code anywhere** — no fetch/telemetry/update checks.
-   `scripts/check-zero-network.sh` + ESLint ban network modules.
+2. **Zero network code — one sanctioned exception.** The game never touches the
+   network. Network code may appear ONLY in the opt-in updater's single file,
+   `apps/cli/src/services/updater/net.ts` (off by default, outbound-read-only to
+   GitHub Releases, sends nothing — see `docs/design/auto-update.md`). Two gates
+   enforce containment: `check-zero-network.sh` (no network elsewhere) +
+   `check-updater-isolation.sh` (that file is the ONLY one); ESLint allowlists
+   `node:https` there alone. Never add network code outside that file.
 3. **No model judgment** — model IDs map to Houses (identity/cosmetics) via
    `models.json`; they must NEVER affect stats, grades, rarity, or speed.
    Grade odds normalize to the player's own per-adapter baseline (the activity
@@ -56,7 +61,8 @@ Key contracts live in `packages/core/src/types.ts`.
 - `pnpm test` / `pnpm test:watch` · `pnpm lint` · `pnpm typecheck` · `pnpm build`
 - Dev from source (no build, `tsx`): `pnpm dev [args]` · hot reload: `pnpm dev:watch`
   (e.g. `pnpm dev status`). Built bundle: `pnpm build` then `node apps/cli/dist/tt.js`
-- Zero-network / spoiler gates: `pnpm check:network` · `pnpm check:spoilers`
+- Zero-network / updater-isolation / spoiler gates: `pnpm check:network` ·
+  `pnpm check:updater` · `pnpm check:spoilers`
 
 ## Code structure (KISS / DRY / SOLID — mechanically enforced)
 
@@ -117,7 +123,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - **Pillars:** fully idle (zero required interaction — `tt init` is the only one,
   ever) · no model judgment · horizontal evolution (equal stat budgets) · version
   agnostic (hashes outlive versions) · provider agnostic · social by DNA codes ·
-  fully local/zero internet · completionist North Star (100% = Dex + achievements +
+  fully local/zero internet (the GAME never networks; the only exception is the
+  opt-in, off-by-default updater — see invariant 2) · completionist North Star (100% = Dex + achievements +
   habitats + trinkets; meter weighting 40/40/10/10).
 - **Cycle:** molt = 5-h session-window close (the evolution/trait/mutation/grade
   moment; eggs fast-hatch ~10 min after first usage); rebirth = week boundary
@@ -163,3 +170,5 @@ within it.
   originality rules (any sprite asset)
 - `write-wiki-docs` — docs style, pledges, grade-odds transparency, spoiler policy
   (docs/wiki, README)
+- `maintain-updater` — the opt-in auto-updater: the ONE sanctioned network surface,
+  off-by-default, trust model, isolation gates (apps/cli/src/services/updater)

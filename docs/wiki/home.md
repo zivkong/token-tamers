@@ -14,8 +14,10 @@ AI coding-agent usage. Start here:
 
 1. **Read-only.** Token Tamers never calls an AI API and never spends your tokens or
    quota. It only reads the local logs your agent already writes.
-2. **Fully offline.** Zero network code, enforced by CI. Social features are humans
-   pasting text codes.
+2. **Fully offline.** The game has zero network code, enforced by CI, and stays offline by
+   default. The only network anything is the **opt-in, off-by-default updater** — and even
+   that just fetches releases from GitHub (verified, no data sent). Social features are
+   humans pasting text codes.
 3. **No model judgment.** Model choice flavors species identity only, never power — no
    model is "better food." Grades are judged against your own baseline, with one small,
    capped bonus for feeding more before a window closes (the **Food** meter).

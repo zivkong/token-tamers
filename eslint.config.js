@@ -121,6 +121,25 @@ export default defineConfig(
     },
   },
   {
+    // THE ONE sanctioned network surface: the opt-in updater's net.ts may import
+    // node:https (and nothing else network-capable). Every other file stays
+    // network-free — `scripts/check-updater-isolation.sh` proves it's the only one.
+    files: ['apps/cli/src/services/updater/net.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: ['http', 'net', 'tls', 'dgram', 'dns', 'http2']
+            .flatMap((m) => [m, `node:${m}`])
+            .map((name) => ({
+              name,
+              message: 'The updater uses only node:https (design pillar 7 exception).',
+            })),
+        },
+      ],
+    },
+  },
+  {
     // adapters may import core only — never tui or content.
     files: ['packages/adapters/src/**/*.ts'],
     rules: {

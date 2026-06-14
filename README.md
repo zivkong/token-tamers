@@ -32,11 +32,11 @@ _Half-block pixel-art sprites · clickable 4:3 canvas · 30 fps on &lt;2% CPU ·
 
 Trust is the whole game. Each pledge is **mechanically enforced in CI**, not just promised:
 
-|     | Pledge                                  | What it means                                                                                                                                                                                                  |
-| --- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🔒  | **Read-only. Never spends your tokens** | Token Tamers never calls an AI API and never touches your quota. It only _reads_ the usage logs your agent already writes to disk. Your pet grows because you shipped real work.                               |
-| 🔌  | **Fully offline. Zero network code**    | No telemetry, no update checks, no sync — there is no code in this repo _capable_ of a network request, and a CI gate fails any PR that tries. Social features are humans pasting text codes.                  |
-| ⚖️  | **No model judgment**                   | Model choice shapes your pet's _species and looks_ — never its stats, grades, or speed. Progress is normalized to **your own baseline**: a small-model dev and a frontier-model dev raise equally strong pets. |
+|     | Pledge                                  | What it means                                                                                                                                                                                                                                                                                               |
+| --- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔒  | **Read-only. Never spends your tokens** | Token Tamers never calls an AI API and never touches your quota. It only _reads_ the usage logs your agent already writes to disk. Your pet grows because you shipped real work.                                                                                                                            |
+| 🔌  | **Fully offline by default**            | No telemetry, no sync, ever. The game makes zero network connections; the sole exception is the **opt-in, off-by-default** updater (`tt update` — fetches verified releases from GitHub, sends nothing). CI confines _all_ network code to one audited file. Social features are humans pasting text codes. |
+| ⚖️  | **No model judgment**                   | Model choice shapes your pet's _species and looks_ — never its stats, grades, or speed. Progress is normalized to **your own baseline**: a small-model dev and a frontier-model dev raise equally strong pets.                                                                                              |
 
 ## 🧬 How it works
 

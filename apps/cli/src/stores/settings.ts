@@ -14,7 +14,13 @@ export const SETTINGS_SCHEMA_VERSION = 1;
 
 /** The all-defaults settings used when settings.json is absent. */
 export function defaultSettings(): SettingsFile {
-  return { schemaVersion: SETTINGS_SCHEMA_VERSION, color: 'auto', adapterRoots: {} };
+  return {
+    schemaVersion: SETTINGS_SCHEMA_VERSION,
+    color: 'auto',
+    adapterRoots: {},
+    // Off by default — the game stays fully offline until the user opts in.
+    update: { mode: 'off' },
+  };
 }
 
 /** Load settings.json, falling back to defaults (and filling missing fields). */
@@ -26,6 +32,7 @@ export function loadSettings(): SettingsFile {
     schemaVersion: raw.schemaVersion ?? base.schemaVersion,
     color: raw.color ?? base.color,
     adapterRoots: raw.adapterRoots ?? base.adapterRoots,
+    update: raw.update ?? base.update,
   };
 }
 

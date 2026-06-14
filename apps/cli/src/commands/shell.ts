@@ -12,6 +12,7 @@ import type {
 } from '@token-tamers/core';
 import { catchUp, NotInitializedError } from '../services/catchup';
 import { createShellHost } from '../services/shell-host';
+import { backgroundUpdateCheck, pendingUpdate } from '../services/update-check';
 import { VERSION } from '../version';
 import { dataDir, loadSettings, saveConfig } from '../stores';
 
@@ -91,12 +92,21 @@ export async function runShellCommand(noColor: boolean, out: Out): Promise<void>
   }
   const { config, engine } = caught;
   const { host, persist } = createShellHost(config, engine);
-  const color = resolveColorMode(noColor, loadSettings().color);
+  const settings = loadSettings();
+  const color = resolveColorMode(noColor, settings.color);
+  const info: ShellInfo = {
+    ...buildShellInfo(config),
+    updateMode: settings.update?.mode ?? 'off',
+    updateAvailable: pendingUpdate() ?? undefined,
+  };
+  // Opt-in, throttled, best-effort — a no-op when update.mode is 'off', and it
+  // never blocks the render loop (the result surfaces on the next launch).
+  void backgroundUpdateCheck();
   try {
     await runShell({
       host,
       color,
-      info: buildShellInfo(config),
+      info,
       adapters: toAdapterInfo(config),
       onAdaptersChange: (edited) => persistAdapters(config, edited),
     });

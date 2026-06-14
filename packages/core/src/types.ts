@@ -439,6 +439,15 @@ export type ColorPreference = 'auto' | 'truecolor' | '256' | '8' | 'none';
  * reads it and threads the values down, so adapters and core never touch
  * `process.env`. Hand-editable; absent file ⇒ all defaults.
  */
+/**
+ * Opt-in update behavior. `off` (the default) = the game makes ZERO network
+ * calls — the offline pledge is fully intact. `notify` = check GitHub Releases
+ * ~once a day and show a banner. `auto` = notify + self-replace the standalone
+ * binary on next launch. The ONLY sanctioned network surface lives in
+ * `apps/cli/src/services/updater`; it is outbound-read-only and sends nothing.
+ */
+export type UpdateMode = 'off' | 'notify' | 'auto';
+
 export interface SettingsFile {
   schemaVersion: number;
   /** ANSI color preference (default 'auto'). The `--no-color` flag always wins. */
@@ -449,4 +458,6 @@ export interface SettingsFile {
    * former CLAUDE_CONFIG_DIR / OPENCODE_DATA_DIR / XDG_* env overrides.
    */
   adapterRoots: Record<string, string[]>;
+  /** Opt-in update mode (default `off`). See {@link UpdateMode}. */
+  update?: { mode: UpdateMode };
 }
