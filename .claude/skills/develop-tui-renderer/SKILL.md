@@ -19,8 +19,8 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   bottom. Slack falls below it. **Min terminal 34×24** (`MIN_COLS=34`); layouts degrade with
   compact bars/labels and a wrapping menu. (Supersedes the old centered-4:3 + bottom-bar model.)
 - Section order (pet page): **header** (`headerRows=3`: name / identity / stats) → _divider+gap_ →
-  **game canvas** → _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=3`: food /
-  diet / odds on consecutive rows) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
+  **game canvas** → _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=4`: food /
+  diet / grow / odds on consecutive rows) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
   `petSections(layout)` carves the bands and the pet's TWO dividers (header, VITALS) with gaps
   around them plus a bottom-padding gap below the panel; the **`── Menu ──` divider is GLOBAL
   chrome** drawn by the frame at `layout.menuDividerY` on every page (so the menu is its own
@@ -30,9 +30,13 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   `completion.dex`, Archive shows `records/dexTotal`, top-right. The full `CompletionBreakdown`
   flows `ShellHost.completion()` → `RenderContext.completion`. The pet page has NO completion
   meter.
-- **Evolution-mystery rule:** the pet screen must NOT show the stage word, molt count, or any
-  "progress to next evolution" — evolution stays a surprise. Stage/molt still drive the engine
-  and show in achievements/Archive; keep the `calibrating` cue (data readiness, not evolution).
+- **Evolution-mystery rule (amended):** the pet screen must NOT show the stage word, molt count,
+  the next form, or "N to next evolution" — _what_ it becomes and _when_ stays a surprise. The ONE
+  permitted cue is the **"Grow" vitals row**: an abstract maturation meter (fill + a single word —
+  `maturing`/`cresting`/`fully grown`/`incubating`) driven by `core.growthProgress(state)`, which
+  is deliberately spoiler-free (fill frac + flags only, never stage/count/next-form). It shows
+  _that_ the pet is progressing, nothing more. Stage/molt still drive the engine and show in
+  achievements/Archive; keep the `calibrating` cue (data readiness, not evolution).
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
@@ -50,13 +54,17 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   width, NO bar — a fixed equal budget, House-tinted icons). Stats live HERE (who the pet IS), kept
   apart from the live VITALS panel; drawn via `pet-vitals.ts`'s exported `drawStatsRow(ctx, rect, y,
 bg)` so it renders on the band background.
-- **Vitals panel** (`pages/pet-vitals.ts`) — 3 LIVE rows: **Food** (REAL-TIME growth: open-window
+- **Vitals panel** (`pages/pet-vitals.ts`) — 4 LIVE rows: **Food** (REAL-TIME growth: open-window
   tokens fill toward `VITALITY_FULL_TOKENS`=200M, SINGLE-tinted, `+N% molt` = real `vitalityBonus`
   preview; token counts only), **Diet** (the
-  ALWAYS-FULL House-share bar — composition not progress — + a House-name legend), **Odds** (the
+  ALWAYS-FULL House-share bar — composition not progress — + a House-name legend), **Grow** (the
+  ABSTRACT maturation cue: `drawMeter` filled to `growthProgress(state).frac` in a neutral teal
+  `GROWTH_FILL` — off BOTH the grade and House ladders — + one state word, NEVER stage/count/next
+  form; deterministic from state so it needs no `ctx.live`. 4-char label "Grow" to clear the bar
+  gutter), **Odds** (the
   LIVE current→next grade forecast only: `from → to NN%`, grade-tinted via `GRADE_ACCENT`, ` (capped)`
-  at the A→S ceiling, `S ★ apex` at the top). Food and Diet share ONE bar geometry (`barGeom`) so
-  they line up at every width; the Food bar uses `drawMeter` (single tint), the Diet bar
+  at the A→S ceiling, `S ★ apex` at the top). Food, Diet and Grow share ONE bar geometry (`barGeom`) so
+  they line up at every width; the Food/Grow bars use `drawMeter` (single tint), the Diet bar
   `drawSegmentedMeter` at 100% fill (House tints). The Odds number comes from `ctx.live.nextGrade`
   (the host's `gradeOdds(state, pending)` — core owns the math, shared with the engine's roll), and
   falls back to the published base odds (`gradeOdds(state)`) when there's no live readout so golden

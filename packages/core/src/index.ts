@@ -27,12 +27,15 @@ export {
 export {
   createEngine,
   gradeOdds,
+  growthProgress,
   hasFullWeekBaseline,
   matchModelRule,
+  requiredMaturity,
   SCHEMA_VERSION,
   seedBaselinesFromHistory,
   vitalityBonus,
   VITALITY_FULL_TOKENS,
   VITALITY_MAX_BONUS,
   type GradeOddsPreview,
+  type GrowthProgress,
 } from './engine';

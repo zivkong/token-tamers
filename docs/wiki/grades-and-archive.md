@@ -21,12 +21,17 @@ before the window closes, the more it adds to that molt's roll — up to **+15 p
 200M tokens**, then it stops climbing. It's the one place raw volume helps; it can never
 dominate your baseline-judged odds, the A→S 6% cap still holds after it, and model choice
 still never matters. The pet screen's **Food** meter shows it filling live (see the
-[Game Guide](game-guide.md#the-vitals-panel-food-diet-odds)).
+[Game Guide](game-guide.md#the-vitals-panel-food-diet-grow-odds)).
 
 There is no pity guarantee — every roll can fail. The pet screen's **Odds** row shows the
 exact live chance for your current → next grade (e.g. `B → A 18%`), grade-colored and updated
 as your activity and Food move it — so the number you see is the number that rolls. At the
 top it reads `S ★ apex — no further rolls`.
+
+Your grade also unlocks the **final evolution**: a Prime won't ascend to its **Apex** form until
+it has reached at least **grade B** (alongside maturing through the stage). It's the one place
+grade and evolution meet — Apex is the mark of a sustained, good week, not a default. Everything
+else about evolution stays separate from grade.
 
 A successful roll is a **Gradeshift**: the pet's palette visibly upgrades live.
 

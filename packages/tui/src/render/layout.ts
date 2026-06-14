@@ -13,7 +13,7 @@
  *   │ (gap)                          │                                 │ canvasRows
  *   ├──── VITALS ───────────────────┤  ← labeled divider              │
  *   │ (gap)                          │                                 │
- *   │ food · diet · odds             │  panelRows                      │
+ *   │ food · diet · growth · odds    │  panelRows                      │
  *   ├───────────────────────────────┤  ← divider                      ┘
  *   │ (gap)                          │
  *   │ menu (equal-width buttons)     │  menuRows  (menuY)
@@ -38,11 +38,12 @@ export const MIN_ROWS = 24;
  */
 export const HEADER_ROWS = 3;
 /**
- * Rows the vitals panel occupies: food / diet / odds — three live content rows
- * on consecutive lines (no inter-row spacers). (Stats moved to the header;
- * completion lives per-page.)
+ * Rows the vitals panel occupies: food / diet / growth / odds — four live content
+ * rows on consecutive lines (no inter-row spacers). (Stats moved to the header;
+ * completion lives per-page.) Growth is the abstract maturation cue (a filling
+ * bar, no stage word / counts / next form — the evolution-mystery rule).
  */
-export const PANEL_ROWS = 3;
+export const PANEL_ROWS = 4;
 /** Blank padding rows used around dividers for spacing between sections. */
 export const GAP_ROWS = 1;
 /** Divider rules the PET page draws inside the content region (header, VITALS). */

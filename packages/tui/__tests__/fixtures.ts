@@ -79,6 +79,7 @@ export function makePet(overrides: Partial<PetState> = {}): PetState {
     rhythmVariant: null,
     stats: { pwr: 12, spd: 9, wis: 15, grt: 11 },
     moltCount: 3,
+    stageMolts: 0,
     generation: 1,
     hatchedAt: 1000,
     dormant: false,

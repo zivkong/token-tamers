@@ -128,22 +128,48 @@ describe('engine — molt-only evolution', () => {
     expect(st.pet.moltCount).toBe(0);
   });
 
-  it('each molt advances at most one stage', () => {
+  it('each molt advances at most one stage, paced by the maturity clock', () => {
     const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
     eng.ingest(denseWeek());
     // Molt 1 is the egg-hatch checkpoint (10 min in) → sprite.
     eng.advanceTo(WEEK_ANCHOR + HOUR);
     expect(eng.state().pet.moltCount).toBe(1);
     expect(eng.state().pet.stage).toBe('sprite');
-    // Molt 2 is the first full 5h window → rookie.
+    // Molt 2 (first 5h window): sprite needs just 1 molt → rookie (day-1 momentum).
     eng.advanceTo(WEEK_ANCHOR + 6 * HOUR);
     expect(eng.state().pet.moltCount).toBe(2);
     expect(eng.state().pet.stage).toBe('rookie');
-    // Molt 3 is the second 5h window → evolved.
+    // Molt 3: rookie needs 2 molts — still maturing, NOT yet evolved.
     eng.advanceTo(WEEK_ANCHOR + 11 * HOUR);
+    expect(eng.state().pet.moltCount).toBe(3);
+    expect(eng.state().pet.stage).toBe('rookie');
+    expect(eng.state().pet.stageMolts).toBe(1);
+    // Molt 4: rookie's maturity is met → evolved (one stage, not two).
+    eng.advanceTo(WEEK_ANCHOR + 16 * HOUR);
     const st = eng.state();
-    expect(st.pet.moltCount).toBe(3);
+    expect(st.pet.moltCount).toBe(4);
     expect(st.pet.stage).toBe('evolved');
+    expect(st.pet.stageMolts).toBe(0);
+  });
+
+  it('never advances more than one stage between consecutive molts', () => {
+    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    eng.ingest(denseWeek());
+    const stageOf = (s: string) =>
+      ['egg', 'sprite', 'rookie', 'evolved', 'prime', 'apex'].indexOf(s);
+    let prevStage = stageOf('egg');
+    let prevMolt = 0;
+    for (let h = 1; h <= WEEK_MS / HOUR; h += 5) {
+      eng.advanceTo(WEEK_ANCHOR + h * HOUR);
+      const st = eng.state();
+      const dMolts = st.pet.moltCount - prevMolt;
+      const dStage = stageOf(st.pet.stage) - prevStage;
+      // Stage never moves backward, and never jumps more than one stage per molt.
+      expect(dStage).toBeGreaterThanOrEqual(0);
+      expect(dStage).toBeLessThanOrEqual(Math.max(1, dMolts));
+      prevStage = stageOf(st.pet.stage);
+      prevMolt = st.pet.moltCount;
+    }
   });
 
   it('reaches Apex over a full active week and never beyond', () => {

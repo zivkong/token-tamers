@@ -16,6 +16,7 @@ export function freshPet(generation: number, hatchedAt: number, calibrating: boo
     rhythmVariant: null,
     stats: { pwr: 0, spd: 0, wis: 0, grt: 0 },
     moltCount: 0,
+    stageMolts: 0,
     generation,
     hatchedAt,
     dormant: false,

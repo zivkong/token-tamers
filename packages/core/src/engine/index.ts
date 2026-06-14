@@ -14,7 +14,6 @@
 
 import { deriveCycleEvents, eggHatchMolts, unconsumedEvents } from '../cycle';
 import {
-  activityModifier,
   classifyRhythm,
   computeWindowSignals,
   dominantTraitClass,
@@ -26,7 +25,6 @@ import {
 } from '../evaluation';
 import { chance, createRng, nextInt, type Rng } from '../helpers/rng';
 import {
-  GRADE_ORDER,
   STAGE_ORDER,
   type AchievementDef,
   type ArchiveRecord,
@@ -36,7 +34,6 @@ import {
   type EngineConfig,
   type GameEffect,
   type GameState,
-  type Grade,
   type House,
   type MoltEvent,
   type PetState,
@@ -57,7 +54,7 @@ import {
   MUTATION_CHANCE,
   MUTATION_IDS,
 } from './constants';
-import { gradeRollChance, round4 } from './grades';
+import { rollGrade } from './grades';
 import {
   cloneStats,
   matchModelRule,
@@ -65,12 +62,14 @@ import {
   statsForSpecies,
   windowEvents,
 } from './houses';
+import { evolutionGateMet, requiredMaturity } from './maturity';
 import { isStrictlyBetter, scaleStats } from './rebirth';
 import { cloneState, freshPet, initialState } from './state';
 
 export { SCHEMA_VERSION, VITALITY_FULL_TOKENS, VITALITY_MAX_BONUS } from './constants';
 export { gradeOdds, vitalityBonus, type GradeOddsPreview } from './grades';
 export { hasFullWeekBaseline, seedBaselinesFromHistory } from './baseline';
+export { growthProgress, requiredMaturity, type GrowthProgress } from './maturity';
 export { matchModelRule } from './houses';
 
 interface InternalCycleEvent {
@@ -204,6 +203,9 @@ class GameEngine implements Engine {
     const committedThisMolt = pet.stage === 'egg';
     if (committedThisMolt) {
       this.commitHouse(pet, evs, effects);
+      // Entering the sprite stage fresh: the maturity clock starts at 0 (the
+      // hatch molt itself does not count toward sprite→rookie).
+      pet.stageMolts = 0;
     }
 
     pet.moltCount += 1;
@@ -217,7 +219,7 @@ class GameEngine implements Engine {
     this.checkPatterns(pet, effects);
     this.applyRhythmVariant(pet, signals);
     this.rollMutation(pet, rng, effects);
-    this.rollGrade(pet, signals, rng, effects);
+    rollGrade(pet, signals, rng, effects);
 
     effects.push({ type: 'molt', at: event.at });
     if (!isHatch) updateBaseline(this.state_, adapter, signals.totalEssence);
@@ -284,7 +286,16 @@ class GameEngine implements Engine {
     effects: GameEffect[],
   ): void {
     const species = this.speciesById(pet.speciesId);
-    if (!species || species.evolvesTo.length === 0) return;
+    if (!species || species.evolvesTo.length === 0) return; // terminal: no maturity clock
+
+    // This molt matures the current stage. Evolution is gated on BOTH the stage's
+    // maturity requirement (pacing) and any quality gate (prime→apex needs B), so
+    // the egg→apex climb spans ~5 active days instead of one stage per molt. The
+    // branch draw (which consumes RNG) only happens once eligible — the decision
+    // is a pure function of persisted state, so determinism is preserved.
+    pet.stageMolts += 1;
+    if (pet.stageMolts < requiredMaturity(pet.stage)) return; // still maturing
+    if (!evolutionGateMet(pet)) return; // matured but quality-gated (held at the crest)
 
     const rhythm: RhythmKind = classifyRhythm(signals);
     const traitClass: TraitClass = dominantTraitClass(pet.traits);
@@ -301,6 +312,7 @@ class GameEngine implements Engine {
     pet.speciesId = target.id;
     pet.stage = target.stage;
     pet.stats = scaleInheritedStats(statsForSpecies(target), pet);
+    pet.stageMolts = 0; // reset the maturity clock for the new stage
     this.ownSpecies(target.id);
     effects.push({ type: 'evolved', from, to: target.id, stage: target.stage });
   }
@@ -346,31 +358,6 @@ class GameEngine implements Engine {
       const id = MUTATION_IDS[nextInt(rng, MUTATION_IDS.length)]!;
       if (!pet.mutations.includes(id)) pet.mutations.push(id);
       effects.push({ type: 'mutation', id });
-    }
-  }
-
-  private rollGrade(pet: PetState, signals: WindowSignals, rng: Rng, effects: GameEffect[]): void {
-    const idx = GRADE_ORDER.indexOf(pet.grade);
-    if (idx >= GRADE_ORDER.length - 1) {
-      chance(rng, 0);
-      pet.lastGradeRoll = null;
-      return;
-    }
-    const from = pet.grade;
-    const to = GRADE_ORDER[idx + 1]!;
-    const mod = activityModifier(signals, pet.traits);
-    // Baseline-normalized odds (volume-blind) PLUS a separate capped vitality
-    // bonus from the session's raw token volume (hybrid growth design). The
-    // formula is shared with the UI forecast (`gradeOdds`) so they never drift.
-    const p = gradeRollChance(from, mod, signals.totalTokens);
-
-    const succeeded = chance(rng, p);
-    pet.lastGradeRoll = { from, to, chance: round4(p), succeeded };
-    if (succeeded) {
-      pet.grade = to as Grade;
-      effects.push({ type: 'gradeshift', from, to: to as Grade, chance: round4(p) });
-    } else {
-      effects.push({ type: 'grade_roll_failed', grade: from, chance: round4(p) });
     }
   }
 

@@ -17,7 +17,11 @@ identical results, forever. The engine is provider-blind: it consumes only norma
 
 - **Evolution cycle = the 5-hour session window.** Every closed window containing
   usage fires a MOLT_CHECKPOINT — the ONLY moment a pet can change stage, roll a
-  trait, mutate, evolve, or attempt a grade-up. Nothing evolves between molts.
+  trait, mutate, evolve, or attempt a grade-up. Nothing evolves between molts. A
+  molt is the OPPORTUNITY to evolve, not a guarantee: each stage must accrue its
+  **maturity** requirement (`pet.stageMolts` vs `STAGE_MATURITY`) and clear any
+  quality gate (`STAGE_GATE`, e.g. prime→apex needs grade ≥ B) before it advances —
+  pacing the egg→apex climb across ~5 active days. See `engine/maturity.ts`.
 - **Weekly cycle = rebirth, nothing else.** The week boundary fires REBIRTH only:
   ascension, legacy scoring, Archive record, inheritance roll, new egg. The pet's
   final form is whatever it became at the week's **last molt** — rebirth never
@@ -71,8 +75,17 @@ power.
 ## Evolution
 
 - Stage track: egg (Mote) → sprite → rookie → evolved → prime → apex.
-  Molts 1–2 guaranteed progression; 3–5 behavioral branching; 6+ rares, patterns,
-  rising mutation chance. Solo reaches Apex.
+  Behavioral branching from rookie on; rares, patterns, rising mutation chance at
+  later molts. Solo reaches Apex.
+- **Maturity pacing (lever A+B).** Each stage holds a maturity clock
+  (`pet.stageMolts`, reset on hatch and every evolution); it may evolve only once
+  `stageMolts ≥ STAGE_MATURITY[stage]` (sprite 1, rookie 2, evolved 3, prime 4 —
+  rising, so growth slows) AND `evolutionGateMet` (prime→apex needs grade ≥ B).
+  `growthProgress(state)` exports a SPOILER-FREE readout (fill frac + flags, never
+  stage/count) for the Pet page's abstract "Grow" cue. Empty windows still never
+  molt; both "≤1 stage per molt" and "grade never downgrades" still hold. All pure
+  fns of persisted state ⇒ replay==resume. Constants/logic live in
+  `engine/maturity.ts`; bumped `SCHEMA_VERSION` (cli store migrates `stageMolts`).
 - Branching is DATA (`evolvesTo[].when` BranchConditions): rookie fork by rhythm
   (steady/bursty); evolved 3-way by dominant trait class (endurance = Marathoner/
   Deepdiver, tempo = Sprinter/Swarm, breadth = Polyglot/Switcher); prime 3-way by

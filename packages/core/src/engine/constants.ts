@@ -4,7 +4,9 @@
 
 import type { Grade } from '../types';
 
-export const SCHEMA_VERSION = 1;
+// v2: added `pet.stageMolts` (the per-stage maturity clock). Old saves migrate
+// forward by defaulting it to 0 (see the cli state store).
+export const SCHEMA_VERSION = 2;
 
 // Grade-up base rates (design §12), content-tunable but fixed here for MVP.
 export const GRADE_BASE: Partial<Record<Grade, number>> = { C: 0.25, B: 0.1, A: 0.03 };

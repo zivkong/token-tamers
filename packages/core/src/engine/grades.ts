@@ -3,8 +3,16 @@
  */
 
 import { activityModifier } from '../evaluation/modifier';
-import { computeWindowSignals } from '../evaluation/signals';
-import { GRADE_ORDER, type GameState, type Grade, type UsageEvent } from '../types';
+import { computeWindowSignals, type WindowSignals } from '../evaluation/signals';
+import { chance, type Rng } from '../helpers/rng';
+import {
+  GRADE_ORDER,
+  type GameEffect,
+  type GameState,
+  type Grade,
+  type PetState,
+  type UsageEvent,
+} from '../types';
 import { A_TO_S_CAP, GRADE_BASE, VITALITY_FULL_TOKENS, VITALITY_MAX_BONUS } from './constants';
 
 export function gradeAtLeast(current: Grade, target: Grade): boolean {
@@ -45,6 +53,43 @@ export function gradeRollChance(from: Grade, modifier: number, totalTokens: numb
   let p = base * modifier + vitalityBonus(totalTokens);
   if (from === 'A') p = Math.min(p, A_TO_S_CAP);
   return Math.max(0, Math.min(1, p));
+}
+
+/**
+ * Roll the one grade attempt of a molt and apply it. Grades are monotonic (one
+ * step up, never down, no pity): at the S cap it consumes a draw for RNG-stream
+ * stability and clears `lastGradeRoll`; otherwise it rolls `gradeRollChance` and,
+ * on success, advances one grade and emits a Gradeshift. Records `lastGradeRoll`
+ * either way for the transparency UI. Mutates `pet`; pushes to `effects`.
+ */
+export function rollGrade(
+  pet: PetState,
+  signals: WindowSignals,
+  rng: Rng,
+  effects: GameEffect[],
+): void {
+  const idx = GRADE_ORDER.indexOf(pet.grade);
+  if (idx >= GRADE_ORDER.length - 1) {
+    chance(rng, 0);
+    pet.lastGradeRoll = null;
+    return;
+  }
+  const from = pet.grade;
+  const to = GRADE_ORDER[idx + 1]!;
+  const mod = activityModifier(signals, pet.traits);
+  // Baseline-normalized odds (volume-blind) PLUS a separate capped vitality bonus
+  // from the session's raw token volume (hybrid growth design). The formula is
+  // shared with the UI forecast (`gradeOdds`) so they never drift.
+  const p = gradeRollChance(from, mod, signals.totalTokens);
+
+  const succeeded = chance(rng, p);
+  pet.lastGradeRoll = { from, to, chance: round4(p), succeeded };
+  if (succeeded) {
+    pet.grade = to as Grade;
+    effects.push({ type: 'gradeshift', from, to: to as Grade, chance: round4(p) });
+  } else {
+    effects.push({ type: 'grade_roll_failed', grade: from, chance: round4(p) });
+  }
 }
 
 /** A forecast of the next grade roll: the transition and its success chance. */

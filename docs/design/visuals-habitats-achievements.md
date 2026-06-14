@@ -343,12 +343,25 @@ Achievements are the formal layer that couples progression to the habitat & trin
 - The endgame is driving this to 100%
 - In the TUI shell the meter is shown **per-page** (not in the menu): the Dex page's header
   bar shows species discovered, the Archive page's shows species recorded — each a mini bar +
-  `NN.N%` top-right. The pet page shows the pet's own vitals (Food / Diet / Odds), not a
-  completion bar — a three-row LIVE panel (Food, Diet, Odds) below the canvas. The pet's Stats
+  `NN.N%` top-right. The pet page shows the pet's own vitals (Food / Diet / Grow / Odds), not a
+  completion bar — a four-row LIVE panel (Food, Diet, Grow, Odds) below the canvas. The pet's Stats
   (PWR/SPD/WIS/GRT, a fixed equal budget) live up in the identity header beside the name, kept
   apart from the live vitals.
 
-  > Weighting formula: backlog item — see `docs/design/` and GitHub issues.
+#### Evolution-mystery rule (amended — abstract Growth cue permitted)
+
+The pet screen still must NOT reveal **the stage word, the molt count, the next form, or "N molts
+to evolve"** — _what_ the pet becomes, and exactly _when_, stays a surprise. The one permitted
+exception is the **"Grow" vitals row**: an _abstract_ maturation meter that fills toward the next
+evolution's eligibility (resetting when the pet evolves) plus a single state word — `maturing`,
+`cresting` (matured, held at the crest by the grade gate), `fully grown` (Apex), or `incubating`
+(egg). It signals _that_ the pet is progressing without leaking _which_ form or the exact timing.
+The cue reads only `core.growthProgress(state)`, which is deliberately spoiler-free (it exposes a
+fill fraction and coarse flags, never the stage name or counts). Stage/molt details still appear
+only in achievements and the Archive, never on the pet page; keep the `calibrating` cue (data
+readiness, not evolution).
+
+> Weighting formula: backlog item — see `docs/design/` and GitHub issues.
 
 ### Titles & flair (design baseline §14)
 

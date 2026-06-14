@@ -1,27 +1,31 @@
 /**
  * Pet vitals panel — the LIVE section between the game canvas and the menu.
  *
- * Three live rows on consecutive lines, deliberately free of evolution hints
- * (the Stats readout lives up in the header band — identity, not live signs —
- * and is drawn via the exported `drawStatsRow`):
+ * Four live rows on consecutive lines (the Stats readout lives up in the header
+ * band — identity, not live signs — drawn via the exported `drawStatsRow`):
  *
  *   Food   ▕████▒▒▒▒▒▒▒▒▏ 84.2M / 200M  +6% molt ↑
  *   Diet   ▕██████▒▒▒▒▒▒▏ Aether 72% · Cipher 28%
+ *   Grow   ▕████▒▒▒▒▒▒▒▒▏ maturing
  *   Odds   B → A 38%                          rolls at next molt
  *
- * The two bars share ONE geometry (`barGeom`) so Food and Diet line up at every
- * width. They read as opposite motions: the Food bar GROWS toward the 200M
- * vitality cap and resets each window (single tint, owns the `+N% molt` vitality
- * preview); the Diet bar is ALWAYS FULL and only its House-tinted proportions
- * drift as intake accumulates over the pet's life. The Odds row shows just the
- * live current→next grade forecast (`ctx.live.nextGrade`, computed by the host;
- * see core's `gradeOdds`), grade-tinted, with the published base odds as the
- * deterministic fallback when there is no live readout (golden tests).
+ * The three bars share ONE geometry (`barGeom`) so Food, Diet and Growth line up
+ * at every width. They read as distinct motions: Food GROWS toward the 200M
+ * vitality cap and resets each window (single tint, owns the `+N% molt` preview);
+ * Diet is ALWAYS FULL and only its House-tinted proportions drift over the pet's
+ * life; Growth fills toward the next evolution's eligibility and resets each time
+ * the pet evolves. Growth is DELIBERATELY ABSTRACT — a bar plus a one-word state,
+ * never the stage name, molt counts, or the next form (the evolution-mystery
+ * rule, amended to allow this "it IS progressing" cue). The Odds row shows just
+ * the live current→next grade forecast (`ctx.live.nextGrade`, computed by the
+ * host; see core's `gradeOdds`), grade-tinted, with the published base odds as
+ * the deterministic fallback when there is no live readout (golden tests).
  */
 
 import { mix, type Rgb } from '../terminal/ansi';
 import {
   gradeOdds,
+  growthProgress,
   VITALITY_FULL_TOKENS,
   vitalityBonus,
   type Grade,
@@ -39,6 +43,13 @@ const VALUE: Rgb = { r: 222, g: 228, b: 240 };
 const MUTED: Rgb = { r: 120, g: 126, b: 146 };
 const UNKNOWN_TINT: Rgb = { r: 96, g: 102, b: 122 };
 const FOOD_FILL: Rgb = { r: 240, g: 196, b: 80 };
+/**
+ * Growth bar tint — a muted teal chosen to sit OFF both signalling ladders: it is
+ * not a grade color (C grey · B green · A violet · S gold) so it never reads as
+ * rarity, and not a House color, so the maturation cue stays a neutral progress
+ * meter. (The `Growth` label disambiguates it from the gold Food bar.)
+ */
+const GROWTH_FILL: Rgb = { r: 96, g: 200, b: 178 };
 
 /** → between grades on the Odds row (by codepoint to survive encoding). */
 const ARROW = String.fromCodePoint(0x2192);
@@ -66,11 +77,12 @@ const STAT_ICON = {
   GRT: String.fromCodePoint(0x25a3),
 } as const;
 
-/** Draw the live vitals panel: food / diet / odds on consecutive rows. */
+/** Draw the live vitals panel: food / diet / growth / odds on consecutive rows. */
 export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
   drawFoodRow(ctx, panel, panel.y);
   drawDietRow(ctx, panel, panel.y + 1);
-  drawOddsRow(ctx, panel, panel.y + 2);
+  drawGrowthRow(ctx, panel, panel.y + 2);
+  drawOddsRow(ctx, panel, panel.y + 3);
 }
 
 // ---------------------------------------------------------------------------
@@ -264,7 +276,39 @@ function drawDietRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 }
 
 /**
- * Row 4 — the ODDS forecast: just the LIVE current→next grade roll (the only
+ * Row 4 — the GROWTH cue: an abstract maturation meter that fills toward the next
+ * evolution's eligibility (same geometry as Food/Diet) and resets when the pet
+ * evolves. Deliberately spoiler-free — a bar plus ONE state word, never the stage
+ * name, molt counts, or the next form (the evolution-mystery rule). Reads only
+ * `core.growthProgress(state)`, so it is fully deterministic in golden frames.
+ */
+function drawGrowthRow(ctx: RenderContext, panel: SceneRect, y: number): void {
+  const { buf, state } = ctx;
+  const narrow = panel.cols < NARROW;
+  // 4-char label to match Food/Diet/Odds and clear the bar gutter (CONTENT_X).
+  buf.text(panel.x + 1, y, 'Grow', LABEL, null);
+  const bar = barGeom(panel, y, narrow);
+
+  const g = growthProgress(state);
+  drawMeter(buf, bar, g.frac, g.terminal ? FOOD_FILL : GROWTH_FILL);
+
+  const textX = bar.x + bar.w + 2;
+  const avail = panel.x + panel.cols - 1 - textX;
+  const word = growthWord(g);
+  const tone = g.terminal ? VALUE : MUTED;
+  if (avail > 0) buf.text(textX, y, word.slice(0, avail), tone, null);
+}
+
+/** The one abstract state word for the Growth row (no stage/count/next-form leak). */
+function growthWord(g: ReturnType<typeof growthProgress>): string {
+  if (g.incubating) return 'incubating';
+  if (g.terminal) return 'fully grown';
+  if (g.matured) return 'cresting';
+  return 'maturing';
+}
+
+/**
+ * Row 5 — the ODDS forecast: just the LIVE current→next grade roll (the only
  * transition that can actually fire next), grade-tinted. Uses the host's
  * `ctx.live.nextGrade`; with no live readout it falls back to the published base
  * odds (`gradeOdds(state)`) so golden frames stay deterministic. At the S cap it

@@ -33,6 +33,7 @@ const state: GameState = {
     rhythmVariant: 'nocturne',
     stats: { pwr: 26, spd: 28, wis: 41, grt: 25 },
     moltCount: 23,
+    stageMolts: 2,
     generation: 7,
     hatchedAt: 0,
     dormant: false,

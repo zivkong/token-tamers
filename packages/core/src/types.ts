@@ -302,6 +302,14 @@ export interface PetState {
   rhythmVariant: RhythmVariant | null;
   stats: Stats;
   moltCount: number;
+  /**
+   * Molts accrued in the CURRENT stage (the maturity clock). A stage only
+   * becomes eligible to evolve once this reaches its `STAGE_MATURITY` requirement
+   * (and any quality gate is met); it resets to 0 on every stage change. This
+   * paces the egg→apex climb across ~5 active days instead of one-stage-per-molt.
+   * Reset to 0 at hatch (entering sprite) and at each evolution.
+   */
+  stageMolts: number;
   generation: number;
   hatchedAt: number;
   dormant: boolean;

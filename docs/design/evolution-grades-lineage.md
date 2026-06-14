@@ -13,8 +13,48 @@ rationale, and parenthetical from those sections is reproduced here in full.
 
 **Egg → Sprite → Rookie → Evolved → Prime → Apex**
 
-- Molt 1–2 guaranteed progression; molt 3–5 behavioral branching; molt 6+ rares, patterns, rising
-  mutation chance. Solo reaches Apex — standard pool only.
+- Behavioral branching from Rookie on; rares, patterns, and a rising mutation chance accrue at
+  later molts. Solo reaches Apex — standard pool only.
+
+### Stage maturity & pacing (the ~5-day climb)
+
+Evolution is **not** one stage per molt. Each stage must **mature** before it can evolve, so the
+egg→Apex climb spans roughly **five active days** instead of finishing in two — leaving the back
+half of the week for the form to settle and for grades to climb (it aligns evolution with the
+weekly three-act arc: Growth accrues the climb, the final step lands in Bloom).
+
+- **Maturity clock (`pet.stageMolts`).** A stage accrues one "maturity molt" per molt spent in it
+  and may evolve only once it reaches its requirement; the clock resets to 0 on every stage change
+  (and at hatch, entering Sprite). The requirement **rises with stage** so growth visibly slows as
+  the pet matures, while day-1 momentum is preserved:
+
+  | Stage (evolving from) | Maturity molts required |
+  | --------------------- | ----------------------- |
+  | Sprite → Rookie       | 1                       |
+  | Rookie → Evolved      | 2                       |
+  | Evolved → Prime       | 3                       |
+  | Prime → Apex          | 4 (+ quality gate)      |
+
+  Sum = 10 molts after the hatch, ≈ days 4–5 at a typical 2–3 molts/day cadence. The egg (hatches
+  off its own bonus checkpoint) and Apex (terminal) are unpaced. These are **engine pacing
+  constants** (`STAGE_MATURITY` in `packages/core/src/engine/maturity.ts`), like grade odds or the
+  window length — temporal cycle rules, not species data.
+
+- **Quality gate on the final step.** Reaching Apex additionally requires a quality threshold —
+  **grade ≥ B** — so Apex reflects a sustained week, not a guaranteed default. A pet that has
+  matured but not yet graded up sits at the **crest** of Prime until the threshold is met. (Gate
+  keyed by the stage evolving _from_: `STAGE_GATE`, currently `prime → { minGrade: 'B' }`.)
+
+- **At most one stage per molt, never backward** — both invariants still hold; maturity only
+  _delays_ a stage-up, it never skips or reverses one. Fully deterministic: maturity and the gate
+  are pure functions of persisted state (`stageMolts`, `grade`), so replay-from-scratch ==
+  resume-from-snapshot is unaffected. (The `arc` early/late Apex split keys off lifetime molt
+  count, independent of maturity; if early-peak Apex variants need re-tuning under the slower
+  cadence, that is a separate `arc`-threshold change.)
+
+- **Empty windows still never molt** (a zero-usage window fires no checkpoint at all; a zero-usage
+  week goes Dormant) — maturity governs only windows that _did_ contain usage. See
+  `lifecycle-and-cycles.md`.
 
 ### Model-ID registry & Houses (design baseline §6)
 
@@ -138,7 +178,8 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
   (Sprinter/Swarm), or breadth (Polyglot/Switcher).
 - **Prime fork (3-way):** consistency index band vs own baseline (low/mid/high — all three are
   _different_, none stronger; horizontal budgets).
-- **Apex fork (2-way):** lifetime arc — early-peaking lineage vs late-bloomer.
+- **Apex fork (2-way):** lifetime arc — early-peaking lineage vs late-bloomer. Gated: Prime must
+  reach **4 maturity molts AND grade ≥ B** before it ascends (see _Stage maturity & pacing_).
 - **Rhythm variants** (Burnout/Disciplined/Nocturne) are palette/pose variants applied from
   Evolved onward — not separate species, but distinct Dex entries' flair and battle intro lines.
 
@@ -242,8 +283,12 @@ is purely additive (the modifier itself stays volume-blind). The pet screen surf
 single-tinted **"Food"** gauge filling toward 200M with a `+N% molt` preview, while a separate
 **"Odds"** row shows the resulting live chance for the current → next grade only (grade-colored,
 e.g. `B → A 18%`; `S ★ apex` at the cap) — the transparency the player acts on (see
-architecture.md). The **"Diet"** row between them is the always-full House-share bar (identity,
-not power). Model choice still never enters power (pillar 2 / invariant 3).
+architecture.md). The **"Diet"** row is the always-full House-share bar (identity, not power). A
+**"Grow"** row sits between Diet and Odds: an _abstract_ maturation meter that fills toward the
+next evolution's eligibility and resets when the pet evolves (one state word — `maturing` /
+`cresting` / `fully grown` — never the stage name, molt counts, or next form, so the
+evolution-mystery rule holds while the player can still see the pet is progressing). Model choice
+still never enters power (pillar 2 / invariant 3).
 
 **Gradeshift moment:** a successful roll plays a molt cutscene where the pet's palette visibly
 upgrades to the new grade live (see §13) — the mid-week jackpot moment worth screenshotting.

@@ -79,8 +79,11 @@ _Abstraction over the lifecycle._
 ### Canonical cycle rule
 
 - **Evolution cycle = the 5-hour session window.** Every closed session window containing usage
-  fires a MOLT_CHECKPOINT — the ONLY moment a pet can change stage, roll a trait, mutate, or
-  evolve. No evolution ever happens between or outside molts.
+  fires a `MOLT_CHECKPOINT` — the ONLY moment a pet can change stage, roll a trait, mutate, or
+  evolve. No evolution ever happens between or outside molts. A molt is the _opportunity_ to
+  evolve, not a guarantee: each stage must accrue a **maturity** requirement (and clear any quality
+  gate) before it advances, so the egg→Apex climb is paced across ~5 active days rather than one
+  stage per molt. See `evolution-grades-lineage.md` → _Stage maturity & pacing_.
 - **Weekly cycle = the rebirth cycle, nothing else.** The week boundary fires REBIRTH only:
   ascension, legacy scoring, Archive record write, inheritance roll, new egg. The pet's final
   form — including its pattern form — is whatever it already became at its **last molt of the
@@ -130,9 +133,11 @@ diversifies diet.
 
 ### Weekly three-act arc
 
-- **Growth** (days 1–3): molts and traits accrue.
-- **Bloom** (days 4–6): form matures; one random molt fires the weekly **Bloom event** — a
-  guaranteed rare roll.
+- **Growth** (days 1–3): molts and traits accrue; the maturity-paced climb advances the pet
+  through its early stages (it does NOT finish the climb here — that is the point of pacing).
+- **Bloom** (days 4–6): form matures; the final maturity-gated step (Prime → Apex, grade ≥ B)
+  typically lands here for a sustained week, and one random molt fires the weekly **Bloom event** —
+  a guaranteed rare roll.
 - **Twilight** (final ~24h): legacy score crystallizes; UI previews rebirth inheritance. (Form
   is already final after the week's last molt — Twilight and the rebirth boundary itself never
   evolve the pet.)

@@ -132,6 +132,12 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   Dynamic policy (subscriptions, inferred windows) vs static (API/fixed anchor).
 - **Stages:** egg(Mote) → sprite → rookie → evolved → prime → apex; branch by
   rhythm / trait class / consistency / arc — all data-driven (`evolvesTo`).
+  **Maturity-paced (~5-day climb):** a stage evolves only after accruing its
+  `STAGE_MATURITY` molts (sprite 1, rookie 2, evolved 3, prime 4) AND clearing any
+  `STAGE_GATE` (prime→apex needs grade ≥ B) — not one stage per molt. Tracked by
+  `pet.stageMolts` (deterministic; SCHEMA_VERSION 2, cli migrates). The Pet page's
+  abstract "Grow" vitals row surfaces it via `growthProgress` WITHOUT leaking
+  stage/count/next-form (evolution-mystery rule). See `engine/maturity.ts`.
 - **Houses (identity ONLY):** Aether `claude-*` WIS · Cipher `gpt-*`/`o*` PWR ·
   Flux `gemini-*` SPD · Forge open-weight GRT · Wild unmatched ("???" dormant gene).
 - **Grades:** C→B 25%, B→A 10%, A→S 3% base; activity modifier ×0.5–2.0 (model- and
