@@ -10,9 +10,22 @@ packages:
 allowBuilds:
   esbuild: true
 minimumReleaseAge: 4320
+# Temporary, security-approved cooldown waiver: the esbuild patch for
+# GHSA-gv7w-rqvm-qjhr (high) + GHSA-g7r4-m6w7-qqqr (low) is 0.28.1, published
+# inside the 3-day window, and EVERY older esbuild is vulnerable — there is no
+# mature non-vulnerable version to wait for. esbuild is already the sole trusted
+# allowBuilds exception. DROP this exclude once 0.28.1 ages past 72h (~2026-06-14
+# 22:47 UTC); the override below then installs it under the normal cooldown.
+minimumReleaseAgeExclude:
+  - esbuild
+  - '@esbuild/*' # esbuild's per-platform binary packages, same 0.28.1 release
 # Cooldown pins: these transitive deps' latest releases are inside the 3-day
 # minimumReleaseAge window, so they're pinned one mature release back.
 # Revisit/drop after the window passes (semver ~2026-06-13, bare-stream ~2026-06-15).
 overrides:
   semver: 7.8.3
   bare-stream: 2.13.1
+  # Security fix (GHSA-gv7w-rqvm-qjhr high + GHSA-g7r4-m6w7-qqqr low): every
+  # esbuild < 0.28.1 is vulnerable, so force the patched 0.28.1 across all
+  # transitive users (tsup/vite/tsx/@yao-pkg/pkg). esbuild is dev-only.
+  esbuild: 0.28.1
