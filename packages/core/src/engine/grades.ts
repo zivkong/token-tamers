@@ -15,7 +15,7 @@ export function round4(n: number): number {
 
 /**
  * Capped vitality bonus added to a grade roll from the closing window's RAW
- * token volume (hybrid FOMO). 0 at no usage, ramping linearly to
+ * token volume (hybrid growth). 0 at no usage, ramping linearly to
  * VITALITY_MAX_BONUS at VITALITY_FULL_TOKENS and clamped there — so a bigger
  * session helps the molt, but the bonus can never run away. Pure + deterministic.
  */

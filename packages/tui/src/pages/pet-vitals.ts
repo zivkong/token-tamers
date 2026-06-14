@@ -11,7 +11,7 @@
  *
  *   Progress ▕███░░░░░░░░▏ 16.7%
  *
- * The Charge row is the FOMO meter: the open window's raw tokens fill toward a
+ * The Charge row is the growth meter: the open window's raw tokens fill toward a
  * 200M "full" cap (segmented by the diet's House tints), and the molt-boost
  * preview is the REAL capped vitality bonus the engine will apply at the molt
  * (`vitalityBonus`). Everything else is a pure function of GameState; without a
@@ -82,7 +82,7 @@ function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 }
 
 /**
- * Row 2 — the FOMO charge meter: open-window tokens toward 200M, segmented by
+ * Row 2 — the growth charge meter: open-window tokens toward 200M, segmented by
  * diet, with the real capped molt-boost preview. Token counts only.
  */
 function drawChargeRow(ctx: RenderContext, panel: SceneRect, y: number): void {
