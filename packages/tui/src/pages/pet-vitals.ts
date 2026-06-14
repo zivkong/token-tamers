@@ -3,7 +3,7 @@
  *
  * Four rows, one per blank-spaced slot, deliberately free of evolution hints:
  *
- *   PWR ▓▓▓░ 12   SPD ▓▓░ 9    WIS ▓▓▓▓ 15   GRT ▓▓░ 11
+ *   ◆ PWR: 12 | ↯ SPD: 9 | ✦ WIS: 15 | ▣ GRT: 11
  *
  *   Food   ▕████▒▒▒▒▒▒▒▒▏ 84.2M / 200M  +6% molt ↑
  *
@@ -20,9 +20,10 @@
 
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
 import { VITALITY_FULL_TOKENS, vitalityBonus } from '@token-tamers/core';
-import { drawMeter, drawSegmentedMeter } from '../components';
+import { drawSegmentedMeter } from '../components';
 import { houseTint } from '../helpers/lookup';
 import { renderGradeOddsLine } from '../helpers/status';
+import type { FrameBuffer } from '../render/buffer';
 import type { RenderContext } from './types';
 import type { SceneRect } from '../render/layout';
 
@@ -32,10 +33,16 @@ const MUTED: Rgb = { r: 120, g: 126, b: 146 };
 const UNKNOWN_TINT: Rgb = { r: 96, g: 102, b: 122 };
 const FOOD_FILL: Rgb = { r: 240, g: 196, b: 80 };
 
-/** Per-stat bar reference (≈ half the 240 stage budget) so bars show headroom. */
-const STAT_BAR_MAX = 120;
-/** Below this width we drop to compact single-letter / shorter labels. */
+/** Below this width we drop to compact labels. */
 const NARROW = 64;
+
+/** Per-stat icon (by codepoint to survive encoding): PWR ◆ · SPD ↯ · WIS ✦ · GRT ▣. */
+const STAT_ICON = {
+  PWR: String.fromCodePoint(0x25c6),
+  SPD: String.fromCodePoint(0x21af),
+  WIS: String.fromCodePoint(0x2726),
+  GRT: String.fromCodePoint(0x25a3),
+} as const;
 
 /** Draw the vitals panel: stats / food / diet (blank-spaced). */
 export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
@@ -48,30 +55,54 @@ export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
 // Rows.
 // ---------------------------------------------------------------------------
 
-/** Row 1 — the four stat bars (normalized to a fixed cap so empty track shows). */
+/**
+ * Row 1 — the four stats as plain readouts (no bar; stats are a fixed budget,
+ * not progress): `◆ PWR: 12 | ↯ SPD: 9 | ✦ WIS: 15 | ▣ GRT: 11`. Drops icons and
+ * tightens separators when the width can't fit the full form.
+ */
 function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf, pack, state } = ctx;
   const s = state.pet.stats;
-  const cells: Array<[string, number]> = [
+  const accent = mix(hexToRgb(houseTint(pack, state.pet.house)), VALUE, 0.1);
+  const stats: Array<[string, number]> = [
     ['PWR', s.pwr],
     ['SPD', s.spd],
     ['WIS', s.wis],
     ['GRT', s.grt],
   ];
-  const fill = mix(hexToRgb(houseTint(pack, state.pet.house)), VALUE, 0.15);
-  const cellW = Math.floor(panel.cols / cells.length);
-  const narrow = panel.cols < NARROW;
-  const labelW = narrow ? 1 : 3;
+  // Full form: `◆ PWR: 12` joined by ` | `. Each label costs icon+space(2) +
+  // "NAME:"(4) + " "+value. If it overflows, fall back to compact name + value.
+  const fullLen =
+    stats.reduce((n, [nm, v]) => n + 2 + nm.length + 1 + 1 + String(v).length, 0) + 3 * 3;
+  if (fullLen <= panel.cols - 2) {
+    drawStatSegments(buf, panel.x + 1, y, stats, accent);
+    return;
+  }
+  const compact = stats.map(([nm, v]) => `${nm} ${v}`).join('  ');
+  buf.text(panel.x + 1, y, compact.slice(0, Math.max(0, panel.cols - 2)), VALUE, null);
+}
 
-  cells.forEach(([name, val], i) => {
-    const cx = panel.x + i * cellW + 1;
-    const label = narrow ? (name[0] ?? '') : name;
-    buf.text(cx, y, label, LABEL, null);
-    const valStr = String(val).padStart(2);
-    const barX = cx + labelW + 1;
-    const barW = Math.max(2, cellW - labelW - valStr.length - 3);
-    drawMeter(buf, { x: barX, y, w: barW }, val / STAT_BAR_MAX, fill);
-    buf.text(barX + barW + 1, y, valStr, VALUE, null);
+/** Draw `icon NAME: value` segments joined by ` | `, colored per part. */
+function drawStatSegments(
+  buf: FrameBuffer,
+  startX: number,
+  y: number,
+  stats: ReadonlyArray<[string, number]>,
+  accent: Rgb,
+): void {
+  let x = startX;
+  stats.forEach(([name, val], i) => {
+    if (i > 0) {
+      buf.text(x, y, ' | ', MUTED, null);
+      x += 3;
+    }
+    buf.text(x, y, STAT_ICON[name as keyof typeof STAT_ICON], accent, null);
+    x += 2; // icon + a space
+    buf.text(x, y, `${name}:`, LABEL, null);
+    x += name.length + 1;
+    const v = ` ${val}`;
+    buf.text(x, y, v, VALUE, null);
+    x += v.length;
   });
 }
 
