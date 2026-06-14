@@ -13,7 +13,7 @@ in the same PR.
 | [dna-hash-battles.md](dna-hash-battles.md)                           | DNA fusion, hash/code format, battle system (§9–§11)                                               |
 | [visuals-habitats-achievements.md](visuals-habitats-achievements.md) | Visual design, rendering budgets, habitats, trinkets, achievements (§13, §14)                      |
 | [architecture.md](architecture.md)                                   | TUI shell spec, stack decision, adapter layer, version-agnostic rules, AI-native policy (§15, §17) |
-| [roadmap-retention-backlog.md](roadmap-retention-backlog.md)         | M1–M3 scope, year-one retention plan, implementation backlog (§18–§20)                             |
+| [roadmap-retention-backlog.md](roadmap-retention-backlog.md)         | M1–M3 milestone structure, year-one retention plan, implementation backlog (§18–§20)               |
 
 Spoiler note: fusion-locked special pool **contents** are deliberately absent from
 every page here — they live only in `packages/content/content/fusion-pools.json`,

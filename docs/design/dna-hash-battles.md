@@ -14,7 +14,7 @@ Where items are noted as "TODO" or "content-tunable" in the source, they remain 
 - `tt dna export` — generate and display the pet's current DNA code.
 - `tt dna apply <code>` — apply a DNA code from another pet to this one.
 
-Now implemented as part of the `apps/cli` command surface (M2 scope).
+Now implemented as part of the `apps/cli` command surface (M2.3 scope).
 
 ### Apply-Timing Tiers by Stage
 
@@ -147,7 +147,7 @@ TT2-c14-x9F…
 TT2-c14-qL2…
 ```
 
-Now implemented (M2 scope) in `packages/core` — the hash codec is pure, deterministic, and has no
+Now implemented (M2.1 scope) in `packages/core` — the hash codec is pure, deterministic, and has no
 I/O dependencies.
 
 ### Forward-Compatibility Parsing Rules

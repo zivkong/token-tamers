@@ -132,8 +132,9 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C;
   Archive keeps one strictly-best record per species.
 - **Scope:** M1 (shipped) = Claude Code + OpenCode adapters, Aether+Cipher lines, shell with
-  Pet/Dex/Archive/Settings. M2 = Codex adapter, Flux/Forge/hybrids, DNA, battles,
-  leagues. M3 = seasons, weather events, sprite compiler.
+  Pet/Dex/Archive/Settings. M2.1–M2.7 = DNA codec/export, battle engine, DNA apply/fusion,
+  Codex adapter, collections/deco, leagues/drifter, weather/seasons. M3 = art pipeline,
+  future adapters, polish.
 
 ## AI-native development policy (full text: docs/design/architecture.md)
 
@@ -155,7 +156,7 @@ within it.
   30-day deletion, Codex cumulative deltas/format generations, OpenCode storage
   tree (packages/adapters)
 - `maintain-content-packs` — schemas, additive-only registries, the full evolution
-  tree incl. reserved M2 names, achievements/habitats/trinkets (packages/content)
+  tree incl. reserved future names, achievements/habitats/trinkets (packages/content)
 - `create-sprites` — art direction, palette indirection, grade beauty ladder,
   originality rules (any sprite asset)
 - `write-wiki-docs` — docs style, pledges, grade-odds transparency, spoiler policy

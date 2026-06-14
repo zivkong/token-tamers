@@ -103,7 +103,7 @@ to change it. Edits persist to `~/.tokentamers/config.json` and apply on the nex
 (cycle policy reshapes molt windows, which must not shift under a running pet). Adding or
 removing adapters and editing scan paths stays in `tt init`. Everything else is read-only;
 the pet game stays fully idle (pillar one — Settings is optional config, never gameplay).
-M1 ships `⚙ Settings` and `⏻ Quit`; the cosmetic/social buttons land in M2.
+M1 ships `⚙ Settings` and `⏻ Quit`; the cosmetic/social buttons land in M2.2–M2.6.
 
 ### Mouse Support Details
 
@@ -355,12 +355,18 @@ Statusline one-liner format: `🥚→ <species> [S]★ molt 7 ▓▓▓░`
 placeholder to comply with the spoiler rule — `scripts/check-spoilers.sh` would fail
 otherwise.)
 
-### Future commands (post-MVP)
+### Future commands (by milestone)
 
-`tt dna drifter` (local Drifter DNA from deterministic calendar seed) ·
-`tt league import <codes>` (local Team League standings from pasted hashes) ·
-`tt complete` (Completion Meter breakdown) · `tt deco` / `tt deco --auto` (habitat + trinket
-selection)
+| Milestone | Command                                                                     |
+| --------- | --------------------------------------------------------------------------- |
+| M2.1      | `tt dna export`                                                             |
+| M2.2      | `tt battle`                                                                 |
+| M2.3      | `tt dna apply <code>`                                                       |
+| M2.5      | `tt deco` / `tt deco --auto`                                                |
+| M2.6      | `tt dna drifter` (local Drifter DNA from deterministic calendar seed)       |
+| M2.6      | `tt league import <codes>` (local Team League standings from pasted hashes) |
+
+`tt complete` (Completion Meter breakdown) is already implemented in M1.
 
 ---
 

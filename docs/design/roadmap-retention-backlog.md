@@ -45,16 +45,87 @@ implementation starts (GitHub + Claude Code)).
 8. `tt watch` + statusline one-liner; `--no-color` fallback
 9. CLAUDE.md + the four project skills; docs/wiki skeleton + CI spoiler check; CI zero-network check
 
-### Post-MVP (M2)
+### Post-MVP — Granular Milestones
 
-- Codex CLI adapter; Flux + Forge lines; hybrid lines
-- Hash export/import; battles; DNA fusion + pools; Drifter DNA; Team Leagues
-- Habitat/trinket full sets; remaining achievements; Deco/DNA/Battle/League pages
+M2 was too large; it is decomposed into seven independently shippable milestones (M2.1–M2.7).
+M3 follows as art pipeline, future adapters, and polish.
 
-### Post-MVP (M3 / live)
+#### M2.1 — DNA Codec & Export (social foundation)
 
-- Season 1 content pack; monthly weather events; Legacy milestones
-- Sprite compiler pipeline; pattern-variant art completion
+- Hash codec in `packages/core` — encode/decode `TT<schema>-<content_min>-<payload>-<sig>`
+- Forward-compatibility parsing: old clients parse newer hashes, dormant genes, `graded_under` tags
+- Content schema draft & hash payload spec finalized
+- `tt dna export` command
+- Riddle-hint copy for Vigil / Tempest / Prism / Chimera DNA types
+
+#### M2.2 — Battle Engine & TUI
+
+- Deterministic battle formula: `outcome = f(hashA, hashB, ruleset_version)`
+- 4-House type wheel (Aether > Cipher > Flux > Forge > Aether; Wild neutral)
+- Trait procs & behavioral counters (Sprinter counters Marathoner, Deepdiver counters Swarm)
+- Grade stat-floor (~+5% for S)
+- Ruleset negotiation & versioning; battle math tuning (damage formula, proc rates, multipliers)
+- `tt battle` command; Battle TUI page (split-pane, HP bars, lunges, screen-shake, floating damage)
+- Archive-record battles
+
+#### M2.3 — DNA Apply & Fusion Pools
+
+- `tt dna apply <code>` with timing tiers (Sprite/Rookie = graft, Evolved = pool entry, Prime = fusion Apex)
+- One-application-per-lifetime enforcement; DNA merge breeding (trait pool splicing)
+- Cross-provider fusion first-class (Chimera-class flagship); grade carry, S-spliced marker, stat-floor bonus
+- Fusion pool evaluation logic (Vigil / Tempest / Prism / Chimera); first fusion pool lineup + Chimera-class pool design
+- Fusion cutscene (parents slide in, overlap, white flash, two-tone reveal)
+- Fusion cosmetics (two-tone split per parent, S-spliced gold outline); DNA TUI page
+
+#### M2.4 — Codex Adapter
+
+- Codex adapter: delta algorithm + format-generation detection
+- Integration with adapter registry + `tt init` detection
+- Static-policy edge cases: DST, timezone, week-anchor migration
+
+#### M2.5 — Collections: Achievements, Habitats, Trinkets, Deco
+
+- Full achievements.json v1 (~120 total): lineage, evolution, traits, rhythm, grades, social, collection meta, calendar
+- Full habitat set: pattern-themed (×4), House (×4), Ancestral Grove (×3 tiers), Gilded Sanctum, Cocoon Hollow
+- Full trinket set: trait milestones, molt milestones, weather, DNA export, fusion, archive completion
+- Unlock-condition schema as declarative data; habitat/trinket unlock schemas + idle-interaction animation matrix
+- `tt deco` command + `--auto` mode; Deco TUI page; loadout storage in local config
+- Habitat sprites (96×48) + trinket sprites (12×12)
+- Habitat live-sync touches (day/night tint, weather ambient effects, grade aura interaction)
+
+#### M2.6 — Leagues & Drifter DNA
+
+- Team League standings format; `tt league import <codes>` command; League TUI page
+- Seasonal league titles recorded in lineage
+- `tt dna drifter` — deterministic calendar-seeded solo-dev DNA bridge
+- Solo-dev bridge: every machine on the same month produces an identical code, fully offline
+
+#### M2.7 — Weather, Seasons & Live Ops
+
+- Weekly weather seed evaluation (ISO week → trait rate bias, ambient habitat effects)
+- Monthly weather events (special week, re-earnable trinket/habitat, twisted trait table)
+- Season 1 content pack: +1 hybrid line, +6–10 species, +1 habitat set, +1 DNA pool, +1 achievement page
+- 12-month content calendar; Legacy milestones (Gen 25/52, Four-House Master, Perfect Season)
+
+### M3 — Art Pipeline, Future Adapters & Polish
+
+- Hand-crafted sprites for all species (replace procedural placeholders)
+- Sprite compiler tool (PNG → palette-indexed JSON)
+- Cutscenes: molt crack & re-form, gradeshift burst, fusion cinematic
+- Pattern-variant art completion
+- Windows path support; CI bench harness + initial perf budgets
+- Future adapters: Gemini CLI, Copilot CLI, Amp, Goose, Cursor
+- Page-by-page mockups for any remaining TUI pages
+
+### Dependency graph
+
+```
+M1 (shipped)
+ ├─► M2.1 (DNA codec + export) ──┬──► M2.2 (battle engine + TUI) ──► M2.6 (leagues + drifter)
+ │                               └──► M2.3 (DNA apply + fusion pools) ──► M2.5 (collections + deco) ──► M2.7 (weather + seasons)
+ ├─► M2.4 (Codex adapter) — independent, can run in parallel with M2.1–M2.2
+ └─► M3 (art pipeline + polish) — follows after content shape stabilizes in M2.5–M2.7
+```
 
 ---
 
@@ -106,49 +177,71 @@ requires the seasonal cadence below — added to plan.**
 
 ## §20 — Implementation Backlog (design baseline §20)
 
-These items are tracked as GitHub issues from day one. The list below is verbatim from the design
-baseline, preserving checked/unchecked state exactly as recorded at freeze. Items marked `[x]` were
-complete at baseline; all others remain open.
+These items are tracked as GitHub issues from day one. The list below preserves the original
+baseline items, now grouped by the new milestone structure (§18). Items marked `[x]` were
+complete at baseline freeze; all others remain open.
 
-> **Note:** these are intended to become individual GitHub issues. The checked item (`[x]`) was
-> `Full evolution tree v1 (§7) — sprites pending`, completed during the design phase. All other
-> items are open backlog at baseline freeze.
+### Completed at baseline
 
-- [ ] Grade roll tuning: base rates, activity-modifier weights, caps, optional sub-certainty
-      soft-pity (must never reach guarantee), anti-gaming caps
-- [ ] Molt evaluation spec: per-adapter field parsing + normalization math
-- [ ] Codex adapter: delta algorithm + format-generation detection spec
 - [x] OpenCode adapter: SQLite (`opencode.db`) primary + legacy storage-tree walk, prune-tolerant
-- [ ] Static-policy edge cases: timezone changes, DST, week-anchor migration
 - [x] Full evolution tree v1 (§7) — sprites pending
-- [ ] 12-month content calendar + Season 1 pack outline
-- [ ] Team League standings format + local Drifter DNA generation spec
+- [x] models.json v1 pattern list (major hosted + open-weight model-ID families)
+- [x] pnpm workspace + tsup + ESLint(+Prettier) + Vitest scaffold
+- [x] Rename in-game "Codex" (collision with OpenAI Codex) → Archive
+- [x] Write CLAUDE.md v1 + the four project skills
+- [x] Wiki page skeletons in docs/wiki + CI spoiler check
+
+### M2.1 — DNA Codec & Export
+
+- [ ] Content schema draft; hash payload spec + signing scheme
+- [ ] Riddle-hint copy for each DNA type
+
+### M2.2 — Battle Engine & TUI
+
+- [ ] Battle math: damage formula, proc rates, House-wheel multipliers
+- [ ] Page-by-page mockups: Battle page inside the 4:3 shell
+
+### M2.3 — DNA Apply & Fusion Pools
+
+- [ ] First fusion pool lineup; Chimera-class pool design
+
+### M2.4 — Codex Adapter
+
+- [ ] Codex adapter: delta algorithm + format-generation detection spec
+- [ ] Static-policy edge cases: timezone changes, DST, week-anchor migration
+
+### M2.5 — Collections: Achievements, Habitats, Trinkets, Deco
+
 - [ ] achievements.json v1: full 120-achievement list + reward mapping
 - [ ] Completion Meter weighting formula
-- [ ] First fusion pool lineup; Chimera-class pool design
-- [ ] models.json v1 pattern list (major hosted + open-weight model-ID families)
-- [ ] Content schema draft; hash payload spec + signing scheme
-- [ ] Battle math: damage formula, proc rates, House-wheel multipliers
-- [ ] Page-by-page mockups inside the 4:3 shell (Pet/Dex/Achv/Deco/DNA/Battle/League)
-- [ ] Mouse hit-region registry design + SGR parser edge cases (tmux passthrough, mosh,
-      Windows Terminal)
+- [ ] Habitat/trinket v1 art list + unlock-condition schema; idle-interaction animation matrix (trait × trinket)
+- [ ] Page-by-page mockups: Deco page inside the 4:3 shell
+
+### M2.6 — Leagues & Drifter DNA
+
+- [ ] Team League standings format + local Drifter DNA generation spec
+- [ ] Page-by-page mockups: League page inside the 4:3 shell
+
+### M2.7 — Weather, Seasons & Live Ops
+
+- [ ] 12-month content calendar + Season 1 pack outline
+
+### M3 — Art Pipeline, Future Adapters & Polish
+
+- [ ] Sprite compiler tool (PNG/Aseprite → palette-indexed JSON)
+- [ ] Future adapters: Gemini CLI, Copilot CLI, Amp, Goose, Cursor
+- [ ] Windows path support (%USERPROFILE% variants for all three adapters)
+- [ ] CI bench harness + initial perf budgets; size-limit config; import-boundary rules; dependency-change gate; jscpd/knip advisory
+- [ ] Page-by-page mockups: DNA page inside the 4:3 shell
+- [ ] Mouse hit-region registry design + SGR parser edge cases (tmux passthrough, mosh, Windows Terminal)
+
+### Cross-cutting (not milestone-specific)
+
+- [ ] Grade roll tuning: base rates, activity-modifier weights, caps
+- [ ] Molt evaluation spec: per-adapter field parsing + normalization math
 - [ ] Golden-frame test harness for the renderer (string-buffer snapshots)
-- [ ] pnpm workspace + tsup + ESLint(+Prettier) + Vitest scaffold (first Claude Code task
-      after CLAUDE.md)
-- [ ] CI bench harness + initial perf budgets; size-limit config; import-boundary rules;
-      dependency-change gate; jscpd/knip advisory
-- [ ] Rename in-game "Codex" (collision with OpenAI Codex): Archive/Chronicle/Bestiary?
 - [ ] Name/namespace availability check for "Token Tamers" (npm, GitHub, app registries)
 - [ ] README pledge text for "no model judgment" + "read-only, never spends tokens"
-- [ ] Windows path support (%USERPROFILE% variants for all three adapters)
-- [ ] Future adapters: Gemini CLI, Copilot CLI, Amp, Goose, Cursor
-- [ ] Write CLAUDE.md v1 + the four project skills (sprite-design, content-pack, adapter-dev,
-      wiki-writer)
-- [ ] Wiki page skeletons in docs/wiki + CI spoiler check (no special-pool IDs under docs/)
-- [ ] Riddle-hint copy for each DNA type
-- [ ] Sprite compiler tool (PNG/Aseprite -> palette-indexed JSON) for the 48-64px pipeline
-- [ ] Habitat/trinket v1 art list + unlock-condition schema; idle-interaction animation matrix
-      (trait x trinket)
 
 ---
 
