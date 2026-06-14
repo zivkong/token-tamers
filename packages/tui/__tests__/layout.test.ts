@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeLayout, petSections, GAP_ROWS, MIN_COLS, MIN_ROWS } from '../src/render/layout';
-import { packMenu } from '../src/render/menu';
+import { menuBandRows, packMenu } from '../src/render/menu';
 
 describe('computeLayout', () => {
   it('flags too-small terminals (min 34x24)', () => {
@@ -41,13 +41,25 @@ describe('computeLayout', () => {
     // The row spans edge to edge: the last button is flush to the right inset.
     const last = wide.buttons[wide.buttons.length - 1]!;
     expect(last.x + last.w).toBe(120 - 1);
-    expect(computeLayout(120, 30).menuRows).toBe(1);
+    // Roomy terminal → full-height (3) buttons; the band height matches.
+    const lwide = computeLayout(120, 40);
+    expect(lwide.menuBtnH).toBe(3);
+    expect(lwide.menuRows).toBe(menuBandRows(wide.rows, lwide.menuBtnH));
 
     // Narrow (34): wraps to more than one row, still uniform width.
     const narrow = packMenu(34);
     expect(narrow.rows).toBeGreaterThan(1);
     expect(new Set(narrow.buttons.map((b) => b.w)).size).toBe(1);
-    expect(computeLayout(34, 24).menuRows).toBe(narrow.rows);
+    const lnar = computeLayout(34, 24);
+    expect(lnar.menuRows).toBe(menuBandRows(narrow.rows, lnar.menuBtnH));
+  });
+
+  it('shrinks the menu button height to fit a short, narrow terminal', () => {
+    // Narrow forces the menu to wrap; a short height can't afford 3-tall rows,
+    // so the button height drops — but the whole stack still fits.
+    const short = computeLayout(50, 24);
+    expect(short.menuBtnH).toBeLessThan(3);
+    expect(short.menuY + short.menuRows).toBeLessThanOrEqual(short.termRows);
   });
 
   it('keeps the scene near the habitat 4:1 cell aspect', () => {

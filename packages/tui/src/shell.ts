@@ -13,7 +13,7 @@ import { HitRegistry } from './render/hit';
 import { decode, type InputEvent } from './terminal/input';
 import { computeLayout } from './render/layout';
 import { renderFrame, type FrameInput } from './render/frame';
-import { packMenu } from './render/menu';
+import { menuButtonY, packMenu } from './render/menu';
 import type {
   AdapterInfo,
   CompletionBreakdown,
@@ -320,10 +320,10 @@ function handleMouse(
   const cx = ev.x - 1;
   const cy = ev.y - 1;
 
-  // Menu clicks: hit-test the same left-aligned flow the renderer drew.
+  // Menu clicks: hit-test the same equal-width button grid the renderer drew.
   for (const btn of packMenu(layout.termCols).buttons) {
-    const y = layout.menuY + btn.row;
-    if (cx >= btn.x && cx < btn.x + btn.w && cy === y) {
+    const y = layout.menuY + menuButtonY(btn.row, layout.menuBtnH);
+    if (cx >= btn.x && cx < btn.x + btn.w && cy >= y && cy < y + layout.menuBtnH) {
       activate(rt, btn.id);
       return;
     }

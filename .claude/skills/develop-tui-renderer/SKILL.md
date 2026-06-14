@@ -66,15 +66,20 @@ bg)` so it renders on the band background.
   Minimum terminal 34×24.
 - Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
   (Dex, Archive, Settings, Achievements) inside the same content region.
-- Menu flow (`render/menu.ts` → `packMenu(cols)`, shared by `layout` for `menuRows`, `frame` to
-  draw, and `shell` to hit-test): a labeled `── Menu ──` divider (frame, `menuDividerY`) then
-  the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) ALL at one uniform width (`menuButtonWidth()` =
-  the widest button) distributed SPACE-BETWEEN across the full width (first flush-left, last
-  flush-right); labels are CENTERED in each button. On narrow widths it wraps into a grid whose
-  columns stay aligned across rows (the partial last row fills the leftmost columns). The
-  completion meter is NOT in the menu (it's shown per-page — Dex/Archive). Adding a page = extend
-  the `PageId` union, push a
-  `MENU_ITEMS` entry (icon + hotkey), add a `freshUi` slot, a `handleKey` case, and a
+- Menu flow (`render/menu.ts` → `packMenu(cols)`, shared by `layout` for `menuRows`+`menuBtnH`,
+  `frame` to draw, and `shell` to hit-test): a labeled `── Menu ──` divider (frame, `menuDividerY`)
+  then the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) as real BUTTONS — one uniform width
+  (`menuButtonWidth()` = widest text + interior padding) and one uniform HEIGHT (`MENU_BTN_H`=3:
+  pad/label/pad, filled `MENU_BTN_BG` block, active = `MENU_ACTIVE_BG`), label CENTERED on both
+  axes, distributed SPACE-BETWEEN across the full width (first flush-left, last flush-right; a lone
+  column is centered). `packMenu` returns x + wrap-`row`; HEIGHT is applied by the caller via
+  `menuButtonY(row, btnH)`/`menuBandRows(rows, btnH)` because it depends on terminal height —
+  `computeLayout` picks the tallest `menuBtnH` (3→2→1) that still leaves a min scene, so short
+  terminals shrink the buttons instead of overflowing. On narrow widths the grid wraps with
+  columns aligned across rows (partial last row fills the leftmost columns). All three consumers
+  read `packMenu` + `layout.menuBtnH`, so sizing/draw/hit-test stay in lockstep. The completion
+  meter is NOT in the menu (it's shown per-page — Dex/Archive). Adding a page = extend the `PageId`
+  union, push a `MENU_ITEMS` entry (icon + hotkey), add a `freshUi` slot, a `handleKey` case, and a
   `renderFrame` switch arm — keep all five in lockstep.
 - **Keyboard parity is mandatory:** every click has a hotkey; with no mouse
   reporting the game is 100% playable by keys.

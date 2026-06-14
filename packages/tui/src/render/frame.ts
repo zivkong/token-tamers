@@ -13,7 +13,7 @@ import { StringSink, Writer, type ColorMode, type Rgb } from '../terminal/ansi';
 import { FrameBuffer } from './buffer';
 import { HitRegistry } from './hit';
 import { computeLayout, tooSmallMessage, type Layout } from './layout';
-import { buttonText, packMenu, type MenuButton } from './menu';
+import { buttonText, menuButtonY, packMenu, type MenuButton } from './menu';
 import { drawDivider } from '../components';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
@@ -35,6 +35,8 @@ const MENU_DIM: Rgb = { r: 110, g: 117, b: 140 };
 const MENU_ACTIVE: Rgb = { r: 255, g: 224, b: 130 };
 const MENU_ACTIVE_BG: Rgb = { r: 56, g: 50, b: 18 };
 const MENU_BG: Rgb = { r: 22, g: 26, b: 38 };
+/** Inactive button fill — a touch lighter than the band so buttons read as raised. */
+const MENU_BTN_BG: Rgb = { r: 36, g: 42, b: 58 };
 const FLASH_FG: Rgb = { r: 255, g: 226, b: 140 };
 const FLASH_BG: Rgb = { r: 56, g: 46, b: 12 };
 
@@ -122,27 +124,36 @@ function drawMenu(buf: FrameBuffer, hits: HitRegistry, layout: Layout, page: Pag
     }
   }
   for (const btn of packMenu(layout.termCols).buttons) {
-    const y = layout.menuY + btn.row;
-    drawMenuButton(buf, btn, y, btn.id === page);
-    hits.add(`menu:${btn.id}`, btn.x, y, btn.w, 1);
+    const y = layout.menuY + menuButtonY(btn.row, layout.menuBtnH);
+    drawMenuButton(buf, btn, y, layout.menuBtnH, btn.id === page);
+    hits.add(`menu:${btn.id}`, btn.x, y, btn.w, layout.menuBtnH);
   }
 }
 
-/** Draw one equal-width nav button ('label key'), label centered in its slot,
- * highlighting the active page across the full uniform width. */
-function drawMenuButton(buf: FrameBuffer, btn: MenuButton, y: number, active: boolean): void {
-  const bg = active ? MENU_ACTIVE_BG : MENU_BG;
-  for (let x = 0; x < btn.w; x++) {
-    buf.set(btn.x + x, y, { ch: ' ', fg: null, bg });
+/** Draw one equal-width, `h`-tall nav button ('label key'): a filled block (with
+ * interior padding) and the label centered in it, highlighting the active page. */
+function drawMenuButton(
+  buf: FrameBuffer,
+  btn: MenuButton,
+  y: number,
+  h: number,
+  active: boolean,
+): void {
+  const bg = active ? MENU_ACTIVE_BG : MENU_BTN_BG;
+  for (let ry = 0; ry < h; ry++) {
+    for (let x = 0; x < btn.w; x++) {
+      buf.set(btn.x + x, y + ry, { ch: ' ', fg: null, bg });
+    }
   }
-  // Center the `label key` text within the button's uniform width.
+  // Center the `label key` text within the button (both axes).
   const text = buttonText(btn);
   const textLen = [...text].length;
   const tx = btn.x + Math.max(0, Math.floor((btn.w - textLen) / 2));
-  buf.text(tx, y, btn.label, active ? MENU_ACTIVE : MENU_FG, bg);
+  const ty = y + Math.floor(h / 2);
+  buf.text(tx, ty, btn.label, active ? MENU_ACTIVE : MENU_FG, bg);
   buf.text(
     tx + textLen - [...btn.hotkey].length,
-    y,
+    ty,
     btn.hotkey,
     active ? MENU_ACTIVE : MENU_DIM,
     bg,

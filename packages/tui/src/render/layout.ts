@@ -16,7 +16,7 @@
  *   │ food · diet · odds             │  panelRows                      │
  *   ├───────────────────────────────┤  ← divider                      ┘
  *   │ (gap)                          │
- *   │ menu (left-aligned, wraps)     │  menuRows  (menuY)
+ *   │ menu (equal-width buttons)     │  menuRows  (menuY)
  *   └───────────────────────────────┘
  *   (any slack falls BELOW the menu — the UI hugs the top)
  *
@@ -25,7 +25,7 @@
  * page sub-divides the content region via `petSections()`.
  */
 
-import { packMenu } from './menu';
+import { MENU_BTN_H, menuBandRows, packMenu } from './menu';
 
 /** Minimum supported terminal size. The UI degrades gracefully down to here. */
 export const MIN_COLS = 34;
@@ -75,8 +75,10 @@ export interface Layout {
   menuDividerY: number;
   /** First row of the menu buttons (just below the menu divider). */
   menuY: number;
-  /** Menu band height (number of wrapped rows for the left-aligned flow). */
+  /** Menu band height in CELLS (wrap rows × button height + inter-row gaps). */
   menuRows: number;
+  /** Per-button height in cells (3 when there's room, shrinking on short terms). */
+  menuBtnH: number;
   /** Back-compat alias for the first menu-button row. */
   menuRow: number;
   /** True if the terminal is below the minimum size. */
@@ -102,20 +104,31 @@ export function computeLayout(cols: number, rows: number): Layout {
       menuDividerY: menuRow,
       menuY: menuRow,
       menuRows: 1,
+      menuBtnH: 1,
       menuRow,
       tooSmall: true,
     };
   }
 
-  // The left-aligned menu flow wraps to as many rows as the width needs.
-  const menuRows = packMenu(cols).rows;
+  // The menu wraps to as many rows as the width needs; the button HEIGHT then
+  // shrinks (3 → 2 → 1) to the tallest that still leaves room for a min scene.
+  const wrapRows = packMenu(cols).rows;
+  const fixed = HEADER_ROWS + PANEL_ROWS + PET_DIVIDERS + PET_GAPS;
+  let menuBtnH = 1;
+  for (const h of [MENU_BTN_H, 2, 1]) {
+    const chrome = MENU_DIVIDER_ROWS + GAP_ROWS + menuBandRows(wrapRows, h);
+    if (fixed + MIN_SCENE_ROWS + chrome <= rows) {
+      menuBtnH = h;
+      break;
+    }
+  }
+  const menuRows = menuBandRows(wrapRows, menuBtnH);
 
   // Scene height tracks the habitat's native 4:1 cell aspect (96 cols : 24
   // rows) so a full-width backdrop scales uniformly, capped to what fits above
   // the menu after the header band, the vitals panel, the dividers and gaps —
   // plus the "── Menu ──" divider and the menu buttons themselves.
-  const fixed = HEADER_ROWS + PANEL_ROWS + PET_DIVIDERS + PET_GAPS;
-  // The menu section is a divider + its standard gap-after + the button rows.
+  // The menu section is a divider + its standard gap-after + the button band.
   const menuChrome = MENU_DIVIDER_ROWS + GAP_ROWS + menuRows;
   const availForScene = rows - fixed - menuChrome;
   const sceneTarget = Math.round(cols / 4);
@@ -136,6 +149,7 @@ export function computeLayout(cols: number, rows: number): Layout {
     // Buttons sit a divider + a standard gap below the content region.
     menuY: canvasRows + MENU_DIVIDER_ROWS + GAP_ROWS,
     menuRows,
+    menuBtnH,
     menuRow: canvasRows + MENU_DIVIDER_ROWS + GAP_ROWS,
     tooSmall: false,
   };
