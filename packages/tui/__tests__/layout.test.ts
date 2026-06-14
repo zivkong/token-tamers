@@ -54,14 +54,6 @@ describe('computeLayout', () => {
     expect(lnar.menuRows).toBe(menuBandRows(narrow.rows, lnar.menuBtnH));
   });
 
-  it('shrinks the menu button height to fit a short, narrow terminal', () => {
-    // Narrow forces the menu to wrap; a short height can't afford full-height
-    // rows, so the button height drops — but the whole stack still fits.
-    const short = computeLayout(50, 24);
-    expect(short.menuBtnH).toBeLessThan(MENU_BTN_H);
-    expect(short.menuY + short.menuRows).toBeLessThanOrEqual(short.termRows);
-  });
-
   it('keeps the scene near the habitat 4:1 cell aspect', () => {
     const l = computeLayout(160, 60);
     const { scene } = petSections(l);

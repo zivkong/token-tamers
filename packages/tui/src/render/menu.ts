@@ -43,8 +43,14 @@ const MENU_X = 1;
 const MENU_MIN_GAP = 2;
 const MENU_PAD_X = 2;
 
-/** Preferred button HEIGHT in cells (label row + vertical padding); shrinks to fit. */
-export const MENU_BTN_H = 2;
+/**
+ * Button HEIGHT in cells. One row keeps the label perfectly centered on BOTH
+ * axes (a single row is its own vertical center; even heights bottom-bias the
+ * text); the button shape comes from the filled block + interior padding, not
+ * extra rows. `computeLayout` may shrink this further only if a terminal is too
+ * short — never below 1.
+ */
+export const MENU_BTN_H = 1;
 
 /** Rendered text of a button: `label key` (e.g. '♥ Pet 1'). */
 export function buttonText(item: MenuItem): string {

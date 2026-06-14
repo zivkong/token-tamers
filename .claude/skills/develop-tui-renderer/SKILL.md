@@ -69,13 +69,14 @@ bg)` so it renders on the band background.
 - Menu flow (`render/menu.ts` → `packMenu(cols)`, shared by `layout` for `menuRows`+`menuBtnH`,
   `frame` to draw, and `shell` to hit-test): a labeled `── Menu ──` divider (frame, `menuDividerY`)
   then the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) as real BUTTONS — one uniform width
-  (`menuButtonWidth()` = widest text + interior padding) and one uniform HEIGHT (`MENU_BTN_H`=2:
-  label + vertical padding, filled `MENU_BTN_BG` block, active = `MENU_ACTIVE_BG`), label CENTERED
-  on both axes, distributed SPACE-BETWEEN across the full width (first flush-left, last flush-right;
-  a lone column is centered). `packMenu` returns x + wrap-`row`; HEIGHT is applied by the caller via
-  `menuButtonY(row, btnH)`/`menuBandRows(rows, btnH)` because it depends on terminal height —
-  `computeLayout` picks the tallest `menuBtnH` (`MENU_BTN_H`→1) that still leaves a min scene, so
-  short terminals shrink the buttons instead of overflowing. On narrow widths the grid wraps with
+  (`menuButtonWidth()` = widest text + interior padding) and one uniform HEIGHT (`MENU_BTN_H`=1 — a
+  single row keeps the label CENTERED on both axes; even heights bottom-bias the text, so the button
+  shape comes from the filled `MENU_BTN_BG` block + interior padding, active = `MENU_ACTIVE_BG`, not
+  extra rows), the label centered, distributed SPACE-BETWEEN across the full width (first flush-left,
+  last flush-right; a lone column is centered). `packMenu` returns x + wrap-`row`; HEIGHT is applied
+  by the caller via `menuButtonY(row, btnH)`/`menuBandRows(rows, btnH)` (height-aware so a taller
+  `MENU_BTN_H` would still work) and `computeLayout` only ever shrinks `menuBtnH` to fit a short
+  terminal, never below 1. On narrow widths the grid wraps with
   columns aligned across rows (partial last row fills the leftmost columns). All three consumers
   read `packMenu` + `layout.menuBtnH`, so sizing/draw/hit-test stay in lockstep. The completion
   meter is NOT in the menu (it's shown per-page — Dex/Archive). Adding a page = extend the `PageId`
