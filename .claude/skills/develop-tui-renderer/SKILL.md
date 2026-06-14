@@ -36,8 +36,9 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
-- **Vitals panel** (`pages/pet-vitals.ts`) — 3 rows: **Stats** (`icon LABEL: value` readouts,
-  NO bar — stats are a fixed equal budget, not progress), **Food** (REAL-TIME growth: open-window tokens
+- **Vitals panel** (`pages/pet-vitals.ts`) — 3 rows: **Stats** (`icon LABEL: value` readouts
+  spread space-between across the full width, NO bar — stats are a fixed equal budget, not
+  progress), **Food** (REAL-TIME growth: open-window tokens
   fill toward `VITALITY_FULL_TOKENS`=200M, tinted by diet, `+N% molt` = real `vitalityBonus`
   preview; token counts only), **Diet** (House-share legend + grade-roll odds). Every bar renders
   its remaining track via the shared `components/meter.ts` (`drawMeter`; the food uses
