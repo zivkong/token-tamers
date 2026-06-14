@@ -67,7 +67,7 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('renders the pet page with a real-time charge readout (growth)', () => {
+  it('renders the pet page with a real-time food readout (growth)', () => {
     const out = renderFrameToString(
       100,
       30,
@@ -81,7 +81,7 @@ describe('golden frames (100x30, no-color)', () => {
         },
       }),
     );
-    expect(out).toContain('Charge');
+    expect(out).toContain('Food');
     expect(out).toContain('/ 200M');
     expect(out).toContain('molt');
     // Completion is per-page now, so the pet page carries no completion meter.

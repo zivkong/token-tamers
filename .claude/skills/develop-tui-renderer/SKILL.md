@@ -20,7 +20,7 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   compact bars/labels and a wrapping menu. (Supersedes the old centered-4:3 + bottom-bar model.)
 - Section order (pet page): **header** (`headerRows`) → _divider+gap_ → **game canvas** →
   _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=5`: stats / gap /
-  charge / gap / diet) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
+  food / gap / diet) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
   `petSections(layout)` carves the bands and the pet's TWO dividers (header, VITALS) with gaps
   around them plus a bottom-padding gap below the panel; the **`── Menu ──` divider is GLOBAL
   chrome** drawn by the frame at `layout.menuDividerY` on every page (so the menu is its own
@@ -37,13 +37,13 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
 - **Vitals panel** (`pages/pet-vitals.ts`) — 3 rows: **Stats** (bars normalized to
-  `STAT_BAR_MAX`≈120 so the empty track shows), **Charge** (REAL-TIME growth: open-window tokens
+  `STAT_BAR_MAX`≈120 so the empty track shows), **Food** (REAL-TIME growth: open-window tokens
   fill toward `VITALITY_FULL_TOKENS`=200M, tinted by diet, `+N% molt` = real `vitalityBonus`
   preview; token counts only), **Diet** (House-share legend + grade-roll odds). Every bar renders
-  its remaining track via the shared `components/meter.ts` (`drawMeter`; the charge uses
+  its remaining track via the shared `components/meter.ts` (`drawMeter`; the food uses
   `drawSegmentedMeter` for its diet-tinted fill). `LiveStats` flows `ShellHost.liveStats()` →
   `FrameInput.live` → `RenderContext.live`; the cli derives it from `engine.pendingEvents()` +
-  `eventTokens`/`eventEssence` + baselines. Undefined in golden tests → the Charge row shows an
+  `eventTokens`/`eventEssence` + baselines. Undefined in golden tests → the Food row shows an
   empty/awaiting state (frames stay deterministic). Completion is per-page (NOT in this panel).
 - Cells are ~1:2 w:h; half-blocks give 2 vertical px/cell. Habitat scenes are 96×48 px
   (96 cols × 24 rows → 4:1 cell aspect). The canvas is full width and `sceneRows ≈ cols/4`
@@ -116,7 +116,7 @@ flow), `frame.ts` (frame + menu draw), `shell.ts` (runShell loop), `status.ts` (
 `pages/` (pet, pet-vitals, dex/archive/settings), `lookup.ts` (pack helpers). Shared UI lives
 under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after) plus
 `meter.ts` — the ONE progress bar: `drawMeter` (filled `█` + a clearly-visible `▒` track),
-`drawSegmentedMeter` (filled portion split into colored slices, e.g. the diet-tinted charge),
+`drawSegmentedMeter` (filled portion split into colored slices, e.g. the diet-tinted food),
 and `drawCompletionHeader`. Reuse these — don't hand-roll rules/bars.
 
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)

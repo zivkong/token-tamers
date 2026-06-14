@@ -39,7 +39,7 @@ padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `
    rows; every bar shows its empty track:
    - **Stats** — PWR/SPD/WIS/GRT bars, normalized to a fixed cap (`STAT_BAR_MAX` ≈ half the
      240 stage budget) so headroom is visible.
-   - **Charge (REAL-TIME, growth)** — the open window's raw tokens fill toward a **200M "full"
+   - **Food (REAL-TIME, growth)** — the open window's raw tokens fill toward a **200M "full"
      cap** (`VITALITY_FULL_TOKENS`), the filled portion tinted by the diet mix, plus the live
      **molt-boost preview** (`+N% molt ↑` = the real capped `vitalityBonus`). Token counts
      only (`84.2M / 200M`). Fed by `ShellHost.liveStats()` → `RenderContext.live`.
@@ -59,11 +59,11 @@ completion meter (it's about the pet, not collections).
 **Real-time token impact + growth:** the cli host derives `LiveStats` each frame from
 `engine.pendingEvents()` (events whose 5-h window has not closed) — summing raw tokens and
 cache-weighted `eventEssence` — plus the rolling per-adapter baseline. As usage scans fold new
-events in, the open window's tokens climb live, the Charge gauge fills toward 200M, and the
+events in, the open window's tokens climb live, the Food gauge fills toward 200M, and the
 molt-boost preview rises (capped) — so there is a real reason to keep pushing tokens before the
 window closes. At the molt the engine applies that same capped `vitalityBonus` on top of the
 baseline-normalized odds (see `evolution-grades-lineage.md` §12). `LiveStats` is optional —
-absent in golden tests, where the Charge row shows an empty/awaiting state.
+absent in golden tests, where the Food row shows an empty/awaiting state.
 
 **Evolution-mystery rule:** the pet screen never shows the evolution stage word, molt count,
 or any "progress toward the next evolution" — evolution is a surprise the player discovers,
@@ -141,9 +141,9 @@ lookup; zero impact on the 30fps budget.
 │                                                  │  <- gap before VITALS
 ├──── VITALS ────────────────────────────────────┤  <- labeled divider
 │                                                  │  <- gap
-│ PWR ███░░ 72  SPD ██░ 48  WIS ████ 96  GRT ██░ 60│  <- stats (empty track shown)
+│ PWR ███▒▒ 72  SPD ██▒ 48  WIS ████ 96  GRT ██▒ 60│  <- stats (remaining track shown)
 │                                                  │  <- spacer
-│ Charge ████░░░░░░ 84.2M / 200M  +6% molt ↑       │  <- REAL-TIME growth charge
+│ Food ████▒▒▒▒▒▒ 84.2M / 200M  +6% molt ↑       │  <- REAL-TIME growth food
 │                                                  │  <- spacer
 │ Diet  Aether 72% · Cipher 28%       last roll: … │  <- diet share + grade odds
 │                                                  │  <- bottom padding (gap)
@@ -156,7 +156,7 @@ lookup; zero impact on the 30fps budget.
 The Dex/Archive pages each carry their own completion bar top-right, e.g.:
 
 ```
- ☰ Dex                              ░░░░░░░░░░ 3/112  2.7%   <- this page's collection %
+ ☰ Dex                              ▒▒▒▒▒▒▒▒▒▒ 3/112  2.7%   <- this page's collection %
 ```
 
 ---

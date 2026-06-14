@@ -239,7 +239,7 @@ flat bonus to the roll, **full at 200M tokens** (`VITALITY_FULL_TOKENS`) and cla
 it gives developers a reason to keep feeding before the window closes, but it is hard-capped so it
 can never dominate the self-normalized base odds, the A→S ceiling still applies after it, and it
 is purely additive (the modifier itself stays volume-blind). The pet screen surfaces it live as a
-"Charge" gauge filling toward 200M with a molt-boost preview (see architecture.md). Model choice
+"Food" gauge filling toward 200M with a molt-boost preview (see architecture.md). Model choice
 still never enters power (pillar 2 / invariant 3).
 
 **Gradeshift moment:** a successful roll plays a molt cutscene where the pet's palette visibly

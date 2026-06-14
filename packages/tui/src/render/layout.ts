@@ -13,7 +13,7 @@
  *   │ (gap)                          │                                 │ canvasRows
  *   ├──── VITALS ───────────────────┤  ← labeled divider              │
  *   │ (gap)                          │                                 │
- *   │ stats · charge · diet · prog.  │  panelRows                      │
+ *   │ stats · food · diet            │  panelRows                      │
  *   ├───────────────────────────────┤  ← divider                      ┘
  *   │ (gap)                          │
  *   │ menu (left-aligned, wraps)     │  menuRows  (menuY)
@@ -34,7 +34,7 @@ export const MIN_ROWS = 24;
 /** Rows the header band occupies at the very top (pet name + identity). */
 export const HEADER_ROWS = 2;
 /**
- * Rows the vitals panel occupies: stats / gap / charge / gap / diet — three
+ * Rows the vitals panel occupies: stats / gap / food / gap / diet — three
  * content rows interleaved with blank spacers. (Completion lives per-page now.)
  */
 export const PANEL_ROWS = 5;
