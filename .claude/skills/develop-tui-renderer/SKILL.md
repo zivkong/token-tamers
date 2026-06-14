@@ -19,8 +19,8 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   bottom. Slack falls below it. **Min terminal 34×24** (`MIN_COLS=34`); layouts degrade with
   compact bars/labels and a wrapping menu. (Supersedes the old centered-4:3 + bottom-bar model.)
 - Section order (pet page): **header** (`headerRows=3`: name / identity / stats) → _divider+gap_ →
-  **game canvas** → _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=5`: food /
-  gap / diet / gap / odds) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
+  **game canvas** → _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=3`: food /
+  diet / odds on consecutive rows) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
   `petSections(layout)` carves the bands and the pet's TWO dividers (header, VITALS) with gaps
   around them plus a bottom-padding gap below the panel; the **`── Menu ──` divider is GLOBAL
   chrome** drawn by the frame at `layout.menuDividerY` on every page (so the menu is its own

@@ -1,14 +1,12 @@
 /**
  * Pet vitals panel — the LIVE section between the game canvas and the menu.
  *
- * Three live rows, one per blank-spaced slot, deliberately free of evolution
- * hints (the Stats readout lives up in the header band — identity, not live
- * signs — and is drawn via the exported `drawStatsRow`):
+ * Three live rows on consecutive lines, deliberately free of evolution hints
+ * (the Stats readout lives up in the header band — identity, not live signs —
+ * and is drawn via the exported `drawStatsRow`):
  *
  *   Food   ▕████▒▒▒▒▒▒▒▒▏ 84.2M / 200M  +6% molt ↑
- *
  *   Diet   ▕██████▒▒▒▒▒▒▏ Aether 72% · Cipher 28%
- *
  *   Odds   B → A 38%                          rolls at next molt
  *
  * The two bars share ONE geometry (`barGeom`) so Food and Diet line up at every
@@ -62,11 +60,11 @@ const STAT_ICON = {
   GRT: String.fromCodePoint(0x25a3),
 } as const;
 
-/** Draw the live vitals panel: food / diet / odds (blank-spaced). */
+/** Draw the live vitals panel: food / diet / odds on consecutive rows. */
 export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
   drawFoodRow(ctx, panel, panel.y);
-  drawDietRow(ctx, panel, panel.y + 2);
-  drawOddsRow(ctx, panel, panel.y + 4);
+  drawDietRow(ctx, panel, panel.y + 1);
+  drawOddsRow(ctx, panel, panel.y + 2);
 }
 
 // ---------------------------------------------------------------------------

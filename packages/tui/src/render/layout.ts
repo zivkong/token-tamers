@@ -38,11 +38,11 @@ export const MIN_ROWS = 24;
  */
 export const HEADER_ROWS = 3;
 /**
- * Rows the vitals panel occupies: food / gap / diet / gap / odds — three live
- * content rows interleaved with blank spacers. (Stats moved to the header;
+ * Rows the vitals panel occupies: food / diet / odds — three live content rows
+ * on consecutive lines (no inter-row spacers). (Stats moved to the header;
  * completion lives per-page.)
  */
-export const PANEL_ROWS = 5;
+export const PANEL_ROWS = 3;
 /** Blank padding rows used around dividers for spacing between sections. */
 export const GAP_ROWS = 1;
 /** Divider rules the PET page draws inside the content region (header, VITALS). */
