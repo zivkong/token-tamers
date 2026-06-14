@@ -1,5 +1,5 @@
 /**
- * Meter — the ONE standard progress bar, reused everywhere (stats, charge,
+ * Meter — the ONE standard progress bar, reused everywhere (stats, food,
  * completion). A bar reads clearly as two distinct parts:
  *   - FILLED  → solid `█` in the bar's accent color (current progress);
  *   - REMAINING → a `▒` track in a clearly-visible slate (what's left).
@@ -53,7 +53,7 @@ export interface MeterSegment {
 /**
  * Draw a meter whose filled portion (`fillFrac` of the width) is split into
  * colored `segments`, with the remaining width shown as the standard track.
- * Used by the pet's diet-tinted charge bar; the track matches `drawMeter` so all
+ * Used by the pet's diet-tinted food bar; the track matches `drawMeter` so all
  * bars look identical.
  */
 export function drawSegmentedMeter(

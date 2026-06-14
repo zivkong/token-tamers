@@ -5,17 +5,17 @@
  *
  *   PWR ▓▓▓░ 12   SPD ▓▓░ 9    WIS ▓▓▓▓ 15   GRT ▓▓░ 11
  *
- *   Charge ▕████░░░░░░░░▏ 84.2M / 200M  +6% molt ↑
+ *   Food   ▕████▒▒▒▒▒▒▒▒▏ 84.2M / 200M  +6% molt ↑
  *
  *   Diet   Aether 72% · Cipher 28%              last roll: C→B 38%
  *
  *   Progress ▕███░░░░░░░░▏ 16.7%
  *
- * The Charge row is the growth meter: the open window's raw tokens fill toward a
+ * The Food row is the growth meter: the open window's raw tokens fill toward a
  * 200M "full" cap (segmented by the diet's House tints), and the molt-boost
  * preview is the REAL capped vitality bonus the engine will apply at the molt
  * (`vitalityBonus`). Everything else is a pure function of GameState; without a
- * live readout (golden tests) the Charge row shows an empty/awaiting state.
+ * live readout (golden tests) the Food row shows an empty/awaiting state.
  */
 
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
@@ -30,17 +30,17 @@ const LABEL: Rgb = { r: 122, g: 132, b: 158 };
 const VALUE: Rgb = { r: 222, g: 228, b: 240 };
 const MUTED: Rgb = { r: 120, g: 126, b: 146 };
 const UNKNOWN_TINT: Rgb = { r: 96, g: 102, b: 122 };
-const CHARGE_FILL: Rgb = { r: 240, g: 196, b: 80 };
+const FOOD_FILL: Rgb = { r: 240, g: 196, b: 80 };
 
 /** Per-stat bar reference (≈ half the 240 stage budget) so bars show headroom. */
 const STAT_BAR_MAX = 120;
 /** Below this width we drop to compact single-letter / shorter labels. */
 const NARROW = 64;
 
-/** Draw the vitals panel: stats / charge / diet (blank-spaced). */
+/** Draw the vitals panel: stats / food / diet (blank-spaced). */
 export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
   drawStatsRow(ctx, panel, panel.y);
-  drawChargeRow(ctx, panel, panel.y + 2);
+  drawFoodRow(ctx, panel, panel.y + 2);
   drawDietRow(ctx, panel, panel.y + 4);
 }
 
@@ -76,26 +76,27 @@ function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 }
 
 /**
- * Row 2 — the growth charge meter: open-window tokens toward 200M, segmented by
- * diet, with the real capped molt-boost preview. Token counts only.
+ * Row 2 — the growth FOOD meter: open-window tokens toward 200M, segmented by
+ * diet, with the real capped molt-boost preview. Token counts only. (`Food` =
+ * how much you've eaten this session; the `Diet` row below = what you've eaten.)
  */
-function drawChargeRow(ctx: RenderContext, panel: SceneRect, y: number): void {
+function drawFoodRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf } = ctx;
   const narrow = panel.cols < NARROW;
-  buf.text(panel.x + 1, y, narrow ? 'Feed' : 'Charge', LABEL, null);
-  const barX = panel.x + (narrow ? 6 : 8);
+  buf.text(panel.x + 1, y, 'Food', LABEL, null);
+  const barX = panel.x + 6;
   const barW = narrow ? 8 : 12;
 
   const tokens = ctx.live?.windowTokens ?? 0;
   const frac = tokens / VITALITY_FULL_TOKENS;
   // The filled portion is tinted by the diet mix; the rest is the standard track.
   const segments = dietBreakdown(ctx).map((d) => ({ frac: d.frac, color: d.tint }));
-  drawSegmentedMeter(buf, { x: barX, y, w: barW }, frac, segments, CHARGE_FILL);
+  drawSegmentedMeter(buf, { x: barX, y, w: barW }, frac, segments, FOOD_FILL);
 
   const textX = barX + barW + 2;
   const avail = panel.x + panel.cols - 1 - textX;
   if (!ctx.live) {
-    buf.text(textX, y, 'feed your session'.slice(0, Math.max(0, avail)), MUTED, null);
+    buf.text(textX, y, 'no food yet'.slice(0, Math.max(0, avail)), MUTED, null);
     return;
   }
   const bonusPct = Math.round(vitalityBonus(tokens) * 100);
