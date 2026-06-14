@@ -29,7 +29,7 @@ function input(over: Partial<FrameInput>): FrameInput {
     mode: 'none',
     frame: 0,
     ui: { selected: 0, scroll: 0 },
-    completionPct: 42.5,
+    completion: { overall: 42.5, dex: 30, achievements: 50, habitats: 10, trinkets: 0 },
     flash: null,
     ...over,
   };
@@ -84,7 +84,8 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toContain('Charge');
     expect(out).toContain('/ 200M');
     expect(out).toContain('molt');
-    expect(out).toContain('Progress'); // completion meter moved into VITALS
+    // Completion is per-page now, so the pet page carries no completion meter.
+    expect(out).not.toContain('Progress');
     expect(out).toMatchSnapshot();
   });
 
@@ -105,16 +106,24 @@ describe('golden frames (100x30, no-color)', () => {
   });
 });
 
-describe('menu + completion meter', () => {
-  it('shows all nav items in the menu and the completion percent in VITALS', () => {
-    const out = renderFrameToString(100, 30, input({ page: 'pet', completionPct: 12.3 }));
+describe('menu + per-page completion', () => {
+  it('shows all nav items in the menu on every page', () => {
+    const out = renderFrameToString(100, 30, input({ page: 'pet' }));
     expect(out).toContain('Pet');
     expect(out).toContain('Dex');
     expect(out).toContain('Archive');
     expect(out).toContain('Settings');
     expect(out).toContain('Quit');
-    // The completion meter now lives in the pet VITALS panel, not the menu.
-    expect(out).toContain('Progress');
-    expect(out).toContain('12.3%');
+  });
+
+  it('shows the completion percent on its OWN page, not the pet page', () => {
+    const completion = { overall: 50, dex: 12.3, achievements: 0, habitats: 0, trinkets: 0 };
+    // Dex page surfaces its own collection percent...
+    const dex = renderFrameToString(100, 30, input({ page: 'dex', completion }));
+    expect(dex).toContain('12.3%');
+    // ...and the pet page no longer carries a completion meter.
+    const pet = renderFrameToString(100, 30, input({ page: 'pet', completion }));
+    expect(pet).not.toContain('Progress');
+    expect(pet).not.toContain('12.3%');
   });
 });

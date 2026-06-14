@@ -34,10 +34,10 @@ export const MIN_ROWS = 24;
 /** Rows the header band occupies at the very top (pet name + identity). */
 export const HEADER_ROWS = 2;
 /**
- * Rows the vitals panel occupies: stats / gap / charge / gap / diet / gap /
- * progress — three content rows interleaved with blank spacers, plus a fourth.
+ * Rows the vitals panel occupies: stats / gap / charge / gap / diet — three
+ * content rows interleaved with blank spacers. (Completion lives per-page now.)
  */
-export const PANEL_ROWS = 7;
+export const PANEL_ROWS = 5;
 /** Divider rules drawn between the stacked sections (header|scene|panel|menu). */
 export const DIVIDER_ROWS = 3;
 /** Blank padding rows used around dividers for spacing between sections. */

@@ -78,7 +78,7 @@ export function createShellHost(config: UserConfig, engine: Engine): ShellHostHa
       saveState(engine.state());
       return effects;
     },
-    completion(): { overall: number } {
+    completion() {
       return engine.completion();
     },
     liveStats(): LiveStats {

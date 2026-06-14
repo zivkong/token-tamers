@@ -19,6 +19,7 @@ import { renderDexPage } from '../pages/dex';
 import { renderArchivePage } from '../pages/archive';
 import { renderSettingsPage } from '../pages/settings';
 import type {
+  CompletionBreakdown,
   LiveStats,
   PageId,
   PageUiState,
@@ -43,7 +44,7 @@ export interface FrameInput {
   mode: ColorMode;
   frame: number;
   ui: PageUiState;
-  completionPct: number;
+  completion: CompletionBreakdown;
   flash: string | null;
   /** Static build/config facts for the Settings page (optional). */
   info?: ShellInfo;
@@ -80,7 +81,7 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
     info: input.info,
     settings: input.settings,
     live: input.live,
-    completionPct: input.completionPct,
+    completion: input.completion,
   };
 
   switch (input.page) {

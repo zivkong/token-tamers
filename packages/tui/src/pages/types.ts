@@ -93,6 +93,19 @@ export interface RenderContext {
   settings?: SettingsState;
   /** Real-time token-consumption readout for the pet page (undefined in tests). */
   live?: LiveStats;
-  /** Overall completion meter percent (0..100); surfaced in the pet VITALS panel. */
-  completionPct: number;
+  /** Completion breakdown (0..100 each); each page surfaces its own slice. */
+  completion: CompletionBreakdown;
+}
+
+/**
+ * Completion meter breakdown — each field is a percent (0..100). Pages show the
+ * slice they own: Dex → `dex`, Archive → its records coverage, etc. Mirrors the
+ * engine's completion result (weighted 40/40/10/10 for `overall`).
+ */
+export interface CompletionBreakdown {
+  overall: number;
+  dex: number;
+  achievements: number;
+  habitats: number;
+  trinkets: number;
 }

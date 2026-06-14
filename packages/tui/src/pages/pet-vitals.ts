@@ -21,6 +21,7 @@
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
 import { VITALITY_FULL_TOKENS, vitalityBonus } from '@token-tamers/core';
 import type { FrameBuffer } from '../render/buffer';
+import { BAR_EMPTY, drawMeter } from '../render/bar';
 import { houseTint } from '../helpers/lookup';
 import { renderGradeOddsLine } from '../helpers/status';
 import type { RenderContext } from './types';
@@ -32,22 +33,19 @@ const LIGHT = String.fromCodePoint(0x2591); // ░
 const LABEL: Rgb = { r: 122, g: 132, b: 158 };
 const VALUE: Rgb = { r: 222, g: 228, b: 240 };
 const MUTED: Rgb = { r: 120, g: 126, b: 146 };
-const BAR_EMPTY: Rgb = { r: 44, g: 50, b: 70 };
 const UNKNOWN_TINT: Rgb = { r: 96, g: 102, b: 122 };
 const CHARGE_FILL: Rgb = { r: 240, g: 196, b: 80 };
-const METER_FILL: Rgb = { r: 240, g: 196, b: 80 };
 
 /** Per-stat bar reference (≈ half the 240 stage budget) so bars show headroom. */
 const STAT_BAR_MAX = 120;
 /** Below this width we drop to compact single-letter / shorter labels. */
 const NARROW = 64;
 
-/** Draw the vitals panel: stats / charge / diet / progress (blank-spaced). */
+/** Draw the vitals panel: stats / charge / diet (blank-spaced). */
 export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
   drawStatsRow(ctx, panel, panel.y);
   drawChargeRow(ctx, panel, panel.y + 2);
   drawDietRow(ctx, panel, panel.y + 4);
-  drawProgressRow(ctx, panel, panel.y + 6);
 }
 
 // ---------------------------------------------------------------------------
@@ -76,7 +74,7 @@ function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
     const valStr = String(val).padStart(2);
     const barX = cx + labelW + 1;
     const barW = Math.max(2, cellW - labelW - valStr.length - 3);
-    drawBar(buf, { x: barX, y, w: barW }, val / STAT_BAR_MAX, fill);
+    drawMeter(buf, { x: barX, y, w: barW }, val / STAT_BAR_MAX, fill);
     buf.text(barX + barW + 1, y, valStr, VALUE, null);
   });
 }
@@ -134,35 +132,9 @@ function drawDietRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   if (avail > 0) buf.text(legendX, y, legend.slice(0, avail), VALUE, null);
 }
 
-/** Row 4 — the overall completion meter (moved here from the menu). */
-function drawProgressRow(ctx: RenderContext, panel: SceneRect, y: number): void {
-  const { buf } = ctx;
-  const narrow = panel.cols < NARROW;
-  buf.text(panel.x + 1, y, narrow ? 'Done' : 'Progress', LABEL, null);
-  const barX = panel.x + (narrow ? 6 : 10);
-  const barW = narrow ? 8 : 12;
-  drawBar(buf, { x: barX, y, w: barW }, ctx.completionPct / 100, METER_FILL);
-  buf.text(barX + barW + 1, y, `${ctx.completionPct.toFixed(1)}%`, VALUE, null);
-}
-
 // ---------------------------------------------------------------------------
 // Bars + helpers.
 // ---------------------------------------------------------------------------
-
-/** Draw a `w`-cell bar at (x,y) filled to `frac` (0..1); empty cells show a track. */
-function drawBar(
-  buf: FrameBuffer,
-  at: { x: number; y: number; w: number },
-  frac: number,
-  fill: Rgb,
-): void {
-  const f = frac < 0 ? 0 : frac > 1 ? 1 : frac;
-  const filled = Math.round(f * at.w);
-  for (let i = 0; i < at.w; i++) {
-    const on = i < filled;
-    buf.set(at.x + i, at.y, { ch: on ? FULL : LIGHT, fg: on ? fill : BAR_EMPTY, bg: null });
-  }
-}
 
 /** Charge bar: fill toward 200M, the filled part tinted by the diet mix. */
 function drawChargeBar(

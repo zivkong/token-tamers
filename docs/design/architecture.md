@@ -35,7 +35,7 @@ padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `
 2. _divider + gap_
 3. **Game canvas** (full width) — the habitat scene scaled to fill edge-to-edge.
 4. _divider (labeled `VITALS`) + gap_
-5. **Vitals panel** (`panelRows`, `pages/pet-vitals.ts`) — four rows separated by blank spacer
+5. **Vitals panel** (`panelRows`, `pages/pet-vitals.ts`) — three rows separated by blank spacer
    rows; every bar shows its empty track:
    - **Stats** — PWR/SPD/WIS/GRT bars, normalized to a fixed cap (`STAT_BAR_MAX` ≈ half the
      240 stage budget) so headroom is visible.
@@ -45,9 +45,15 @@ padding gap** so sections breathe (see `render/layout.ts` → `petSections()`, `
      only (`84.2M / 200M`). Fed by `ShellHost.liveStats()` → `RenderContext.live`.
    - **Diet** — House-share legend (`Aether 72% · Cipher 28%`) + the grade-roll odds
      (transparency invariant).
-   - **Progress** — the overall **completion meter** (bar + `NN.N%`), moved here from the menu.
 6. _divider + gap_
 7. **Menu** — a left-aligned button flow placed right after the panel (see Menu Spec).
+
+**Per-page completion (`render/bar.ts` → `drawCompletionHeader`):** the completion meter is NOT
+a single global widget — each collection page shows ITS OWN slice top-right: **Dex** → species
+discovered (`completion.dex`), **Archive** → species with a best record (`records / dexTotal`).
+The full breakdown (`CompletionBreakdown`: overall/dex/achievements/habitats/trinkets, each
+0..100) flows `ShellHost.completion()` → `RenderContext.completion`. The pet page shows no
+completion meter (it's about the pet, not collections).
 
 **Real-time token impact + growth:** the cli host derives `LiveStats` each frame from
 `engine.pendingEvents()` (events whose 5-h window has not closed) — summing raw tokens and
@@ -84,9 +90,9 @@ terminal down to two-plus rows at 34 cols:
 ♥ Pet 1  ☰ Dex 2  ◆ Archive 3  ⚙ Settings 4  ⏻ Quit q      <- left-aligned, wraps when narrow
 ```
 
-Each button is its label + hotkey, left-aligned (not centered). The live **Completion Meter is
-NOT in the menu** — it lives in the pet VITALS "Progress" row. Click to switch pages; active
-page highlighted; hover highlight on mouse-move. The `⚙ Settings`
+Each button is its label + hotkey, left-aligned (not centered). The **Completion Meter is NOT
+in the menu** — it is shown per-page (Dex/Archive top-right; see Per-page completion). Click to
+switch pages; active page highlighted; hover highlight on mouse-move. The `⚙ Settings`
 button opens a board of build/config facts (version, runtime, display, data-dir path, the
 keybinding help) plus the shell's one editable surface: per-adapter **plan**
 (subscription/api) and **cycle policy** (dynamic/static) toggles — ↑↓ to focus a field, ←→
@@ -137,12 +143,16 @@ lookup; zero impact on the 30fps budget.
 │ Charge ████░░░░░░ 84.2M / 200M  +6% molt ↑       │  <- REAL-TIME growth charge
 │                                                  │  <- spacer
 │ Diet  Aether 72% · Cipher 28%       last roll: … │  <- diet share + grade odds
-│                                                  │  <- spacer
-│ Progress ██░░░░░░░░ 16.7%                        │  <- completion meter (moved here)
 ├────────────────────────────────────────────────┤  <- divider + gap
 │ ♥ Pet 1  ☰ Dex 2  ◆ Archive 3  ⚙ Settings 4  …  │  <- left-aligned menu (wraps)
 └────────────────────────────────────────────────┘
                                                        (slack falls below the menu)
+```
+
+The Dex/Archive pages each carry their own completion bar top-right, e.g.:
+
+```
+ ☰ Dex                              ░░░░░░░░░░ 3/112  2.7%   <- this page's collection %
 ```
 
 ---

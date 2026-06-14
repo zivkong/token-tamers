@@ -5,6 +5,7 @@
  */
 
 import { hexToRgb, type Rgb } from '../terminal/ansi';
+import { drawCompletionHeader } from '../render/bar';
 import { houseTint } from '../helpers/lookup';
 import type { House } from '@token-tamers/core';
 import type { RenderContext } from './types';
@@ -54,8 +55,16 @@ export function renderDexPage(ctx: RenderContext): void {
 
   const ownedCount = rows.filter((r) => r.owned).length;
   buf.text(canvasX + 1, canvasY, '☰ Dex', HEADER, null);
-  const count = `${ownedCount}/${rows.length} discovered`;
-  buf.text(canvasX + canvasCols - count.length - 1, canvasY, count, LOCKED, null);
+  // Top-right: a Dex-collection completion bar (this page's slice of 100%).
+  drawCompletionHeader(buf, {
+    x: canvasX,
+    y: canvasY,
+    width: canvasCols,
+    count: `${ownedCount}/${rows.length}`,
+    pct: ctx.completion.dex,
+    fill: HEADER,
+    dim: LOCKED,
+  });
   for (let x = 1; x < canvasCols - 1; x++) {
     buf.set(canvasX + x, canvasY + 1, { ch: '─', fg: RULE, bg: null });
   }

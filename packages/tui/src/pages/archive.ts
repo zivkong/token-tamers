@@ -6,6 +6,7 @@
 import type { ArchiveRecord, Stats } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
 import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
+import { drawCompletionHeader } from '../render/bar';
 import { findSpecies } from '../helpers/lookup';
 import { clampScroll } from './dex';
 import type { RenderContext } from './types';
@@ -29,15 +30,19 @@ export function renderArchivePage(ctx: RenderContext): void {
   const { canvasX, canvasY, canvasCols, canvasRows } = layout;
   const records: readonly ArchiveRecord[] = state.archive;
 
-  // Centered hall-of-fame header (design §12 mock).
-  const title = `◆ ARCHIVE — ${records.length} record${records.length === 1 ? '' : 's'} ◆`;
-  buf.text(
-    canvasX + Math.max(1, Math.floor((canvasCols - title.length) / 2)),
-    canvasY,
-    title,
-    HEADER,
-    null,
-  );
+  // Hall-of-fame header with an Archive-coverage bar: how many of the Dex's
+  // species have a best record here (one record per species).
+  buf.text(canvasX + 1, canvasY, '◆ Archive', HEADER, null);
+  const archivePct = pack.dexTotal > 0 ? (records.length / pack.dexTotal) * 100 : 0;
+  drawCompletionHeader(buf, {
+    x: canvasX,
+    y: canvasY,
+    width: canvasCols,
+    count: `${records.length}/${pack.dexTotal}`,
+    pct: archivePct,
+    fill: HEADER,
+    dim: DIM,
+  });
   // Column header on its own rule line.
   buf.text(canvasX + COL.num, canvasY + 1, '#', DIM, null);
   buf.text(canvasX + COL.name, canvasY + 1, 'SPECIES', DIM, null);

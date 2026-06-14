@@ -19,26 +19,28 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   bottom. Slack falls below it. **Min terminal 34×24** (`MIN_COLS=34`); layouts degrade with
   compact bars/labels and a wrapping menu. (Supersedes the old centered-4:3 + bottom-bar model.)
 - Section order (pet page): **header** (`headerRows`) → _divider+gap_ → **game canvas** →
-  _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=7`: stats / gap /
-  charge / gap / diet / gap / progress) → _divider+gap_ → **menu**. `petSections(layout)`
-  carves the bands + divider rows; a `GAP_ROWS` blank follows every divider AND precedes the
-  VITALS divider (request: canvas↔VITALS spacing). `render/divider.ts` draws rules.
-  `canvasX=0`, `canvasCols=termCols`.
+  _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=5`: stats / gap /
+  charge / gap / diet) → _divider+gap_ → **menu**. `petSections(layout)` carves the bands +
+  divider rows; a `GAP_ROWS` blank follows every divider AND precedes the VITALS divider
+  (canvas↔VITALS spacing). `render/divider.ts` draws rules. `canvasX=0`, `canvasCols=termCols`.
+- **Completion is per-page, not global** (`render/bar.ts` → `drawCompletionHeader`): Dex shows
+  `completion.dex`, Archive shows `records/dexTotal`, top-right. The full `CompletionBreakdown`
+  flows `ShellHost.completion()` → `RenderContext.completion`. The pet page has NO completion
+  meter.
 - **Evolution-mystery rule:** the pet screen must NOT show the stage word, molt count, or any
   "progress to next evolution" — evolution stays a surprise. Stage/molt still drive the engine
   and show in achievements/Archive; keep the `calibrating` cue (data readiness, not evolution).
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
-- **Vitals panel** (`pages/pet-vitals.ts`) — 4 rows: **Stats** (bars normalized to
+- **Vitals panel** (`pages/pet-vitals.ts`) — 3 rows: **Stats** (bars normalized to
   `STAT_BAR_MAX`≈120 so the empty track shows), **Charge** (REAL-TIME growth: open-window tokens
   fill toward `VITALITY_FULL_TOKENS`=200M, tinted by diet, `+N% molt` = real `vitalityBonus`
-  preview; token counts only), **Diet** (House-share legend + grade-roll odds), **Progress**
-  (the completion meter, moved out of the menu). Every bar renders its empty track.
-  `LiveStats` flows `ShellHost.liveStats()` → `FrameInput.live` → `RenderContext.live`; the cli
-  derives it from `engine.pendingEvents()` + `eventTokens`/`eventEssence` + baselines. Undefined
-  in golden tests → the Charge row shows an empty/awaiting state (frames stay deterministic).
-  `completionPct` rides on `RenderContext`.
+  preview; token counts only), **Diet** (House-share legend + grade-roll odds). Every bar renders
+  its empty track via `render/bar.ts` `drawMeter`. `LiveStats` flows `ShellHost.liveStats()` →
+  `FrameInput.live` → `RenderContext.live`; the cli derives it from `engine.pendingEvents()` +
+  `eventTokens`/`eventEssence` + baselines. Undefined in golden tests → the Charge row shows an
+  empty/awaiting state (frames stay deterministic). Completion is per-page (NOT in this panel).
 - Cells are ~1:2 w:h; half-blocks give 2 vertical px/cell. Habitat scenes are 96×48 px
   (96 cols × 24 rows → 4:1 cell aspect). The canvas is full width and `sceneRows ≈ cols/4`
   (capped to fit), so the backdrop **scales uniformly to fill the width** via `drawSprite`'s
@@ -51,7 +53,7 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 - Menu flow (`render/menu.ts` → `packMenu(cols)`, shared by `layout` for `menuRows`, `frame` to
   draw, and `shell` to hit-test): the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) pack
   LEFT-ALIGNED and wrap; labels are left-aligned, NOT centered. The completion meter is NOT in
-  the menu (it's the VITALS Progress row). Adding a page = extend the `PageId` union, push a
+  the menu (it's shown per-page — Dex/Archive). Adding a page = extend the `PageId` union, push a
   `MENU_ITEMS` entry (icon + hotkey), add a `freshUi` slot, a `handleKey` case, and a
   `renderFrame` switch arm — keep all five in lockstep.
 - **Keyboard parity is mandatory:** every click has a hotkey; with no mouse
@@ -105,9 +107,9 @@ visual change is intended and reviewed.
 `ansi.ts` (Writer/sinks/SGR), `buffer.ts` (FrameBuffer+diff), `sprite.ts`
 (compositor+palette ladder, `destW`/`destH` scaling), `input.ts` (key/mouse decode),
 `hit.ts`, `layout.ts` (`computeLayout`/`petSections`), `menu.ts` (`packMenu` left-aligned
-flow), `divider.ts` (section rules), `frame.ts` (frame + menu draw), `shell.ts` (runShell
-loop), `status.ts` (one-liners), `pages/` (pet, pet-vitals, dex/archive/settings),
-`lookup.ts` (pack helpers).
+flow), `divider.ts` (section rules), `bar.ts` (`drawMeter`/`drawCompletionHeader`), `frame.ts`
+(frame + menu draw), `shell.ts` (runShell loop), `status.ts` (one-liners), `pages/` (pet,
+pet-vitals, dex/archive/settings), `lookup.ts` (pack helpers).
 
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
 
