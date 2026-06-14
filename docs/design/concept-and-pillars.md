@@ -37,9 +37,11 @@ feature, mechanic, and content decision in the game.
    optional; progress never depends on it.
 
 2. **No model judgment.** Model choice may only influence _species identity and cosmetics_ —
-   never stats, rarity, grades, or progression speed. All power metrics are normalized against
-   the player's **own baseline per provider**, not absolute token volume. An all-light-model dev
-   and an all-frontier-model dev with similar work patterns raise equally strong pets.
+   never stats, rarity, grades, or progression speed. Power is normalized against the player's
+   **own baseline per provider**; model choice never enters it, and absolute token volume enters
+   only through one small, hard-capped grade-roll bonus (the **Food** bonus, full at 200M
+   tokens — never able to dominate the baseline-judged odds). An all-light-model dev and an
+   all-frontier-model dev with similar work patterns raise equally strong pets.
    (Write this promise into the README.)
 
 3. **Horizontal evolution.** Every final form has an equal total stat budget, distributed

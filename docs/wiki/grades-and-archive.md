@@ -13,9 +13,18 @@ not from a bad week, not from Dormancy.
 | A → S | 3%          | 1.5% – **6% (hard cap)**             |
 
 The activity modifier comes from the same model-neutral molt signals (consistency vs
-your own baseline, rhythm quality, trait synergy, diversity). Token volume and model
-choice never enter it. There is no pity guarantee — every roll can fail, and the UI
-shows you the exact odds at every molt.
+your own baseline, rhythm quality, trait synergy, diversity) — **token volume and model
+choice never change it**.
+
+On top of that, a small **Food bonus** rewards a heavy session: the more tokens you use
+before the window closes, the more it adds to that molt's roll — up to **+15 points at
+200M tokens**, then it stops climbing. It's the one place raw volume helps; it can never
+dominate your baseline-judged odds, the A→S 6% cap still holds after it, and model choice
+still never matters. The pet screen's **Food** meter shows it filling live (see the
+[Game Guide](game-guide.md#food-feed-for-a-better-molt)).
+
+There is no pity guarantee — every roll can fail, and the UI shows you the exact odds at
+every molt.
 
 A successful roll is a **Gradeshift**: the pet's palette visibly upgrades live.
 

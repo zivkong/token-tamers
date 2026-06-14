@@ -29,6 +29,16 @@ House by the window's dominant model-ID gene.
 
 No House is stronger; no model is better food. "Lean" redistributes an equal budget.
 
+## Food (feed for a better molt)
+
+The pet screen's **Food** meter fills with the tokens you've used in the current session
+window, toward a **200M "full"** mark. The more it fills before the window closes, the
+bigger that molt's grade-roll **bonus** — up to a cap, then it stops mattering. So if a
+window is about to close, a last push of real work sweetens the roll. It's a small,
+**capped** bonus on top of your baseline-judged odds; model choice never changes it (see
+[Grades](grades-and-archive.md)). The **Diet** row beside it shows _what_ fed the pet
+(the model-House mix), as colored shares.
+
 ## Traits (rolled once per molt, up to ~5 slots)
 
 Marathoner · Sprinter · Polyglot · Nightshade · Daybreaker · Switcher · Deepdiver ·
