@@ -31,8 +31,10 @@ No House is stronger; no model is better food. "Lean" redistributes an equal bud
 
 ## The vitals panel: Food, Diet, Odds
 
-Under the pet sit three readouts. None of them ask anything of you — they just show what
-your real usage is doing to the pet. They read top-to-bottom as **now → life → next**:
+The pet's four **stats** (PWR / SPD / WIS / GRT — a fixed equal budget, _who it is_) sit up by
+its name in the identity header. Below the pet are three more readouts — the _living_ ones. None
+of them ask anything of you; they just show what your real usage is doing to the pet, reading
+top-to-bottom as **now → life → next**:
 
 ```
  Food   ▕█████▒▒▒▒▒▒▒▏  84.2M / 200M   +6% molt ↑

@@ -23,7 +23,7 @@ import {
 import { findHabitat, findSpecies, findSprite, houseTint } from '../helpers/lookup';
 import { petSections, type SceneRect } from '../render/layout';
 import { drawDivider } from '../components';
-import { renderVitals } from './pet-vitals';
+import { drawStatsRow, renderVitals } from './pet-vitals';
 import type { RenderContext } from './types';
 import type { ContentPack, SpriteDef } from '@token-tamers/core';
 
@@ -435,6 +435,10 @@ function drawHeaderBand(ctx: RenderContext, header: SceneRect, name: string): vo
       .join('  ✦  ');
     if (identity) buf.text(header.x + 1, header.y + 1, identity, DIM, HEADER_BG);
   }
+
+  // Stats live HERE with identity (who the pet is — a fixed equal budget), kept
+  // apart from the live Food/Diet/Odds panel. Drawn on the header band's bg.
+  if (header.rows > 2) drawStatsRow(ctx, header, header.y + 2, HEADER_BG);
 }
 
 // ---------------------------------------------------------------------------

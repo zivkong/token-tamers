@@ -6,14 +6,14 @@
  * gaps between sections so they breathe:
  *
  *   ┌───────────────────────────────┐ row 0
- *   │ header band (name / identity)  │  headerRows
+ *   │ header band (name / id / stats)│  headerRows
  *   ├───────────────────────────────┤  ← divider
  *   │ (gap)                          │
  *   │ game canvas (scene, full width)│  sceneRows   ── canvas region ──┐
  *   │ (gap)                          │                                 │ canvasRows
  *   ├──── VITALS ───────────────────┤  ← labeled divider              │
  *   │ (gap)                          │                                 │
- *   │ stats · food · diet · odds     │  panelRows                      │
+ *   │ food · diet · odds             │  panelRows                      │
  *   ├───────────────────────────────┤  ← divider                      ┘
  *   │ (gap)                          │
  *   │ menu (left-aligned, wraps)     │  menuRows  (menuY)
@@ -31,13 +31,18 @@ import { packMenu } from './menu';
 export const MIN_COLS = 34;
 export const MIN_ROWS = 24;
 
-/** Rows the header band occupies at the very top (pet name + identity). */
-export const HEADER_ROWS = 2;
 /**
- * Rows the vitals panel occupies: stats / gap / food / gap / diet / gap / odds —
- * four content rows interleaved with blank spacers. (Completion lives per-page.)
+ * Rows the header band occupies at the very top: pet name / identity line /
+ * stats readout. Stats live with identity (who the pet IS — a fixed equal
+ * budget), kept apart from the live VITALS panel below the scene.
  */
-export const PANEL_ROWS = 7;
+export const HEADER_ROWS = 3;
+/**
+ * Rows the vitals panel occupies: food / gap / diet / gap / odds — three live
+ * content rows interleaved with blank spacers. (Stats moved to the header;
+ * completion lives per-page.)
+ */
+export const PANEL_ROWS = 5;
 /** Blank padding rows used around dividers for spacing between sections. */
 export const GAP_ROWS = 1;
 /** Divider rules the PET page draws inside the content region (header, VITALS). */

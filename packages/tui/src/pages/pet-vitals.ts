@@ -1,9 +1,9 @@
 /**
- * Pet vitals panel — the section between the game canvas and the menu.
+ * Pet vitals panel — the LIVE section between the game canvas and the menu.
  *
- * Four rows, one per blank-spaced slot, deliberately free of evolution hints:
- *
- *   ◆ PWR: 12      ↯ SPD: 9      ✦ WIS: 15      ▣ GRT: 11
+ * Three live rows, one per blank-spaced slot, deliberately free of evolution
+ * hints (the Stats readout lives up in the header band — identity, not live
+ * signs — and is drawn via the exported `drawStatsRow`):
  *
  *   Food   ▕████▒▒▒▒▒▒▒▒▏ 84.2M / 200M  +6% molt ↑
  *
@@ -62,12 +62,11 @@ const STAT_ICON = {
   GRT: String.fromCodePoint(0x25a3),
 } as const;
 
-/** Draw the vitals panel: stats / food / diet / odds (blank-spaced). */
+/** Draw the live vitals panel: food / diet / odds (blank-spaced). */
 export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
-  drawStatsRow(ctx, panel, panel.y);
-  drawFoodRow(ctx, panel, panel.y + 2);
-  drawDietRow(ctx, panel, panel.y + 4);
-  drawOddsRow(ctx, panel, panel.y + 6);
+  drawFoodRow(ctx, panel, panel.y);
+  drawDietRow(ctx, panel, panel.y + 2);
+  drawOddsRow(ctx, panel, panel.y + 4);
 }
 
 // ---------------------------------------------------------------------------
@@ -75,12 +74,22 @@ export function renderVitals(ctx: RenderContext, panel: SceneRect): void {
 // ---------------------------------------------------------------------------
 
 /**
- * Row 1 — the four stats as plain readouts (no bar; stats are a fixed budget,
- * not progress), spread evenly across the FULL width: `◆ PWR: 12` … `▣ GRT: 11`,
+ * The four stats as plain readouts (no bar; stats are a fixed budget, not
+ * progress), spread evenly across the FULL width: `◆ PWR: 12` … `▣ GRT: 11`,
  * first flush-left and last flush-right (space-between). Drops icons to a compact
  * `PWR 12` form when the full form can't fit, and still spreads it.
+ *
+ * Lives in the pet HEADER band (identity, beside the name) — not the live vitals
+ * panel — so `bg` is the caller's band background (the header fill); the icons
+ * carry the pet's House tint to read as identity. `rect` is the band to spread
+ * across (header or any full-width rect).
  */
-function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
+export function drawStatsRow(
+  ctx: RenderContext,
+  rect: SceneRect,
+  y: number,
+  bg: Rgb | null = null,
+): void {
   const { buf, pack, state } = ctx;
   const s = state.pet.stats;
   const accent = mix(hexToRgb(houseTint(pack, state.pet.house)), VALUE, 0.1);
@@ -90,8 +99,8 @@ function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
     ['WIS', s.wis],
     ['GRT', s.grt],
   ];
-  const x0 = panel.x + 1;
-  const available = panel.cols - 2;
+  const x0 = rect.x + 1;
+  const available = rect.cols - 2;
 
   // Prefer the full `icon NAME: value` form; fall back to compact `NAME value`.
   let segs = stats.map(([nm, v]) => statParts(nm, v, accent, true));
@@ -99,12 +108,12 @@ function drawStatsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 
   const slack = available - totalLen(segs);
   if (slack >= 0) {
-    drawJustified(buf, x0, y, segs, slack);
+    drawJustified(buf, segs, { x0, y, slack, bg });
   } else {
     // Below even the compact width: left-pack and let it clip.
     let cx = x0;
     for (const seg of segs) {
-      drawParts(buf, cx, y, seg);
+      drawParts(buf, cx, y, seg, bg);
       cx += partsLen(seg) + 1;
     }
   }
@@ -138,10 +147,16 @@ function totalLen(segs: ReadonlyArray<readonly TextPart[]>): number {
   return segs.reduce((n, s) => n + partsLen(s), 0);
 }
 
-function drawParts(buf: FrameBuffer, x: number, y: number, parts: readonly TextPart[]): void {
+function drawParts(
+  buf: FrameBuffer,
+  x: number,
+  y: number,
+  parts: readonly TextPart[],
+  bg: Rgb | null = null,
+): void {
   let cx = x;
   for (const p of parts) {
-    buf.text(cx, y, p.text, p.color, null);
+    buf.text(cx, y, p.text, p.color, bg);
     cx += [...p.text].length;
   }
 }
@@ -164,19 +179,25 @@ function drawPartsClipped(
   }
 }
 
+interface JustifyOpts {
+  x0: number;
+  y: number;
+  slack: number;
+  bg: Rgb | null;
+}
+
 /** Place segments space-between across the width: first at x0, last flush-right. */
 function drawJustified(
   buf: FrameBuffer,
-  x0: number,
-  y: number,
   segs: ReadonlyArray<readonly TextPart[]>,
-  slack: number,
+  opts: JustifyOpts,
 ): void {
+  const { x0, y, slack, bg } = opts;
   const gaps = segs.length - 1;
   let prev = 0;
   segs.forEach((seg, i) => {
     const x = x0 + prev + (gaps > 0 ? Math.round((slack * i) / gaps) : 0);
-    drawParts(buf, x, y, seg);
+    drawParts(buf, x, y, seg, bg);
     prev += partsLen(seg);
   });
 }

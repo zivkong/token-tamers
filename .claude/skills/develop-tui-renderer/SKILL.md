@@ -18,9 +18,9 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   button flow docked immediately AFTER the canvas** (wraps rows as needed), not at the terminal
   bottom. Slack falls below it. **Min terminal 34×24** (`MIN_COLS=34`); layouts degrade with
   compact bars/labels and a wrapping menu. (Supersedes the old centered-4:3 + bottom-bar model.)
-- Section order (pet page): **header** (`headerRows`) → _divider+gap_ → **game canvas** →
-  _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=7`: stats / gap /
-  food / gap / diet / gap / odds) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
+- Section order (pet page): **header** (`headerRows=3`: name / identity / stats) → _divider+gap_ →
+  **game canvas** → _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=5`: food /
+  gap / diet / gap / odds) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
   `petSections(layout)` carves the bands and the pet's TWO dividers (header, VITALS) with gaps
   around them plus a bottom-padding gap below the panel; the **`── Menu ──` divider is GLOBAL
   chrome** drawn by the frame at `layout.menuDividerY` on every page (so the menu is its own
@@ -36,10 +36,15 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
-- **Vitals panel** (`pages/pet-vitals.ts`) — 4 rows: **Stats** (`icon LABEL: value` readouts
-  spread space-between across the full width, NO bar — stats are a fixed equal budget, not
-  progress), **Food** (REAL-TIME growth: open-window tokens fill toward `VITALITY_FULL_TOKENS`=200M,
-  SINGLE-tinted, `+N% molt` = real `vitalityBonus` preview; token counts only), **Diet** (the
+- **Header band** (`drawHeaderBand` in `pages/pet.ts`, `HEADER_ROWS=3` on `HEADER_BG`) — the
+  pet's IDENTITY card: row 0 name+grade (left) / habitat (right), row 1 pattern · traits, row 2 the
+  **Stats** readout (`icon LABEL: value` for PWR/SPD/WIS/GRT, spread space-between across the full
+  width, NO bar — a fixed equal budget, House-tinted icons). Stats live HERE (who the pet IS), kept
+  apart from the live VITALS panel; drawn via `pet-vitals.ts`'s exported `drawStatsRow(ctx, rect, y,
+bg)` so it renders on the band background.
+- **Vitals panel** (`pages/pet-vitals.ts`) — 3 LIVE rows: **Food** (REAL-TIME growth: open-window
+  tokens fill toward `VITALITY_FULL_TOKENS`=200M, SINGLE-tinted, `+N% molt` = real `vitalityBonus`
+  preview; token counts only), **Diet** (the
   ALWAYS-FULL House-share bar — composition not progress — + a House-name legend), **Odds** (the
   LIVE current→next grade forecast only: `from → to NN%`, grade-tinted via `GRADE_ACCENT`, ` (capped)`
   at the A→S ceiling, `S ★ apex` at the top). Food and Diet share ONE bar geometry (`barGeom`) so
