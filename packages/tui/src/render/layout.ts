@@ -111,11 +111,12 @@ export function computeLayout(cols: number, rows: number): Layout {
   }
 
   // The menu wraps to as many rows as the width needs; the button HEIGHT then
-  // shrinks (3 → 2 → 1) to the tallest that still leaves room for a min scene.
+  // shrinks from MENU_BTN_H down to 1 — the tallest that still leaves room for a
+  // minimum scene, so a short terminal shrinks the buttons instead of overflowing.
   const wrapRows = packMenu(cols).rows;
   const fixed = HEADER_ROWS + PANEL_ROWS + PET_DIVIDERS + PET_GAPS;
   let menuBtnH = 1;
-  for (const h of [MENU_BTN_H, 2, 1]) {
+  for (let h = MENU_BTN_H; h >= 1; h--) {
     const chrome = MENU_DIVIDER_ROWS + GAP_ROWS + menuBandRows(wrapRows, h);
     if (fixed + MIN_SCENE_ROWS + chrome <= rows) {
       menuBtnH = h;

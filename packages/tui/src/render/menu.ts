@@ -43,8 +43,8 @@ const MENU_X = 1;
 const MENU_MIN_GAP = 2;
 const MENU_PAD_X = 2;
 
-/** Preferred button HEIGHT (top pad / label / bottom pad); shrinks to fit. */
-export const MENU_BTN_H = 3;
+/** Preferred button HEIGHT in cells (label row + vertical padding); shrinks to fit. */
+export const MENU_BTN_H = 2;
 
 /** Rendered text of a button: `label key` (e.g. '♥ Pet 1'). */
 export function buttonText(item: MenuItem): string {
