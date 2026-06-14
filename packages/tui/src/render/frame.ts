@@ -13,7 +13,7 @@ import { StringSink, Writer, type ColorMode, type Rgb } from '../terminal/ansi';
 import { FrameBuffer } from './buffer';
 import { HitRegistry } from './hit';
 import { computeLayout, tooSmallMessage, type Layout } from './layout';
-import { buttonText, menuButtonY, packMenu, type MenuButton } from './menu';
+import { MENU_PAD_X, menuButtonY, packMenu, type MenuButton } from './menu';
 import { drawDivider } from '../components';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
@@ -130,8 +130,9 @@ function drawMenu(buf: FrameBuffer, hits: HitRegistry, layout: Layout, page: Pag
   }
 }
 
-/** Draw one equal-width, `h`-tall nav button ('label key'): a filled block (with
- * interior padding) and the label centered in it, highlighting the active page. */
+/** Draw one equal-width, `h`-tall nav button: a filled block (with interior
+ * padding), the LABEL centered and the hotkey RIGHT-aligned to the padding edge,
+ * highlighting the active page. */
 function drawMenuButton(
   buf: FrameBuffer,
   btn: MenuButton,
@@ -145,19 +146,15 @@ function drawMenuButton(
       buf.set(btn.x + x, y + ry, { ch: ' ', fg: null, bg });
     }
   }
-  // Center the `label key` text within the button (both axes).
-  const text = buttonText(btn);
-  const textLen = [...text].length;
-  const tx = btn.x + Math.max(0, Math.floor((btn.w - textLen) / 2));
   const ty = y + Math.floor(h / 2);
-  buf.text(tx, ty, btn.label, active ? MENU_ACTIVE : MENU_FG, bg);
-  buf.text(
-    tx + textLen - [...btn.hotkey].length,
-    ty,
-    btn.hotkey,
-    active ? MENU_ACTIVE : MENU_DIM,
-    bg,
-  );
+  // Hotkey: right-aligned inside the interior padding.
+  const keyLen = [...btn.hotkey].length;
+  const kx = btn.x + btn.w - MENU_PAD_X - keyLen;
+  // Label: centered in the button, but never overrunning the hotkey.
+  const labelLen = [...btn.label].length;
+  const lx = Math.min(btn.x + Math.max(0, Math.floor((btn.w - labelLen) / 2)), kx - 1 - labelLen);
+  buf.text(Math.max(btn.x, lx), ty, btn.label, active ? MENU_ACTIVE : MENU_FG, bg);
+  buf.text(kx, ty, btn.hotkey, active ? MENU_ACTIVE : MENU_DIM, bg);
 }
 
 function drawTooSmall(buf: FrameBuffer, layout: Layout): void {

@@ -72,7 +72,8 @@ bg)` so it renders on the band background.
   (`menuButtonWidth()` = widest text + interior padding) and one uniform HEIGHT (`MENU_BTN_H`=1 — a
   single row keeps the label CENTERED on both axes; even heights bottom-bias the text, so the button
   shape comes from the filled `MENU_BTN_BG` block + interior padding, active = `MENU_ACTIVE_BG`, not
-  extra rows), the label centered, distributed SPACE-BETWEEN across the full width (first flush-left,
+  extra rows), the LABEL centered in the button and the hotkey RIGHT-aligned to the `MENU_PAD_X`
+  edge; buttons are distributed SPACE-BETWEEN across the full width (first flush-left,
   last flush-right; a lone column is centered). `packMenu` returns x + wrap-`row`; HEIGHT is applied
   by the caller via `menuButtonY(row, btnH)`/`menuBandRows(rows, btnH)` (height-aware so a taller
   `MENU_BTN_H` would still work) and `computeLayout` only ever shrinks `menuBtnH` to fit a short
