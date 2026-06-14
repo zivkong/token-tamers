@@ -5,7 +5,7 @@
  */
 
 import { type Rgb } from '../terminal/ansi';
-import { drawCompletionHeader, drawDivider } from '../components';
+import { drawPageFooter, drawPageHeader, PAGE_HEADER_ROWS } from '../components';
 import { houseColor } from '../helpers/lookup';
 import type { House } from '@token-tamers/core';
 import type { RenderContext } from './types';
@@ -13,11 +13,10 @@ import type { RenderContext } from './types';
 const OWNED: Rgb = { r: 220, g: 226, b: 240 };
 const LOCKED: Rgb = { r: 88, g: 92, b: 112 };
 const SELECT_BG: Rgb = { r: 40, g: 48, b: 78 };
-const HEADER: Rgb = { r: 150, g: 200, b: 255 };
 const RULE: Rgb = { r: 52, g: 58, b: 80 };
 
-/** Rows above the list: title (1) + divider (1) + gap (1). Shared with the shell. */
-export const DEX_LIST_OFFSET = 3;
+/** First body row = the standard header height. Shared with the shell's hit-test. */
+export const DEX_LIST_OFFSET = PAGE_HEADER_ROWS;
 
 export interface DexRow {
   num: number;
@@ -53,24 +52,17 @@ export function buildDexRows(ctx: RenderContext): DexRow[] {
 
 export function renderDexPage(ctx: RenderContext): void {
   const { buf, hits, layout, ui } = ctx;
-  const { canvasX, canvasY, canvasCols, canvasRows } = layout;
+  const { canvasX, canvasCols, canvasRows } = layout;
   const rows = buildDexRows(ctx);
 
   const ownedCount = rows.filter((r) => r.owned).length;
-  buf.text(canvasX + 1, canvasY, '☰ Dex', HEADER, null);
-  // Top-right: a Dex-collection completion bar (this page's slice of 100%).
-  drawCompletionHeader(buf, {
-    x: canvasX,
-    y: canvasY,
-    width: canvasCols,
-    count: `${ownedCount}/${rows.length}`,
-    pct: ctx.completion.dex,
-    fill: HEADER,
-    dim: LOCKED,
+  // Standard page header: title + a Dex-collection completion bar (this page's
+  // slice of 100%) + the divider. Returns the first body row.
+  const listTop = drawPageHeader(ctx, {
+    icon: '☰',
+    title: 'Dex',
+    completion: { count: `${ownedCount}/${rows.length}`, pct: ctx.completion.dex },
   });
-  // Standard section divider (rule + a blank gap row after it) under the header.
-  drawDivider(buf, canvasY + 1, { x: canvasX + 1, width: canvasCols - 2 });
-  const listTop = canvasY + DEX_LIST_OFFSET;
   const visible = canvasRows - DEX_LIST_OFFSET - 1;
 
   // Clamp scroll so the selection stays on screen.
@@ -117,14 +109,8 @@ export function renderDexPage(ctx: RenderContext): void {
     }
   }
 
-  // Footer hint.
-  buf.text(
-    canvasX + 1,
-    canvasY + canvasRows - 1,
-    `${ui.selected + 1}/${rows.length}  ↑↓ select`,
-    LOCKED,
-    null,
-  );
+  // Standard footer status line.
+  drawPageFooter(ctx, `${ui.selected + 1}/${rows.length}  ↑↓ select`);
 }
 
 export function clampScroll(

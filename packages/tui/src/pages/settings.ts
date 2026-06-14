@@ -13,13 +13,12 @@
  */
 
 import type { ColorMode, Rgb } from '../terminal/ansi';
+import { drawPageFooter, drawPageHeader } from '../components';
 import type { RenderContext, SettingsState } from './types';
 
 const TEXT: Rgb = { r: 214, g: 220, b: 234 };
 const DIM: Rgb = { r: 96, g: 100, b: 120 };
-const HEADER: Rgb = { r: 150, g: 200, b: 255 };
 const LABEL: Rgb = { r: 150, g: 200, b: 255 };
-const RULE: Rgb = { r: 52, g: 58, b: 80 };
 const SELECT_BG: Rgb = { r: 40, g: 48, b: 78 };
 const VALUE_SELECTED: Rgb = { r: 255, g: 224, b: 130 };
 
@@ -92,24 +91,12 @@ function colorLabel(mode: ColorMode): string {
 
 export function renderSettingsPage(ctx: RenderContext): void {
   const { buf, layout, info } = ctx;
-  const { canvasX, canvasY, canvasCols } = layout;
-  const labelX = canvasX + 1;
-  const valueX = canvasX + 13;
+  const labelX = layout.canvasX + 1;
+  const valueX = layout.canvasX + 13;
 
-  // Centered header + rule, mirroring the Archive page's hall-of-fame strip.
-  const title = '⚙ SETTINGS';
-  buf.text(
-    canvasX + Math.max(1, Math.floor((canvasCols - title.length) / 2)),
-    canvasY,
-    title,
-    HEADER,
-    null,
-  );
-  for (let x = 1; x < canvasCols - 1; x++) {
-    buf.set(canvasX + x, canvasY + 1, { ch: '─', fg: RULE, bg: null });
-  }
-
-  let y = canvasY + 2;
+  // Standard page header (no completion readout — Settings tracks nothing).
+  // Returns the first body row.
+  let y = drawPageHeader(ctx, { icon: '⚙', title: 'Settings' });
   const row = (label: string, value: string, valueFg: Rgb = TEXT): void => {
     buf.text(labelX, y, label, LABEL, null);
     buf.text(valueX, y, value, valueFg, null);
@@ -128,13 +115,11 @@ export function renderSettingsPage(ctx: RenderContext): void {
 
   // Editable adapters.
   y += 1;
-  y = drawAdapters(ctx, y);
+  drawAdapters(ctx, y);
 
-  // Controls + nav help (replaces the bottom-of-canvas line).
-  y += 1;
-  buf.text(labelX, y, '↑↓ select   ←→ change   ·   changes apply on restart', DIM, null);
-  y += 1;
-  buf.text(labelX, y, '1 Pet   2 Dex   3 Archive   4 Settings   q Quit', DIM, null);
+  // Standard footer: the editing-controls hint. The nav legend is intentionally
+  // gone — the global "── Menu ──" buttons below already provide page navigation.
+  drawPageFooter(ctx, '↑↓ select   ←→ change   ·   changes apply on restart');
 }
 
 /**

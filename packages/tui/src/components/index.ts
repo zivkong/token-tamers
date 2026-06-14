@@ -7,6 +7,14 @@
 
 export { drawDivider, DIVIDER_LINE, DIVIDER_LABEL, type DividerOptions } from './divider';
 export {
+  drawPageHeader,
+  drawPageFooter,
+  PAGE_HEADER_ROWS,
+  PAGE_TITLE,
+  PAGE_DIM,
+  type PageHeaderOptions,
+} from './page';
+export {
   drawMeter,
   drawSegmentedMeter,
   drawCompletionHeader,

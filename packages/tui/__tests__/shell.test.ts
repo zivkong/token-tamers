@@ -125,7 +125,7 @@ describe('runShell loop', () => {
     });
     input.push({ type: 'key', name: '4' }); // settings
     await done;
-    expect(sink.toString()).toContain('SETTINGS');
+    expect(sink.toString()).toContain('⚙ Settings');
   });
 
   it('edits an adapter plan with ←→ and persists the change', async () => {

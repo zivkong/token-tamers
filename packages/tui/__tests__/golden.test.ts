@@ -61,7 +61,7 @@ describe('golden frames (100x30, no-color)', () => {
       30,
       input({ page: 'settings', info: TEST_INFO, settings: TEST_SETTINGS }),
     );
-    expect(out).toContain('SETTINGS');
+    expect(out).toContain('⚙ Settings');
     expect(out).toContain('v0.1.0');
     expect(out).toContain('claude-code');
     expect(out).toContain('codex');

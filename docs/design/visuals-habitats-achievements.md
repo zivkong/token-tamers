@@ -348,6 +348,16 @@ Achievements are the formal layer that couples progression to the habitat & trin
   (PWR/SPD/WIS/GRT, a fixed equal budget) live up in the identity header beside the name, kept
   apart from the live vitals.
 
+#### Standard page scaffold (Dex / Archive / Settings)
+
+Every full-screen page except Pet shares ONE chrome so they read as one app (`components/page.ts`):
+a left-aligned `icon Title` header with an optional right-aligned completion bar, the standard
+divider beneath it, the page body, and a single left-aligned footer status line on the bottom row.
+The completion bar appears only where there's something to track (Dex, Archive); Settings omits it.
+Pages NEVER draw their own navigation legend — the global `── Menu ──` buttons are the only nav, so
+a per-page key legend would just duplicate them. The **Pet page is deliberately exempt** — it is the
+game canvas (identity header + scene + VITALS panel), not a standard page.
+
 #### Evolution-mystery rule (amended — abstract Growth cue permitted)
 
 The pet screen still must NOT reveal **the stage word, the molt count, the next form, or "N molts

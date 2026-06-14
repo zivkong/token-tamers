@@ -26,10 +26,22 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   chrome** drawn by the frame at `layout.menuDividerY` on every page (so the menu is its own
   named section everywhere). Menu buttons start at `layout.menuY` (= `menuDividerY + 1`).
   `components/divider.ts` draws rules. `canvasX=0`, `canvasCols=termCols`.
-- **Completion is per-page, not global** (`components/meter.ts` → `drawCompletionHeader`): Dex shows
-  `completion.dex`, Archive shows `records/dexTotal`, top-right. The full `CompletionBreakdown`
-  flows `ShellHost.completion()` → `RenderContext.completion`. The pet page has NO completion
-  meter.
+- **Standard full-screen page scaffold** (`components/page.ts`): every non-Pet page (Dex,
+  Archive, Settings) shares ONE chrome so they never drift apart — `drawPageHeader(ctx, {icon,
+title, completion?})` draws a left-aligned `icon Title` (Title-Case), an optional right-aligned
+  completion bar, and the standard `drawDivider` beneath, returning the first body row
+  (`canvasY + PAGE_HEADER_ROWS`, = 3); `drawPageFooter(ctx, text)` draws a left status line on the
+  bottom canvas row. Pages render only their BODY between. Do NOT hand-roll page headers/titles, and
+  NEVER draw a nav legend on a page — the global `── Menu ──` buttons are the only navigation (a
+  per-page key legend is a duplicate). The Pet page is the sole exception (it's the game canvas; see
+  `petSections`). The shell's list hit-test reads `DEX_LIST_OFFSET = PAGE_HEADER_ROWS` and
+  `ARCHIVE_LIST_OFFSET = PAGE_HEADER_ROWS + 1` (Archive's column header is the first body row), so
+  changing the header height updates all three in lockstep.
+- **Completion is per-page, not global** (`components/meter.ts` → `drawCompletionHeader`, surfaced
+  via `drawPageHeader`'s `completion`): Dex shows `completion.dex`, Archive shows
+  `records/dexTotal`, top-right. The full `CompletionBreakdown` flows `ShellHost.completion()` →
+  `RenderContext.completion`. Settings has no completion (nothing to track); the pet page has NO
+  completion meter.
 - **Evolution-mystery rule (amended):** the pet screen must NOT show the stage word, molt count,
   the next form, or "N to next evolution" — _what_ it becomes and _when_ stays a surprise. The ONE
   permitted cue is the **"Grow" vitals row**: an abstract maturation meter (fill + a single word —
@@ -152,10 +164,12 @@ visual change is intended and reviewed.
 `hit.ts`, `layout.ts` (`computeLayout`/`petSections`), `menu.ts` (`packMenu` left-aligned
 flow), `frame.ts` (frame + menu draw), `shell.ts` (runShell loop), `status.ts` (one-liners),
 `pages/` (pet, pet-vitals, dex/archive/settings), `lookup.ts` (pack helpers). Shared UI lives
-under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after) plus
-`meter.ts` — the ONE progress bar: `drawMeter` (filled `█` + a clearly-visible `▒` track),
-`drawSegmentedMeter` (filled portion split into colored slices, e.g. the diet-tinted food),
-and `drawCompletionHeader`. Reuse these — don't hand-roll rules/bars.
+under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after);
+`page.ts` (the standard full-screen page scaffold — `drawPageHeader`/`drawPageFooter`/
+`PAGE_HEADER_ROWS`, used by Dex/Archive/Settings); and `meter.ts` — the ONE progress bar:
+`drawMeter` (filled `█` + a clearly-visible `▒` track), `drawSegmentedMeter` (filled portion split
+into colored slices, e.g. the diet-tinted food), and `drawCompletionHeader`. Reuse these — don't
+hand-roll rules/bars/headers.
 
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
 
