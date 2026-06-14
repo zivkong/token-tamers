@@ -56,8 +56,8 @@ const HOUSE_TINT: Record<House, string> = {
   aether: '#38bdf8',
   cipher: '#f87171',
   flux: '#f472b6',
-  forge: '#f97316',
-  wild: '#7c849c',
+  forge: '#ff8c42',
+  wild: '#9aa6c4',
 };
 
 interface SpeciesLike {

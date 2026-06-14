@@ -39,8 +39,8 @@ export const HOUSE_ACCENT: Record<House, string> = {
   aether: '#38bdf8', // ethereal / mind — sky cyan
   cipher: '#f87171', // glyph / geometry — red
   flux: '#f472b6', // light / current — rose magenta
-  forge: '#f97316', // metal / ember — orange
-  wild: '#7c849c', // ??? unknown — muted slate
+  forge: '#ff8c42', // metal / ember — bright orange (legible on the dark theme)
+  wild: '#9aa6c4', // ??? unknown — light slate (kept bright enough for dark bg)
 };
 
 /** House identity color as a hex string (for `buildPalette`). */

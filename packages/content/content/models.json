@@ -6,10 +6,10 @@
   { "pattern": "o4*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
   { "pattern": "o*", "house": "cipher", "geneId": "gene-gpt", "tint": "#f87171" },
   { "pattern": "gemini-*", "house": "flux", "geneId": "gene-gemini", "tint": "#f472b6" },
-  { "pattern": "llama*", "house": "forge", "geneId": "gene-llama", "tint": "#f97316" },
-  { "pattern": "qwen*", "house": "forge", "geneId": "gene-qwen", "tint": "#f97316" },
-  { "pattern": "mistral*", "house": "forge", "geneId": "gene-mistral", "tint": "#f97316" },
-  { "pattern": "deepseek*", "house": "forge", "geneId": "gene-deepseek", "tint": "#f97316" },
-  { "pattern": "phi*", "house": "forge", "geneId": "gene-phi", "tint": "#f97316" },
-  { "pattern": "gemma*", "house": "forge", "geneId": "gene-gemma", "tint": "#f97316" }
+  { "pattern": "llama*", "house": "forge", "geneId": "gene-llama", "tint": "#ff8c42" },
+  { "pattern": "qwen*", "house": "forge", "geneId": "gene-qwen", "tint": "#ff8c42" },
+  { "pattern": "mistral*", "house": "forge", "geneId": "gene-mistral", "tint": "#ff8c42" },
+  { "pattern": "deepseek*", "house": "forge", "geneId": "gene-deepseek", "tint": "#ff8c42" },
+  { "pattern": "phi*", "house": "forge", "geneId": "gene-phi", "tint": "#ff8c42" },
+  { "pattern": "gemma*", "house": "forge", "geneId": "gene-gemma", "tint": "#ff8c42" }
 ]
