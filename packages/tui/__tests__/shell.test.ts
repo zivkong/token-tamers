@@ -143,7 +143,7 @@ describe('runShell loop', () => {
       input,
       size: () => ({ cols: 100, rows: 30 }),
       manageTerminal: false,
-      maxFrames: 4,
+      maxFrames: 5,
       adapters: [{ provider: 'claude-code', plan: 'subscription', policy: 'dynamic' }],
       onAdaptersChange: (a) => {
         saveCount += 1;
@@ -151,11 +151,43 @@ describe('runShell loop', () => {
         savedPolicy = a[0]?.policy ?? null;
       },
     });
-    input.push({ type: 'key', name: '4' }); // open settings (plan field focused)
+    input.push({ type: 'key', name: '4' }); // open settings (update-mode field focused)
+    input.push({ type: 'key', name: 'down' }); // move to the first adapter's plan field
     input.push({ type: 'key', name: 'right' }); // cycle plan subscription -> api
     await done;
     expect(saveCount).toBe(1);
     expect(savedPlan).toBe('api'); // plan cycled
     expect(savedPolicy).toBe('dynamic'); // cycle policy untouched
+  });
+
+  it('edits the opt-in update mode with ←→ and persists to settings.json path', async () => {
+    const input = manualInput();
+    const host = makeHost();
+    const sink = new StringSink();
+    let savedMode: string | null = null;
+    let adapterSaves = 0;
+    const done = runShell({
+      host,
+      color: 'none',
+      now: steppedClock(40),
+      out: sink,
+      input,
+      size: () => ({ cols: 100, rows: 30 }),
+      manageTerminal: false,
+      maxFrames: 4,
+      adapters: [{ provider: 'claude-code', plan: 'subscription', policy: 'dynamic' }],
+      updateMode: 'off',
+      onAdaptersChange: () => {
+        adapterSaves += 1;
+      },
+      onUpdateModeChange: (mode) => {
+        savedMode = mode;
+      },
+    });
+    input.push({ type: 'key', name: '4' }); // open settings (update-mode field focused first)
+    input.push({ type: 'key', name: 'right' }); // cycle off -> notify
+    await done;
+    expect(savedMode).toBe('notify'); // update mode persisted via its own hook
+    expect(adapterSaves).toBe(0); // adapter persistence untouched
   });
 });

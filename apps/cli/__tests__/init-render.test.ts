@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { parseColorChoice, visibleLen } from '../src/helpers/init-style';
-import { renderBanner, renderFirstInitSummary } from '../src/helpers/init-render';
+import { parseColorChoice, parseUpdateChoice, visibleLen } from '../src/helpers/init-style';
+import {
+  renderBanner,
+  renderFirstInitSummary,
+  renderUpdateChoice,
+} from '../src/helpers/init-render';
 
 describe('parseColorChoice', () => {
   it('maps the first letter/digit of an answer to a ColorPreference', () => {
@@ -15,6 +19,32 @@ describe('parseColorChoice', () => {
     expect(parseColorChoice('', 'truecolor')).toBe('truecolor');
     expect(parseColorChoice('   ', '256')).toBe('256');
     expect(parseColorChoice('zzz', 'auto')).toBe('auto');
+  });
+});
+
+describe('parseUpdateChoice', () => {
+  it('maps the first letter of an answer to an UpdateMode', () => {
+    expect(parseUpdateChoice('o', 'auto')).toBe('off');
+    expect(parseUpdateChoice('notify', 'off')).toBe('notify');
+    expect(parseUpdateChoice('auto', 'off')).toBe('auto');
+  });
+
+  it('keeps the current value on an empty or unknown answer (off stays the default)', () => {
+    expect(parseUpdateChoice('', 'off')).toBe('off');
+    expect(parseUpdateChoice('   ', 'notify')).toBe('notify');
+    expect(parseUpdateChoice('zzz', 'off')).toBe('off');
+  });
+});
+
+describe('renderUpdateChoice (plain)', () => {
+  it('notes the change and the apply-on-next-launch timing when the mode changes', () => {
+    const out = renderUpdateChoice('auto', true, false);
+    expect(out).toContain('auto');
+    expect(out).toContain('next launch');
+  });
+
+  it('reports the unchanged mode without a change marker', () => {
+    expect(renderUpdateChoice('off', false, false)).toContain('off');
   });
 });
 

@@ -8,13 +8,15 @@ import type {
   AdapterConfig,
   ColorPreference,
   CyclePolicyKind,
+  SettingsFile,
+  UpdateMode,
   UserConfig,
 } from '@token-tamers/core';
 import { catchUp, NotInitializedError } from '../services/catchup';
 import { createShellHost } from '../services/shell-host';
 import { backgroundUpdateCheck, pendingUpdate } from '../services/update-check';
 import { VERSION } from '../version';
-import { dataDir, loadSettings, saveConfig } from '../stores';
+import { dataDir, loadSettings, saveConfig, saveSettings } from '../stores';
 
 type Out = (s: string) => void;
 
@@ -79,6 +81,15 @@ function persistAdapters(config: UserConfig, edited: AdapterInfo[]): void {
   saveConfig(next);
 }
 
+/**
+ * Persist the edited opt-in update mode back to settings.json (off by default —
+ * the offline pledge holds until the player opts in). The running session keeps
+ * its current behavior; the new mode takes effect on the next launch.
+ */
+function persistUpdateMode(settings: SettingsFile, mode: string): void {
+  saveSettings({ ...settings, update: { mode: mode as UpdateMode } });
+}
+
 export async function runShellCommand(noColor: boolean, out: Out): Promise<void> {
   let caught;
   try {
@@ -108,7 +119,9 @@ export async function runShellCommand(noColor: boolean, out: Out): Promise<void>
       color,
       info,
       adapters: toAdapterInfo(config),
+      updateMode: settings.update?.mode ?? 'off',
       onAdaptersChange: (edited) => persistAdapters(config, edited),
+      onUpdateModeChange: (mode) => persistUpdateMode(settings, mode),
     });
   } finally {
     persist();

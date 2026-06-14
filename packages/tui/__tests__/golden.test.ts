@@ -12,13 +12,17 @@ const TEST_INFO: ShellInfo = {
   dataDir: '~/.tokentamers',
 };
 
-/** A deterministic editable adapter state, second adapter's plan focused. */
+/**
+ * A deterministic editable Settings state: update mode set to 'notify', with the
+ * second adapter's plan focused (index 3 = 1 update field + adapter 1's plan).
+ */
 const TEST_SETTINGS: SettingsState = {
+  updateMode: 'notify',
   adapters: [
     { provider: 'claude-code', plan: 'subscription', policy: 'dynamic' },
     { provider: 'codex', plan: 'api', policy: 'static' },
   ],
-  selected: 2,
+  selected: 3,
 };
 
 function input(over: Partial<FrameInput>): FrameInput {

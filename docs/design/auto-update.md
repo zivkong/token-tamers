@@ -35,6 +35,17 @@ stays true for everyone who doesn't opt in.
 
 `tt update` works on demand regardless of mode (explicit user action).
 
+**Setting the mode.** `update.mode` is a hand-editable `settings.json` field, and is also
+surfaced as an explicit opt-in control in two places, both defaulting to `off`:
+
+- **`tt init`** — the Preferences step asks once ("Updates — off keeps the game fully offline.
+  (o)ff (n)otify (a)uto"); the empty / `--yes` answer keeps the current value, so non-interactive
+  runs never silently enable it.
+- **Settings page** — an editable `Updates ‹ off ›` field (the first editable field, above the
+  adapter toggles); ←→ cycles `off ▸ notify ▸ auto`. The shell persists the change to
+  `settings.json`; like the adapter toggles it applies on the next launch. The TUI only writes the
+  mode string — it never imports the updater network surface (the isolation gate still holds).
+
 ## Architecture (`apps/cli/src/services/updater/`)
 
 - **`net.ts`** — THE network surface. `getJson`/`getBuffer` over `node:https`. Dumb on

@@ -49,15 +49,19 @@ export interface ShellInfo {
 }
 
 /**
- * Live, editable Settings state the shell owns: a working copy of the adapter
- * configs plus which editable field is focused. Each adapter contributes two
- * fields (plan, then cycle policy), so `selected` indexes a flat list of length
- * `adapters.length * 2`; it is -1 when there is nothing to edit. Edits mutate
- * this copy and are persisted via the shell's `onAdaptersChange` hook — they
- * take effect on the next launch, never mid-session (cycle policy reshapes molt
- * windows, which must not shift under a running pet).
+ * Live, editable Settings state the shell owns: the opt-in update mode plus a
+ * working copy of the adapter configs, and which editable field is focused. The
+ * flat field list is `[updateMode, (adapter0 plan, adapter0 cycle), …]`: index 0
+ * is always the update mode, then each adapter contributes two fields — so
+ * `selected` ranges over `1 + adapters.length * 2`. Edits mutate this copy and
+ * persist via the shell's hooks (`onUpdateModeChange` → settings.json,
+ * `onAdaptersChange` → config.json); both take effect on the next launch, never
+ * mid-session (cycle policy reshapes molt windows, which must not shift under a
+ * running pet).
  */
 export interface SettingsState {
+  /** Opt-in update mode: 'off' | 'notify' | 'auto'. */
+  updateMode: string;
   adapters: AdapterInfo[];
   selected: number;
 }

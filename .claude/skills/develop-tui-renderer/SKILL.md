@@ -159,8 +159,9 @@ and `drawCompletionHeader`. Reuse these — don't hand-roll rules/bars.
 
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
 
-The Settings page mixes **read-only facts** with the shell's **only editable surface**
-(per-adapter `plan` and `cycle` toggles). Two contracts, two responsibilities:
+The Settings page mixes **read-only facts** with the shell's **only editable surface** — the
+opt-in **update mode** and per-adapter `plan` / `cycle` toggles. Two contracts, two
+responsibilities:
 
 - **`ShellInfo`** — static facts (version, runtime, fps, dataDir). The page must stay
   deterministic for golden frames, so it NEVER reads the wall clock, `process.*`, or the
@@ -169,12 +170,16 @@ The Settings page mixes **read-only facts** with the shell's **only editable sur
   page falls back to `—`). The app version is the single `apps/cli/src/version.ts` const
   (kept in sync with package.json), re-exported from `main.ts`. Rule for any future info
   page: derive process/fs facts in the cli, pass them in — never reach for them in `tui`.
-- **`SettingsState`** — a live working copy of the adapter configs plus `selected` (a flat
-  field index, two fields per adapter). The page renders it and a hit region per field but
-  owns NO mutation. The shell drives editing: ↑↓ move `selected` (`moveSelection`), ←→
-  cycle the focused value (`cycleSelectedField` in `pages/settings.ts`). On each change the
-  shell calls `options.onAdaptersChange(adapters)`; the cli persists to config.json. Edits
-  apply on the **next launch**, never mid-session — cycle policy reshapes molt windows,
-  which must not shift under a running pet. Adding/removing adapters and editing scan paths
-  stays in `tt init` (needs detection + text input). The pet game itself stays fully idle:
-  Settings is optional config, never gameplay.
+- **`SettingsState`** — a live working copy of `updateMode` + the adapter configs plus
+  `selected` (a flat field index: **index 0 = update mode**, then two fields per adapter, so
+  `settingsFieldCount = 1 + adapters*2`, always ≥ 1). The page renders it and a hit region per
+  field but owns NO mutation. The shell drives editing: ↑↓ move `selected` (`moveSelection`),
+  ←→ cycle the focused value (`cycleSelectedField` in `pages/settings.ts`). On each change the
+  shell persists to the RIGHT store by field: the update-mode field (`isUpdateFieldSelected`)
+  → `options.onUpdateModeChange(mode)` → settings.json; adapter fields →
+  `options.onAdaptersChange(adapters)` → config.json. Edits apply on the **next launch**, never
+  mid-session — cycle policy reshapes molt windows, which must not shift under a running pet; the
+  update mode is read at launch too. The update toggle only WRITES the mode string — it never
+  imports the updater network surface (the isolation gate holds; off stays the default).
+  Adding/removing adapters and editing scan paths stays in `tt init` (needs detection + text
+  input). The pet game itself stays fully idle: Settings is optional config, never gameplay.

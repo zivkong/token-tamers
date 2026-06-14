@@ -25,7 +25,7 @@ import type {
 } from './pages/types';
 import { buildDexRows, DEX_LIST_OFFSET } from './pages/dex';
 import { ARCHIVE_LIST_OFFSET } from './pages/archive';
-import { cycleSelectedField, settingsFieldCount } from './pages/settings';
+import { cycleSelectedField, isUpdateFieldSelected, settingsFieldCount } from './pages/settings';
 import type { ContentPack, GameEffect, GameState } from '@token-tamers/core';
 
 // Re-exported shell host/options contract (kept identical to src/index.ts).
@@ -49,11 +49,19 @@ export interface ShellOptions {
   info?: ShellInfo;
   /** Initial adapter configs (a working copy is edited on the Settings page). */
   adapters?: AdapterInfo[];
+  /** Initial opt-in update mode ('off' | 'notify' | 'auto'); defaults to 'off'. */
+  updateMode?: string;
   /**
    * Persist edited adapter plan/cycle toggles. Called on each change with the
    * full working copy; the host writes config.json (applied on next launch).
    */
   onAdaptersChange?: (adapters: AdapterInfo[]) => void;
+  /**
+   * Persist the edited opt-in update mode. Called with the new mode; the host
+   * writes settings.json (applied on next launch). Off by default — the offline
+   * pledge holds until the player opts in here.
+   */
+  onUpdateModeChange?: (mode: string) => void;
   // --- additive testing/IO hooks (all optional; defaults wire real stdio) ---
   /** Injected clock; defaults to Date.now. Single time source for the loop. */
   now?: () => number;
@@ -94,6 +102,8 @@ interface ShellRuntime {
   settings: SettingsState;
   /** Persist hook for adapter edits (from options). */
   onAdaptersChange?: (adapters: AdapterInfo[]) => void;
+  /** Persist hook for the opt-in update-mode edit (from options). */
+  onUpdateModeChange?: (mode: string) => void;
 }
 
 /** Resolved loop dependencies (injected once, passed as a unit). */
@@ -114,10 +124,14 @@ function freshUi(): Record<PageId, PageUiState> {
   };
 }
 
-/** Seed the editable Settings state from a working copy of the adapter configs. */
-function initialSettings(adapters: AdapterInfo[] | undefined): SettingsState {
+/**
+ * Seed the editable Settings state from a working copy of the adapter configs +
+ * the opt-in update mode. The update-mode field is always present (index 0), so
+ * `selected` starts there and the page is editable even with no adapters.
+ */
+function initialSettings(adapters: AdapterInfo[] | undefined, updateMode?: string): SettingsState {
   const copy = (adapters ?? []).map((a) => ({ ...a }));
-  return { adapters: copy, selected: copy.length > 0 ? 0 : -1 };
+  return { updateMode: updateMode ?? 'off', adapters: copy, selected: 0 };
 }
 
 /**
@@ -143,8 +157,9 @@ export async function runShell(options: ShellOptions): Promise<void> {
     flashUntilFrame: 0,
     quit: false,
     info: options.info,
-    settings: initialSettings(options.adapters),
+    settings: initialSettings(options.adapters, options.updateMode),
     onAdaptersChange: options.onAdaptersChange,
+    onUpdateModeChange: options.onUpdateModeChange,
   };
 
   const inputSource = options.input ?? (manageTerminal ? stdinSource() : nullSource());
@@ -294,8 +309,11 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
 function adjustSetting(rt: ShellRuntime, delta: number): void {
   if (rt.page !== 'settings') return;
   if (settingsFieldCount(rt.settings) === 0) return;
+  // The update-mode field persists to settings.json; adapter fields to config.json.
+  const updateField = isUpdateFieldSelected(rt.settings);
   cycleSelectedField(rt.settings, delta);
-  rt.onAdaptersChange?.(rt.settings.adapters);
+  if (updateField) rt.onUpdateModeChange?.(rt.settings.updateMode);
+  else rt.onAdaptersChange?.(rt.settings.adapters);
 }
 
 function handleMouse(

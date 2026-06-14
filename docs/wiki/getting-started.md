@@ -27,13 +27,14 @@ Re-running `tt init` adds/removes adapters without touching pet state.
 
 Open `tt` and press **4** (or click **⚙ Settings**) to see what's in effect: the version
 number, your runtime, the active color mode and fps, where your data lives
-(`~/.tokentamers/`), and each configured adapter. Adapter **plan** (subscription/api) and
-**cycle policy** (dynamic/static) are editable right there — press **↑↓** to focus a field
-and **←→** to change it. Your choice is saved to `~/.tokentamers/config.json` and applies
-the next time you launch `tt` (changing the cycle policy reshapes molt windows, so it
-never shifts mid-session under your pet). Adding or removing an agent, or changing scan
-paths, is still done by re-running `tt init`. You can also print the version
-non-interactively with `tt --version`.
+(`~/.tokentamers/`), the opt-in update mode, and each configured adapter. Three things are
+editable right there — press **↑↓** to focus a field and **←→** to change it: the **Updates**
+mode (`off ▸ notify ▸ auto`; see below), and each adapter's **plan** (subscription/api) and
+**cycle policy** (dynamic/static). The update mode saves to `~/.tokentamers/settings.json` and
+adapter changes to `config.json`; both apply the next time you launch `tt` (changing the cycle
+policy reshapes molt windows, so it never shifts mid-session under your pet). Adding or removing
+an agent, or changing scan paths, is still done by re-running `tt init`. You can also print the
+version non-interactively with `tt --version`.
 
 Token Tamers reads **no environment variables** — every preference lives in a file under
 `~/.tokentamers/`. `settings.json` (hand-editable, created on demand) holds your `color`
@@ -66,12 +67,22 @@ the updater only fetches, it tells GitHub nothing.
 - **`tt update`** — check on demand and update now. Standalone binaries download the matched
   release, verify it, and swap themselves in place; `tt.js` / Node runs print the release
   page to update from. Run it whenever you like; nothing happens until you do.
-- **`update.mode` in `~/.tokentamers/settings.json`** (default `off`):
+- **Update mode** (default `off`) — how the game checks on its own, if at all:
   - `off` — never touches the network (the default).
   - `notify` — checks ~once a day and shows a "vX available" hint on the Settings page.
   - `auto` — `notify`, plus self-updating the standalone binary (verified) on next launch.
 
-So out of the box the game makes **zero network connections**; you opt in only if you want it.
+You can set the mode three ways, all starting from `off`:
+
+- **During `tt init`** — the Preferences step asks once ("Updates — off keeps the game fully
+  offline"); just press Enter to stay off.
+- **On the Settings page** — press **4**, highlight the **Updates** row, and press **←/→** to
+  cycle `off ▸ notify ▸ auto` (it's the first editable row, above the adapters).
+- **By hand** — edit `update.mode` in `~/.tokentamers/settings.json`.
+
+Either UI just records your choice; it takes effect on the next launch, and turning it on is the
+only thing that ever lets the game reach the network. So out of the box the game makes **zero
+network connections** — you opt in only if you want it.
 
 ## Troubleshooting adapter detection
 

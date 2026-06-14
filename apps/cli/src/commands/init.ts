@@ -45,7 +45,9 @@ import {
   formatPlanQuestion,
   formatColorQuestion,
   formatPathQuestion,
+  formatUpdateQuestion,
   parseColorChoice,
+  parseUpdateChoice,
 } from '../helpers/init-style';
 import {
   renderBanner,
@@ -56,6 +58,7 @@ import {
   renderAdapterEnabled,
   renderCustomPathSet,
   renderColorChoice,
+  renderUpdateChoice,
   renderNoAdapters,
   renderRerunBackfill,
   renderRerunMessage,
@@ -150,11 +153,24 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
       }
     }
 
-    out(renderStepHeader(2, 3, 'Display', styled));
+    out(renderStepHeader(2, 3, 'Preferences', styled));
     const nextColor = await askColor(settings.color, styled, ask);
     out(renderColorChoice(nextColor, nextColor !== settings.color, styled));
     if (nextColor !== settings.color) {
       settings.color = nextColor;
+      settingsDirty = true;
+    }
+
+    // Opt-in updates — default stays 'off' (the offline pledge holds until the
+    // player chooses otherwise here). The empty / `--yes` answer keeps current.
+    const currentUpdate = settings.update?.mode ?? 'off';
+    const nextUpdate = parseUpdateChoice(
+      await ask(formatUpdateQuestion(currentUpdate, styled), ''),
+      currentUpdate,
+    );
+    out(renderUpdateChoice(nextUpdate, nextUpdate !== currentUpdate, styled));
+    if (nextUpdate !== currentUpdate) {
+      settings.update = { mode: nextUpdate };
       settingsDirty = true;
     }
   } finally {

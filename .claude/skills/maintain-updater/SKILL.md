@@ -17,7 +17,10 @@ updater is the single deliberate exception, engineered so the pledge stays true 
   Need a new network call? Add it to `net.ts` behind `getJson`/`getBuffer`; never elsewhere.
 - **Off by default.** `settings.update.mode` defaults to `off` → zero network. Never flip the
   default, never check/download without the user being in `notify`/`auto` or running
-  `tt update`.
+  `tt update`. The mode is settable three ways, all defaulting to `off` and applying on next
+  launch: hand-editing `settings.json`, the `tt init` Preferences prompt, and the Settings-page
+  `Updates ‹ off ›` toggle (off ▸ notify ▸ auto). Those control surfaces only WRITE the mode
+  string — they must never import the updater network surface (the isolation gate still holds).
 - **Outbound-read-only, zero telemetry.** GET only, to GitHub Releases. Never send a body,
   query params, or any usage/pet/identifying data. The updater tells GitHub nothing.
 - **Verify before applying.** A binary is only swapped after its SHA-256 matches the

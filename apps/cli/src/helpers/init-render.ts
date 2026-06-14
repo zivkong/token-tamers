@@ -137,6 +137,16 @@ export function renderColorChoice(pref: string, changed: boolean, styled: boolea
   return `  ${dim(`color · ${pref}`, styled)}\n`;
 }
 
+export function renderUpdateChoice(mode: string, changed: boolean, styled: boolean): string {
+  if (!styled) {
+    return changed ? `  Updates set to ${mode} (applies next launch).\n` : `  Updates: ${mode}.\n`;
+  }
+  if (changed) {
+    return `  ${paint(GOOD, '✓', styled)} ${dim(`updates → ${mode}  (applies next launch)`, styled)}\n`;
+  }
+  return `  ${dim(`updates · ${mode}`, styled)}\n`;
+}
+
 // ---------------------------------------------------------------------------
 // Re-run / no-adapters / next steps
 // ---------------------------------------------------------------------------

@@ -10,7 +10,7 @@
  * `styled` is false every helper returns plain text that reads well in CI.
  */
 
-import type { ColorPreference } from '@token-tamers/core';
+import type { ColorPreference, UpdateMode } from '@token-tamers/core';
 import { fgSgr, hexToRgb, type ColorMode } from '@token-tamers/tui';
 
 // ---------------------------------------------------------------------------
@@ -120,6 +120,32 @@ export function formatColorQuestion(current: ColorPreference, styled: boolean): 
   }
   const opts = '(a)uto (t)ruecolor (2)56 (8)-color (n)one';
   return `  Color — ${opts}? ${dim(`[${current}]`, styled)} `;
+}
+
+/**
+ * The update-mode question. Leads with the offline pledge so the player knows the
+ * default keeps the game fully offline; opting in is an explicit choice.
+ */
+export function formatUpdateQuestion(current: UpdateMode, styled: boolean): string {
+  const opts = '(o)ff (n)otify (a)uto';
+  if (!styled) {
+    return `  Updates — off keeps the game fully offline. ${opts}? [${current}] `;
+  }
+  return `  Updates — ${dim('off keeps the game fully offline.', styled)} ${opts}? ${dim(`[${current}]`, styled)} `;
+}
+
+/** Map a raw update answer to an UpdateMode; unknown/empty keeps `current`. */
+export function parseUpdateChoice(raw: string, current: UpdateMode): UpdateMode {
+  switch (raw.trim().toLowerCase()[0]) {
+    case 'o':
+      return 'off';
+    case 'n':
+      return 'notify';
+    case 'a':
+      return 'auto';
+    default:
+      return current;
+  }
 }
 
 /** Map a raw color answer to a ColorPreference; unknown/empty keeps `current`. */
