@@ -11,6 +11,7 @@ import { adapters as allAdapters, type ProviderAdapter } from '@token-tamers/ada
 import { contentPackV1 } from '@token-tamers/content';
 import {
   createEngine,
+  seedBaselinesFromHistory,
   type Engine,
   type EngineConfig,
   type GameEffect,
@@ -73,16 +74,42 @@ export async function catchUp(now: () => number = Date.now): Promise<CatchUpResu
     throw new NotInitializedError();
   }
 
+  const checkpoints = loadCheckpoints();
+  // Adapters configured but never scanned before (e.g. enabled after the pet was
+  // already running). Their whole history would otherwise flood the engine AFTER
+  // the sim clock has already moved past it — stranding it (captured nowhere) yet
+  // advancing the checkpoint past it. Forward-only fix: calibrate their baseline
+  // from history, then molt ONLY their events at/after the sim clock; never replay
+  // the backlog into the pet (no backtracking).
+  const freshProviders = new Set(
+    config.adapters.filter((a) => checkpoints[a.provider] === undefined).map((a) => a.provider),
+  );
+
+  const at = now();
+  const scan = await scanAll(config, checkpoints);
+
+  const liveEvents: UsageEvent[] = [];
+  const freshBacklog: UsageEvent[] = [];
+  for (const ev of scan.events) {
+    (freshProviders.has(ev.adapter) ? freshBacklog : liveEvents).push(ev);
+  }
+  if (freshBacklog.length > 0) {
+    const freshConfigs = config.adapters.filter((a) => freshProviders.has(a.provider));
+    // Calibrate the new adapter's normalization baseline from its full history…
+    Object.assign(saved.baselines, seedBaselinesFromHistory(freshBacklog, freshConfigs, at));
+    // …but only its events at/after the sim clock count going forward.
+    for (const ev of freshBacklog) {
+      if (ev.ts >= saved.simulatedTo) liveEvents.push(ev);
+    }
+  }
+
   const engineConfig: EngineConfig = { adapters: config.adapters };
   const engine = createEngine(contentPackV1, engineConfig, saved);
-
-  const checkpoints = loadCheckpoints();
-  const scan = await scanAll(config, checkpoints);
   // Re-feed the open-window buffer persisted last run alongside the new scan so
   // events in an as-yet-unclosed window are never lost (checkpoints advanced past
   // their bytes, so the scan will not surface them again).
-  engine.ingest([...loadPending(), ...scan.events]);
-  const effects = engine.advanceTo(now());
+  engine.ingest([...loadPending(), ...liveEvents]);
+  const effects = engine.advanceTo(at);
 
   saveState(engine.state());
   saveCheckpoints(scan.checkpoints);

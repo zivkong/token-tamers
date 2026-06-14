@@ -8,6 +8,7 @@ import { createShellHost } from '../src/services/shell-host';
 import {
   defaultSettings,
   loadCheckpoints,
+  loadConfig,
   saveSettings,
   setDataDirForTesting,
 } from '../src/stores';
@@ -185,6 +186,47 @@ describe('tt init — re-run backfills a newly added adapter', () => {
     // ...and the existing pet/progress is untouched.
     expect(after!.pet).toEqual(before!.pet);
     expect(after!.baselines['claude-code']).toEqual(before!.baselines['claude-code']);
+  });
+});
+
+describe('catchUp — a late-added adapter is forward-only (no stranding, no backtrack)', () => {
+  it('calibrates a newly-configured adapter from history without molting the pet', async () => {
+    writeFixture(claudeDir, '2024-03-04T09:00:00.000Z', 6);
+    const now = () => Date.parse('2024-03-20T00:00:00.000Z');
+    await runInit({ yes: true, now, out: () => {} });
+    const before = loadState()!;
+    expect(before.baselines['opencode']).toBeUndefined();
+
+    // The user adds OpenCode to config.json by hand (NO re-init) — it has a long
+    // history, all of which PREDATES the current sim clock (2024-03-20).
+    const cfg = loadConfig()!;
+    const weekAnchor = cfg.adapters.find((a) => a.provider === 'claude-code')!.weekAnchor;
+    cfg.adapters.push({
+      provider: 'opencode',
+      paths: [opencodeDir],
+      plan: 'api',
+      cyclePolicy: 'static',
+      weekAnchor,
+    });
+    fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+    writeOpencodeFixture(opencodeDir, '2024-03-08T08:00:00.000Z', 8);
+
+    // Catch up WITHOUT re-init: the stale backlog must neither strand nor re-roll.
+    const result = await catchUp(() => Date.parse('2024-03-20T01:00:00.000Z'));
+    const after = result.engine.state();
+
+    // The new adapter's baseline IS calibrated from its history (not lost)...
+    expect(after.baselines['opencode']?.windowsObserved).toBeGreaterThan(0);
+    // ...its checkpoint is recorded so future scans only surface NEW events...
+    expect(loadCheckpoints()['opencode']).toBeTruthy();
+    // ...and the existing pet is untouched: no opencode diet, same molts & stage,
+    // and the claude baseline is unchanged (forward-only — no backtracking).
+    expect(after.pet.moltCount).toBe(before.pet.moltCount);
+    expect(after.pet.stage).toBe(before.pet.stage);
+    expect(Object.keys(after.pet.dietGenes)).not.toContain('gene-deepseek');
+    expect(after.baselines['claude-code']?.windowsObserved).toBe(
+      before.baselines['claude-code']?.windowsObserved,
+    );
   });
 });
 
