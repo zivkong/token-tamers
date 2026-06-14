@@ -40,7 +40,8 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   `STAT_BAR_MAX`≈120 so the empty track shows), **Charge** (REAL-TIME growth: open-window tokens
   fill toward `VITALITY_FULL_TOKENS`=200M, tinted by diet, `+N% molt` = real `vitalityBonus`
   preview; token counts only), **Diet** (House-share legend + grade-roll odds). Every bar renders
-  its empty track via `components/meter.ts` `drawMeter`. `LiveStats` flows `ShellHost.liveStats()` →
+  its remaining track via the shared `components/meter.ts` (`drawMeter`; the charge uses
+  `drawSegmentedMeter` for its diet-tinted fill). `LiveStats` flows `ShellHost.liveStats()` →
   `FrameInput.live` → `RenderContext.live`; the cli derives it from `engine.pendingEvents()` +
   `eventTokens`/`eventEssence` + baselines. Undefined in golden tests → the Charge row shows an
   empty/awaiting state (frames stay deterministic). Completion is per-page (NOT in this panel).
@@ -113,8 +114,10 @@ visual change is intended and reviewed.
 `hit.ts`, `layout.ts` (`computeLayout`/`petSections`), `menu.ts` (`packMenu` left-aligned
 flow), `frame.ts` (frame + menu draw), `shell.ts` (runShell loop), `status.ts` (one-liners),
 `pages/` (pet, pet-vitals, dex/archive/settings), `lookup.ts` (pack helpers). Shared UI lives
-under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after) and
-`meter.ts` (`drawMeter`/`drawCompletionHeader`). Reuse these — don't hand-roll rules/bars.
+under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after) plus
+`meter.ts` — the ONE progress bar: `drawMeter` (filled `█` + a clearly-visible `▒` track),
+`drawSegmentedMeter` (filled portion split into colored slices, e.g. the diet-tinted charge),
+and `drawCompletionHeader`. Reuse these — don't hand-roll rules/bars.
 
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
 

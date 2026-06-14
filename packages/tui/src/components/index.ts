@@ -6,4 +6,13 @@
  */
 
 export { drawDivider, DIVIDER_LINE, DIVIDER_LABEL, type DividerOptions } from './divider';
-export { drawMeter, drawCompletionHeader, BAR_EMPTY, type CompletionHeader } from './meter';
+export {
+  drawMeter,
+  drawSegmentedMeter,
+  drawCompletionHeader,
+  BAR_EMPTY,
+  BAR_FULL,
+  BAR_TRACK,
+  type CompletionHeader,
+  type MeterSegment,
+} from './meter';

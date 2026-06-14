@@ -20,15 +20,11 @@
 
 import { hexToRgb, mix, type Rgb } from '../terminal/ansi';
 import { VITALITY_FULL_TOKENS, vitalityBonus } from '@token-tamers/core';
-import type { FrameBuffer } from '../render/buffer';
-import { BAR_EMPTY, drawMeter } from '../components';
+import { drawMeter, drawSegmentedMeter } from '../components';
 import { houseTint } from '../helpers/lookup';
 import { renderGradeOddsLine } from '../helpers/status';
 import type { RenderContext } from './types';
 import type { SceneRect } from '../render/layout';
-
-const FULL = String.fromCodePoint(0x2588); // █
-const LIGHT = String.fromCodePoint(0x2591); // ░
 
 const LABEL: Rgb = { r: 122, g: 132, b: 158 };
 const VALUE: Rgb = { r: 222, g: 228, b: 240 };
@@ -92,7 +88,9 @@ function drawChargeRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 
   const tokens = ctx.live?.windowTokens ?? 0;
   const frac = tokens / VITALITY_FULL_TOKENS;
-  drawChargeBar(buf, { x: barX, y, w: barW }, frac, dietBreakdown(ctx));
+  // The filled portion is tinted by the diet mix; the rest is the standard track.
+  const segments = dietBreakdown(ctx).map((d) => ({ frac: d.frac, color: d.tint }));
+  drawSegmentedMeter(buf, { x: barX, y, w: barW }, frac, segments, CHARGE_FILL);
 
   const textX = barX + barW + 2;
   const avail = panel.x + panel.cols - 1 - textX;
@@ -133,28 +131,8 @@ function drawDietRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 }
 
 // ---------------------------------------------------------------------------
-// Bars + helpers.
+// Helpers.
 // ---------------------------------------------------------------------------
-
-/** Charge bar: fill toward 200M, the filled part tinted by the diet mix. */
-function drawChargeBar(
-  buf: FrameBuffer,
-  at: { x: number; y: number; w: number },
-  frac: number,
-  diet: DietSegment[],
-): void {
-  const f = frac < 0 ? 0 : frac > 1 ? 1 : frac;
-  const filled = Math.round(f * at.w);
-  let i = 0;
-  for (const seg of diet) {
-    const cells = Math.round(seg.frac * filled);
-    for (let k = 0; k < cells && i < filled; k++) {
-      buf.set(at.x + i++, at.y, { ch: FULL, fg: seg.tint, bg: null });
-    }
-  }
-  while (i < filled) buf.set(at.x + i++, at.y, { ch: FULL, fg: CHARGE_FILL, bg: null });
-  while (i < at.w) buf.set(at.x + i++, at.y, { ch: LIGHT, fg: BAR_EMPTY, bg: null });
-}
 
 interface DietSegment {
   name: string;

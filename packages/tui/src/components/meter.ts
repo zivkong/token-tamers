@@ -1,32 +1,78 @@
 /**
- * Meter — the one standard horizontal bar (`filled` cells then an empty track)
- * plus the page-completion header that wraps it. Shared by the vitals panel and
- * the per-page completion bars (Dex/Archive) so every bar looks identical.
+ * Meter — the ONE standard progress bar, reused everywhere (stats, charge,
+ * completion). A bar reads clearly as two distinct parts:
+ *   - FILLED  → solid `█` in the bar's accent color (current progress);
+ *   - REMAINING → a `▒` track in a clearly-visible slate (what's left).
+ * The track is intentionally bright/dense enough to read against the background
+ * (a dim `░` was nearly invisible). Distinct glyphs also keep filled-vs-remaining
+ * legible in `--no-color` mode.
  */
 
 import type { Rgb } from '../terminal/ansi';
 import type { FrameBuffer } from '../render/buffer';
 
-const FULL = String.fromCodePoint(0x2588); // █
-const LIGHT = String.fromCodePoint(0x2591); // ░
+/** Filled cell (current progress) and remaining-track cell glyphs. */
+export const BAR_FULL = String.fromCodePoint(0x2588); // █
+export const BAR_TRACK = String.fromCodePoint(0x2592); // ▒
 
-/** Default empty-track tint (a dim slate). */
-export const BAR_EMPTY: Rgb = { r: 44, g: 50, b: 70 };
+/** Remaining-track tint — bright enough that the "what's left" reads clearly. */
+export const BAR_EMPTY: Rgb = { r: 96, g: 104, b: 134 };
 
-/** Draw a `w`-cell bar at (x,y) filled to `frac` (0..1); empty cells show a track. */
+interface BarRect {
+  x: number;
+  y: number;
+  w: number;
+}
+
+function clampFrac(frac: number): number {
+  return frac < 0 ? 0 : frac > 1 ? 1 : frac;
+}
+
+/** Draw a `w`-cell bar at (x,y) filled to `frac` (0..1) with a visible track. */
 export function drawMeter(
   buf: FrameBuffer,
-  at: { x: number; y: number; w: number },
+  at: BarRect,
   frac: number,
   fill: Rgb,
   empty: Rgb = BAR_EMPTY,
 ): void {
-  const f = frac < 0 ? 0 : frac > 1 ? 1 : frac;
-  const filled = Math.round(f * at.w);
+  const filled = Math.round(clampFrac(frac) * at.w);
   for (let i = 0; i < at.w; i++) {
     const on = i < filled;
-    buf.set(at.x + i, at.y, { ch: on ? FULL : LIGHT, fg: on ? fill : empty, bg: null });
+    buf.set(at.x + i, at.y, { ch: on ? BAR_FULL : BAR_TRACK, fg: on ? fill : empty, bg: null });
   }
+}
+
+/** One slice of a segmented meter's FILLED portion (e.g. a diet gene's share). */
+export interface MeterSegment {
+  /** Fraction of the FILLED portion this slice occupies (0..1). */
+  frac: number;
+  color: Rgb;
+}
+
+/**
+ * Draw a meter whose filled portion (`fillFrac` of the width) is split into
+ * colored `segments`, with the remaining width shown as the standard track.
+ * Used by the pet's diet-tinted charge bar; the track matches `drawMeter` so all
+ * bars look identical.
+ */
+export function drawSegmentedMeter(
+  buf: FrameBuffer,
+  at: BarRect,
+  fillFrac: number,
+  segments: readonly MeterSegment[],
+  fallback: Rgb,
+): void {
+  const filled = Math.round(clampFrac(fillFrac) * at.w);
+  let i = 0;
+  for (const seg of segments) {
+    const cells = Math.round(seg.frac * filled);
+    for (let k = 0; k < cells && i < filled; k++) {
+      buf.set(at.x + i++, at.y, { ch: BAR_FULL, fg: seg.color, bg: null });
+    }
+  }
+  while (i < filled) buf.set(at.x + i++, at.y, { ch: BAR_FULL, fg: fallback, bg: null });
+  while (i < at.w) buf.set(at.x + i++, at.y, { ch: BAR_TRACK, fg: BAR_EMPTY, bg: null });
 }
 
 /** A right-aligned page-completion header: `[bar] count  NN.N%` on row `y`. */
