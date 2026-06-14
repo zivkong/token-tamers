@@ -15,7 +15,7 @@ function makeHost(effectsByCall: GameEffect[][] = []): ShellHost & { calls: numb
       calls++;
       return e;
     },
-    completion: () => ({ overall: 50 }),
+    completion: () => ({ overall: 50, dex: 50, achievements: 50, habitats: 50, trinkets: 50 }),
     get calls() {
       return calls;
     },

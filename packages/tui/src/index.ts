@@ -98,6 +98,7 @@ export type {
   AdapterInfo,
   SettingsState,
   LiveStats,
+  CompletionBreakdown,
 } from './pages/types';
 
 // Pack lookups (used by render + cli wiring).

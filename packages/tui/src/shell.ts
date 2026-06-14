@@ -16,6 +16,7 @@ import { renderFrame, type FrameInput } from './render/frame';
 import { packMenu } from './render/menu';
 import type {
   AdapterInfo,
+  CompletionBreakdown,
   LiveStats,
   PageId,
   PageUiState,
@@ -31,7 +32,7 @@ export interface ShellHost {
   pack: ContentPack;
   getState(): GameState;
   advance(now: number): GameEffect[];
-  completion(): { overall: number };
+  completion(): CompletionBreakdown;
   /**
    * Optional real-time token-consumption readout for the pet vitals panel,
    * derived from the engine's open window. Called once per rendered frame.
@@ -231,7 +232,7 @@ function renderOnce(
     mode: writer.color,
     frame: rt.frame,
     ui: rt.ui[rt.page],
-    completionPct: host.completion().overall,
+    completion: host.completion(),
     flash: rt.flash,
     info: rt.info,
     settings: rt.settings,
