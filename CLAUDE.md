@@ -46,7 +46,7 @@ Key contracts live in `packages/core/src/types.ts`.
 11. **Never weaken a test to pass a PR.** Tests encode design-doc contracts.
 12. **Supply-chain rules** — GitHub Actions pinned to full commit SHAs only
     (`scripts/check-workflow-pins.sh`); dependency lifecycle scripts blocked except
-    the `allowBuilds` allowlist; `minimumReleaseAge: 4320` (3-day cooldown) stays;
+    the `allowBuilds` allowlist; `minimumReleaseAge: 1440` (1-day cooldown) stays;
     runtime deps stay at zero (`scripts/check-runtime-deps.sh`); never echo untrusted
     GitHub event data (`github.event.*`, `github.head_ref`) into workflow `run:` blocks.
 
