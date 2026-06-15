@@ -96,6 +96,11 @@ class GameEngine implements Engine {
     this.pack = pack;
     this.config = config;
     this.state_ = saved ? cloneState(saved) : initialState(config);
+    // Defensive: a resumed snapshot must carry the arrays the engine now reads
+    // (`dexRecords` is SCHEMA_VERSION 3). The cli store migrates/back-fills it from
+    // `archive` on load; this only guards a snapshot that bypassed that path so
+    // `capture()` never dereferences undefined. Pure, deterministic (no back-fill).
+    if (!Array.isArray(this.state_.dexRecords)) this.state_.dexRecords = [];
   }
 
   ingest(events: UsageEvent[]): void {

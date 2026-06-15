@@ -4,6 +4,7 @@ import {
   GRADE_ORDER,
   matchModelRule,
   type GameEffect,
+  type GameState,
   type UsageEvent,
 } from '../src/index';
 import { dynamicAdapter, ev, HOUR, makePack, staticAdapter, WEEK_ANCHOR } from './fixture';
@@ -360,6 +361,21 @@ describe('engine — rebirth, lineage, archive', () => {
         );
       }
     }
+  });
+
+  it('tolerates a resumed pre-v3 snapshot with no dexRecords (no crash)', () => {
+    const seed = createEngine(makePack(), { adapters: [staticAdapter()] }).state();
+    const legacy = { ...seed } as Record<string, unknown>;
+    delete legacy.dexRecords; // simulate a save written before SCHEMA_VERSION 3
+    const eng = createEngine(
+      makePack(),
+      { adapters: [staticAdapter()] },
+      legacy as unknown as GameState,
+    );
+    eng.ingest(denseWeek());
+    expect(() => eng.advanceTo(WEEK_ANCHOR + WEEK_MS + HOUR)).not.toThrow();
+    expect(Array.isArray(eng.state().dexRecords)).toBe(true);
+    expect(eng.state().dexRecords.length).toBeGreaterThan(0);
   });
 
   it('inheritance carries stats forward as a per-stat floor (cap 70%)', () => {

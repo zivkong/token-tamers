@@ -91,6 +91,9 @@ describe('tt init --yes -> status (e2e)', () => {
     const state = loadState();
     expect(state).not.toBeNull();
     expect(state?.pet).toBeTruthy();
+    // Fresh init writes the current schema (v3) with the per-species record store.
+    expect(state?.schemaVersion).toBe(3);
+    expect(Array.isArray(state?.dexRecords)).toBe(true);
 
     // status output mentions the pet (name/stage/grade fields present).
     let statusOut = '';
@@ -98,5 +101,37 @@ describe('tt init --yes -> status (e2e)', () => {
     expect(statusOut).toContain('species:');
     expect(statusOut).toContain('grade:');
     expect(statusOut).toContain('stage:');
+  });
+
+  it('upgrades an existing v2 save through the update (catch-up) path', async () => {
+    await runInit({ yes: true, now, out: () => {} });
+
+    // Downgrade the on-disk save to a synthetic pre-v3 shape: drop dexRecords and
+    // plant a rebirth Archive entry the migration should back-fill.
+    const downgraded = {
+      ...loadState()!,
+      schemaVersion: 2,
+      archive: [
+        {
+          speciesId: 'wisp',
+          grade: 'A',
+          stats: { pwr: 5, spd: 5, wis: 5, grt: 5 },
+          generation: 1,
+          contentVersion: 1,
+          recordedAt: 1,
+        },
+      ],
+    } as Record<string, unknown>;
+    delete downgraded.dexRecords;
+    fs.writeFileSync(path.join(home, 'state.json'), JSON.stringify(downgraded), 'utf8');
+
+    // The update path (status → catchUp) loads, migrates, advances, and re-saves.
+    await statusCommand(() => {}, now);
+
+    const upgraded = loadState()!;
+    expect(upgraded.schemaVersion).toBe(3);
+    expect(Array.isArray(upgraded.dexRecords)).toBe(true);
+    // The Archive entry was preserved into the new record store.
+    expect(upgraded.dexRecords.some((r) => r.speciesId === 'wisp')).toBe(true);
   });
 });
