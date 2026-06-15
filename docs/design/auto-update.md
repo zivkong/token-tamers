@@ -46,6 +46,16 @@ surfaced as an explicit opt-in control in two places, both defaulting to `off`:
   `settings.json`; like the adapter toggles it applies on the next launch. The TUI only writes the
   mode string — it never imports the updater network surface (the isolation gate still holds).
 
+**Surfacing the hint.** Once the throttled launch check has seen a newer release
+(`updates.json` → `latestSeen`), the shell surfaces it on the **Pet page** as a scrolling amber
+ticker along the top of the scene (`components/marquee.ts`, driven by the frame counter so it stays
+golden-test-safe) — the primary, can't-miss notice. The wording adapts to the mode: `auto` says
+"restart tt to apply" (the binary self-replaced in the background), `notify` says "run `tt update`".
+The Settings page keeps the compact `· vX available` hint beside the `Updates` field as a secondary
+cue. Both read the persisted `latestSeen` (no network), so the hint appears on the **launch after**
+a check finds an update — never mid-session. The ticker only renders when an update is pending, so
+the default (offline, up-to-date) Pet page is unchanged.
+
 ## Architecture (`apps/cli/src/services/updater/`)
 
 - **`net.ts`** — THE network surface. `getJson`/`getBuffer` over `node:https`. Dumb on

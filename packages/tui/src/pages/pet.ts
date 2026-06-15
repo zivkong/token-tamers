@@ -22,7 +22,7 @@ import {
 } from '../render/sprite';
 import { findHabitat, findSpecies, findSprite, houseColor, houseTint } from '../helpers/lookup';
 import { petSections, type SceneRect } from '../render/layout';
-import { drawDivider } from '../components';
+import { drawDivider, drawMarquee } from '../components';
 import { drawStatsRow, renderVitals } from './pet-vitals';
 import type { RenderContext } from './types';
 import type { SpriteDef } from '@token-tamers/core';
@@ -31,6 +31,9 @@ const DIM: Rgb = { r: 90, g: 96, b: 120 };
 const BRIGHT: Rgb = { r: 230, g: 235, b: 245 };
 /** Subtle band background that sets the header section off the scene. */
 const HEADER_BG: Rgb = { r: 18, g: 21, b: 31 };
+/** Amber ribbon for the opt-in "update available" ticker (matches the flash toast). */
+const TICKER_FG: Rgb = { r: 255, g: 232, b: 160 };
+const TICKER_BG: Rgb = { r: 60, g: 48, b: 14 };
 
 // ---------------------------------------------------------------------------
 // Organic wander — a deterministic value-noise walk.
@@ -284,6 +287,11 @@ export function renderPetPage(ctx: RenderContext): void {
 
   drawHeaderBand(ctx, sec.header, species?.name ?? '???');
 
+  // Opt-in update notice: a scrolling ribbon along the top of the scene, shown
+  // only when an update was seen (info.updateAvailable). Undefined in golden
+  // tests, so existing pet frames are unchanged.
+  drawUpdateTicker(ctx, sec.scene);
+
   // Section dividers: header | scene | VITALS. (The "Menu" divider is global
   // chrome drawn by the frame, after the panel's bottom-padding gap.)
   drawDivider(buf, sec.dividerYs[0]);
@@ -293,6 +301,30 @@ export function renderPetPage(ctx: RenderContext): void {
 
   // The whole scene is a clickable region (e.g. to pet it; no-op for MVP).
   ctx.hits.add('pet:canvas', sec.scene.x, sec.scene.y, sec.scene.cols, sec.scene.rows);
+}
+
+/**
+ * Draw the opt-in "update available" ticker as a scrolling ribbon on the top
+ * row of the scene. Only renders when the launch-time check surfaced a newer
+ * version (`info.updateAvailable`); the wording adapts to the update mode —
+ * `auto` has already downloaded it (restart to apply), otherwise it points the
+ * player at `tt update`. Informational only (no hit region).
+ */
+function drawUpdateTicker(ctx: RenderContext, scene: SceneRect): void {
+  const ver = ctx.info?.updateAvailable;
+  if (!ver) return;
+  const action =
+    ctx.info?.updateMode === 'auto' ? 'restart tt to apply' : "run 'tt update' to upgrade";
+  const text = `✦ Update available — ${ver} · ${action}`;
+  drawMarquee(ctx.buf, {
+    x: scene.x,
+    y: scene.y,
+    cols: scene.cols,
+    text,
+    frame: ctx.frame,
+    fg: TICKER_FG,
+    bg: TICKER_BG,
+  });
 }
 
 /** The scale factor the backdrop is drawn at, so sprites match its proportions. */

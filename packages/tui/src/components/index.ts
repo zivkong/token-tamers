@@ -6,6 +6,7 @@
  */
 
 export { drawDivider, DIVIDER_LINE, DIVIDER_LABEL, type DividerOptions } from './divider';
+export { drawMarquee, type MarqueeOptions } from './marquee';
 export {
   drawPageHeader,
   drawPageFooter,

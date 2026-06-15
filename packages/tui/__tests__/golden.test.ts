@@ -153,6 +153,38 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
+  it('renders the pet page update ticker when an update is available', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'pet',
+        info: { ...TEST_INFO, updateMode: 'notify', updateAvailable: 'v0.6.0' },
+      }),
+    );
+    // The scrolling ribbon announces the version and points at `tt update`.
+    expect(out).toContain('Update available');
+    expect(out).toContain('v0.6.0');
+    expect(out).toContain('tt update');
+  });
+
+  it('adapts the ticker wording for auto mode (restart to apply)', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'pet',
+        info: { ...TEST_INFO, updateMode: 'auto', updateAvailable: 'v0.6.0' },
+      }),
+    );
+    expect(out).toContain('restart tt to apply');
+  });
+
+  it('shows no ticker on the pet page when no update is available', () => {
+    const out = renderFrameToString(100, 30, input({ page: 'pet', info: TEST_INFO }));
+    expect(out).not.toContain('Update available');
+  });
+
   it('renders a gradeshift flash banner', () => {
     const out = renderFrameToString(
       100,
