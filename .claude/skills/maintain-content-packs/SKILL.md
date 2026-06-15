@@ -31,13 +31,13 @@ pack tests (`pnpm test`).
 
 ## Houses (v1) — models.json (ordered, first match wins, '\*' wildcard)
 
-| House  | Model-ID family                                     | Kingdom (creature identity) | Theme            | Stat lean |
-| ------ | --------------------------------------------------- | --------------------------- | ---------------- | --------- |
-| Aether | `claude-*`                                          | Sky Court (flying)          | ethereal / mind  | WIS       |
-| Cipher | `gpt-*` / `o*`                                      | Crag Beasts (ground)        | glyph / geometry | PWR       |
-| Flux   | `gemini-*`                                          | Tide Runners (aquatic)      | light / current  | SPD       |
-| Forge  | open-weight (llama/qwen/mistral/deepseek/phi/gemma) | Iron Brood (robots)         | metal / ember    | GRT       |
-| Wild   | anything unmatched                                  | The Bloom (plants)          | "???"            | neutral   |
+| House  | Model-ID family                     | Kingdom (creature identity) | Theme            | Stat lean |
+| ------ | ----------------------------------- | --------------------------- | ---------------- | --------- |
+| Aether | `claude-*`                          | Sky Court (flying)          | ethereal / mind  | WIS       |
+| Cipher | `gpt-*` / `o*`                      | Crag Beasts (ground)        | glyph / geometry | PWR       |
+| Flux   | `gemini-*`                          | Tide Runners (aquatic)      | light / current  | SPD       |
+| Forge  | `llama*` · `mistral*` · `deepseek*` | Iron Brood (robots)         | metal / ember    | GRT       |
+| Wild   | anything unmatched                  | The Bloom (plants)          | "???"            | neutral   |
 
 **Kingdom = cosmetic creature body-plan only** (flying/ground/aquatic/robot/plant), never a
 mechanic — same no-model-judgment rule as the House itself. The kingdom→House mapping is
@@ -95,6 +95,6 @@ Sprites are generated deterministically from `tools/gen-sprites.ts` (re-run with
 `pnpm tsx packages/content/tools/gen-sprites.ts`); species art is authored per-kingdom
 in `tools/designs/*.ts`. Species sprites are exactly square at the **2026-06-15 size law**:
 egg 12 · sprite 16 · rookie 20 · evolved 24 · prime 28 · apex 32 (habitats 96×48, trinkets
-12×12) — enforced by the content-pack test. Each House's creatures follow its **Kingdom**
+20×20) — enforced by the content-pack test. Each House's creatures follow its **Kingdom**
 body-plan (Sky Court / Crag Beasts / Tide Runners / Iron Brood / Bloom). For art rules, use the
 **create-sprites** skill.

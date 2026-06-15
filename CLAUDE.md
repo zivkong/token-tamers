@@ -152,7 +152,7 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   signature motif carried across a line (lineage continuity); never affects mechanics
   (invariant 3). **Species size law (2026-06-15, higher-res):** square px egg 12 · sprite 16 ·
   rookie 20 · evolved 24 · prime 28 · apex 32 (apex = renderer safe max; habitats 96×48,
-  trinkets 12×12); enforced by the content-pack test. Bible:
+  trinkets 20×20); enforced by the content-pack test. Bible:
   `docs/design/visuals-habitats-achievements.md` §13 + the `create-sprites` skill.
 - **Grades:** C→B 25%, B→A 10%, A→S 3% base; activity modifier ×0.5–2.0 (model- and
   volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI (the pet

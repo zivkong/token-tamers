@@ -21,8 +21,8 @@ pixel-art pets in the terminal, with grade determining visual _richness_, at <1%
   | ----- | --- | ------ | ------ | ------- | ----- | ---- |
   | px    | 12  | 16     | 20     | 24      | 28    | 32   |
 
-  Habitats are **96×48**, trinkets **12×12**. These are exact, enforced by the
-  content-pack test — not a range. Apex 32px is the renderer's safe ceiling (an apex sits
+  Habitats are **96×48**, trinkets **20×20** (raised 2026-06-15 from 12×12). These are
+  exact, enforced by the content-pack test — not a range. Apex 32px is the renderer's safe ceiling (an apex sits
   ~1/3 the habitat width at the golden 100×30 terminal); do not exceed it.
 
 - **Animation banks (required for every species):** besides the idle `frames`, every

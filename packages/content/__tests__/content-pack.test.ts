@@ -292,7 +292,7 @@ describe('content counts', () => {
 //     dims as its idle frames (the idle base contract)
 //   - Habitat sprites: exactly 96x48, with a `palette` of 8..15 hexes and
 //     >= 2 frames
-//   - Trinket sprites: exactly 12x12
+//   - Trinket sprites: exactly 20x20 (2026-06-15 high-res bump)
 //   - Every sprite (species/habitat/trinket): at least 2 animation frames
 //   - Every sprite: all frames (and all anim banks) share the same width/height
 //   - Every sprite: at least 6 distinct non-zero palette indices across all
@@ -406,15 +406,15 @@ describe('sprite data integrity', () => {
     }
   });
 
-  it('trinket sprites are exactly 12x12', () => {
+  it('trinket sprites are exactly 20x20', () => {
     const trinketSpriteIds = new Set(contentPackV1.trinkets.map((t) => t.spriteId));
     const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
     for (const id of trinketSpriteIds) {
       const sprite = spriteMap.get(id);
       expect(sprite, `trinket sprite '${id}' not found`).toBeDefined();
       if (!sprite) continue;
-      expect(sprite.width, `trinket sprite '${id}' width must be 12`).toBe(12);
-      expect(sprite.height, `trinket sprite '${id}' height must be 12`).toBe(12);
+      expect(sprite.width, `trinket sprite '${id}' width must be 20`).toBe(20);
+      expect(sprite.height, `trinket sprite '${id}' height must be 20`).toBe(20);
     }
   });
 

@@ -1,7 +1,7 @@
 /**
  * Scenery sprite designs — habitats (backgrounds) + trinkets (toys/objects).
  *
- * Each habitat is 96x48, 2-3 frames. Each trinket is 12x12, 2 frames.
+ * Each habitat is 96x48, 2-3 frames. Each trinket is 20x20, 2 frames (2026-06-15 high-res).
  * All use palette-indexed ramp (0 = transparent). Habitats with a `palette`
  * field in habitats.json use those hex colors directly (multi-color).
  *
@@ -1600,29 +1600,33 @@ function buildHabitat(id: string, frame: number): PixelCanvas {
 // ---------------------------------------------------------------------------
 
 function buildBouncyBall(frame: number): PixelCanvas {
-  const c = PixelCanvas.create(12, 12);
+  const c = PixelCanvas.create(20, 20);
 
   if (frame === 0) {
-    const cx = 6;
-    const cy = 6;
-    fillEllipse(c, cx, cy, 4, 4, 7);
-    fillEllipse(c, cx, cy, 3, 3, 9);
-    fillEllipse(c, cx - 1, cy, 2, 3, 6);
-    dot(c, cx - 1, cy - 2, 13);
-    dot(c, cx - 2, cy - 1, 14);
-    dot(c, cx + 2, cy + 2, 5);
-    strokeEllipse(c, cx, cy, 4, 4, 1);
+    const cx = 10;
+    const cy = 9;
+    fillEllipse(c, cx, cy, 7, 7, 7);
+    fillEllipse(c, cx, cy, 6, 6, 9);
+    fillEllipse(c, cx - 1, cy + 1, 5, 5, 6);
+    // colour band across the middle
+    for (let x = cx - 6; x <= cx + 6; x++) c.set(x, cy + 3, 5);
+    dot(c, cx + 3, cy + 4, 11);
+    // glossy highlight
+    fillEllipse(c, cx - 2, cy - 2, 2, 2, 12);
+    dot(c, cx - 3, cy - 3, 14);
+    dot(c, cx - 2, cy - 3, 13);
+    strokeEllipse(c, cx, cy, 7, 7, 1);
   } else {
-    const cx = 6;
-    const cy = 8;
-    fillEllipse(c, cx, cy, 5, 3, 7);
-    fillEllipse(c, cx, cy, 4, 2, 9);
-    fillEllipse(c, cx - 1, cy, 2, 1, 6);
-    dot(c, cx - 1, cy - 1, 13);
-    dot(c, cx - 2, cy - 1, 14);
-    dot(c, cx + 2, cy + 1, 5);
-    strokeEllipse(c, cx, cy, 5, 3, 1);
-    fillEllipse(c, cx, 11, 3, 1, 3);
+    const cx = 10;
+    const cy = 12;
+    fillEllipse(c, cx, cy, 8, 5, 7);
+    fillEllipse(c, cx, cy, 7, 4, 9);
+    fillEllipse(c, cx - 1, cy + 1, 5, 3, 6);
+    for (let x = cx - 6; x <= cx + 6; x++) c.set(x, cy + 1, 5);
+    fillEllipse(c, cx - 2, cy - 1, 2, 1, 12);
+    dot(c, cx - 3, cy - 2, 14);
+    strokeEllipse(c, cx, cy, 8, 5, 1);
+    fillEllipse(c, cx, 18, 5, 1, 3); // contact shadow
   }
 
   return c;
@@ -1633,47 +1637,35 @@ function buildBouncyBall(frame: number): PixelCanvas {
 // ---------------------------------------------------------------------------
 
 function buildCushion(frame: number): PixelCanvas {
-  const c = PixelCanvas.create(12, 12);
+  const c = PixelCanvas.create(20, 20);
 
-  if (frame === 0) {
-    fillRect(c, 2, 3, 9, 9, 8);
-    fillRect(c, 3, 2, 8, 10, 7);
-    fillRect(c, 3, 2, 8, 3, 10);
-    fillRect(c, 3, 8, 8, 10, 5);
-    for (let y = 3; y <= 9; y++) {
-      c.set(2, y, 6);
-      c.set(9, y, 6);
-    }
-    for (let x = 3; x <= 8; x++) c.set(x, 6, 6);
-    for (let y = 3; y <= 9; y++) c.set(5, y, 6);
-    dot(c, 2, 1, 11);
-    dot(c, 9, 1, 11);
-    dot(c, 1, 2, 10);
-    dot(c, 10, 2, 10);
-    dot(c, 2, 10, 9);
-    dot(c, 9, 10, 9);
-    dot(c, 1, 9, 8);
-    dot(c, 10, 9, 8);
-    strokeRect(c, 2, 2, 9, 10, 1);
-  } else {
-    fillRect(c, 1, 5, 10, 9, 8);
-    fillRect(c, 2, 4, 9, 10, 7);
-    fillRect(c, 2, 4, 9, 5, 10);
-    fillRect(c, 2, 8, 9, 10, 5);
-    for (let y = 5; y <= 9; y++) {
-      c.set(1, y, 6);
-      c.set(10, y, 6);
-    }
-    for (let x = 2; x <= 9; x++) c.set(x, 7, 6);
-    for (let y = 5; y <= 9; y++) c.set(5, y, 6);
-    dot(c, 1, 3, 11);
-    dot(c, 10, 3, 11);
-    dot(c, 0, 4, 10);
-    dot(c, 11, 4, 10);
-    dot(c, 1, 11, 9);
-    dot(c, 10, 11, 9);
-    strokeRect(c, 1, 4, 10, 10, 1);
+  const top = frame === 0 ? 4 : 6;
+  const bot = frame === 0 ? 16 : 17;
+  const midY = (top + bot) >> 1;
+
+  // Plump pillow body with lit top + shaded underside.
+  fillRect(c, 3, top + 1, 16, bot - 1, 8);
+  fillRect(c, 4, top, 15, bot, 7);
+  fillRect(c, 4, top, 15, top + 2, 10);
+  fillRect(c, 4, bot - 2, 15, bot, 5);
+  // Rounded sides.
+  for (let y = top + 1; y <= bot - 1; y++) {
+    c.set(3, y, 6);
+    c.set(16, y, 6);
   }
+  // Seam cross + center button.
+  for (let x = 5; x <= 14; x++) c.set(x, midY, 6);
+  for (let y = top + 1; y <= bot - 1; y++) c.set(10, y, 6);
+  fillCircle(c, 10, midY, 1, 11);
+  dot(c, 10, midY, 14);
+  // Tufted corners.
+  dot(c, 3, top - 1, 11);
+  dot(c, 16, top - 1, 11);
+  dot(c, 2, top, 10);
+  dot(c, 17, top, 10);
+  dot(c, 3, bot + 1, 9);
+  dot(c, 16, bot + 1, 9);
+  strokeRect(c, 3, top, 16, bot, 1);
 
   return c;
 }
@@ -1683,33 +1675,36 @@ function buildCushion(frame: number): PixelCanvas {
 // ---------------------------------------------------------------------------
 
 function buildLavaLamp(frame: number): PixelCanvas {
-  const c = PixelCanvas.create(12, 12);
+  const c = PixelCanvas.create(20, 20);
 
-  fillRect(c, 4, 1, 7, 10, 3);
-  fillRect(c, 3, 9, 8, 11, 4);
-  fillRect(c, 4, 0, 7, 1, 4);
-  fillRect(c, 5, 9, 6, 9, 5);
-  fillRect(c, 5, 2, 6, 8, 4);
+  // Base + cap.
+  fillRect(c, 6, 17, 13, 19, 4);
+  fillRect(c, 7, 16, 12, 17, 5);
+  fillRect(c, 7, 1, 12, 2, 4);
+  fillRect(c, 8, 0, 11, 1, 5);
+  // Glass body + inner lit column.
+  fillRect(c, 7, 3, 12, 16, 3);
+  fillRect(c, 8, 2, 11, 16, 4);
+  fillRect(c, 9, 3, 10, 15, 6);
 
-  const blobY = frame === 0 ? 3 : 7;
-  fillEllipse(c, 5, blobY, 2, 2, 10);
-  fillEllipse(c, 5, blobY, 1, 1, 12);
-  dot(c, 4, blobY - 1, 13);
+  // Two slow blobs that swap ends each frame.
+  const aY = frame === 0 ? 12 : 5;
+  const bY = frame === 0 ? 6 : 12;
+  fillEllipse(c, 9, aY, 2, 3, 10);
+  fillEllipse(c, 9, aY, 1, 2, 12);
+  dot(c, 8, aY - 1, 13);
+  fillEllipse(c, 10, bY, 1, 2, 9);
+  dot(c, 10, bY, 11);
 
-  const blob2Y = frame === 0 ? 7 : 3;
-  fillEllipse(c, 5, blob2Y, 1, 1, 8);
-  dot(c, 6, blob2Y, 9);
-
-  for (let y = 1; y <= 9; y++) {
-    if (c.get(4, y) >= 3) c.set(4, y, Math.min(c.get(4, y) + 1, 6));
+  // Glass shading: lit left edge, dark right edge.
+  for (let y = 3; y <= 15; y++) {
+    c.set(8, y, 5);
+    c.set(11, y, 2);
   }
-  for (let y = 1; y <= 9; y++) {
-    if (c.get(7, y) >= 3) c.set(7, y, 2);
-  }
 
-  strokeRect(c, 3, 0, 8, 11, 1);
-  c.set(4, 0, 1);
-  c.set(7, 0, 1);
+  strokeRect(c, 7, 2, 12, 16, 1);
+  c.set(7, 2, 1);
+  c.set(12, 2, 1);
 
   return c;
 }
@@ -1719,27 +1714,35 @@ function buildLavaLamp(frame: number): PixelCanvas {
 // ---------------------------------------------------------------------------
 
 function buildBonsai(frame: number): PixelCanvas {
-  const c = PixelCanvas.create(12, 12);
+  const c = PixelCanvas.create(20, 20);
 
-  fillRect(c, 3, 8, 8, 11, 7);
-  fillRect(c, 2, 7, 9, 8, 8);
-  fillRect(c, 3, 11, 8, 11, 6);
-  for (let x = 3; x <= 8; x++) c.set(x, 8, 9);
-  c.set(3, 9, 6);
-  c.set(8, 9, 6);
-  strokeRect(c, 2, 7, 9, 11, 1);
+  // Pot.
+  fillRect(c, 5, 14, 14, 18, 7);
+  fillRect(c, 4, 13, 15, 14, 8);
+  fillRect(c, 5, 18, 14, 19, 6);
+  for (let x = 5; x <= 14; x++) c.set(x, 14, 9);
+  c.set(5, 16, 6);
+  c.set(14, 16, 6);
+  strokeRect(c, 4, 13, 15, 19, 1);
 
+  // Trunk (leans on frame 1) + one low branch.
   const lean = frame === 1 ? 1 : 0;
-  thickLine(c, 5, 7, 5 + lean, 4, 5, 1);
-  thickLine(c, 5 + lean, 4, 6 + lean * 2, 1, 4, 1);
+  thickLine(c, 9, 13, 9 + lean, 8, 2, 6);
+  thickLine(c, 9 + lean, 8, 11 + lean * 2, 3, 2, 6);
+  thickLine(c, 9, 11, 6, 8, 1, 6);
 
-  const cx = 6 + lean;
-  fillEllipse(c, cx, 3, 4, 2, 9);
-  fillEllipse(c, cx - 3, 4, 2, 2, 8);
-  fillEllipse(c, cx + 3, 4, 2, 2, 8);
-  fillEllipse(c, cx, 2, 2, 1, 11);
-  dot(c, cx - 1, 1, 12);
-  if (frame === 0) dot(c, cx + 2, 2, 13);
+  // Foliage clumps.
+  const cx = 11 + lean;
+  fillEllipse(c, cx, 4, 6, 3, 9);
+  fillEllipse(c, cx - 5, 6, 3, 3, 8);
+  fillEllipse(c, cx + 4, 6, 3, 2, 8);
+  fillEllipse(c, 6, 8, 3, 2, 8);
+  // Highlights + a sky glint (a falling leaf on frame 1).
+  fillEllipse(c, cx - 1, 3, 3, 1, 11);
+  dot(c, cx - 2, 2, 12);
+  dot(c, cx + 2, 3, 12);
+  if (frame === 0) dot(c, cx + 4, 4, 14);
+  else dot(c, cx - 6, 10, 14);
 
   return c;
 }
@@ -1749,42 +1752,42 @@ function buildBonsai(frame: number): PixelCanvas {
 // ---------------------------------------------------------------------------
 
 function buildGiftBox(frame: number): PixelCanvas {
-  const c = PixelCanvas.create(12, 12);
+  const c = PixelCanvas.create(20, 20);
 
-  fillRect(c, 1, 5, 10, 11, 7);
-  fillRect(c, 1, 3, 10, 5, 8);
-  fillRect(c, 1, 3, 10, 4, 9);
-  fillRect(c, 1, 9, 10, 11, 5);
-  for (let y = 5; y <= 11; y++) c.set(1, y, 8);
-  strokeRect(c, 1, 3, 10, 11, 1);
-  strokeRect(c, 1, 5, 10, 5, 1);
+  // Box body + lid.
+  fillRect(c, 2, 8, 17, 18, 7);
+  fillRect(c, 2, 6, 17, 9, 8);
+  fillRect(c, 2, 6, 17, 7, 9);
+  fillRect(c, 2, 16, 17, 18, 5);
+  for (let y = 8; y <= 18; y++) c.set(2, y, 8);
+  strokeRect(c, 2, 6, 17, 18, 1);
+  strokeRect(c, 2, 8, 17, 8, 1);
 
-  for (let y = 3; y <= 11; y++) {
-    c.set(5, y, 11);
-    c.set(6, y, 10);
+  // Ribbon cross.
+  for (let y = 6; y <= 18; y++) {
+    c.set(9, y, 11);
+    c.set(10, y, 10);
   }
-  for (let x = 1; x <= 10; x++) {
-    c.set(x, 7, 11);
-    c.set(x, 8, 10);
+  for (let x = 2; x <= 17; x++) {
+    c.set(x, 11, 11);
+    c.set(x, 12, 10);
   }
-  for (let y = 3; y <= 11; y += 2) c.set(5, y, 12);
+  for (let y = 6; y <= 18; y += 2) c.set(9, y, 12);
 
+  // Bow on top (animated).
   if (frame === 0) {
-    fillEllipse(c, 3, 2, 2, 2, 10);
-    fillEllipse(c, 8, 2, 2, 2, 10);
-    fillCircle(c, 5, 2, 1, 12);
-    dot(c, 6, 2, 12);
-    dot(c, 3, 3, 8);
-    dot(c, 8, 3, 8);
+    fillEllipse(c, 6, 4, 3, 2, 10);
+    fillEllipse(c, 13, 4, 3, 2, 10);
+    fillCircle(c, 9, 4, 1, 12);
+    dot(c, 10, 4, 12);
+    dot(c, 6, 5, 8);
+    dot(c, 13, 5, 8);
   } else {
-    fillEllipse(c, 2, 1, 2, 2, 10);
-    fillEllipse(c, 9, 1, 2, 2, 10);
-    fillCircle(c, 5, 2, 1, 12);
-    dot(c, 6, 2, 12);
-    dot(c, 1, 2, 9);
-    dot(c, 10, 2, 9);
-    dot(c, 2, 3, 8);
-    dot(c, 9, 3, 8);
+    fillEllipse(c, 5, 3, 3, 2, 10);
+    fillEllipse(c, 14, 3, 3, 2, 10);
+    fillCircle(c, 9, 4, 1, 12);
+    dot(c, 10, 4, 12);
+    dot(c, 9, 2, 14); // sparkle
   }
 
   return c;
@@ -1795,43 +1798,51 @@ function buildGiftBox(frame: number): PixelCanvas {
 // ---------------------------------------------------------------------------
 
 function buildTrophyShelf(frame: number): PixelCanvas {
-  const c = PixelCanvas.create(12, 12);
+  const c = PixelCanvas.create(20, 20);
 
-  fillRect(c, 0, 8, 11, 10, 6);
-  fillRect(c, 0, 8, 11, 8, 7);
-  fillRect(c, 0, 10, 11, 11, 5);
-  strokeRect(c, 0, 8, 11, 11, 1);
+  // Shelf plank.
+  fillRect(c, 0, 14, 19, 17, 6);
+  fillRect(c, 0, 14, 19, 14, 7);
+  fillRect(c, 0, 17, 19, 18, 5);
+  strokeRect(c, 0, 14, 19, 18, 1);
 
-  fillEllipse(c, 3, 5, 2, 3, 9);
-  fillEllipse(c, 3, 4, 1, 2, 11);
-  fillRect(c, 2, 7, 3, 7, 8);
-  fillRect(c, 1, 8, 4, 8, 9);
-  dot(c, 0, 5, 8);
-  dot(c, 5, 5, 8);
-  strokeEllipse(c, 3, 5, 2, 3, 1);
+  // Two cups: [centerX, cupTopY].
+  for (const [tx, cupTop] of [
+    [5, 6],
+    [14, 4],
+  ] as const) {
+    const cupBot = 11;
+    fillEllipse(c, tx, cupBot - 1, 3, 2, 9);
+    fillRect(c, tx - 3, cupTop, tx + 3, cupBot - 1, 9);
+    fillRect(c, tx - 2, cupTop, tx + 2, cupTop + 1, 11); // lit rim
+    // Handles.
+    c.set(tx - 4, cupTop + 1, 8);
+    c.set(tx + 4, cupTop + 1, 8);
+    c.set(tx - 5, cupTop + 2, 8);
+    c.set(tx + 5, cupTop + 2, 8);
+    // Stem + base.
+    fillRect(c, tx - 1, cupBot, tx, cupBot + 1, 8);
+    fillRect(c, tx - 2, cupBot + 2, tx + 2, cupBot + 2, 9);
+    strokeRect(c, tx - 3, cupTop, tx + 3, cupBot - 1, 1);
+    strokeEllipse(c, tx, cupBot - 1, 3, 2, 1);
+    dot(c, tx - 1, cupTop + 1, 14); // shine
+  }
 
-  fillEllipse(c, 8, 4, 2, 3, 9);
-  fillEllipse(c, 8, 3, 1, 2, 11);
-  fillRect(c, 7, 7, 8, 7, 8);
-  fillRect(c, 6, 8, 9, 8, 9);
-  dot(c, 5, 4, 8);
-  dot(c, 10, 4, 8);
-  strokeEllipse(c, 8, 4, 2, 3, 1);
-
+  // Twinkle above each cup.
   if (frame === 0) {
-    dot(c, 3, 2, 13);
-    dot(c, 8, 1, 13);
+    dot(c, 5, 4, 13);
+    dot(c, 14, 2, 13);
   } else {
-    dot(c, 3, 2, 14);
-    dot(c, 2, 2, 12);
-    dot(c, 4, 2, 12);
-    dot(c, 3, 1, 12);
-    dot(c, 3, 3, 12);
-    dot(c, 8, 1, 14);
-    dot(c, 7, 1, 12);
-    dot(c, 9, 1, 12);
-    dot(c, 8, 0, 12);
-    dot(c, 8, 2, 12);
+    for (const [sx, sy] of [
+      [5, 4],
+      [14, 2],
+    ] as const) {
+      dot(c, sx, sy, 14);
+      dot(c, sx - 1, sy, 12);
+      dot(c, sx + 1, sy, 12);
+      dot(c, sx, sy - 1, 12);
+      dot(c, sx, sy + 1, 12);
+    }
   }
 
   return c;
@@ -1897,7 +1908,7 @@ export const habitatSprites = HABITAT_IDS.map((id) => {
   return buildSprite(id, [f0, f1], 4); // 4fps subtle ambient animation
 });
 
-/** All trinket sprites (12x12, 2 frames). */
+/** All trinket sprites (20x20, 2 frames). */
 export const trinketSprites = TRINKET_IDS.map((id) => {
   const f0 = buildTrinket(id, 0);
   const f1 = buildTrinket(id, 1);

@@ -40,7 +40,8 @@ plant, robot, …) and recognizable across its whole evolution line. Two changes
    | prime   | 28 × 28              | 28 × 14                | 18    |
    | apex    | 32 × 32              | 32 × 16                | 20    |
    - **Square, exact, even.** The content-pack test enforces these exact sizes (hard law). All
-     even → clean half-block pairs. **Habitats stay 96 × 48, trinkets stay 12 × 12.**
+     even → clean half-block pairs. **Habitats stay 96 × 48; trinkets are raised to 20 × 20**
+     (the whole game goes high-res together — see the trinket note in §14).
    - **32px is the renderer's safe ceiling** — at the golden 100×30 terminal an apex sits ~1/3
      the habitat width with floor clearance; do not exceed it.
    - The **flat-tone rule still holds** at these sizes (tones, not dither ramps) — but the extra
@@ -70,7 +71,8 @@ third** of the previously-specified 48–64px footprint. The old "48×48 → 64�
   content-pack test enforces this; it is a hard law, not a guideline. **(Sizes superseded
   2026-06-15 — see the record above; the "square/exact/even, test-enforced" principle still
   holds, only the per-stage px values changed to 12/16/20/24/28/32.)**
-- **Habitats stay 96 × 48** and **trinkets stay 12 × 12** (unchanged).
+- **Habitats stay 96 × 48** and **trinkets stay 12 × 12** (unchanged). **(Trinkets later
+  raised to 20 × 20 on 2026-06-15 so the whole asset set is high-res; habitats unchanged.)**
 - **Tone over gradient.** At these sizes ordered-dither gradients read as noise. Author **flat
   tones** — a small fixed vocabulary (outline 1, shadow ~3, body ~7, light ~11, rim 13, glint 15) with at most a 2–3px dither seam where two tones meet. Depth comes from a clean
   silhouette + a few well-placed light/shadow/rim pixels, not from ramps. (The ≥6 distinct
@@ -387,6 +389,11 @@ rarity influence).
 
 ### Trinkets (toys & objects) (design baseline §14)
 
+- **Sprite size: 20 × 20** (raised 2026-06-15 from 12 × 12, alongside the species
+  higher-resolution pass, so toys read as crisply as the pets). Rendered at the scene's scale,
+  bottom-aligned on the floor beside the pet during its play idle. The content-pack test enforces
+  the exact size; `trinketSlots` in `habitats.json` are anchor points (positions), not size-bound,
+  so the bump needed no layout change.
 - Small sprites placed at anchor slots in the habitat (2–3 slots).
 - The pet's **idle animations interact with them**: bats the ball, naps on the cushion, stares
   into the lava lamp, waters the bonsai.

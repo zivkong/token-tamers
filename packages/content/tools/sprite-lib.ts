@@ -35,7 +35,7 @@
  *           half-block pairs). Each House = a creature Kingdom body-plan (Sky Court /
  *           Crag Beasts / Tide Runners / Iron Brood / Bloom); see the create-sprites skill.
  *   - habitats: 96x48
- *   - trinkets: 12x12
+ *   - trinkets: 20x20 (raised 2026-06-15 from 12x12)
  *
  * DETERMINISM: never use Math.random / Date.now in a design module. Use the
  * seeded `lcg(seed)` here for any "random" scatter so output is reproducible.
