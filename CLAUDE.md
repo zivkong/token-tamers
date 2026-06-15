@@ -35,7 +35,12 @@ Key contracts live in `packages/core/src/types.ts`.
    **capped vitality bonus**: a separate, additive, hard-capped grade-roll bonus
    from the session's raw token volume (full at `VITALITY_FULL_TOKENS` = 200M,
    max `+VITALITY_MAX_BONUS` = 0.15) — never model-dependent, never able to
-   dominate base odds (see `evolution-grades-lineage.md` §12).
+   dominate base odds (see `evolution-grades-lineage.md` §12). A second capped,
+   **grade**-based (never model-based) bonus is the DNA **graft potency**
+   (`GRAFT_POTENCY`: C = 0 … S hard-capped at +0.08 on both the grade-up chance and
+   the stat boost) and the **battle/graft readiness gate** (a snapshot is
+   battle/graft-eligible only once its `stage` ≥ Evolved — `BATTLE_READY_STAGE`,
+   `isBattleReady`). Both are derived from grade/stage (identity), never model id.
 4. **Import boundaries** — `core` imports nothing (not even `node:*`); `tui`/`adapters`
    import `core` only, never each other; ESLint enforces.
 5. **Deterministic core** — no `Date.now()`/`new Date()`/`Math.random()` in
@@ -44,6 +49,10 @@ Key contracts live in `packages/core/src/types.ts`.
 6. **Additive-only registries** — never remove/renumber species, trait, achievement,
    habitat, or trinket ids. Unknown ids = dormant genes, render as "???".
 7. **Hashes parse forever** — DNA/hash codecs are versioned; old codes stay valid.
+   The DNA **encoder** is shipped (`packages/core/src/dna/`, schema 2, format
+   `TT<schema>-c<rev>-<payload>-<sig>`); the registry tables are append-only and a
+   golden test locks the byte layout. `decodeDna` never rejects newer schemas/unknown
+   ids — it recovers known fields and marks the rest dormant.
 8. **Zero runtime dependencies** — devDependencies only; the `tt` bundle is self-contained.
 9. **Content as data** — never hardcode species/model/trait specifics in engine code.
 10. **Spoiler rule** — fusion-pool contents exist only under `packages/content/content/`;
@@ -76,10 +85,14 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - `packages/core/src/` — `types.ts` (cross-package contracts, never move) ·
   `helpers/` (rng) · `cycle/` (windows, static, dynamic) · `evaluation/`
   (signals, traits, modifier) · `engine/` (state, houses, branches, grades,
-  rebirth, achievements, baseline, completion, constants, index)
+  rebirth, achievements, baseline, completion, constants, `maturity` incl. the
+  readiness gate, `snapshot`/`dex-records` for the per-species record store,
+  `graft` potency, index) · `dna/` (the shipped hash codec: codec, payload,
+  append-only registry)
 - `packages/tui/src/` — `terminal/` (ansi, input) · `render/` (buffer, sprite,
   layout, hit, frame, menu) · `components/` (shared UI: divider, meter — one
-  standardized look) · `pages/` · `helpers/` (status, lookup) · `shell.ts`
+  standardized look) · `pages/` (incl. `dex-detail` — the per-species record view)
+  · `helpers/` (status, lookup) · `shell.ts` + `shell-io.ts` (stdio/terminal wiring)
 - `packages/adapters/src/` — `index.ts` (contracts + registry) · `helpers/`
   (jsonl incremental reading, shared by future adapters) · `<provider>/`
   (index = detect/scan, parse = record→UsageEvent)
@@ -102,6 +115,9 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - Renderer tests are golden frames (string-buffer snapshots); adapter tests use
   fixtures of real (anonymized) logs; engine tests assert determinism properties.
 - Game-state schema changes need a `schemaVersion` bump + migration in the cli store.
+  Current `SCHEMA_VERSION` = 3 (v3 added `state.dexRecords`, the per-species top-3
+  snapshot store; the cli store back-fills it from `archive` and auto-repairs corrupt
+  saves — `apps/cli/src/stores/migrate-dex-records.ts`).
 - User data: `~/.tokentamers/config.json` (UserConfig) + `state.json` (GameState) +
   `settings.json` (SettingsFile: `color` + per-adapter `adapterRoots`). **Zero env config:**
   the project reads nothing from `process.env` — the data dir is fixed at `~/.tokentamers`
@@ -160,13 +176,29 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI (the pet
   page's **Odds** row = the live current→next forecast via `core.gradeOdds`). Plus a
   capped vitality bonus (+0.15 max at 200M session tokens) — the only volume input.
-- **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C;
-  Archive keeps one strictly-best record per species.
+- **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C.
+- **Dex records (unified source of truth):** `state.dexRecords` keeps each species'
+  **top-3** snapshots (ranked grade-desc, then stat-total), captured at every molt
+  close, evolution, and rebirth (`engine/snapshot.ts` + `dex-records.ts`). The
+  Archive view derives best-per-species from `top[0]` (`bestSpeciesRecords`); the
+  legacy rebirth `archive` array is still written as a back-compat mirror (read by
+  the grade/house achievements). The Dex list colors each row by its highest
+  recorded grade (incl. the live pet's current grade); the **Dex detail page**
+  (`pages/dex-detail.ts`) shows the sprite, a battle/graft-readiness banner, and
+  each record's stats + **DNA code** + graft tier.
+- **DNA codes / battle-graft readiness:** `encodeDna`/`decodeDna` produce a shareable
+  `TT2-c<rev>-…` code per snapshot; battle/fusion (M2.2/M2.3) stay future, so the code
+  is display/share-only for now. A snapshot is battle-eligible AND graft-eligible only
+  once `stage` ≥ Evolved (the readiness gate). Graft potency scales with the DONOR's
+  grade (C = 0 … S = small hard cap) — a documented forward spec
+  (`dna-hash-battles.md` §9) + the pure `graftPotency` helper.
 - **Scope:** M1 (shipped) = Claude Code + OpenCode adapters, all five house lines
   (Aether/Cipher/Flux/Forge/Wild-Bloom, 56 species), shell with
-  Pet/Dex/Archive/Settings. M2.1–M2.7 = DNA codec/export, battle engine, DNA apply/fusion,
-  Codex adapter, collections/deco, leagues/drifter, weather/seasons. M3 = art pipeline,
-  future adapters, polish.
+  Pet/Dex/Archive/Settings, the per-species Dex record store + detail view, and the
+  DNA **encoder** (M2.1 pulled forward — codec only; battle/fusion still future).
+  M2.2–M2.7 = battle engine, DNA apply/fusion (grafting), Codex adapter,
+  collections/deco, leagues/drifter, weather/seasons. M3 = art pipeline, future
+  adapters, polish.
 
 ## AI-native development policy (full text: docs/design/architecture.md)
 

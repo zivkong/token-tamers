@@ -123,23 +123,49 @@ capped}` (null at the S cap) — with the open window's events it folds in the l
   guarantee. Record `lastGradeRoll` (odds shown in UI — transparency defuses RNG
   resentment). A success is a Gradeshift (cutscene moment).
 
-## Rebirth, lineage, Archive
+## Rebirth, lineage, Dex records (unified Archive)
 
 - Stat carry-over: 30% base +10% per stage tier reached, cap 70%; inherited trait =
   most-repeated. New egg starts at C (lineage perks may sweeten roll odds, never the
   starting grade, never to certainty).
 - Lineage perks: species affinity by lineage; 3× Prism ancestors → **Kaleido** egg;
   **Progenitor** flag marks DNA donors. Perks sweeten roll odds only, never grades.
-- Archive: one best-record slot per species; overwrite only if STRICTLY better
-  (grade first, total-stats tiebreak). Records never retroactively demoted; records
-  tag `graded_under: vN`; new record → new DNA code, old shared codes stay valid.
+- **Dex record store (`state.dexRecords`) is the source of truth** — each species keeps
+  its **top-3** snapshots, ranked grade-desc then stat-total (`engine/dex-records.ts`).
+  Capture (`engine/snapshot.ts` → `tryCaptureSnapshot`) fires at every molt close,
+  evolution, and rebirth via the engine's private `capture()`; the `dex_record` effect
+  reports new entries. Snapshots clone stats/arrays (self-contained). Capture must stay
+  deterministic (total-order insert, `recordedAt`-asc final tiebreak, equal-peak dedupe)
+  so replay-from-scratch == resume-from-snapshot.
+- The legacy `state.archive` (one strictly-best record per species, rebirth-only) is
+  STILL written as a back-compat mirror — the grade/house achievements read it, and the
+  Archive view derives best-per-species from `dexRecords` via `bestSpeciesRecords` (each
+  record's `top[0]` ≡ the old strictly-best). Don't remove `archive`/`lineage`.
 - Stats PWR/SPD/WIS/GRT; equal total budget per stage across species (horizontal
   evolution: different builds, never better builds).
+
+## DNA codec, readiness gate, graft potency (M2.1 encoder shipped)
+
+- **Codec** lives in `src/dna/` (NOT engine): `encodeDna(snapshot, {speciesNum})` →
+  `TT2-c<rev>-<payload>-<sig>`, pure inverse `decodeDna`. No `node:*`/`Buffer` (invariant 4) — hand-rolled varint + Crockford base32 in `dna/payload.ts`; enums encode as indices
+  into the **append-only** `dna/registry.ts` tables (invariant 7). Field order is fixed and
+  append-only; a golden test locks the byte layout (never edit existing golden codes — add
+  new ones on a schema bump). `decodeDna` never throws on newer schemas/unknown ids.
+- **Readiness gate** (`engine/maturity.ts`): a snapshot is battle/graft-eligible only once
+  `stage` ≥ `BATTLE_READY_STAGE` (Evolved). `isBattleReady`/`isGraftReady`/`stageMature` are
+  pure, stage-only (so a decoded foreign code's readiness is tamper-evident). Identity-based,
+  never model-based (invariant 3).
+- **Graft potency** (`engine/graft.ts`, `GRAFT_POTENCY` in constants): donor-grade scaled,
+  C = 0 … S hard-capped at +0.08 on both grade-up chance and stat boost. Forward spec for the
+  M2.3 fusion engine; `graftPotency`/`graftPotencyTier` exposed now for the Dex UI. Grade-based
+  only, capped below base odds — never model/volume-derived.
 
 ## Testing requirements
 
 Determinism property tests (replay-from-scratch == resume-from-snapshot; idempotent
 re-advance), monotonic grades, molt-only evolution, window/week boundary math,
 normalization invariance (10× volume or different same-House model ⇒ identical
-trajectory). Battle code (M2) must be `f(hashA, hashB, ruleset_version)` — replays
-reproducible forever.
+trajectory). DNA codec: round-trip every field, a golden byte-layout lock, tamper →
+`sigValid:false`, and newer-schema/garbage never throws (`__tests__/dna.test.ts`).
+Dex records: top-3 keep/replace, ranking, equal-peak dedupe (`dex-records.test.ts`).
+Battle code (M2) must be `f(hashA, hashB, ruleset_version)` — replays reproducible forever.

@@ -1,9 +1,11 @@
 /**
- * Archive page: a records table of every pet ever archived (rebirth history),
- * with species, grade, generation, stats, and a recorded timestamp column.
+ * Archive page: the best record per species, a hall-of-fame table with species,
+ * grade, generation, stats, and a recorded timestamp column. Derived from the
+ * unified Dex record store (`bestSpeciesRecords`) so the Archive and Dex are one
+ * source of truth.
  */
 
-import type { ArchiveRecord, Stats } from '@token-tamers/core';
+import { bestSpeciesRecords, type DexSnapshot, type Stats } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
 import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
 import { drawPageFooter, drawPageHeader, PAGE_HEADER_ROWS } from '../components';
@@ -31,7 +33,7 @@ function statsBrief(s: Stats): string {
 export function renderArchivePage(ctx: RenderContext): void {
   const { buf, hits, layout, state, pack, ui } = ctx;
   const { canvasX, canvasCols, canvasRows } = layout;
-  const records: readonly ArchiveRecord[] = state.archive;
+  const records: readonly DexSnapshot[] = bestSpeciesRecords(state.dexRecords);
 
   // Standard page header with an Archive-coverage bar: how many of the Dex's
   // species have a best record here (one record per species). Returns the body's

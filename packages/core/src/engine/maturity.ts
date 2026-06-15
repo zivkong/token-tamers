@@ -20,7 +20,43 @@
  * — they are temporal cycle rules, not species data.
  */
 
-import { GRADE_ORDER, type GameState, type Grade, type PetState, type Stage } from '../types';
+import {
+  GRADE_ORDER,
+  STAGE_ORDER,
+  type GameState,
+  type Grade,
+  type PetState,
+  type Stage,
+} from '../types';
+
+/**
+ * The maturity a pet (or any captured snapshot) must reach before its DNA becomes
+ * usable for battle AND for grafting/fusion. Below this, the DNA code still shows
+ * but battle/graft are SEALED — a maturity bar that blocks too-early battles and
+ * graft farming from fresh hatchlings.
+ *
+ * The gate is the Evolved stage (egg→sprite→rookie→[evolved]→prime→apex) — about
+ * the midpoint of the ~5-day climb, always eventually reachable. It is derived
+ * PURELY from `stage`, which the DNA encodes, so a foreign code's readiness is
+ * tamper-evident without trusting any side channel. Identity-only (invariant 3):
+ * never model/grade/volume-dependent.
+ */
+export const BATTLE_READY_STAGE: Stage = 'evolved';
+
+/** True once `stage` is at least the {@link BATTLE_READY_STAGE} on the climb. */
+export function stageMature(stage: Stage): boolean {
+  return STAGE_ORDER.indexOf(stage) >= STAGE_ORDER.indexOf(BATTLE_READY_STAGE);
+}
+
+/** Whether a snapshot's pet is mature enough to battle. */
+export function isBattleReady(snap: Pick<PetState, 'stage'>): boolean {
+  return stageMature(snap.stage);
+}
+
+/** Whether a snapshot's DNA is mature enough to graft/fuse. Same gate as battle today. */
+export function isGraftReady(snap: Pick<PetState, 'stage'>): boolean {
+  return stageMature(snap.stage);
+}
 
 /**
  * Molts a stage must accrue before it can evolve. Ascending so growth slows as

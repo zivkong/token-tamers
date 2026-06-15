@@ -35,11 +35,41 @@ else about evolution stays separate from grade.
 
 A successful roll is a **Gradeshift**: the pet's palette visibly upgrades live.
 
+## The Dex — your record book
+
+The **Dex** is the detailed record of every species you've raised. Each species keeps its
+**best 3 lives** (ranked by grade, then total stats), captured as your pet grows — at each
+molt, every evolution, and at rebirth. So if a Murmur was a **C** the first time and an **A**
+the next, the Dex automatically keeps the **A** (and the C as a runner-up) — you never lose
+your best.
+
+Each row in the Dex list is colored by that species' **highest grade** (★ S gold · ◆ A violet
+· ● B green · ○ C grey), with its House dot for identity. **Click a discovered species** (or
+press Enter) to open its detail page: a big portrait tinted to its best grade, its readiness
+banner, and up to three record cards — each showing the stats, the date, a shareable **DNA
+code**, and the record's graft strength. Press **Esc** to go back.
+
+### DNA codes
+
+Every record carries a **DNA code** — a short, copyable string like `TT2-c1-…` that captures
+that life (species, House, grade, stats, traits, and more). Codes are designed to stay valid
+**forever**: a code you share today still reads on any future version. Trading battles and DNA
+grafting (fusing a friend's DNA into your pet) are coming in a later update; for now the code
+is yours to keep and share.
+
+### Battle- & graft-ready
+
+A record only becomes **battle-ready and graft-ready** once that life reached the **Evolved**
+stage — about halfway up the growth climb. Younger records still show their DNA code, but it's
+**sealed** until they've matured enough, so battles and DNA grafting can't be farmed from fresh
+hatchlings. When grafting arrives, a stronger donor grade will nudge the result a little more
+(an **S** gives the biggest, but still gently capped, boost; a **C** gives nothing).
+
 ## The Archive
 
-One best-record slot per species: final grade + final stats, overwritten only if
-strictly better (grade first, total stats tiebreak). At rebirth the lifetime's final
-grade is recorded and the new egg starts back at C.
+The **Archive** is the hall-of-fame view of your Dex — your single best life per species (final
+grade + final stats), drawn straight from your Dex records. Run `tt archive`, or open the
+Archive page in the shell.
 
 ```
  ◆ TOKEN TAMERS ARCHIVE — 12/112 unlocked ◆

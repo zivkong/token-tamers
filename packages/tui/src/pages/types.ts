@@ -9,7 +9,7 @@ import type { FrameBuffer } from '../render/buffer';
 import type { HitRegistry } from '../render/hit';
 import type { Layout } from '../render/layout';
 
-export type PageId = 'pet' | 'dex' | 'archive' | 'settings';
+export type PageId = 'pet' | 'dex' | 'dex-detail' | 'archive' | 'settings';
 
 /** Transient per-page UI state the shell owns (selection, scroll). */
 export interface PageUiState {
@@ -17,6 +17,8 @@ export interface PageUiState {
   selected: number;
   /** Dex/Archive scroll offset (top visible row). */
   scroll: number;
+  /** Dex-detail: the species being inspected (set when drilling in from the Dex). */
+  speciesId?: string | null;
 }
 
 /** One configured adapter as shown (and edited) on the Settings page. */

@@ -30,6 +30,7 @@ import {
   type ArchiveRecord,
   type ContentPack,
   type CycleEvent,
+  type DexSnapshot,
   type Engine,
   type EngineConfig,
   type GameEffect,
@@ -62,14 +63,22 @@ import {
   statsForSpecies,
   windowEvents,
 } from './houses';
+import { tryCaptureSnapshot } from './dex-records';
 import { evolutionGateMet, requiredMaturity } from './maturity';
 import { isStrictlyBetter, scaleStats } from './rebirth';
+import { petSnapshot } from './snapshot';
 import { cloneState, freshPet, initialState } from './state';
 
 export { SCHEMA_VERSION, VITALITY_FULL_TOKENS, VITALITY_MAX_BONUS } from './constants';
+export { GRAFT_GRADE_BONUS_CAP, GRAFT_POTENCY, GRAFT_STAT_BOOST_CAP } from './constants';
+export { bestSpeciesRecords, snapshotRank, tryCaptureSnapshot } from './dex-records';
+export { MAX_DEX_RECORDS, snapshotStrictlyBetter } from './dex-records';
+export { graftPotency, graftPotencyTier, type GraftPotency } from './graft';
+export { petSnapshot } from './snapshot';
 export { gradeOdds, vitalityBonus, type GradeOddsPreview } from './grades';
 export { hasFullWeekBaseline, seedBaselinesFromHistory } from './baseline';
-export { growthProgress, requiredMaturity, type GrowthProgress } from './maturity';
+export { BATTLE_READY_STAGE, growthProgress, requiredMaturity, stageMature } from './maturity';
+export { isBattleReady, isGraftReady, type GrowthProgress } from './maturity';
 export { matchModelRule } from './houses';
 
 interface InternalCycleEvent {
@@ -212,7 +221,7 @@ class GameEngine implements Engine {
     if (!isHatch) this.accumulateDiet(pet, evs, baselineMean);
 
     if (!committedThisMolt) {
-      this.progressStage(pet, signals, rng, effects);
+      this.progressStage(pet, signals, rng, effects, event.at);
     }
 
     this.rollTrait(pet, signals, rng, effects);
@@ -224,6 +233,7 @@ class GameEngine implements Engine {
     effects.push({ type: 'molt', at: event.at });
     if (!isHatch) updateBaseline(this.state_, adapter, signals.totalEssence);
     this.evaluateAchievements(event.at, effects);
+    this.capture('molt', event.at, effects);
   }
 
   private commitHouse(pet: PetState, evs: readonly UsageEvent[], effects: GameEffect[]): void {
@@ -284,6 +294,7 @@ class GameEngine implements Engine {
     signals: WindowSignals,
     rng: Rng,
     effects: GameEffect[],
+    at: number,
   ): void {
     const species = this.speciesById(pet.speciesId);
     if (!species || species.evolvesTo.length === 0) return; // terminal: no maturity clock
@@ -315,6 +326,7 @@ class GameEngine implements Engine {
     pet.stageMolts = 0; // reset the maturity clock for the new stage
     this.ownSpecies(target.id);
     effects.push({ type: 'evolved', from, to: target.id, stage: target.stage });
+    this.capture('evolution', at, effects);
   }
 
   private rollTrait(pet: PetState, signals: WindowSignals, rng: Rng, effects: GameEffect[]): void {
@@ -388,6 +400,9 @@ class GameEngine implements Engine {
     if (this.tryArchive(record)) {
       effects.push({ type: 'archive_record', record });
     }
+    // New source of truth: the top-3 Dex record store (the Archive above is kept
+    // as a back-compat mirror). Capture BEFORE the pet is replaced below.
+    this.capture('rebirth', event.at, effects);
 
     const reachedTier = STAGE_ORDER.indexOf(pet.stage);
     const carryFrac = Math.min(INHERIT_CAP, INHERIT_BASE + reachedTier * INHERIT_PER_TIER);
@@ -464,6 +479,20 @@ class GameEngine implements Engine {
 
   private ownSpecies(id: string): void {
     if (!this.state_.dexOwned.includes(id)) this.state_.dexOwned.push(id);
+  }
+
+  /**
+   * Capture the current pet as a candidate Dex record (top-3 per species). Fires
+   * at molt close, evolution, and rebirth so a species keeps its best lives even
+   * when they never reach the weekly Archive. Skips the pre-hatch egg (nothing to
+   * record). Deterministic: the snapshot is a pure copy + total-order insert.
+   */
+  private capture(reason: DexSnapshot['reason'], at: number, effects: GameEffect[]): void {
+    if (this.state_.pet.stage === 'egg') return;
+    const snap = petSnapshot(this.state_.pet, this.pack.revision, at, reason);
+    if (tryCaptureSnapshot(this.state_.dexRecords, snap)) {
+      effects.push({ type: 'dex_record', snapshot: snap });
+    }
   }
 }
 

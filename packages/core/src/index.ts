@@ -25,17 +25,48 @@ export {
 
 // Engine — re-exported via engine/index barrel.
 export {
+  BATTLE_READY_STAGE,
+  bestSpeciesRecords,
   createEngine,
+  GRAFT_GRADE_BONUS_CAP,
+  GRAFT_POTENCY,
+  GRAFT_STAT_BOOST_CAP,
   gradeOdds,
+  graftPotency,
+  graftPotencyTier,
   growthProgress,
   hasFullWeekBaseline,
+  isBattleReady,
+  isGraftReady,
   matchModelRule,
+  MAX_DEX_RECORDS,
+  petSnapshot,
   requiredMaturity,
   SCHEMA_VERSION,
   seedBaselinesFromHistory,
+  snapshotRank,
+  snapshotStrictlyBetter,
+  stageMature,
+  tryCaptureSnapshot,
   vitalityBonus,
   VITALITY_FULL_TOKENS,
   VITALITY_MAX_BONUS,
   type GradeOddsPreview,
+  type GraftPotency,
   type GrowthProgress,
 } from './engine';
+
+// DNA hash codec — re-exported via dna/index barrel.
+export {
+  decodeDna,
+  DNA_SCHEMA_VERSION,
+  encodeDna,
+  GRADE_CODES,
+  HOUSE_CODES,
+  MUTATION_CODES,
+  PATTERN_CODES,
+  RHYTHM_CODES,
+  STAGE_CODES,
+  TRAIT_CODES,
+  type DecodedDna,
+} from './dna';

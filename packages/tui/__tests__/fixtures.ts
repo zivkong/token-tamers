@@ -106,6 +106,28 @@ export function makeState(overrides: Partial<GameState> = {}): GameState {
         recordedAt: 5000,
       },
     ],
+    dexRecords: [
+      {
+        speciesId: 'ember',
+        top: [
+          {
+            speciesId: 'ember',
+            stage: 'apex',
+            grade: 'B',
+            stats: { pwr: 14, spd: 9, wis: 8, grt: 11 },
+            house: 'forge',
+            traits: [],
+            pattern: null,
+            rhythmVariant: null,
+            mutations: [],
+            generation: 1,
+            contentVersion: 1,
+            recordedAt: 5000,
+            reason: 'rebirth',
+          },
+        ],
+      },
+    ],
     achievementsEarned: {},
     habitatsUnlocked: [],
     trinketsUnlocked: [],

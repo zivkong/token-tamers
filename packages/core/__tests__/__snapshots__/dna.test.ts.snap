@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DNA codec > locks the byte layout forever (golden codes — never edit, only append) 1`] = `"TT2-c1-1R1G80A8BD0501G10C1000R100-JRHZ4"`;
+
+exports[`DNA codec > locks the byte layout forever (golden codes — never edit, only append) 2`] = `"TT2-c1-04002001081G808000000-3PWCM"`;

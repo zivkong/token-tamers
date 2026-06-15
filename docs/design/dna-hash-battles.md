@@ -95,6 +95,42 @@ The donor pet's grade at time of export carries into the DNA code:
   ingredient (also noted in §12 Archive records: "S-grade DNA still confers the fusion stat-floor
   - S-spliced marker").
 
+### Graft Potency by Donor Grade (implemented spec — `GRAFT_POTENCY`)
+
+How much a grafted DNA code can move the recipient scales with the **donor's recorded grade**,
+and the lowest grade does nothing at all. This is grade-based ONLY — never model- or
+volume-derived (Design Pillar 2 / invariant 3) — and every value is a small, hard-capped nudge,
+never a power spike (it mirrors the capped vitality bonus, `VITALITY_MAX_BONUS` = 0.15, in §12):
+
+| Donor grade | Effect (tier)    | `gradeUpChance` | `statBoostFrac` |
+| ----------- | ---------------- | --------------- | --------------- |
+| C           | none (zero)      | 0.00            | 0.00            |
+| B           | small            | 0.02            | 0.02            |
+| A           | moderate         | 0.05            | 0.05            |
+| S           | small (hard cap) | 0.08            | 0.08            |
+
+- **`gradeUpChance`** is an additive bonus to the recipient's grade-up roll at graft time; it sits
+  far below the C→B base odds (0.25), so it can never dominate.
+- **`statBoostFrac`** is applied at graft time as a **battle-only stat floor** (the §11 grade
+  stat-floor mechanism) OR a budget-preserving redistribution — NEVER a permanent flat add to all
+  four stats, so horizontal evolution's **equal total stat budgets** (Design Pillar 3) are
+  preserved.
+- These are tunable defaults living as named constants in `packages/core/src/engine/constants.ts`
+  (`GRAFT_POTENCY`, `GRAFT_GRADE_BONUS_CAP`, `GRAFT_STAT_BOOST_CAP`). The pure `graftPotency(grade)`
+  helper exposes them now so the Dex detail view can surface a record's graft tier; the fusion
+  engine that consumes them is M2.3 work.
+
+### Battle / Graft Readiness Gate (implemented — `BATTLE_READY_STAGE` = Evolved)
+
+To prevent too-early battles and DNA-graft farming from fresh hatchlings, a pet/record is
+**battle-ready AND graft-ready only once it has reached the Evolved stage** (egg → sprite → rookie
+→ **evolved** → prime → apex — roughly the midpoint of the ~5-day climb, always eventually
+reachable). Below the gate the DNA code still shows but battle/graft are **sealed**. Readiness is
+derived purely from the snapshot's `stage`, which the DNA encodes, so a foreign code's readiness is
+tamper-evident (`stageMature` / `isBattleReady` / `isGraftReady` in `engine/maturity.ts`). The
+battle and graft gates share one threshold today but are separate functions so they can diverge
+later.
+
 ---
 
 ## §10 — Hash / DNA Code System (design baseline §10)
@@ -147,8 +183,16 @@ TT2-c14-x9F…
 TT2-c14-qL2…
 ```
 
-Now implemented (M2.1 scope) in `packages/core` — the hash codec is pure, deterministic, and has no
-I/O dependencies.
+Now implemented (M2.1 scope) in `packages/core/src/dna/` — the hash **encoder** (`encodeDna`) and a
+pure inverse (`decodeDna`, used for round-trip tests) are pure, deterministic, and have no I/O
+dependencies (no `node:*` — a hand-rolled Crockford base32, not `Buffer`). The `<payload>` is a flat
+unsigned-varint stream in a FIXED, APPEND-ONLY field order — species `num`, grade, stage, house,
+PWR/SPD/WIS/GRT, generation, pattern, rhythm, then length-prefixed trait and mutation lists — where
+each enum encodes as its index in the append-only `dna/registry.ts` tables (`DNA_SCHEMA_VERSION` =
+2). The `<sig>` is a deterministic FNV-1a checksum over the header+payload (tamper-evidence, not
+cryptographic). A golden test locks the byte layout forever; future schema bumps only append fields
+and add new golden codes. The fusion/battle engines that consume decoded codes are M2.2/M2.3 work,
+so the code is currently display/share-only.
 
 ### Forward-Compatibility Parsing Rules
 

@@ -55,6 +55,20 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
+  it('renders the dex detail page for a species record', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({ page: 'dex-detail', ui: { selected: 0, scroll: 0, speciesId: 'ember' } }),
+    );
+    // Name, readiness banner, the shareable DNA code, and the graft tier all show.
+    expect(out).toContain('Ember');
+    expect(out).toContain('Battle-ready');
+    expect(out).toContain('TT2-c1-');
+    expect(out).toContain('Graft small');
+    expect(out).toMatchSnapshot();
+  });
+
   it('renders the settings page with editable adapters', () => {
     const out = renderFrameToString(
       100,

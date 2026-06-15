@@ -43,6 +43,7 @@ export function initialState(config: EngineConfig): GameState {
     pet: freshPet(1, hatchedAt, true),
     dexOwned: [],
     archive: [],
+    dexRecords: [],
     achievementsEarned: {},
     habitatsUnlocked: [],
     trinketsUnlocked: [],

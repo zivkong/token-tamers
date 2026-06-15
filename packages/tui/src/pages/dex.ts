@@ -6,8 +6,9 @@
 
 import { type Rgb } from '../terminal/ansi';
 import { drawPageFooter, drawPageHeader, PAGE_HEADER_ROWS } from '../components';
+import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
 import { houseColor } from '../helpers/lookup';
-import type { House } from '@token-tamers/core';
+import { GRADE_ORDER, type Grade, type House } from '@token-tamers/core';
 import type { RenderContext } from './types';
 
 const OWNED: Rgb = { r: 220, g: 226, b: 240 };
@@ -24,6 +25,27 @@ export interface DexRow {
   label: string;
   speciesId: string | null;
   house: House | 'hybrid' | null;
+  /** Highest grade ever recorded for this species (incl. the live pet), or null. */
+  grade: Grade | null;
+}
+
+/** Higher of two grades on the C<B<A<S ladder (null-safe). */
+function maxGrade(a: Grade | null, b: Grade | null): Grade | null {
+  if (a === null) return b;
+  if (b === null) return a;
+  return GRADE_ORDER.indexOf(a) >= GRADE_ORDER.indexOf(b) ? a : b;
+}
+
+/**
+ * Highest grade on record for a species: the best of its captured Dex records and
+ * — when it's the species the live pet currently IS — the pet's current grade, so
+ * the Dex reflects the pet's latest grade immediately (before the next molt logs it).
+ */
+function bestGradeFor(ctx: RenderContext, speciesId: string): Grade | null {
+  const record = ctx.state.dexRecords.find((r) => r.speciesId === speciesId);
+  let best = record?.top[0]?.grade ?? null;
+  if (ctx.state.pet.speciesId === speciesId) best = maxGrade(best, ctx.state.pet.grade);
+  return best;
 }
 
 /** Build the ordered Dex rows: every dex slot up to dexTotal, owned or '???'. */
@@ -45,6 +67,7 @@ export function buildDexRows(ctx: RenderContext): DexRow[] {
       label: isOwned && entry ? entry.name : '???',
       speciesId: isOwned && entry ? entry.id : null,
       house: isOwned && entry ? entry.house : null,
+      grade: isOwned && entry ? bestGradeFor(ctx, entry.id) : null,
     });
   }
   return rows;
@@ -90,6 +113,12 @@ export function renderDexPage(ctx: RenderContext): void {
     const dotFg = row.owned && row.house && row.house !== 'hybrid' ? houseColor(row.house) : LOCKED;
     buf.text(canvasX + 9, y, dot, dotFg, bg);
     buf.text(canvasX + 11, y, row.label, fg, bg);
+    // Right-aligned grade badge (highest recorded grade) — the rarity signal the
+    // House dot can't carry. `★ S` gold · `◆ A` violet · `● B` green · `○ C` grey.
+    if (row.grade) {
+      const badge = `${GRADE_BADGE[row.grade]} ${row.grade}`;
+      buf.text(canvasX + canvasCols - badge.length - 2, y, badge, GRADE_ACCENT[row.grade], bg);
+    }
     hits.add(`dex:row:${rowIndex}`, canvasX, y, canvasCols, 1);
   }
 

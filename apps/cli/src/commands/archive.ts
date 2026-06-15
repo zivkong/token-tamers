@@ -2,6 +2,7 @@
  * `tt archive` — text Archive (best-record) listing.
  */
 
+import { bestSpeciesRecords } from '@token-tamers/core';
 import { contentPackV1 } from '@token-tamers/content';
 import { findSpecies } from '@token-tamers/tui';
 import { catchUp } from '../services/catchup';
@@ -13,12 +14,14 @@ const pack = contentPackV1;
 export async function archiveCommand(out: Out, now: () => number = Date.now): Promise<void> {
   const { engine } = await catchUp(now);
   const state = engine.state();
-  if (state.archive.length === 0) {
+  // Best record per species, derived from the unified Dex record store.
+  const records = bestSpeciesRecords(state.dexRecords);
+  if (records.length === 0) {
     out('Archive is empty — no past lives recorded yet.\n');
     return;
   }
-  out(`Archive — ${state.archive.length} record${state.archive.length === 1 ? '' : 's'}\n`);
-  for (const rec of state.archive) {
+  out(`Archive — ${records.length} record${records.length === 1 ? '' : 's'}\n`);
+  for (const rec of records) {
     const sp = findSpecies(pack, rec.speciesId);
     const name = sp?.name ?? '???';
     out(

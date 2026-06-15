@@ -21,6 +21,12 @@ pack tests (`pnpm test`).
   `content/registry-freeze.json` — register new ids there in the same PR; the
   freeze test fails on any removal/renumber. Retired content becomes **Ancient** — a
   permanent Dex entry, still battle-legal. Every hash ever shared stays valid forever.
+- **DNA-encoded ids are double-frozen.** The DNA codec (`packages/core/src/dna/registry.ts`)
+  encodes trait / pattern / rhythm / mutation values as their INDEX in append-only tables.
+  When you add such an id to content, you must **append** it to the end of the matching
+  `*_CODES` array in `dna/registry.ts` (never reorder/remove) — old DNA codes decode by index
+  forever (invariant 7), and a golden test in `__tests__/dna.test.ts` locks the byte layout.
+  Species are encoded by their additive-stable `num`, so they need no codec change.
 - **No model judgment.** Houses/model IDs are identity & cosmetics ONLY. Equal stat
   budgets per stage; `statWeights` redistribute, never exceed (tests enforce).
 - **Unknown model IDs → `wild`** house — now a real playable line, **The Bloom**

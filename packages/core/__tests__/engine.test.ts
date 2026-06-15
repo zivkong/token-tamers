@@ -341,6 +341,27 @@ describe('engine — rebirth, lineage, archive', () => {
     void st;
   });
 
+  it('captures per-species Dex records across the life (dex_record effects + state)', () => {
+    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    eng.ingest(denseWeek());
+    const effects = eng.advanceTo(WEEK_ANCHOR + WEEK_MS + HOUR);
+    expect(effects.some((e) => e.type === 'dex_record')).toBe(true);
+    const st = eng.state();
+    expect(st.dexRecords.length).toBeGreaterThan(0);
+    // The unified store is at least as complete as the rebirth-only archive mirror.
+    expect(st.dexRecords.length).toBeGreaterThanOrEqual(st.archive.length);
+    for (const rec of st.dexRecords) {
+      expect(rec.top.length).toBeGreaterThan(0);
+      expect(rec.top.length).toBeLessThanOrEqual(3);
+      // Best-first: grade never increases down the list.
+      for (let i = 1; i < rec.top.length; i++) {
+        expect(GRADE_ORDER.indexOf(rec.top[i - 1]!.grade)).toBeGreaterThanOrEqual(
+          GRADE_ORDER.indexOf(rec.top[i]!.grade),
+        );
+      }
+    }
+  });
+
   it('inheritance carries stats forward as a per-stat floor (cap 70%)', () => {
     const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
     eng.ingest(denseWeek());

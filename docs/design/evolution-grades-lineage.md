@@ -318,6 +318,14 @@ next evolution's eligibility and resets when the pet evolves (one state word —
 evolution-mystery rule holds while the player can still see the pet is progressing). Model choice
 still never enters power (pillar 2 / invariant 3).
 
+**Second capped, grade-based bonus — DNA graft potency.** Beyond the vitality bonus, the only other
+deliberate grade-roll/stat bonus is the **DNA graft potency** applied at fusion time, scaled by the
+DONOR's grade (C = 0 … S hard-capped at +0.08 on both the grade-up chance and the stat boost — see
+`dna-hash-battles.md` §9, `GRAFT_POTENCY`). Like vitality it is hard-capped so it can never dominate
+base odds, and it is **grade**-based, never model-based (invariant 3). A pet/record is only
+battle-eligible AND graft-eligible once it reaches the **Evolved** stage (the readiness gate,
+`BATTLE_READY_STAGE`).
+
 **Gradeshift moment:** a successful roll plays a molt cutscene where the pet's palette visibly
 upgrades to the new grade live (see §13) — the mid-week jackpot moment worth screenshotting.
 
@@ -336,7 +344,13 @@ certainty).
 - **RESOLVED:** the in-game record registry is named the **Archive** (avoids collision with OpenAI
   Codex). Command: `tt archive`.
 
-_Now implemented as:_ the `tt archive` command in `apps/cli`.
+_Now implemented as:_ the unified **Dex record store** (`state.dexRecords`) — each species keeps its
+**top-3** snapshots (ranked grade-desc, then stat-total), captured at every molt close, evolution,
+and rebirth, not just at rebirth. The **Archive** view (`tt archive` + the TUI Archive page) derives
+its best-per-species rows from each record's `top[0]` (`bestSpeciesRecords`); the legacy rebirth
+`archive` array is still written as a back-compat mirror. The **Dex detail page** surfaces each
+record's stats, captured date, DNA code, and graft tier; the Dex list colors each species by its
+highest recorded grade.
 
 ### ASCII Archive mock (design baseline §12)
 

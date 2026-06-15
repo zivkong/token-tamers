@@ -10,7 +10,16 @@
 import { Writer, type ColorMode, type OutputSink } from './terminal/ansi';
 import { FrameBuffer } from './render/buffer';
 import { HitRegistry } from './render/hit';
-import { decode, type InputEvent } from './terminal/input';
+import type { InputEvent } from './terminal/input';
+import {
+  defaultSize,
+  defaultSizeSafe,
+  enterTerminal,
+  nullSource,
+  sleep,
+  stdinSource,
+  stdoutSink,
+} from './shell-io';
 import { computeLayout } from './render/layout';
 import { renderFrame, type FrameInput } from './render/frame';
 import { menuButtonY, packMenu } from './render/menu';
@@ -119,6 +128,7 @@ function freshUi(): Record<PageId, PageUiState> {
   return {
     pet: { selected: 0, scroll: 0 },
     dex: { selected: 0, scroll: 0 },
+    'dex-detail': { selected: 0, scroll: 0, speciesId: null },
     archive: { selected: 0, scroll: 0 },
     settings: { selected: 0, scroll: 0 },
   };
@@ -300,9 +310,30 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
     case 'right':
       adjustSetting(rt, +1);
       return;
+    case 'enter':
+      if (rt.page === 'dex') openDexDetail(rt, host);
+      return;
+    case 'escape':
+      if (rt.page === 'dex-detail') rt.page = 'dex';
+      return;
     default:
       return;
   }
+}
+
+/** Drill into the Dex detail view for the currently selected (discovered) row. */
+function openDexDetail(rt: ShellRuntime, host: ShellHost): void {
+  const ctx = {
+    pack: host.pack,
+    state: host.getState(),
+  } as unknown as Parameters<typeof buildDexRows>[0];
+  const row = buildDexRows(ctx)[rt.ui.dex.selected];
+  if (!row || !row.owned || !row.speciesId) return;
+  const detail = rt.ui['dex-detail'];
+  detail.speciesId = row.speciesId;
+  detail.selected = 0;
+  detail.scroll = 0;
+  rt.page = 'dex-detail';
 }
 
 /** Cycle the focused Settings field and persist (no-op off the Settings page). */
@@ -347,6 +378,12 @@ function handleMouse(
     }
   }
 
+  // A click anywhere on the detail page (outside the menu) returns to the Dex.
+  if (rt.page === 'dex-detail' && cy < layout.menuDividerY) {
+    rt.page = 'dex';
+    return;
+  }
+
   // List-row clicks (Dex/Archive): map by canvas geometry, ignoring the menu.
   if ((rt.page === 'dex' || rt.page === 'archive') && cy < layout.menuDividerY) {
     const offset = rt.page === 'dex' ? DEX_LIST_OFFSET : ARCHIVE_LIST_OFFSET;
@@ -358,6 +395,8 @@ function handleMouse(
       const max = rowCount(rt, host) - 1;
       if (target >= 0 && target <= max) {
         ui.selected = target;
+        // On the Dex, a click on a discovered species drills into its detail.
+        if (rt.page === 'dex') openDexDetail(rt, host);
       }
     }
   }
@@ -386,7 +425,7 @@ function moveSelection(rt: ShellRuntime, host: ShellHost, delta: number): void {
 
 function rowCount(rt: ShellRuntime, host: ShellHost): number {
   const state = host.getState();
-  if (rt.page === 'archive') return state.archive.length;
+  if (rt.page === 'archive') return state.dexRecords.length;
   if (rt.page === 'dex') {
     // Build minimal context for counting Dex rows.
     const ctx = {
@@ -420,94 +459,6 @@ function flash(rt: ShellRuntime, msg: string): void {
   rt.flash = msg;
   // Show for ~2 seconds of frames (assume 30fps cadence).
   rt.flashUntilFrame = rt.frame + 60;
-}
-
-// ---------------------------------------------------------------------------
-// IO wiring (defaults; tests inject their own)
-// ---------------------------------------------------------------------------
-
-function stdoutSink(): OutputSink {
-  return {
-    write(s: string): void {
-      process.stdout.write(s);
-    },
-  };
-}
-
-function defaultSize(): { cols: number; rows: number } {
-  return {
-    cols: process.stdout.columns ?? 80,
-    rows: process.stdout.rows ?? 24,
-  };
-}
-
-function defaultSizeSafe(): { cols: number; rows: number } {
-  try {
-    return defaultSize();
-  } catch {
-    return { cols: 80, rows: 24 };
-  }
-}
-
-function enterTerminal(writer: Writer): () => void {
-  writer.enterAltScreen();
-  writer.hideCursor();
-  writer.enableMouse();
-  writer.clearScreen();
-  const stdin = process.stdin;
-  if (stdin.isTTY && typeof stdin.setRawMode === 'function') {
-    stdin.setRawMode(true);
-  }
-  const onSig = () => {
-    writer.restore();
-    process.exit(0);
-  };
-  process.once('SIGINT', onSig);
-  process.once('SIGTERM', onSig);
-  return () => {
-    if (stdin.isTTY && typeof stdin.setRawMode === 'function') {
-      stdin.setRawMode(false);
-    }
-    process.removeListener('SIGINT', onSig);
-    process.removeListener('SIGTERM', onSig);
-  };
-}
-
-function stdinSource(): InputSource {
-  let listener: ((ev: InputEvent) => void) | null = null;
-  const onData = (chunk: Buffer | string) => {
-    if (!listener) return;
-    const events = decode(chunk.toString('utf8'));
-    for (const ev of events) listener(ev);
-  };
-  return {
-    onEvent(cb) {
-      listener = cb;
-      return () => {
-        if (listener === cb) listener = null;
-      };
-    },
-    start() {
-      process.stdin.resume();
-      process.stdin.on('data', onData);
-    },
-    stop() {
-      process.stdin.removeListener('data', onData);
-      process.stdin.pause();
-    },
-  };
-}
-
-function nullSource(): InputSource {
-  return {
-    onEvent() {
-      return () => {};
-    },
-  };
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export { FRAME_MS, ADVANCE_MS };

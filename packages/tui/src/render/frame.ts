@@ -17,6 +17,7 @@ import { MENU_PAD_X, menuButtonY, packMenu, type MenuButton } from './menu';
 import { drawDivider } from '../components';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
+import { renderDexDetailPage } from '../pages/dex-detail';
 import { renderArchivePage } from '../pages/archive';
 import { renderSettingsPage } from '../pages/settings';
 import type {
@@ -93,6 +94,9 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
       break;
     case 'dex':
       renderDexPage(ctx);
+      break;
+    case 'dex-detail':
+      renderDexDetailPage(ctx);
       break;
     case 'archive':
       renderArchivePage(ctx);

@@ -332,6 +332,44 @@ export interface ArchiveRecord {
   recordedAt: number;
 }
 
+/**
+ * One captured snapshot of a pet at a notable moment (molt close, evolution, or
+ * rebirth). The unit the per-species Dex record store ranks. A superset of
+ * {@link ArchiveRecord}: it carries enough to render grade/stats/traits/house/
+ * generation/timestamp AND to encode a shareable DNA code. `reason` records what
+ * triggered the capture (display/debug only — NEVER used in ranking).
+ */
+export interface DexSnapshot {
+  speciesId: string;
+  stage: Stage;
+  grade: Grade;
+  stats: Stats;
+  house: House;
+  traits: TraitId[];
+  pattern: PatternId | null;
+  rhythmVariant: RhythmVariant | null;
+  mutations: string[];
+  generation: number;
+  /** Content pack revision at capture (the DNA hash's content_min floor). */
+  contentVersion: number;
+  /** Event-time epoch ms the snapshot was taken (never wall clock). */
+  recordedAt: number;
+  /** What triggered the capture. Display-only; excluded from ranking. */
+  reason: 'molt' | 'evolution' | 'rebirth';
+}
+
+/**
+ * Up to {@link MAX_DEX_RECORDS} historical snapshots for one species, ranked
+ * best-first (grade desc, then stat total desc). The source of truth for the Dex
+ * detail view; the Archive view derives its best-per-species rows from each
+ * record's `top[0]`.
+ */
+export interface DexRecord {
+  speciesId: string;
+  /** Ranked best-first; length 1..MAX_DEX_RECORDS. */
+  top: DexSnapshot[];
+}
+
 export interface AdapterBaseline {
   /** Rolling mean essence per active window, the self-normalization basis. */
   meanWindowTokens: number;
@@ -344,6 +382,13 @@ export interface GameState {
   /** Species ids ever raised (Dex 'owned'). */
   dexOwned: string[];
   archive: ArchiveRecord[];
+  /**
+   * Per-species record store (top-3 snapshots each). Source of truth for the Dex
+   * detail view; the Archive view derives best-per-species from each record's
+   * `top[0]`. Defaults to [] for pre-v3 saves (the cli store back-fills it from
+   * `archive` on load).
+   */
+  dexRecords: DexRecord[];
   achievementsEarned: Record<string, number /* earnedAt epoch ms */>;
   habitatsUnlocked: string[];
   trinketsUnlocked: string[];
@@ -372,7 +417,8 @@ export type GameEffect =
   | { type: 'achievement'; id: string }
   | { type: 'habitat_unlocked'; id: string }
   | { type: 'trinket_unlocked'; id: string }
-  | { type: 'archive_record'; record: ArchiveRecord };
+  | { type: 'archive_record'; record: ArchiveRecord }
+  | { type: 'dex_record'; snapshot: DexSnapshot };
 
 // ---------------------------------------------------------------------------
 // Engine API

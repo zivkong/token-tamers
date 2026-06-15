@@ -162,14 +162,28 @@ visual change is intended and reviewed.
 `ansi.ts` (Writer/sinks/SGR), `buffer.ts` (FrameBuffer+diff), `sprite.ts`
 (compositor+palette ladder, `destW`/`destH` scaling), `input.ts` (key/mouse decode),
 `hit.ts`, `layout.ts` (`computeLayout`/`petSections`), `menu.ts` (`packMenu` left-aligned
-flow), `frame.ts` (frame + menu draw), `shell.ts` (runShell loop), `status.ts` (one-liners),
-`pages/` (pet, pet-vitals, dex/archive/settings), `lookup.ts` (pack helpers). Shared UI lives
+flow), `frame.ts` (frame + menu draw), `shell.ts` (runShell loop) + `shell-io.ts` (default
+stdio/terminal wiring, split out to keep `shell.ts` under the line ceiling), `status.ts`
+(one-liners), `pages/` (pet, pet-vitals, dex, **dex-detail**, archive, settings), `lookup.ts`
+(pack helpers). Shared UI lives
 under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after);
 `page.ts` (the standard full-screen page scaffold — `drawPageHeader`/`drawPageFooter`/
 `PAGE_HEADER_ROWS`, used by Dex/Archive/Settings); and `meter.ts` — the ONE progress bar:
 `drawMeter` (filled `█` + a clearly-visible `▒` track), `drawSegmentedMeter` (filled portion split
 into colored slices, e.g. the diet-tinted food), and `drawCompletionHeader`. Reuse these — don't
 hand-roll rules/bars/headers.
+
+## Dex → detail navigation (single-level drill-in)
+
+The shell is flat tab-based (no page stack). The **Dex detail** page (`pages/dex-detail.ts`) is a
+`PageId` reached by Enter / clicking a discovered Dex row (`openDexDetail` stashes `speciesId` on
+`ui['dex-detail']`); Esc or any click on the detail body returns to `'dex'`. It renders the species
+sprite via `buildPalette(houseTint, bestGrade, frame)`, a battle/graft-readiness banner
+(`isBattleReady`), and up to 3 record cards (stats, captured date, **DNA code** via `encodeDna`,
+graft tier). Keep it deterministic for golden frames: format dates with `toISOString()` (UTC), pad
+stat columns to fixed width so gen/date columns never overlap. The Dex LIST colors each row by its
+highest recorded grade (`GRADE_BADGE`/`GRADE_ACCENT`), keeping the House-tinted identity dot. New
+pages need a `frame.ts` switch case + a `freshUi()` entry; verify/regenerate golden frames.
 
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
 
