@@ -137,7 +137,7 @@
       "source_file": "apps/cli/__tests__/e2e.test.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 36,
+      "community": 20,
       "norm_label": "e2e.test.ts",
       "id": "tests_e2e_test"
     },
@@ -147,7 +147,7 @@
       "source_file": "apps/cli/__tests__/e2e.test.ts",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 36,
+      "community": 20,
       "norm_label": "writefixture()",
       "id": "tests_e2e_test_writefixture"
     },
@@ -157,7 +157,7 @@
       "source_file": "apps/cli/__tests__/main.test.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "main.test.ts",
       "id": "tests_main_test"
     },
@@ -407,7 +407,7 @@
       "source_file": "apps/cli/src/commands/adapters.ts",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "adapterscommand()",
       "id": "commands_adapters_adapterscommand"
     },
@@ -547,7 +547,7 @@
       "source_file": "apps/cli/src/commands/init.ts",
       "source_location": "L51",
       "_origin": "ast",
-      "community": 36,
+      "community": 41,
       "norm_label": "nextmondaylocal()",
       "id": "commands_init_nextmondaylocal"
     },
@@ -557,7 +557,7 @@
       "source_file": "apps/cli/src/commands/init.ts",
       "source_location": "L62",
       "_origin": "ast",
-      "community": 36,
+      "community": 41,
       "norm_label": "makeasker()",
       "id": "commands_init_makeasker"
     },
@@ -567,7 +567,7 @@
       "source_file": "apps/cli/src/commands/init.ts",
       "source_location": "L82",
       "_origin": "ast",
-      "community": 36,
+      "community": 41,
       "norm_label": "yesish()",
       "id": "commands_init_yesish"
     },
@@ -577,7 +577,7 @@
       "source_file": "apps/cli/src/commands/init.ts",
       "source_location": "L88",
       "_origin": "ast",
-      "community": 36,
+      "community": 41,
       "norm_label": "runinit()",
       "id": "commands_init_runinit"
     },
@@ -587,7 +587,7 @@
       "source_file": "apps/cli/src/commands/shell.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "shell.ts",
       "id": "commands_shell"
     },
@@ -597,7 +597,7 @@
       "source_file": "apps/cli/src/commands/shell.ts",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "out",
       "id": "commands_shell_out"
     },
@@ -607,7 +607,7 @@
       "source_file": "apps/cli/src/commands/shell.ts",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "runshellcommand()",
       "id": "commands_shell_runshellcommand"
     },
@@ -687,7 +687,7 @@
       "source_file": "apps/cli/src/helpers/args.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "args.ts",
       "id": "helpers_args"
     },
@@ -697,7 +697,7 @@
       "source_file": "apps/cli/src/helpers/args.ts",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "parsedargs",
       "id": "helpers_args_parsedargs"
     },
@@ -707,7 +707,7 @@
       "source_file": "apps/cli/src/helpers/args.ts",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "known_commands",
       "id": "helpers_args_known_commands"
     },
@@ -717,7 +717,7 @@
       "source_file": "apps/cli/src/helpers/args.ts",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "parseargs()",
       "id": "helpers_args_parseargs"
     },
@@ -727,7 +727,7 @@
       "source_file": "apps/cli/src/main.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "main.ts",
       "id": "src_main"
     },
@@ -737,7 +737,7 @@
       "source_file": "apps/cli/src/main.ts",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "out",
       "id": "src_main_out"
     },
@@ -747,7 +747,7 @@
       "source_file": "apps/cli/src/main.ts",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "dispatch()",
       "id": "src_main_dispatch"
     },
@@ -757,7 +757,7 @@
       "source_file": "apps/cli/src/main.ts",
       "source_location": "L97",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "main()",
       "id": "src_main_main"
     },
@@ -767,7 +767,7 @@
       "source_file": "apps/cli/src/services/catchup.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "catchup.ts",
       "id": "services_catchup"
     },
@@ -777,7 +777,7 @@
       "source_file": "apps/cli/src/services/catchup.ts",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "catchupresult",
       "id": "services_catchup_catchupresult"
     },
@@ -787,7 +787,7 @@
       "source_file": "apps/cli/src/services/catchup.ts",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "adapterfor()",
       "id": "services_catchup_adapterfor"
     },
@@ -797,7 +797,7 @@
       "source_file": "apps/cli/src/services/catchup.ts",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "scanall()",
       "id": "services_catchup_scanall"
     },
@@ -817,7 +817,7 @@
       "source_file": "apps/cli/src/services/catchup.ts",
       "source_location": "L89",
       "_origin": "ast",
-      "community": 25,
+      "community": 29,
       "norm_label": "notinitializederror",
       "id": "services_catchup_notinitializederror"
     },
@@ -827,7 +827,7 @@
       "source_file": "apps/cli/src/services/catchup.ts",
       "source_location": "L90",
       "_origin": "ast",
-      "community": 25,
+      "community": 29,
       "norm_label": ".constructor()",
       "id": "services_catchup_notinitializederror_constructor"
     },
@@ -837,7 +837,7 @@
       "source_file": "apps/cli/src/services/shell-host.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "shell-host.ts",
       "id": "services_shell_host"
     },
@@ -847,7 +847,7 @@
       "source_file": "apps/cli/src/services/shell-host.ts",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "shellhosthandle",
       "id": "services_shell_host_shellhosthandle"
     },
@@ -857,7 +857,7 @@
       "source_file": "apps/cli/src/services/shell-host.ts",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "createshellhost()",
       "id": "services_shell_host_createshellhost"
     },
@@ -867,7 +867,7 @@
       "source_file": "apps/cli/src/services/shell-host.ts",
       "source_location": "L83",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "enginefromstate()",
       "id": "services_shell_host_enginefromstate"
     },
@@ -877,7 +877,7 @@
       "source_file": "apps/cli/src/stores/atomic.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "atomic.ts",
       "id": "stores_atomic"
     },
@@ -887,7 +887,7 @@
       "source_file": "apps/cli/src/stores/atomic.ts",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "datadir()",
       "id": "stores_atomic_datadir"
     },
@@ -897,7 +897,7 @@
       "source_file": "apps/cli/src/stores/atomic.ts",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "pathfor()",
       "id": "stores_atomic_pathfor"
     },
@@ -907,7 +907,7 @@
       "source_file": "apps/cli/src/stores/atomic.ts",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "ensuredir()",
       "id": "stores_atomic_ensuredir"
     },
@@ -917,7 +917,7 @@
       "source_file": "apps/cli/src/stores/atomic.ts",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "readjsonornull()",
       "id": "stores_atomic_readjsonornull"
     },
@@ -927,7 +927,7 @@
       "source_file": "apps/cli/src/stores/atomic.ts",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "writejsonatomic()",
       "id": "stores_atomic_writejsonatomic"
     },
@@ -937,7 +937,7 @@
       "source_file": "apps/cli/src/stores/checkpoints.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "checkpoints.ts",
       "id": "stores_checkpoints"
     },
@@ -947,7 +947,7 @@
       "source_file": "apps/cli/src/stores/checkpoints.ts",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "checkpointmap",
       "id": "stores_checkpoints_checkpointmap"
     },
@@ -957,7 +957,7 @@
       "source_file": "apps/cli/src/stores/checkpoints.ts",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 21,
+      "community": 30,
       "norm_label": "loadcheckpoints()",
       "id": "stores_checkpoints_loadcheckpoints"
     },
@@ -967,7 +967,7 @@
       "source_file": "apps/cli/src/stores/checkpoints.ts",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "savecheckpoints()",
       "id": "stores_checkpoints_savecheckpoints"
     },
@@ -977,7 +977,7 @@
       "source_file": "apps/cli/src/stores/config.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "config.ts",
       "id": "stores_config"
     },
@@ -987,7 +987,7 @@
       "source_file": "apps/cli/src/stores/config.ts",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "loadconfig()",
       "id": "stores_config_loadconfig"
     },
@@ -997,7 +997,7 @@
       "source_file": "apps/cli/src/stores/config.ts",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "saveconfig()",
       "id": "stores_config_saveconfig"
     },
@@ -1007,7 +1007,7 @@
       "source_file": "apps/cli/src/stores/config.ts",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "configexists()",
       "id": "stores_config_configexists"
     },
@@ -1017,7 +1017,7 @@
       "source_file": "apps/cli/src/stores/index.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "index.ts",
       "id": "stores_index"
     },
@@ -1027,7 +1027,7 @@
       "source_file": "apps/cli/src/stores/state.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "state.ts",
       "id": "stores_state"
     },
@@ -1037,7 +1037,7 @@
       "source_file": "apps/cli/src/stores/state.ts",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "loadstate()",
       "id": "stores_state_loadstate"
     },
@@ -1047,7 +1047,7 @@
       "source_file": "apps/cli/src/stores/state.ts",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "savestate()",
       "id": "stores_state_savestate"
     },
@@ -1067,7 +1067,7 @@
       "source_file": "apps/cli/tools/frame-svg.ts",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "css()",
       "id": "tools_frame_svg_css"
     },
@@ -1107,7 +1107,7 @@
       "source_file": "apps/cli/tools/frame-svg.ts",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "shellframetosvg()",
       "id": "tools_frame_svg_shellframetosvg"
     },
@@ -1117,7 +1117,7 @@
       "source_file": "apps/cli/tools/render-page-preview.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "render-page-preview.ts",
       "id": "tools_render_page_preview"
     },
@@ -1127,7 +1127,7 @@
       "source_file": "apps/cli/tools/render-page-preview.ts",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "args",
       "id": "tools_render_page_preview_args"
     },
@@ -1137,7 +1137,7 @@
       "source_file": "apps/cli/tools/render-page-preview.ts",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "page",
       "id": "tools_render_page_preview_page"
     },
@@ -1147,7 +1147,7 @@
       "source_file": "apps/cli/tools/render-page-preview.ts",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "flag()",
       "id": "tools_render_page_preview_flag"
     },
@@ -1157,7 +1157,7 @@
       "source_file": "apps/cli/tools/render-page-preview.ts",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "state",
       "id": "tools_render_page_preview_state"
     },
@@ -1167,7 +1167,7 @@
       "source_file": "apps/cli/tools/render-page-preview.ts",
       "source_location": "L83",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "svg",
       "id": "tools_render_page_preview_svg"
     },
@@ -1177,7 +1177,7 @@
       "source_file": "apps/cli/tools/render-page-preview.ts",
       "source_location": "L95",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "tmp",
       "id": "tools_render_page_preview_tmp"
     },
@@ -1187,7 +1187,7 @@
       "source_file": "apps/cli/tools/render-page-preview.ts",
       "source_location": "L96",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "svgpath",
       "id": "tools_render_page_preview_svgpath"
     },
@@ -1197,7 +1197,7 @@
       "source_file": "apps/cli/tools/render-readme-gif.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "render-readme-gif.ts",
       "id": "tools_render_readme_gif"
     },
@@ -1207,7 +1207,7 @@
       "source_file": "apps/cli/tools/render-readme-gif.ts",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "state",
       "id": "tools_render_readme_gif_state"
     },
@@ -1217,7 +1217,7 @@
       "source_file": "apps/cli/tools/render-readme-gif.ts",
       "source_location": "L68",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "frametosvg()",
       "id": "tools_render_readme_gif_frametosvg"
     },
@@ -1227,7 +1227,7 @@
       "source_file": "apps/cli/tools/render-readme-gif.ts",
       "source_location": "L82",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "tmp",
       "id": "tools_render_readme_gif_tmp"
     },
@@ -1237,7 +1237,7 @@
       "source_file": "apps/cli/tools/render-readme-gif.ts",
       "source_location": "L89",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "outdir",
       "id": "tools_render_readme_gif_outdir"
     },
@@ -1247,7 +1247,7 @@
       "source_file": "apps/cli/tools/render-readme-gif.ts",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "out",
       "id": "tools_render_readme_gif_out"
     },
@@ -2587,7 +2587,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "package.json",
       "id": "content_package"
     },
@@ -2597,7 +2597,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L2",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "name",
       "id": "content_package_name"
     },
@@ -2607,7 +2607,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "version",
       "id": "content_package_version"
     },
@@ -2617,7 +2617,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "private",
       "id": "content_package_private"
     },
@@ -2627,7 +2627,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "type",
       "id": "content_package_type"
     },
@@ -2637,7 +2637,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "exports",
       "id": "content_package_exports"
     },
@@ -2647,7 +2647,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "types",
       "id": "content_package_types"
     },
@@ -2657,7 +2657,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "default",
       "id": "content_package_default"
     },
@@ -2667,7 +2667,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "scripts",
       "id": "content_package_scripts"
     },
@@ -2677,7 +2677,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "typecheck",
       "id": "content_package_scripts_typecheck"
     },
@@ -2687,7 +2687,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "dependencies",
       "id": "content_package_dependencies"
     },
@@ -2697,7 +2697,7 @@
       "source_file": "packages/content/package.json",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "@token-tamers/core",
       "id": "content_package_dependencies_token_tamers_core"
     },
@@ -4417,7 +4417,7 @@
       "source_file": "packages/core/__tests__/cycle.test.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "cycle.test.ts",
       "id": "tests_cycle_test"
     },
@@ -4427,7 +4427,7 @@
       "source_file": "packages/core/__tests__/engine.test.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "engine.test.ts",
       "id": "tests_engine_test"
     },
@@ -4437,7 +4437,7 @@
       "source_file": "packages/core/__tests__/engine.test.ts",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "denseweek()",
       "id": "tests_engine_test_denseweek"
     },
@@ -4447,7 +4447,7 @@
       "source_file": "packages/core/__tests__/fixture.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "fixture.ts",
       "id": "tests_fixture"
     },
@@ -4457,7 +4457,7 @@
       "source_file": "packages/core/__tests__/fixture.ts",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "sp()",
       "id": "tests_fixture_sp"
     },
@@ -4467,7 +4467,7 @@
       "source_file": "packages/core/__tests__/fixture.ts",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "w()",
       "id": "tests_fixture_w"
     },
@@ -4477,7 +4477,7 @@
       "source_file": "packages/core/__tests__/fixture.ts",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "species",
       "id": "tests_fixture_species"
     },
@@ -4487,7 +4487,7 @@
       "source_file": "packages/core/__tests__/fixture.ts",
       "source_location": "L74",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "makepack()",
       "id": "tests_fixture_makepack"
     },
@@ -4497,7 +4497,7 @@
       "source_file": "packages/core/__tests__/fixture.ts",
       "source_location": "L162",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "week_anchor",
       "id": "tests_fixture_week_anchor"
     },
@@ -4507,7 +4507,7 @@
       "source_file": "packages/core/__tests__/fixture.ts",
       "source_location": "L164",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "staticadapter()",
       "id": "tests_fixture_staticadapter"
     },
@@ -4517,7 +4517,7 @@
       "source_file": "packages/core/__tests__/fixture.ts",
       "source_location": "L174",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "dynamicadapter()",
       "id": "tests_fixture_dynamicadapter"
     },
@@ -4527,7 +4527,7 @@
       "source_file": "packages/core/__tests__/fixture.ts",
       "source_location": "L185",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "ev()",
       "id": "tests_fixture_ev"
     },
@@ -5357,7 +5357,7 @@
       "source_file": "packages/core/src/engine/index.ts",
       "source_location": "L459",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "createengine()",
       "id": "engine_index_createengine"
     },
@@ -5857,7 +5857,7 @@
       "source_file": "packages/core/src/types.ts",
       "source_location": "L85",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "cyclepolicykind",
       "id": "src_types_cyclepolicykind"
     },
@@ -5867,7 +5867,7 @@
       "source_file": "packages/core/src/types.ts",
       "source_location": "L87",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "adapterconfig",
       "id": "src_types_adapterconfig"
     },
@@ -5927,7 +5927,7 @@
       "source_file": "packages/core/src/types.ts",
       "source_location": "L136",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "evolutionbranch",
       "id": "src_types_evolutionbranch"
     },
@@ -6087,7 +6087,7 @@
       "source_file": "packages/core/src/types.ts",
       "source_location": "L370",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "engine",
       "id": "src_types_engine"
     },
@@ -6097,7 +6097,7 @@
       "source_file": "packages/core/src/types.ts",
       "source_location": "L394",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "userconfig",
       "id": "src_types_userconfig"
     },
@@ -6167,7 +6167,7 @@
       "source_file": "packages/tui/__tests__/fixtures.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "fixtures.ts",
       "id": "tests_fixtures"
     },
@@ -6177,7 +6177,7 @@
       "source_file": "packages/tui/__tests__/fixtures.ts",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "test_sprite",
       "id": "tests_fixtures_test_sprite"
     },
@@ -6187,7 +6187,7 @@
       "source_file": "packages/tui/__tests__/fixtures.ts",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "wisp",
       "id": "tests_fixtures_wisp"
     },
@@ -6197,7 +6197,7 @@
       "source_file": "packages/tui/__tests__/fixtures.ts",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "ember",
       "id": "tests_fixtures_ember"
     },
@@ -6207,7 +6207,7 @@
       "source_file": "packages/tui/__tests__/fixtures.ts",
       "source_location": "L52",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "makepack()",
       "id": "tests_fixtures_makepack"
     },
@@ -6217,7 +6217,7 @@
       "source_file": "packages/tui/__tests__/fixtures.ts",
       "source_location": "L68",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "makepet()",
       "id": "tests_fixtures_makepet"
     },
@@ -6227,7 +6227,7 @@
       "source_file": "packages/tui/__tests__/fixtures.ts",
       "source_location": "L90",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "makestate()",
       "id": "tests_fixtures_makestate"
     },
@@ -6237,7 +6237,7 @@
       "source_file": "packages/tui/__tests__/golden.test.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "golden.test.ts",
       "id": "tests_golden_test"
     },
@@ -6247,7 +6247,7 @@
       "source_file": "packages/tui/__tests__/golden.test.ts",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "input()",
       "id": "tests_golden_test_input"
     },
@@ -6287,7 +6287,7 @@
       "source_file": "packages/tui/__tests__/shell.test.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "shell.test.ts",
       "id": "tests_shell_test"
     },
@@ -6297,7 +6297,7 @@
       "source_file": "packages/tui/__tests__/shell.test.ts",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "makehost()",
       "id": "tests_shell_test_makehost"
     },
@@ -6307,7 +6307,7 @@
       "source_file": "packages/tui/__tests__/shell.test.ts",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "manualinput()",
       "id": "tests_shell_test_manualinput"
     },
@@ -6317,7 +6317,7 @@
       "source_file": "packages/tui/__tests__/shell.test.ts",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "steppedclock()",
       "id": "tests_shell_test_steppedclock"
     },
@@ -6337,7 +6337,7 @@
       "source_file": "packages/tui/__tests__/status.test.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "status.test.ts",
       "id": "tests_status_test"
     },
@@ -6347,7 +6347,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "package.json",
       "id": "tui_package"
     },
@@ -6357,7 +6357,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L2",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "name",
       "id": "tui_package_name"
     },
@@ -6367,7 +6367,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "version",
       "id": "tui_package_version"
     },
@@ -6377,7 +6377,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "private",
       "id": "tui_package_private"
     },
@@ -6387,7 +6387,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "type",
       "id": "tui_package_type"
     },
@@ -6397,7 +6397,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "exports",
       "id": "tui_package_exports"
     },
@@ -6407,7 +6407,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "types",
       "id": "tui_package_types"
     },
@@ -6417,7 +6417,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "default",
       "id": "tui_package_default"
     },
@@ -6427,7 +6427,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "scripts",
       "id": "tui_package_scripts"
     },
@@ -6437,7 +6437,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "typecheck",
       "id": "tui_package_scripts_typecheck"
     },
@@ -6447,7 +6447,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "dependencies",
       "id": "tui_package_dependencies"
     },
@@ -6457,7 +6457,7 @@
       "source_file": "packages/tui/package.json",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "@token-tamers/core",
       "id": "tui_package_dependencies_token_tamers_core"
     },
@@ -7117,7 +7117,7 @@
       "source_file": "packages/tui/src/render/buffer.ts",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 44,
+      "community": 11,
       "norm_label": ".text()",
       "id": "render_buffer_framebuffer_text"
     },
@@ -7137,7 +7137,7 @@
       "source_file": "packages/tui/src/render/buffer.ts",
       "source_location": "L99",
       "_origin": "ast",
-      "community": 11,
+      "community": 44,
       "norm_label": ".flush()",
       "id": "render_buffer_framebuffer_flush"
     },
@@ -7777,7 +7777,7 @@
       "source_file": "packages/tui/src/shell.ts",
       "source_location": "L69",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": "loopcontext",
       "id": "src_shell_loopcontext"
     },
@@ -8047,7 +8047,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": "writer",
       "id": "terminal_ansi_writer"
     },
@@ -8057,7 +8057,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L51",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".constructor()",
       "id": "terminal_ansi_writer_constructor"
     },
@@ -8067,7 +8067,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L56",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".write()",
       "id": "terminal_ansi_writer_write"
     },
@@ -8077,7 +8077,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".enteraltscreen()",
       "id": "terminal_ansi_writer_enteraltscreen"
     },
@@ -8087,7 +8087,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L66",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".leavealtscreen()",
       "id": "terminal_ansi_writer_leavealtscreen"
     },
@@ -8097,7 +8097,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L72",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".hidecursor()",
       "id": "terminal_ansi_writer_hidecursor"
     },
@@ -8107,7 +8107,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".showcursor()",
       "id": "terminal_ansi_writer_showcursor"
     },
@@ -8117,7 +8117,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L85",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".enablemouse()",
       "id": "terminal_ansi_writer_enablemouse"
     },
@@ -8127,7 +8127,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".disablemouse()",
       "id": "terminal_ansi_writer_disablemouse"
     },
@@ -8137,7 +8137,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L97",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".clearscreen()",
       "id": "terminal_ansi_writer_clearscreen"
     },
@@ -8147,7 +8147,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L102",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".moveto()",
       "id": "terminal_ansi_writer_moveto"
     },
@@ -8157,7 +8157,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L106",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".resetsgr()",
       "id": "terminal_ansi_writer_resetsgr"
     },
@@ -8167,7 +8167,7 @@
       "source_file": "packages/tui/src/terminal/ansi.ts",
       "source_location": "L111",
       "_origin": "ast",
-      "community": 31,
+      "community": 32,
       "norm_label": ".restore()",
       "id": "terminal_ansi_writer_restore"
     },
@@ -8657,7 +8657,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "tsconfig.base.json",
       "id": "tsconfig_base"
     },
@@ -8667,7 +8667,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L2",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "compileroptions",
       "id": "tsconfig_base_compileroptions"
     },
@@ -8677,7 +8677,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "target",
       "id": "tsconfig_base_compileroptions_target"
     },
@@ -8687,7 +8687,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "module",
       "id": "tsconfig_base_compileroptions_module"
     },
@@ -8697,7 +8697,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "moduleresolution",
       "id": "tsconfig_base_compileroptions_moduleresolution"
     },
@@ -8707,7 +8707,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "strict",
       "id": "tsconfig_base_compileroptions_strict"
     },
@@ -8717,7 +8717,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "nouncheckedindexedaccess",
       "id": "tsconfig_base_compileroptions_nouncheckedindexedaccess"
     },
@@ -8727,7 +8727,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "nofallthroughcasesinswitch",
       "id": "tsconfig_base_compileroptions_nofallthroughcasesinswitch"
     },
@@ -8737,7 +8737,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "noimplicitoverride",
       "id": "tsconfig_base_compileroptions_noimplicitoverride"
     },
@@ -8747,7 +8747,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "isolatedmodules",
       "id": "tsconfig_base_compileroptions_isolatedmodules"
     },
@@ -8757,7 +8757,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "resolvejsonmodule",
       "id": "tsconfig_base_compileroptions_resolvejsonmodule"
     },
@@ -8767,7 +8767,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "skiplibcheck",
       "id": "tsconfig_base_compileroptions_skiplibcheck"
     },
@@ -8777,7 +8777,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "forceconsistentcasinginfilenames",
       "id": "tsconfig_base_compileroptions_forceconsistentcasinginfilenames"
     },
@@ -8787,7 +8787,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "noemit",
       "id": "tsconfig_base_compileroptions_noemit"
     },
@@ -8797,7 +8797,7 @@
       "source_file": "tsconfig.base.json",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "types",
       "id": "tsconfig_base_compileroptions_types"
     },
@@ -8833,7 +8833,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 20,
+      "community": 21,
       "norm_label": "develop adapters skill",
       "id": "develop_adapters_skill"
     },
@@ -8859,7 +8859,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 20,
+      "community": 21,
       "norm_label": "develop tui renderer skill",
       "id": "develop_tui_renderer_skill"
     },
@@ -8940,7 +8940,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Adapters emit one normalized UsageEvent stream so the engine is provider-blind. Format drift in any provider is an adapter patch, never an engine change.",
-      "community": 20,
+      "community": 21,
       "norm_label": "usageevent normalized stream contract",
       "id": "usage_event_contract"
     },
@@ -8954,7 +8954,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Providers prune logs (e.g. Claude Code 30-day deletion); keeping per-file offset+mtime checkpoints and reading only new bytes ensures the game's own store is the durable record.",
-      "community": 20,
+      "community": 21,
       "norm_label": "adaptercheckpoint incremental ingestion",
       "id": "adapter_checkpoint"
     },
@@ -8980,7 +8980,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 20,
+      "community": 21,
       "norm_label": "codex cli adapter (m2)",
       "id": "codex_cli_adapter"
     },
@@ -8993,7 +8993,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 20,
+      "community": 21,
       "norm_label": "opencode adapter (m2)",
       "id": "opencode_adapter"
     },
@@ -9087,7 +9087,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 39,
       "norm_label": "pattern evolution (vigil/tempest/prism/chimera)",
       "id": "pattern_evolution"
     },
@@ -9114,7 +9114,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Only emitting ANSI for changed cells with run-coalescing keeps CPU near 0% in idle and respects the <2ms flush budget. An identical re-flush must emit zero bytes (tested).",
-      "community": 20,
+      "community": 21,
       "norm_label": "diff renderer (front/back cell buffer, ansi delta emit)",
       "id": "diff_renderer"
     },
@@ -9127,7 +9127,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 20,
+      "community": 21,
       "norm_label": "half-block pixel compositor (\u2580 cells)",
       "id": "half_block_compositor"
     },
@@ -9141,7 +9141,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Cells are ~1:2 w:h and half-blocks give 2 vertical px per cell, so a 4:3 visual canvas uses an ~8:3 cols:rows grid. Letterboxing uses habitat-tinted gutters so content never intrudes.",
-      "community": 20,
+      "community": 21,
       "norm_label": "4:3 game canvas layout law",
       "id": "canvas_43_layout"
     },
@@ -9154,7 +9154,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 20,
+      "community": 21,
       "norm_label": "sgr mouse reporting & hit-region registry",
       "id": "sgr_mouse_input"
     },
@@ -9168,7 +9168,7 @@
       "author": null,
       "contributor": null,
       "rationale": "TUIs are very testable by rendering to a string buffer and snapshot-comparing. Never weaken a golden frame \u2014 regenerate only when the visual change is intended and reviewed.",
-      "community": 20,
+      "community": 21,
       "norm_label": "golden frame renderer testing (string buffer snapshots)",
       "id": "golden_frame_testing"
     },
@@ -9208,7 +9208,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "houses / models.json registry",
       "id": "houses_model_registry"
     },
@@ -9248,7 +9248,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 39,
       "norm_label": "completion meter (dex 40% + achievements 40% + habitats 10% + trinkets 10%)",
       "id": "completion_meter"
     },
@@ -9417,7 +9417,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 39,
       "norm_label": "design reference readme (docs/design/readme.md)",
       "id": "design_readme"
     },
@@ -9430,7 +9430,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 20,
+      "community": 21,
       "norm_label": "technical architecture & ai-native development policy",
       "id": "architecture_doc"
     },
@@ -9443,7 +9443,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 39,
       "norm_label": "concept and design pillars (docs/design/concept-and-pillars.md)",
       "id": "concept_pillars_doc"
     },
@@ -9456,7 +9456,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 39,
       "norm_label": "dna fusion, hash/dna code system, and battle system",
       "id": "dna_hash_battles_doc"
     },
@@ -9497,7 +9497,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Provider policies prohibit using subscription credentials in third-party tools. Token Tamers reads local session logs already written to disk \u2014 the pet grows because the dev shipped real work, not because a script burned tokens.",
-      "community": 40,
+      "community": 39,
       "norm_label": "read-only observer principle",
       "id": "read_only_observer"
     },
@@ -9524,7 +9524,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 39,
       "norm_label": "dna fusion system (apply-timing tiers, one application per lifetime)",
       "id": "dna_fusion_system"
     },
@@ -9538,7 +9538,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Pure deterministic function of two hashes and a ruleset version means replays are reproducible forever \u2014 no RNG from wall-clock time, no network, no per-session state.",
-      "community": 40,
+      "community": 39,
       "norm_label": "battle system (deterministic f(hasha,hashb,ruleset_version))",
       "id": "battle_system"
     },
@@ -9551,7 +9551,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "4-house type wheel (aether > cipher > flux > forge > aether)",
       "id": "house_type_wheel"
     },
@@ -9564,7 +9564,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 39,
       "norm_label": "four stats (pwr/spd/wis/grt \u2014 equal total budgets)",
       "id": "four_stats"
     },
@@ -9578,7 +9578,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Houses are the public vocabulary in battle/trading. Only Houses show \u2014 preserving provider parity so cross-provider battles are House-vs-House not brand-vs-brand.",
-      "community": 41,
+      "community": 40,
       "norm_label": "provider-anonymity rule (hashes carry gene ids not provider names)",
       "id": "provider_anonymity_rule"
     },
@@ -9605,7 +9605,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Different builds not better builds \u2014 stat distribution flavor differs by House but totals are always equal. This keeps model/provider choice cosmetic and preserves competitive fairness.",
-      "community": 40,
+      "community": 39,
       "norm_label": "horizontal evolution (equal total stat budget across all final forms)",
       "id": "horizontal_evolution"
     },
@@ -9633,7 +9633,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Humans own architecture and contracts; CI owns quality and performance; AI writes the code. The feedback loops are mechanical \u2014 import-boundary lint, determinism tests, golden frames, fixture suites \u2014 not social/process agreements.",
-      "community": 20,
+      "community": 21,
       "norm_label": "ai-native development policy",
       "id": "ai_native_dev_policy"
     },
@@ -9646,7 +9646,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 20,
+      "community": 21,
       "norm_label": "ci gate suite (zero-network, spoiler, runtime-deps, kebab-case, workflow-pins)",
       "id": "ci_gate_suite"
     },
@@ -9674,7 +9674,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Ink adds ~50MB React overhead; OpenTUI requires Bun or Node 26 experimental FFI. A custom core gives zero runtime deps, no native binaries, and works on any Node LTS over SSH.",
-      "community": 20,
+      "community": 21,
       "norm_label": "custom slim tui core (no ink/opentui framework)",
       "id": "tui_custom_core"
     },
@@ -9713,7 +9713,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 20,
+      "community": 21,
       "norm_label": "performance budgets (flush <2ms, cpu ~1-2%, rss <40mb, bundle <1mb)",
       "id": "perf_budgets"
     },
@@ -9726,7 +9726,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "house aether (claude-* / wis-lean / ethereal-mind)",
       "id": "aether_house"
     },
@@ -9739,7 +9739,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "house cipher (gpt-*/o* / pwr-lean / glyph-geometry)",
       "id": "cipher_house"
     },
@@ -9752,7 +9752,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "house flux (gemini-* / spd-lean / light-current)",
       "id": "flux_house"
     },
@@ -9765,7 +9765,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "house forge (open-weight / grt-lean / metal-ember)",
       "id": "forge_house"
     },
@@ -9778,7 +9778,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "house wild (unmatched model ids / neutral / dormant gene)",
       "id": "wild_house"
     },
@@ -9791,7 +9791,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 20,
+      "community": 21,
       "norm_label": "adapter fixture testing (anonymized real log samples)",
       "id": "adapter_fixture_testing"
     },
@@ -9805,7 +9805,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Enforced by ESLint to prevent architectural drift. AI-generated code is prone to adding cross-package imports; mechanical enforcement catches violations immediately in CI.",
-      "community": 20,
+      "community": 21,
       "norm_label": "import boundary invariant (core imports nothing; tui/adapters import core only)",
       "id": "import_boundary_invariant"
     },
@@ -9873,7 +9873,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "aether evolution line (wisp \u2192 aurelion/mindspire)",
       "id": "aether_evolution_line"
     },
@@ -9886,7 +9886,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "cipher evolution line (glyphit \u2192 enigmax/keystrix)",
       "id": "cipher_evolution_line"
     },
@@ -9913,7 +9913,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Polyhost+Switcher \u2192 Chimera pattern and its DNA pool is the design's explicit statement that no provider is privileged and that multi-provider workflows produce unique, unreachable content.",
-      "community": 40,
+      "community": 39,
       "norm_label": "chimera-class multi-agent design statement",
       "id": "chimera_multiagent_design"
     },
@@ -9927,7 +9927,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Species/traits/pools/models.json/rules live in versioned JSON, never hardcoded, so format drift in any content area is a data patch, not an engine change. Enables additive-only evolution.",
-      "community": 20,
+      "community": 21,
       "norm_label": "content as data principle",
       "id": "content_as_data_principle"
     },
@@ -10796,7 +10796,7 @@
         "kind": "file"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "install.sh",
       "id": "scripts_install"
     },
@@ -10810,7 +10810,7 @@
         "kind": "bash_entrypoint"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "install.sh script",
       "id": "users_zivkong_documents_claude_projects_token_tamers_repositories_token_tamers_scripts_install_sh__entry"
     },
@@ -10824,7 +10824,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "info()",
       "id": "scripts_install_info"
     },
@@ -10838,7 +10838,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "ok()",
       "id": "scripts_install_ok"
     },
@@ -10852,7 +10852,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "warn()",
       "id": "scripts_install_warn"
     },
@@ -10866,7 +10866,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "die()",
       "id": "scripts_install_die"
     },
@@ -10880,7 +10880,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "detect_target()",
       "id": "scripts_install_detect_target"
     },
@@ -10894,7 +10894,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "download()",
       "id": "scripts_install_download"
     },
@@ -10908,7 +10908,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "sha256_of()",
       "id": "scripts_install_sha256_of"
     },
@@ -10922,7 +10922,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "main()",
       "id": "scripts_install_main"
     },
@@ -10936,7 +10936,7 @@
         "kind": "file"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "uninstall.sh",
       "id": "scripts_uninstall"
     },
@@ -10950,7 +10950,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "info()",
       "id": "scripts_uninstall_info"
     },
@@ -10964,7 +10964,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "ok()",
       "id": "scripts_uninstall_ok"
     },
@@ -10978,7 +10978,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "warn()",
       "id": "scripts_uninstall_warn"
     },
@@ -10992,7 +10992,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "remove_file()",
       "id": "scripts_uninstall_remove_file"
     },
@@ -11006,7 +11006,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "main()",
       "id": "scripts_uninstall_main"
     },
@@ -11180,7 +11180,7 @@
       "source_file": "apps/cli/src/stores/atomic.ts",
       "source_location": "L53",
       "_origin": "ast",
-      "community": 21,
+      "community": 20,
       "norm_label": "writejsonatomiccompact",
       "id": "stores_atomic_writejsonatomiccompact"
     },
@@ -11190,7 +11190,7 @@
       "source_file": "apps/cli/src/stores/pending.ts",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 36,
+      "community": 41,
       "norm_label": "loadpending",
       "id": "stores_pending_loadpending"
     },
@@ -11200,7 +11200,7 @@
       "source_file": "apps/cli/src/stores/pending.ts",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "savepending",
       "id": "stores_pending_savepending"
     },
@@ -11330,7 +11330,7 @@
       "source_file": "apps/cli/__tests__/init-tracking.test.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 36,
+      "community": 41,
       "norm_label": "init-tracking.test.ts",
       "id": "tests_init_tracking_test"
     },
@@ -11340,7 +11340,7 @@
       "source_file": "apps/cli/__tests__/init-tracking.test.ts",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 36,
+      "community": 41,
       "norm_label": "writefixture()",
       "id": "tests_init_tracking_test_writefixture"
     },
@@ -11350,7 +11350,7 @@
       "source_file": "apps/cli/__tests__/init-tracking.test.ts",
       "source_location": "L86",
       "_origin": "ast",
-      "community": 36,
+      "community": 41,
       "norm_label": "writeopencodefixture()",
       "id": "tests_init_tracking_test_writeopencodefixture"
     },
@@ -11510,7 +11510,7 @@
       "source_file": "apps/cli/src/commands/shell.ts",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "tildepath()",
       "id": "commands_shell_tildepath"
     },
@@ -11520,7 +11520,7 @@
       "source_file": "apps/cli/src/commands/shell.ts",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "buildshellinfo()",
       "id": "commands_shell_buildshellinfo"
     },
@@ -11530,7 +11530,7 @@
       "source_file": "apps/cli/src/commands/shell.ts",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "toadapterinfo()",
       "id": "commands_shell_toadapterinfo"
     },
@@ -11540,7 +11540,7 @@
       "source_file": "apps/cli/src/commands/shell.ts",
       "source_location": "L49",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "persistadapters()",
       "id": "commands_shell_persistadapters"
     },
@@ -11550,7 +11550,7 @@
       "source_file": "apps/cli/src/version.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "version.ts",
       "id": "src_version"
     },
@@ -11580,7 +11580,7 @@
       "source_file": "packages/tui/__tests__/golden.test.ts",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "test_info",
       "id": "tests_golden_test_test_info"
     },
@@ -11590,7 +11590,7 @@
       "source_file": "packages/tui/__tests__/golden.test.ts",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "test_settings",
       "id": "tests_golden_test_test_settings"
     },
@@ -11600,7 +11600,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "settings.ts",
       "id": "pages_settings"
     },
@@ -11610,7 +11610,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "text",
       "id": "pages_settings_text"
     },
@@ -11620,7 +11620,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "dim",
       "id": "pages_settings_dim"
     },
@@ -11630,7 +11630,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "header",
       "id": "pages_settings_header"
     },
@@ -11640,7 +11640,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "label",
       "id": "pages_settings_label"
     },
@@ -11650,7 +11650,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "rule",
       "id": "pages_settings_rule"
     },
@@ -11660,7 +11660,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "select_bg",
       "id": "pages_settings_select_bg"
     },
@@ -11670,7 +11670,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "value_selected",
       "id": "pages_settings_value_selected"
     },
@@ -11680,7 +11680,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "plan_values",
       "id": "pages_settings_plan_values"
     },
@@ -11690,7 +11690,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "policy_values",
       "id": "pages_settings_policy_values"
     },
@@ -11730,7 +11730,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "colorlabel()",
       "id": "pages_settings_colorlabel"
     },
@@ -11740,7 +11740,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L73",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "rendersettingspage()",
       "id": "pages_settings_rendersettingspage"
     },
@@ -11750,7 +11750,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L118",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "drawadapters()",
       "id": "pages_settings_drawadapters"
     },
@@ -11760,7 +11760,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L144",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "fieldopts",
       "id": "pages_settings_fieldopts"
     },
@@ -11770,7 +11770,7 @@
       "source_file": "packages/tui/src/pages/settings.ts",
       "source_location": "L152",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "drawfield()",
       "id": "pages_settings_drawfield"
     },
@@ -12050,7 +12050,7 @@
       "source_file": "apps/cli/src/stores/atomic.ts",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "setdatadirfortesting",
       "id": "stores_atomic_setdatadirfortesting"
     },
@@ -12060,7 +12060,7 @@
       "source_file": "apps/cli/src/stores/settings.ts",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 36,
+      "community": 41,
       "norm_label": "defaultsettings",
       "id": "stores_settings_defaultsettings"
     },
@@ -12080,7 +12080,7 @@
       "source_file": "apps/cli/src/stores/settings.ts",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 36,
+      "community": 41,
       "norm_label": "savesettings",
       "id": "stores_settings_savesettings"
     },
@@ -12100,7 +12100,7 @@
       "source_file": "packages/core/src/types.ts",
       "source_location": "L433",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "colorpreference",
       "id": "src_types_colorpreference"
     },
@@ -12110,7 +12110,7 @@
       "source_file": "packages/core/src/types.ts",
       "source_location": "L442",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "settingsfile",
       "id": "src_types_settingsfile"
     },
@@ -12310,7 +12310,7 @@
       "source_file": "apps/cli/src/commands/update.ts",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 33,
+      "community": 29,
       "norm_label": "updatecommand",
       "id": "commands_update_updatecommand"
     },
@@ -12350,7 +12350,7 @@
       "source_file": "apps/cli/src/services/update-check.ts",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "pendingupdate",
       "id": "services_update_check_pendingupdate"
     },
@@ -12360,7 +12360,7 @@
       "source_file": "apps/cli/src/services/update-check.ts",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "backgroundupdatecheck",
       "id": "services_update_check_backgroundupdatecheck"
     },
@@ -12860,7 +12860,7 @@
       "source_file": "packages/core/src/engine/grades.ts",
       "source_location": "L121",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "gradeodds",
       "id": "engine_grades_gradeodds"
     },
@@ -12910,7 +12910,7 @@
       "source_file": "packages/core/src/types.ts",
       "source_location": "L457",
       "_origin": "ast",
-      "community": 25,
+      "community": 30,
       "norm_label": "updatemode",
       "id": "src_types_updatemode"
     },
@@ -13010,7 +13010,7 @@
       "source_file": "packages/tui/src/components/page.ts",
       "source_location": "L68",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "drawpagefooter",
       "id": "components_page_drawpagefooter"
     },
@@ -13100,9 +13100,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L27",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_sparkit",
       "community": 1,
-      "norm_label": "sparkit"
+      "norm_label": "sparkit",
+      "id": "content_registry_freeze_species_sparkit"
     },
     {
       "label": "fluxling",
@@ -13110,9 +13110,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L28",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_fluxling",
       "community": 1,
-      "norm_label": "fluxling"
+      "norm_label": "fluxling",
+      "id": "content_registry_freeze_species_fluxling"
     },
     {
       "label": "voltby",
@@ -13120,9 +13120,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L29",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_voltby",
       "community": 1,
-      "norm_label": "voltby"
+      "norm_label": "voltby",
+      "id": "content_registry_freeze_species_voltby"
     },
     {
       "label": "arcfin",
@@ -13130,9 +13130,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L30",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_arcfin",
       "community": 1,
-      "norm_label": "arcfin"
+      "norm_label": "arcfin",
+      "id": "content_registry_freeze_species_arcfin"
     },
     {
       "label": "photonix",
@@ -13140,9 +13140,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L31",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_photonix",
       "community": 1,
-      "norm_label": "photonix"
+      "norm_label": "photonix",
+      "id": "content_registry_freeze_species_photonix"
     },
     {
       "label": "surgewing",
@@ -13150,9 +13150,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L32",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_surgewing",
       "community": 1,
-      "norm_label": "surgewing"
+      "norm_label": "surgewing",
+      "id": "content_registry_freeze_species_surgewing"
     },
     {
       "label": "stormlynx",
@@ -13160,9 +13160,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L33",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_stormlynx",
       "community": 1,
-      "norm_label": "stormlynx"
+      "norm_label": "stormlynx",
+      "id": "content_registry_freeze_species_stormlynx"
     },
     {
       "label": "luminaire",
@@ -13170,9 +13170,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L34",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_luminaire",
       "community": 1,
-      "norm_label": "luminaire"
+      "norm_label": "luminaire",
+      "id": "content_registry_freeze_species_luminaire"
     },
     {
       "label": "ionyx",
@@ -13180,9 +13180,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L35",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_ionyx",
       "community": 1,
-      "norm_label": "ionyx"
+      "norm_label": "ionyx",
+      "id": "content_registry_freeze_species_ionyx"
     },
     {
       "label": "voltaicore",
@@ -13190,9 +13190,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L36",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_voltaicore",
       "community": 1,
-      "norm_label": "voltaicore"
+      "norm_label": "voltaicore",
+      "id": "content_registry_freeze_species_voltaicore"
     },
     {
       "label": "radiantus",
@@ -13200,9 +13200,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L37",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_radiantus",
       "community": 1,
-      "norm_label": "radiantus"
+      "norm_label": "radiantus",
+      "id": "content_registry_freeze_species_radiantus"
     },
     {
       "label": "emberit",
@@ -13210,9 +13210,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L38",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_emberit",
       "community": 1,
-      "norm_label": "emberit"
+      "norm_label": "emberit",
+      "id": "content_registry_freeze_species_emberit"
     },
     {
       "label": "forgeling",
@@ -13220,9 +13220,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L39",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_forgeling",
       "community": 1,
-      "norm_label": "forgeling"
+      "norm_label": "forgeling",
+      "id": "content_registry_freeze_species_forgeling"
     },
     {
       "label": "cindcub",
@@ -13230,9 +13230,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L40",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_cindcub",
       "community": 1,
-      "norm_label": "cindcub"
+      "norm_label": "cindcub",
+      "id": "content_registry_freeze_species_cindcub"
     },
     {
       "label": "anvilisk",
@@ -13240,9 +13240,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L41",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_anvilisk",
       "community": 1,
-      "norm_label": "anvilisk"
+      "norm_label": "anvilisk",
+      "id": "content_registry_freeze_species_anvilisk"
     },
     {
       "label": "slaghorn",
@@ -13250,9 +13250,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L42",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_slaghorn",
       "community": 1,
-      "norm_label": "slaghorn"
+      "norm_label": "slaghorn",
+      "id": "content_registry_freeze_species_slaghorn"
     },
     {
       "label": "kilnox",
@@ -13260,9 +13260,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L43",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_kilnox",
       "community": 1,
-      "norm_label": "kilnox"
+      "norm_label": "kilnox",
+      "id": "content_registry_freeze_species_kilnox"
     },
     {
       "label": "smeltitan",
@@ -13270,9 +13270,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L44",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_smeltitan",
       "community": 1,
-      "norm_label": "smeltitan"
+      "norm_label": "smeltitan",
+      "id": "content_registry_freeze_species_smeltitan"
     },
     {
       "label": "ironmaw",
@@ -13280,9 +13280,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L45",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_ironmaw",
       "community": 1,
-      "norm_label": "ironmaw"
+      "norm_label": "ironmaw",
+      "id": "content_registry_freeze_species_ironmaw"
     },
     {
       "label": "basaltus",
@@ -13290,9 +13290,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L46",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_basaltus",
       "community": 1,
-      "norm_label": "basaltus"
+      "norm_label": "basaltus",
+      "id": "content_registry_freeze_species_basaltus"
     },
     {
       "label": "magmarok",
@@ -13300,9 +13300,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L47",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_magmarok",
       "community": 1,
-      "norm_label": "magmarok"
+      "norm_label": "magmarok",
+      "id": "content_registry_freeze_species_magmarok"
     },
     {
       "label": "adamantor",
@@ -13310,9 +13310,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L48",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_adamantor",
       "community": 1,
-      "norm_label": "adamantor"
+      "norm_label": "adamantor",
+      "id": "content_registry_freeze_species_adamantor"
     },
     {
       "label": "sprout",
@@ -13320,9 +13320,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L49",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_sprout",
       "community": 1,
-      "norm_label": "sprout"
+      "norm_label": "sprout",
+      "id": "content_registry_freeze_species_sprout"
     },
     {
       "label": "mosskit",
@@ -13330,9 +13330,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L50",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_mosskit",
       "community": 1,
-      "norm_label": "mosskit"
+      "norm_label": "mosskit",
+      "id": "content_registry_freeze_species_mosskit"
     },
     {
       "label": "thornkit",
@@ -13340,9 +13340,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L51",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_thornkit",
       "community": 1,
-      "norm_label": "thornkit"
+      "norm_label": "thornkit",
+      "id": "content_registry_freeze_species_thornkit"
     },
     {
       "label": "bramblox",
@@ -13350,9 +13350,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L52",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_bramblox",
       "community": 1,
-      "norm_label": "bramblox"
+      "norm_label": "bramblox",
+      "id": "content_registry_freeze_species_bramblox"
     },
     {
       "label": "pollenix",
@@ -13360,9 +13360,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L53",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_pollenix",
       "community": 1,
-      "norm_label": "pollenix"
+      "norm_label": "pollenix",
+      "id": "content_registry_freeze_species_pollenix"
     },
     {
       "label": "sporecap",
@@ -13370,9 +13370,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L54",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_sporecap",
       "community": 1,
-      "norm_label": "sporecap"
+      "norm_label": "sporecap",
+      "id": "content_registry_freeze_species_sporecap"
     },
     {
       "label": "verdantyr",
@@ -13380,9 +13380,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L55",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_verdantyr",
       "community": 1,
-      "norm_label": "verdantyr"
+      "norm_label": "verdantyr",
+      "id": "content_registry_freeze_species_verdantyr"
     },
     {
       "label": "bloomwarden",
@@ -13390,9 +13390,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L56",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_bloomwarden",
       "community": 1,
-      "norm_label": "bloomwarden"
+      "norm_label": "bloomwarden",
+      "id": "content_registry_freeze_species_bloomwarden"
     },
     {
       "label": "gnarloak",
@@ -13400,9 +13400,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L57",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_gnarloak",
       "community": 1,
-      "norm_label": "gnarloak"
+      "norm_label": "gnarloak",
+      "id": "content_registry_freeze_species_gnarloak"
     },
     {
       "label": "sylvaroot",
@@ -13410,9 +13410,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L58",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_sylvaroot",
       "community": 1,
-      "norm_label": "sylvaroot"
+      "norm_label": "sylvaroot",
+      "id": "content_registry_freeze_species_sylvaroot"
     },
     {
       "label": "eldergrove",
@@ -13420,9 +13420,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L59",
       "_origin": "ast",
-      "id": "content_registry_freeze_species_eldergrove",
       "community": 1,
-      "norm_label": "eldergrove"
+      "norm_label": "eldergrove",
+      "id": "content_registry_freeze_species_eldergrove"
     },
     {
       "label": "achievements",
@@ -13430,9 +13430,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L78",
       "_origin": "ast",
-      "id": "content_registry_freeze_achievements",
       "community": 46,
-      "norm_label": "achievements"
+      "norm_label": "achievements",
+      "id": "content_registry_freeze_achievements"
     },
     {
       "label": "bloom.ts",
@@ -13440,9 +13440,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "designs_bloom",
       "community": 0,
-      "norm_label": "bloom.ts"
+      "norm_label": "bloom.ts",
+      "id": "designs_bloom"
     },
     {
       "label": "BloomGeom",
@@ -13450,9 +13450,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L44",
       "_origin": "ast",
-      "id": "designs_bloom_bloomgeom",
       "community": 0,
-      "norm_label": "bloomgeom"
+      "norm_label": "bloomgeom",
+      "id": "designs_bloom_bloomgeom"
     },
     {
       "label": "BloomOpts",
@@ -13460,9 +13460,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L54",
       "_origin": "ast",
-      "id": "designs_bloom_bloomopts",
       "community": 0,
-      "norm_label": "bloomopts"
+      "norm_label": "bloomopts",
+      "id": "designs_bloom_bloomopts"
     },
     {
       "label": "drawRoot()",
@@ -13470,9 +13470,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L79",
       "_origin": "ast",
-      "id": "designs_bloom_drawroot",
       "community": 0,
-      "norm_label": "drawroot()"
+      "norm_label": "drawroot()",
+      "id": "designs_bloom_drawroot"
     },
     {
       "label": "drawCrown()",
@@ -13480,9 +13480,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L88",
       "_origin": "ast",
-      "id": "designs_bloom_drawcrown",
       "community": 0,
-      "norm_label": "drawcrown()"
+      "norm_label": "drawcrown()",
+      "id": "designs_bloom_drawcrown"
     },
     {
       "label": "bloomEyes()",
@@ -13490,9 +13490,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L133",
       "_origin": "ast",
-      "id": "designs_bloom_bloomeyes",
       "community": 0,
-      "norm_label": "bloomeyes()"
+      "norm_label": "bloomeyes()",
+      "id": "designs_bloom_bloomeyes"
     },
     {
       "label": "bloomCreature()",
@@ -13500,9 +13500,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L143",
       "_origin": "ast",
-      "id": "designs_bloom_bloomcreature",
       "community": 0,
-      "norm_label": "bloomcreature()"
+      "norm_label": "bloomcreature()",
+      "id": "designs_bloom_bloomcreature"
     },
     {
       "label": "buildSprout()",
@@ -13510,9 +13510,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L193",
       "_origin": "ast",
-      "id": "designs_bloom_buildsprout",
       "community": 0,
-      "norm_label": "buildsprout()"
+      "norm_label": "buildsprout()",
+      "id": "designs_bloom_buildsprout"
     },
     {
       "label": "buildMosskit()",
@@ -13520,9 +13520,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L198",
       "_origin": "ast",
-      "id": "designs_bloom_buildmosskit",
       "community": 0,
-      "norm_label": "buildmosskit()"
+      "norm_label": "buildmosskit()",
+      "id": "designs_bloom_buildmosskit"
     },
     {
       "label": "buildThornkit()",
@@ -13530,9 +13530,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L215",
       "_origin": "ast",
-      "id": "designs_bloom_buildthornkit",
       "community": 0,
-      "norm_label": "buildthornkit()"
+      "norm_label": "buildthornkit()",
+      "id": "designs_bloom_buildthornkit"
     },
     {
       "label": "buildBramblox()",
@@ -13540,9 +13540,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L227",
       "_origin": "ast",
-      "id": "designs_bloom_buildbramblox",
       "community": 0,
-      "norm_label": "buildbramblox()"
+      "norm_label": "buildbramblox()",
+      "id": "designs_bloom_buildbramblox"
     },
     {
       "label": "buildPollenix()",
@@ -13550,9 +13550,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L244",
       "_origin": "ast",
-      "id": "designs_bloom_buildpollenix",
       "community": 0,
-      "norm_label": "buildpollenix()"
+      "norm_label": "buildpollenix()",
+      "id": "designs_bloom_buildpollenix"
     },
     {
       "label": "buildSporecap()",
@@ -13560,9 +13560,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L260",
       "_origin": "ast",
-      "id": "designs_bloom_buildsporecap",
       "community": 0,
-      "norm_label": "buildsporecap()"
+      "norm_label": "buildsporecap()",
+      "id": "designs_bloom_buildsporecap"
     },
     {
       "label": "buildVerdantyr()",
@@ -13570,9 +13570,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L276",
       "_origin": "ast",
-      "id": "designs_bloom_buildverdantyr",
       "community": 0,
-      "norm_label": "buildverdantyr()"
+      "norm_label": "buildverdantyr()",
+      "id": "designs_bloom_buildverdantyr"
     },
     {
       "label": "buildBloomwarden()",
@@ -13580,9 +13580,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L298",
       "_origin": "ast",
-      "id": "designs_bloom_buildbloomwarden",
       "community": 0,
-      "norm_label": "buildbloomwarden()"
+      "norm_label": "buildbloomwarden()",
+      "id": "designs_bloom_buildbloomwarden"
     },
     {
       "label": "buildGnarloak()",
@@ -13590,9 +13590,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L320",
       "_origin": "ast",
-      "id": "designs_bloom_buildgnarloak",
       "community": 0,
-      "norm_label": "buildgnarloak()"
+      "norm_label": "buildgnarloak()",
+      "id": "designs_bloom_buildgnarloak"
     },
     {
       "label": "buildSylvaroot()",
@@ -13600,9 +13600,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L349",
       "_origin": "ast",
-      "id": "designs_bloom_buildsylvaroot",
       "community": 0,
-      "norm_label": "buildsylvaroot()"
+      "norm_label": "buildsylvaroot()",
+      "id": "designs_bloom_buildsylvaroot"
     },
     {
       "label": "buildEldergrove()",
@@ -13610,9 +13610,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L382",
       "_origin": "ast",
-      "id": "designs_bloom_buildeldergrove",
       "community": 0,
-      "norm_label": "buildeldergrove()"
+      "norm_label": "buildeldergrove()",
+      "id": "designs_bloom_buildeldergrove"
     },
     {
       "label": "bloomSprites",
@@ -13620,9 +13620,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L405",
       "_origin": "ast",
-      "id": "designs_bloom_bloomsprites",
       "community": 4,
-      "norm_label": "bloomsprites"
+      "norm_label": "bloomsprites",
+      "id": "designs_bloom_bloomsprites"
     },
     {
       "label": "HOUSE_ACCENT",
@@ -13630,9 +13630,9 @@
       "source_file": "packages/tui/src/helpers/lookup.ts",
       "source_location": "L38",
       "_origin": "ast",
-      "id": "helpers_lookup_house_accent",
       "community": 3,
-      "norm_label": "house_accent"
+      "norm_label": "house_accent",
+      "id": "helpers_lookup_house_accent"
     }
   ],
   "links": [
@@ -19371,7 +19371,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/content/__tests__/content-pack.test.ts",
-      "source_location": "L279",
+      "source_location": "L327",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "tests_content_pack_test",
@@ -19500,9 +19500,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L78",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze",
-      "target": "content_registry_freeze_achievements",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_achievements"
     },
     {
       "relation": "contains",
@@ -19590,9 +19590,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L48",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_adamantor",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_adamantor"
     },
     {
       "relation": "contains",
@@ -19610,9 +19610,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_anvilisk",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_anvilisk"
     },
     {
       "relation": "contains",
@@ -19620,9 +19620,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L30",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_arcfin",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_arcfin"
     },
     {
       "relation": "contains",
@@ -19640,9 +19640,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L46",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_basaltus",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_basaltus"
     },
     {
       "relation": "contains",
@@ -19660,9 +19660,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L56",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_bloomwarden",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_bloomwarden"
     },
     {
       "relation": "contains",
@@ -19670,9 +19670,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_bramblox",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_bramblox"
     },
     {
       "relation": "contains",
@@ -19680,9 +19680,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L40",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_cindcub",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_cindcub"
     },
     {
       "relation": "contains",
@@ -19720,9 +19720,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L59",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_eldergrove",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_eldergrove"
     },
     {
       "relation": "contains",
@@ -19730,9 +19730,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_emberit",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_emberit"
     },
     {
       "relation": "contains",
@@ -19750,9 +19750,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L28",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_fluxling",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_fluxling"
     },
     {
       "relation": "contains",
@@ -19760,9 +19760,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_forgeling",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_forgeling"
     },
     {
       "relation": "contains",
@@ -19790,9 +19790,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L57",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_gnarloak",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_gnarloak"
     },
     {
       "relation": "contains",
@@ -19810,9 +19810,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L35",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_ionyx",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_ionyx"
     },
     {
       "relation": "contains",
@@ -19820,9 +19820,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L45",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_ironmaw",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_ironmaw"
     },
     {
       "relation": "contains",
@@ -19840,9 +19840,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_kilnox",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_kilnox"
     },
     {
       "relation": "contains",
@@ -19850,9 +19850,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L34",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_luminaire",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_luminaire"
     },
     {
       "relation": "contains",
@@ -19860,9 +19860,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L47",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_magmarok",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_magmarok"
     },
     {
       "relation": "contains",
@@ -19890,9 +19890,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L50",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_mosskit",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_mosskit"
     },
     {
       "relation": "contains",
@@ -19940,9 +19940,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L31",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_photonix",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_photonix"
     },
     {
       "relation": "contains",
@@ -19950,9 +19950,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L53",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_pollenix",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_pollenix"
     },
     {
       "relation": "contains",
@@ -19960,9 +19960,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_radiantus",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_radiantus"
     },
     {
       "relation": "contains",
@@ -20000,9 +20000,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_slaghorn",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_slaghorn"
     },
     {
       "relation": "contains",
@@ -20010,9 +20010,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_smeltitan",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_smeltitan"
     },
     {
       "relation": "contains",
@@ -20020,9 +20020,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_sparkit",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_sparkit"
     },
     {
       "relation": "contains",
@@ -20030,9 +20030,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L54",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_sporecap",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_sporecap"
     },
     {
       "relation": "contains",
@@ -20040,9 +20040,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L49",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_sprout",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_sprout"
     },
     {
       "relation": "contains",
@@ -20050,9 +20050,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L33",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_stormlynx",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_stormlynx"
     },
     {
       "relation": "contains",
@@ -20060,9 +20060,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L32",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_surgewing",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_surgewing"
     },
     {
       "relation": "contains",
@@ -20070,9 +20070,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L58",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_sylvaroot",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_sylvaroot"
     },
     {
       "relation": "contains",
@@ -20080,9 +20080,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L51",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_thornkit",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_thornkit"
     },
     {
       "relation": "contains",
@@ -20110,9 +20110,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L55",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_verdantyr",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_verdantyr"
     },
     {
       "relation": "contains",
@@ -20120,9 +20120,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_voltaicore",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_voltaicore"
     },
     {
       "relation": "contains",
@@ -20130,9 +20130,9 @@
       "source_file": "packages/content/content/registry-freeze.json",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "content_registry_freeze_species",
-      "target": "content_registry_freeze_species_voltby",
-      "confidence_score": 1.0
+      "target": "content_registry_freeze_species_voltby"
     },
     {
       "relation": "contains",
@@ -25067,9 +25067,9 @@
       "source_file": "packages/content/tools/gen-sprites.ts",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tools_gen_sprites",
-      "target": "designs_bloom",
-      "confidence_score": 1.0
+      "target": "designs_bloom"
     },
     {
       "relation": "imports",
@@ -25078,9 +25078,9 @@
       "source_file": "packages/content/tools/gen-sprites.ts",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tools_gen_sprites",
-      "target": "designs_bloom_bloomsprites",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomsprites"
     },
     {
       "relation": "imports",
@@ -25141,9 +25141,9 @@
       "source_file": "packages/content/tools/preview-sprite.ts",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tools_preview_sprite",
-      "target": "designs_bloom",
-      "confidence_score": 1.0
+      "target": "designs_bloom"
     },
     {
       "relation": "imports",
@@ -25152,9 +25152,9 @@
       "source_file": "packages/content/tools/preview-sprite.ts",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tools_preview_sprite",
-      "target": "designs_bloom_bloomsprites",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomsprites"
     },
     {
       "relation": "imports_from",
@@ -26220,9 +26220,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_lcg",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_lcg"
     },
     {
       "relation": "imports",
@@ -26231,9 +26231,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_hashstr",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_hashstr"
     },
     {
       "relation": "imports",
@@ -26242,9 +26242,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_pixelcanvas",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_pixelcanvas"
     },
     {
       "relation": "method",
@@ -26498,9 +26498,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_line",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_line"
     },
     {
       "relation": "calls",
@@ -26520,9 +26520,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_fillellipse",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_fillellipse"
     },
     {
       "relation": "calls",
@@ -26564,9 +26564,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_fillpolygon",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_fillpolygon"
     },
     {
       "relation": "imports",
@@ -26575,9 +26575,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_shade",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_shade"
     },
     {
       "relation": "imports",
@@ -26586,9 +26586,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_outline",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_outline"
     },
     {
       "relation": "imports",
@@ -26597,9 +26597,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_rimlight",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_rimlight"
     },
     {
       "relation": "calls",
@@ -26619,9 +26619,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_sparkle",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_sparkle"
     },
     {
       "relation": "imports",
@@ -26630,9 +26630,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_bobframe",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_bobframe"
     },
     {
       "relation": "imports",
@@ -26641,9 +26641,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_shiftframe",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_shiftframe"
     },
     {
       "relation": "imports",
@@ -26652,9 +26652,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "tools_sprite_lib_buildsprite",
-      "confidence_score": 1.0
+      "target": "tools_sprite_lib_buildsprite"
     },
     {
       "relation": "contains",
@@ -33609,9 +33609,9 @@
       "source_file": "packages/tui/src/helpers/lookup.ts",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "helpers_lookup",
-      "target": "helpers_lookup_house_accent",
-      "confidence_score": 1.0
+      "target": "helpers_lookup_house_accent"
     },
     {
       "relation": "contains",
@@ -33619,9 +33619,9 @@
       "source_file": "packages/tui/src/helpers/lookup.ts",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "helpers_lookup",
-      "target": "helpers_lookup_housecolor",
-      "confidence_score": 1.0
+      "target": "helpers_lookup_housecolor"
     },
     {
       "relation": "contains",
@@ -33640,9 +33640,9 @@
       "source_file": "packages/tui/src/helpers/lookup.ts",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "helpers_lookup",
-      "target": "terminal_ansi_hextorgb",
-      "confidence_score": 1.0
+      "target": "terminal_ansi_hextorgb"
     },
     {
       "relation": "imports",
@@ -33651,9 +33651,9 @@
       "source_file": "packages/tui/src/helpers/lookup.ts",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "helpers_lookup",
-      "target": "terminal_ansi_rgb",
-      "confidence_score": 1.0
+      "target": "terminal_ansi_rgb"
     },
     {
       "relation": "imports_from",
@@ -44277,9 +44277,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L143",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "contains",
@@ -44287,9 +44287,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L133",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_bloomeyes",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomeyes"
     },
     {
       "relation": "contains",
@@ -44297,9 +44297,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L70",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_bloomgeom",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomgeom"
     },
     {
       "relation": "contains",
@@ -44307,9 +44307,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L54",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_bloomopts",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomopts"
     },
     {
       "relation": "contains",
@@ -44317,9 +44317,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L405",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_bloomsprites",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomsprites"
     },
     {
       "relation": "contains",
@@ -44327,9 +44327,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L298",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildbloomwarden",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildbloomwarden"
     },
     {
       "relation": "contains",
@@ -44337,9 +44337,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L227",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildbramblox",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildbramblox"
     },
     {
       "relation": "contains",
@@ -44347,9 +44347,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L382",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildeldergrove",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildeldergrove"
     },
     {
       "relation": "contains",
@@ -44357,9 +44357,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L320",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildgnarloak",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildgnarloak"
     },
     {
       "relation": "contains",
@@ -44367,9 +44367,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L198",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildmosskit",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildmosskit"
     },
     {
       "relation": "contains",
@@ -44377,9 +44377,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L244",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildpollenix",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildpollenix"
     },
     {
       "relation": "contains",
@@ -44387,9 +44387,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L260",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildsporecap",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildsporecap"
     },
     {
       "relation": "contains",
@@ -44397,9 +44397,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L193",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildsprout",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildsprout"
     },
     {
       "relation": "contains",
@@ -44407,9 +44407,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L349",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildsylvaroot",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildsylvaroot"
     },
     {
       "relation": "contains",
@@ -44417,9 +44417,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L215",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildthornkit",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildthornkit"
     },
     {
       "relation": "contains",
@@ -44427,9 +44427,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L276",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_buildverdantyr",
-      "confidence_score": 1.0
+      "target": "designs_bloom_buildverdantyr"
     },
     {
       "relation": "contains",
@@ -44437,9 +44437,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L88",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_drawcrown",
-      "confidence_score": 1.0
+      "target": "designs_bloom_drawcrown"
     },
     {
       "relation": "contains",
@@ -44447,9 +44447,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L79",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom",
-      "target": "designs_bloom_drawroot",
-      "confidence_score": 1.0
+      "target": "designs_bloom_drawroot"
     },
     {
       "relation": "calls",
@@ -44469,9 +44469,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L153",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_bloomcreature",
-      "target": "designs_bloom_drawroot",
-      "confidence_score": 1.0
+      "target": "designs_bloom_drawroot"
     },
     {
       "relation": "calls",
@@ -44480,9 +44480,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L160",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_bloomcreature",
-      "target": "designs_bloom_drawcrown",
-      "confidence_score": 1.0
+      "target": "designs_bloom_drawcrown"
     },
     {
       "relation": "calls",
@@ -44491,9 +44491,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L171",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_bloomcreature",
-      "target": "designs_bloom_bloomeyes",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomeyes"
     },
     {
       "relation": "calls",
@@ -44502,9 +44502,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L299",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildbloomwarden",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "calls",
@@ -44513,9 +44513,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L228",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildbramblox",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "calls",
@@ -44524,9 +44524,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L383",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildeldergrove",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "calls",
@@ -44535,9 +44535,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L321",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildgnarloak",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "calls",
@@ -44546,9 +44546,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L199",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildmosskit",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "calls",
@@ -44557,9 +44557,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L245",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildpollenix",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "calls",
@@ -44568,9 +44568,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L261",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildsporecap",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "calls",
@@ -44579,9 +44579,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L194",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildsprout",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "calls",
@@ -44590,9 +44590,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L350",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildsylvaroot",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "calls",
@@ -44601,9 +44601,9 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L216",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildthornkit",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     },
     {
       "relation": "calls",
@@ -44612,11 +44612,11 @@
       "source_file": "packages/content/tools/designs/bloom.ts",
       "source_location": "L277",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "designs_bloom_buildverdantyr",
-      "target": "designs_bloom_bloomcreature",
-      "confidence_score": 1.0
+      "target": "designs_bloom_bloomcreature"
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "48ae16e787bcde17c7c2929a7b856491fe1110bb"
+  "built_at_commit": "32782e38d8e9e2878e4681e0c75a8641962f9912"
 }

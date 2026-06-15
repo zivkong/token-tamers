@@ -60,10 +60,10 @@ turns your real work patterns into a creature:
   sessions and a _Swarm_ emerges. Nine traits, four hidden pattern forms.
 - **Your model mix becomes identity** — every House blends models from several makers by
   _vibe_, not brand, and each is a **creature kingdom** all its own: **Aether** (ethereal
-  flyers — `claude-*`, MiniMax), **Cipher** (glyph-armored ground beasts — `gpt-*`/`o*`, GLM,
-  MiMo), **Flux** (swift water-runners — `gemini-*`, Qwen, Kimi), **Forge** (ember-cored robots
-  — `llama*`, `mistral*`, DeepSeek), and **Wild** (feral plant-beasts, for anything unmapped).
-  Identity only — no House is stronger, no model is better food.
+  flyers — `claude-*`, `minimax*`), **Cipher** (glyph-armored ground beasts — `gpt-*`/`o*`,
+  `glm*`, `mimo*`), **Flux** (swift water-runners — `gemini-*`, `qwen*`, `kimi*`), **Forge**
+  (ember-cored robots — `llama*`, `mistral*`, `deepseek*`), and **Wild** (feral plant-beasts,
+  for anything unmapped). Identity only — no House is stronger, no model is better food.
 - **Grades are a slow, honest thrill** — every molt rolls C→B→A→S with **published
   odds** (25% / 10% / 3%, activity-modified, A→S hard-capped at 6%). Grades never go
   down. No pity timer. The UI always shows your exact odds. A heavy session also adds a
@@ -230,7 +230,7 @@ Full design reference: [`docs/design/`](docs/design/) · player wiki: [`docs/wik
 **Reference pages:** [Houses](docs/wiki/houses.md) · [Species](docs/wiki/species.md) ·
 [Achievements](docs/wiki/achievements.md) · [Trinkets](docs/wiki/trinkets.md) ·
 [Unlockables](docs/wiki/unlockables.md) — the five Houses, the lineage shape (no
-spoilers), all 41 achievements, the six trinkets, and every habitat and title.
+spoilers), all 44 achievements, the six trinkets, and every habitat and title.
 
 ## 🛠️ Contributing
 

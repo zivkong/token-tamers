@@ -1,7 +1,7 @@
 # Achievements
 
 Achievements are Token Tamers' record of everything your work has accomplished — every
-first, every milestone, every quiet week that paid off. There are **41** of them, and
+first, every milestone, every quiet week that paid off. There are **44** of them, and
 none ask anything of you beyond coding the way you already do. Many hand back a
 **reward**: a [trinket](trinkets.md), a [habitat](unlockables.md), or a **title**.
 
@@ -74,10 +74,13 @@ completion meter — collecting them is most of the long game.
 
 ## House mastery
 
-| Achievement        | Earned by                                 | Reward                 |
-| ------------------ | ----------------------------------------- | ---------------------- |
-| **Aether Mastery** | Reach **Apex** with a full Aether lineage | Title: _Aether Master_ |
-| **Cipher Mastery** | Reach **Apex** with a full Cipher lineage | Title: _Cipher Master_ |
+| Achievement        | Earned by                                       | Reward                 |
+| ------------------ | ----------------------------------------------- | ---------------------- |
+| **Aether Mastery** | Reach **Apex** with a full Aether lineage       | Title: _Aether Master_ |
+| **Cipher Mastery** | Reach **Apex** with a full Cipher lineage       | Title: _Cipher Master_ |
+| **Flux Mastery**   | Reach **Apex** with a full Flux lineage         | Title: _Flux Master_   |
+| **Forge Mastery**  | Reach **Apex** with a full Forge lineage        | Title: _Forge Master_  |
+| **Bloom Mastery**  | Reach **Apex** with a full Wild (Bloom) lineage | Title: _Bloom Master_  |
 
 ## Habitat unlocks
 

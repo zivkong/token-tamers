@@ -37,18 +37,21 @@ solar system as your lineage deepens.
 ## Titles
 
 A **title** is an honorific your achievements grant you — a quiet badge of what your
-tamer has done. Eight exist:
+tamer has done. Eleven exist:
 
-| Title                | Earned with                                  | Achievement          |
-| -------------------- | -------------------------------------------- | -------------------- |
-| **Apex Tamer**       | Reach the **Apex** stage                     | _Apex Achieved_      |
-| **Lineage Keeper**   | Reach the **5th** generation                 | _Lineage Begins_     |
-| **Ancient Tamer**    | Reach the **10th** generation                | _Ancient Line_       |
-| **Survivor**         | Endure a week of **Dormancy**                | _Through the Cocoon_ |
-| **Master of Change** | Accumulate **50 molts** across all lifetimes | _Master of Change_   |
-| **Collector**        | Fill **50%** of the Dex                      | _Halfway There_      |
-| **Aether Master**    | Reach Apex with a full **Aether** lineage    | _Aether Mastery_     |
-| **Cipher Master**    | Reach Apex with a full **Cipher** lineage    | _Cipher Mastery_     |
+| Title                | Earned with                                     | Achievement          |
+| -------------------- | ----------------------------------------------- | -------------------- |
+| **Apex Tamer**       | Reach the **Apex** stage                        | _Apex Achieved_      |
+| **Lineage Keeper**   | Reach the **5th** generation                    | _Lineage Begins_     |
+| **Ancient Tamer**    | Reach the **10th** generation                   | _Ancient Line_       |
+| **Survivor**         | Endure a week of **Dormancy**                   | _Through the Cocoon_ |
+| **Master of Change** | Accumulate **50 molts** across all lifetimes    | _Master of Change_   |
+| **Collector**        | Fill **50%** of the Dex                         | _Halfway There_      |
+| **Aether Master**    | Reach Apex with a full **Aether** lineage       | _Aether Mastery_     |
+| **Cipher Master**    | Reach Apex with a full **Cipher** lineage       | _Cipher Mastery_     |
+| **Flux Master**      | Reach Apex with a full **Flux** lineage         | _Flux Mastery_       |
+| **Forge Master**     | Reach Apex with a full **Forge** lineage        | _Forge Mastery_      |
+| **Bloom Master**     | Reach Apex with a full **Wild (Bloom)** lineage | _Bloom Mastery_      |
 
 ## Trinkets
 

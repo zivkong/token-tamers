@@ -139,9 +139,9 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   abstract "Grow" vitals row surfaces it via `growthProgress` WITHOUT leaking
   stage/count/next-form (evolution-mystery rule). See `engine/maturity.ts`.
 - **Houses (identity ONLY; mixed-provenance, NOT provider brands):** each House blends
-  makers by theme, never all-Western/all-anything. Aether `claude-*`+MiniMax WIS ·
-  Cipher `gpt-*`/`o*`+GLM+MiMo PWR · Flux `gemini-*`+Qwen+Kimi SPD · Forge
-  `llama*`/`mistral*`+DeepSeek GRT · Wild = unmapped → The Bloom (plants, neutral; still a
+  makers by theme, never all-Western/all-anything. Aether `claude-*`+`minimax*` WIS ·
+  Cipher `gpt-*`/`o*`+`glm*`+`mimo*` PWR · Flux `gemini-*`+`qwen*`+`kimi*` SPD · Forge
+  `llama*`/`mistral*`+`deepseek*` GRT · Wild = unmapped → The Bloom (plants, neutral; still a
   dormant gene that awakens to a mapped House later). Matching is
   case-insensitive; popular families only (rest stay Wild); model→House is freely
   re-balanced content data (NOT in `registry-freeze.json` — only ids are additive-only).

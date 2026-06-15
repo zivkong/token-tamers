@@ -14,7 +14,7 @@ AI coding-agent usage. Start here:
 
 - [Houses](houses.md) — the five Houses, your Diet, and why model choice is identity only
 - [Species](species.md) — the lineage shape, stage track, and Dex discovery (no spoilers)
-- [Achievements](achievements.md) — all 41 milestones and their rewards
+- [Achievements](achievements.md) — all 44 milestones and their rewards
 - [Trinkets](trinkets.md) — the six collectible habitat keepsakes
 - [Unlockables](unlockables.md) — habitats, titles, and the completionist meter
 

@@ -30,13 +30,13 @@ just grows more slowly, and a week with no usage at all rests as a [Dormant](#do
 
 ## Houses (identity & cosmetics only — equal stat budgets)
 
-| House  | Diet (mixed model families)      | Kingdom (creatures)     | Theme            | Stat lean |
-| ------ | -------------------------------- | ----------------------- | ---------------- | --------- |
-| Aether | `claude-*` · MiniMax             | 🌤 Sky Court (flyers)   | ethereal / mind  | WIS       |
-| Cipher | `gpt-*` / `o*` · GLM · MiMo      | ⛰ Crag Beasts (ground) | glyph / geometry | PWR       |
-| Flux   | `gemini-*` · Qwen · Kimi         | 🌊 Tide Runners (swift) | light / current  | SPD       |
-| Forge  | `llama*` · `mistral*` · DeepSeek | 🔥 Iron Brood (robots)  | metal / ember    | GRT       |
-| Wild   | anything unmapped                | 🌱 The Bloom (plants)   | "???" silhouette | neutral   |
+| House  | Diet (mixed model families)         | Kingdom (creatures)     | Theme             | Stat lean |
+| ------ | ----------------------------------- | ----------------------- | ----------------- | --------- |
+| Aether | `claude-*` · `minimax*`             | 🌤 Sky Court (flyers)   | ethereal / mind   | WIS       |
+| Cipher | `gpt-*` / `o*` · `glm*` · `mimo*`   | ⛰ Crag Beasts (ground) | glyph / geometry  | PWR       |
+| Flux   | `gemini-*` · `qwen*` · `kimi*`      | 🌊 Tide Runners (swift) | light / current   | SPD       |
+| Forge  | `llama*` · `mistral*` · `deepseek*` | 🔥 Iron Brood (robots)  | metal / ember     | GRT       |
+| Wild   | anything unmapped                   | 🌱 The Bloom (plants)   | feral / overgrown | neutral   |
 
 Each House blends models from several makers, grouped by _vibe_, not brand — no House
 is all-Western or all-anything. Each is also a **Creature Kingdom** that gives its pets a real

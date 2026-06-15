@@ -228,6 +228,28 @@ describe('model rule house resolution', () => {
     expect(resolveHouse('yi-34b', models)).toBe('wild');
     expect(resolveHouse('hunyuan-large', models)).toBe('wild');
   });
+
+  // Gap coverage: patterns not exercised by the named cases above.
+  it('qvq / mistral / casing -> correct house', () => {
+    expect(resolveHouse('qvq-72b-preview', models)).toBe('flux');
+    expect(resolveHouse('mistral-large-2', models)).toBe('forge');
+    expect(resolveHouse('Mistral-Small-3', models)).toBe('forge');
+    expect(resolveHouse('Gemini-2.0-Flash', models)).toBe('flux');
+    expect(resolveHouse('Qwen3-Coder', models)).toBe('flux');
+  });
+
+  // COMPLETE coverage: every pattern shipped in models.json must resolve to its
+  // declared house (a sample id built from the pattern itself). Guards against a
+  // rule being shadowed by an earlier broad rule, dropped, or mis-housed.
+  it('every models.json pattern resolves to its own declared house', () => {
+    for (const rule of models) {
+      const sample = rule.pattern.replace(/\*/g, 'x');
+      expect(
+        resolveHouse(sample, models),
+        `pattern '${rule.pattern}' (sample '${sample}') must resolve to '${rule.house}'`,
+      ).toBe(rule.house);
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------

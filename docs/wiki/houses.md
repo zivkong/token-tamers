@@ -22,13 +22,13 @@ Each House is also a **Creature Kingdom** — its pets are a distinct kind of an
 recognize from silhouette alone. That's pure looks: the kingdom never changes power, only the
 shape your pet wears.
 
-| House      | Diet (model families)¹           | Kingdom (creatures)     | Theme             | Stat lean | Status       |
-| ---------- | -------------------------------- | ----------------------- | ----------------- | --------- | ------------ |
-| **Aether** | `claude-*` · MiniMax             | 🌤 Sky Court (flyers)   | ethereal / mind   | WIS       | Shipped (M1) |
-| **Cipher** | `gpt-*`/`o*` · GLM · MiMo        | ⛰ Crag Beasts (ground) | glyph / geometry  | PWR       | Shipped (M1) |
-| **Flux**   | `gemini-*` · Qwen · Kimi         | 🌊 Tide Runners (swift) | light / current   | SPD       | Shipped      |
-| **Forge**  | `llama*` · `mistral*` · DeepSeek | 🔥 Iron Brood (robots)  | metal / ember     | GRT       | Shipped      |
-| **Wild**   | anything unmapped                | 🌱 The Bloom (plants)   | feral / overgrown | neutral   | Shipped      |
+| House      | Diet (model families)¹              | Kingdom (creatures)     | Theme             | Stat lean | Status       |
+| ---------- | ----------------------------------- | ----------------------- | ----------------- | --------- | ------------ |
+| **Aether** | `claude-*` · `minimax*`             | 🌤 Sky Court (flyers)   | ethereal / mind   | WIS       | Shipped (M1) |
+| **Cipher** | `gpt-*`/`o*` · `glm*` · `mimo*`     | ⛰ Crag Beasts (ground) | glyph / geometry  | PWR       | Shipped (M1) |
+| **Flux**   | `gemini-*` · `qwen*` · `kimi*`      | 🌊 Tide Runners (swift) | light / current   | SPD       | Shipped      |
+| **Forge**  | `llama*` · `mistral*` · `deepseek*` | 🔥 Iron Brood (robots)  | metal / ember     | GRT       | Shipped      |
+| **Wild**   | anything unmapped                   | 🌱 The Bloom (plants)   | feral / overgrown | neutral   | Shipped      |
 
 **The Kingdoms.** Aether's **Sky Court** are winged sky-creatures that never touch the ground —
 floating moth-sages and sky-mantas trailing veils of light. Cipher's **Crag Beasts** are heavy
@@ -39,11 +39,13 @@ not-yet-recognized model, waiting to sprout. A creature keeps its kingdom's look
 signature feature — as it grows, so an Apex still reads as the grown-up of the hatchling you
 started with.
 
-¹ The glob patterns behind each: Aether `minimax*`/`abab*`; Cipher `glm*`/`codegeex*`,
-`mimo*`; Flux `qwen*`/`qwq*`/`qvq*`, `kimi*`/`moonshot*`; Forge `deepseek*`. Matching is
-**case-insensitive**, so a CamelCase slug like `MiniMax-Text-01` lands in Aether all the
-same. Only popular families are mapped today — anything else (e.g. `phi*`, `gemma*`,
-`yi-*`) rests in **Wild** until a future pack adopts it.
+¹ Full glob set per House (the table shows the headline ones; this is everything, in
+match order — first match wins): **Aether** `claude-*` · `minimax*` · `abab*`; **Cipher**
+`gpt-*` · `o1*` · `o3*` · `o4*` · `o*` · `glm*` · `codegeex*` · `mimo*`; **Flux** `gemini-*`
+· `qwen*` · `qwq*` · `qvq*` · `kimi*` · `moonshot*`; **Forge** `llama*` · `mistral*` ·
+`deepseek*`. Matching is **case-insensitive**, so a CamelCase slug like `MiniMax-Text-01`
+lands in Aether all the same. Only popular families are mapped today — anything else (e.g.
+`phi*`, `gemma*`, `yi-*`) grows a **Wild** Bloom until a future pack adopts it.
 
 **All five lines are live.** Aether, Cipher, Flux, Forge, and Wild each have their full
 11-form creature line now — code into any of them and your pet grows along its own kingdom.
@@ -66,8 +68,8 @@ split into colored House shares, e.g. `Aether 72% · Cipher 28%`). The Diet:
 - **tints the pet** and **steers which species line it grows into** as the mix drifts;
 - **never** touches stats, grades, or speed — it is identity only.
 
-Code mostly with `claude-*` or MiniMax and your pet lives an Aether life; lean into
-`gpt-*`/`o*`, GLM, or MiMo and Cipher's geometry takes over. Because each House blends
+Code mostly with `claude-*` or `minimax*` and your pet lives an Aether life; lean into
+`gpt-*`/`o*`, `glm*`, or `mimo*` and Cipher's geometry takes over. Because each House blends
 several makers, your everyday model mix — not its brand — is what settles your pet's
 identity. Mix across Houses and the Diet blends, which is exactly how the hybrid lines
 and fusion specials of later milestones come into reach.

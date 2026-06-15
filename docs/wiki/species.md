@@ -71,13 +71,13 @@ and **2 legendary Apex forms**. With the shared Mote egg, the five shipped lines
 Every line is also a **Creature Kingdom** — a body-plan its whole lineage shares, so the forms
 all read as one kind of animal growing up (and keep a signature feature from hatchling to Apex):
 
-| House line | Kingdom (creatures)     | Diet (mixed model families)      | Forms | Status       |
-| ---------- | ----------------------- | -------------------------------- | ----- | ------------ |
-| **Aether** | 🌤 Sky Court (flyers)   | `claude-*` · MiniMax             | 11    | Shipped (M1) |
-| **Cipher** | ⛰ Crag Beasts (ground) | `gpt-*` · `o*` · GLM · MiMo      | 11    | Shipped (M1) |
-| **Flux**   | 🌊 Tide Runners (swift) | `gemini-*` · Qwen · Kimi         | 11    | Shipped      |
-| **Forge**  | 🔥 Iron Brood (robots)  | `llama*` · `mistral*` · DeepSeek | 11    | Shipped      |
-| **Wild**   | 🌱 The Bloom (plants)   | anything unmapped (feral)        | 11    | Shipped      |
+| House line | Kingdom (creatures)     | Diet (mixed model families)         | Forms | Status       |
+| ---------- | ----------------------- | ----------------------------------- | ----- | ------------ |
+| **Aether** | 🌤 Sky Court (flyers)   | `claude-*` · `minimax*`             | 11    | Shipped (M1) |
+| **Cipher** | ⛰ Crag Beasts (ground) | `gpt-*` · `o*` · `glm*` · `mimo*`   | 11    | Shipped (M1) |
+| **Flux**   | 🌊 Tide Runners (swift) | `gemini-*` · `qwen*` · `kimi*`      | 11    | Shipped      |
+| **Forge**  | 🔥 Iron Brood (robots)  | `llama*` · `mistral*` · `deepseek*` | 11    | Shipped      |
+| **Wild**   | 🌱 The Bloom (plants)   | anything unmapped (feral)           | 11    | Shipped      |
 
 Each line is fed by a _mix_ of model makers grouped by theme, not one brand — see
 [Houses](houses.md) for the full map, the creature kingdoms, and how your model usage picks

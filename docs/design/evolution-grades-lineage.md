@@ -79,10 +79,10 @@ are mapped; the rest stay **Wild** until a pack adopts them:
 
 | House      | Model families (mixed by design)                                                                                                                                                                  | Stat flavor (content-tunable, always equal total budget) |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| **Aether** | `claude-*` · MiniMax (`minimax*`, `abab*`)                                                                                                                                                        | WIS-lean                                                 |
-| **Cipher** | `gpt-*` / `o*` · GLM (`glm*`, `codegeex*`) · MiMo (`mimo*`)                                                                                                                                       | PWR-lean                                                 |
-| **Flux**   | `gemini-*` · Qwen (`qwen*`, `qwq*`, `qvq*`) · Kimi (`kimi*`, `moonshot*`)                                                                                                                         | SPD-lean                                                 |
-| **Forge**  | `llama*` · `mistral*` · DeepSeek (`deepseek*`)                                                                                                                                                    | GRT-lean                                                 |
+| **Aether** | `claude-*` · `minimax*` · `abab*`                                                                                                                                                                 | WIS-lean                                                 |
+| **Cipher** | `gpt-*` · `o1*` · `o3*` · `o4*` · `o*` · `glm*` · `codegeex*` · `mimo*`                                                                                                                           | PWR-lean                                                 |
+| **Flux**   | `gemini-*` · `qwen*` · `qwq*` · `qvq*` · `kimi*` · `moonshot*`                                                                                                                                    | SPD-lean                                                 |
+| **Forge**  | `llama*` · `mistral*` · `deepseek*`                                                                                                                                                               | GRT-lean                                                 |
 | **Wild**   | unmapped model IDs → **The Bloom** (plants/feral); also a **dormant gene** — when a registry update maps the model, it awakens into its newly-recognized House (version-agnostic by construction) | neutral (balanced)                                       |
 
 - Each distinct model ID consumed = a **gene** in the pet's diet profile. Dominant House →
@@ -158,7 +158,7 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 > **The Bloom** (plants/feral). Full body-plan bible + the higher-resolution size law (egg 12 …
 > apex 32) live in `visuals-habitats-achievements.md` §13 → _Species identity system_.
 
-**AETHER — Sky Court (flying)** (`claude-*` + MiniMax genes; WIS-lean; ethereal/mind theme)
+**AETHER — Sky Court (flying)** (`claude-*` + `minimax*` genes; WIS-lean; ethereal/mind theme)
 
 - Sprite: **Wisp**
 - Rookie: **Aetherling** · **Murmur**
@@ -166,7 +166,7 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 - Prime: **Seraphix** · **Thoughtwarden** · **Halcyore**
 - Apex: **Aurelion** · **Mindspire**
 
-**CIPHER — Crag Beasts (ground predators)** (`gpt-*`/`o*` + GLM + MiMo genes; PWR-lean; glyph/geometry theme)
+**CIPHER — Crag Beasts (ground predators)** (`gpt-*`/`o*` + `glm*` + `mimo*` genes; PWR-lean; glyph/geometry theme)
 
 - Sprite: **Glyphit**
 - Rookie: **Cipherling** · **Bitfang**
@@ -174,7 +174,7 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 - Prime: **Cryptarch** · **Matrixion** · **Sigilus**
 - Apex: **Enigmax** · **Keystrix**
 
-**FLUX — Tide Runners (aquatic/swift)** (`gemini-*` + Qwen + Kimi genes; SPD-lean; light/current theme)
+**FLUX — Tide Runners (aquatic/swift)** (`gemini-*` + `qwen*` + `kimi*` genes; SPD-lean; light/current theme)
 
 - Sprite: **Sparkit**
 - Rookie: **Fluxling** · **Voltby**
@@ -182,7 +182,7 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 - Prime: **Stormlynx** · **Luminaire** · **Ionyx**
 - Apex: **Voltaicore** · **Radiantus**
 
-**FORGE — Iron Brood (robots/constructs)** (`llama*`/`mistral*` + DeepSeek genes; GRT-lean; metal/ember theme)
+**FORGE — Iron Brood (robots/constructs)** (`llama*`/`mistral*` + `deepseek*` genes; GRT-lean; metal/ember theme)
 
 - Sprite: **Emberit**
 - Rookie: **Forgeling** · **Cindcub**
