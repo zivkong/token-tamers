@@ -54,8 +54,8 @@ but the same branching budget, because **no House is stronger than another**:
 ```
 
 So a single House line holds **11 forms**: 1 sprite, 2 rookies, 3 evolved, 3 primes,
-and **2 legendary Apex forms**. With the shared Mote egg, the two M1 lines total
-**23 shipped species**.
+and **2 legendary Apex forms**. With the shared Mote egg, the four shipped lines total
+**45 species**.
 
 **What steers each fork** (all from _work patterns_, never model choice or volume):
 
@@ -75,8 +75,8 @@ all read as one kind of animal growing up (and keep a signature feature from hat
 | ---------- | ----------------------- | -------------------------------- | ----- | ------------ |
 | **Aether** | 🌤 Sky Court (flyers)   | `claude-*` · MiniMax             | 11    | Shipped (M1) |
 | **Cipher** | ⛰ Crag Beasts (ground) | `gpt-*` · `o*` · GLM · MiMo      | 11    | Shipped (M1) |
-| **Flux**   | 🌊 Tide Runners (swift) | `gemini-*` · Qwen · Kimi         | 11    | Lines in M2  |
-| **Forge**  | 🔥 Iron Brood (robots)  | `llama*` · `mistral*` · DeepSeek | 11    | Lines in M2  |
+| **Flux**   | 🌊 Tide Runners (swift) | `gemini-*` · Qwen · Kimi         | 11    | Shipped      |
+| **Forge**  | 🔥 Iron Brood (robots)  | `llama*` · `mistral*` · DeepSeek | 11    | Shipped      |
 
 Each line is fed by a _mix_ of model makers grouped by theme, not one brand — see
 [Houses](houses.md) for the full map, the creature kingdoms, and how your model usage picks

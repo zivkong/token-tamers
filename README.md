@@ -217,10 +217,10 @@ screenshot it. That's the point.
 ## 🗺️ Roadmap
 
 - [x] **M1 — the MVP (you are here):** Claude Code + OpenCode adapters · evolution engine
-      (Aether + Cipher lines, egg → Apex) · traits, patterns, mutations · grade rolls ·
-      rebirth + lineage · the Archive · clickable TUI · 12 habitats, 6 trinkets,
-      41 achievements
-- [ ] **M2:** Codex CLI adapter · Flux + Forge + hybrid lines · DNA
+      (all four house lines — Aether · Cipher · Flux · Forge, egg → Apex, 45 species) ·
+      traits, patterns, mutations · grade rolls · rebirth + lineage · the Archive ·
+      clickable TUI · 12 habitats, 6 trinkets, 43 achievements
+- [ ] **M2:** Codex CLI adapter · hybrid lines (Aether×Flux, Forge×Cipher) · DNA
       export/apply (paste codes to friends) · deterministic battles · fusion pools 🤫 ·
       Team Leagues · Drifter DNA for solo devs
 - [ ] **M3:** seasonal content packs · monthly weather events · sprite compiler pipeline

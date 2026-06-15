@@ -208,6 +208,20 @@
     "reward": { "kind": "title", "id": "cipher-master", "name": "Cipher Master" }
   },
   {
+    "id": "house-apex-flux",
+    "name": "Flux Mastery",
+    "description": "Reached the Apex stage with a full Flux lineage.",
+    "condition": { "type": "house_apex", "house": "flux" },
+    "reward": { "kind": "title", "id": "flux-master", "name": "Flux Master" }
+  },
+  {
+    "id": "house-apex-forge",
+    "name": "Forge Mastery",
+    "description": "Reached the Apex stage with a full Forge lineage.",
+    "condition": { "type": "house_apex", "house": "forge" },
+    "reward": { "kind": "title", "id": "forge-master", "name": "Forge Master" }
+  },
+  {
     "id": "habitat-beach-cove-unlock",
     "name": "Shore Leave",
     "description": "Earned a vacation spot — the Beach Cove is yours.",

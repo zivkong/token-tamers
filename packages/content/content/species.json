@@ -8,7 +8,9 @@
     "statWeights": { "pwr": 25, "spd": 25, "wis": 25, "grt": 25 },
     "evolvesTo": [
       { "species": "wisp", "when": { "kind": "default" } },
-      { "species": "glyphit", "when": { "kind": "default" } }
+      { "species": "glyphit", "when": { "kind": "default" } },
+      { "species": "sparkit", "when": { "kind": "default" } },
+      { "species": "emberit", "when": { "kind": "default" } }
     ],
     "spriteId": "sprite-mote",
     "flavor": "A softly glowing orb that flickers with potential. Its House is not yet determined."
@@ -358,5 +360,351 @@
     "evolvesTo": [],
     "spriteId": "sprite-keystrix",
     "flavor": "The master key. Its existence unlocks potential others cannot even perceive."
+  },
+
+  {
+    "id": "sparkit",
+    "num": 24,
+    "name": "Sparkit",
+    "house": "flux",
+    "stage": "sprite",
+    "statWeights": { "pwr": 23, "spd": 31, "wis": 23, "grt": 23 },
+    "evolvesTo": [
+      { "species": "fluxling", "when": { "kind": "rhythm", "value": "steady" } },
+      { "species": "voltby", "when": { "kind": "rhythm", "value": "bursty" } },
+      { "species": "fluxling", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-sparkit",
+    "flavor": "A darting spark-minnow that rides the current. Never still for a heartbeat."
+  },
+
+  {
+    "id": "fluxling",
+    "num": 25,
+    "name": "Fluxling",
+    "house": "flux",
+    "stage": "rookie",
+    "statWeights": { "pwr": 23, "spd": 33, "wis": 22, "grt": 22 },
+    "evolvesTo": [
+      { "species": "arcfin", "when": { "kind": "traitClass", "value": "endurance" } },
+      { "species": "photonix", "when": { "kind": "traitClass", "value": "tempo" } },
+      { "species": "surgewing", "when": { "kind": "traitClass", "value": "breadth" } },
+      { "species": "arcfin", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-fluxling",
+    "flavor": "Glides in smooth, unbroken arcs, its fins trailing ribbons of light."
+  },
+
+  {
+    "id": "voltby",
+    "num": 26,
+    "name": "Voltby",
+    "house": "flux",
+    "stage": "rookie",
+    "statWeights": { "pwr": 22, "spd": 36, "wis": 21, "grt": 21 },
+    "evolvesTo": [
+      { "species": "arcfin", "when": { "kind": "traitClass", "value": "endurance" } },
+      { "species": "photonix", "when": { "kind": "traitClass", "value": "tempo" } },
+      { "species": "surgewing", "when": { "kind": "traitClass", "value": "breadth" } },
+      { "species": "photonix", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-voltby",
+    "flavor": "Zips in crackling bursts, leaving a forked wake of static behind it."
+  },
+
+  {
+    "id": "arcfin",
+    "num": 27,
+    "name": "Arcfin",
+    "house": "flux",
+    "stage": "evolved",
+    "statWeights": { "pwr": 22, "spd": 35, "wis": 21, "grt": 22 },
+    "evolvesTo": [
+      { "species": "stormlynx", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "luminaire", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "ionyx", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "luminaire", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-arcfin",
+    "flavor": "A long-distance current-rider whose broad fins never tire."
+  },
+
+  {
+    "id": "photonix",
+    "num": 28,
+    "name": "Photonix",
+    "house": "flux",
+    "stage": "evolved",
+    "statWeights": { "pwr": 20, "spd": 40, "wis": 20, "grt": 20 },
+    "evolvesTo": [
+      { "species": "stormlynx", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "luminaire", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "ionyx", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "stormlynx", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-photonix",
+    "flavor": "Flickers between positions faster than the eye can track."
+  },
+
+  {
+    "id": "surgewing",
+    "num": 29,
+    "name": "Surgewing",
+    "house": "flux",
+    "stage": "evolved",
+    "statWeights": { "pwr": 22, "spd": 34, "wis": 23, "grt": 21 },
+    "evolvesTo": [
+      { "species": "stormlynx", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "luminaire", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "ionyx", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "ionyx", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-surgewing",
+    "flavor": "Reads a dozen currents at once, fins fanning wide to catch them all."
+  },
+
+  {
+    "id": "stormlynx",
+    "num": 30,
+    "name": "Stormlynx",
+    "house": "flux",
+    "stage": "prime",
+    "statWeights": { "pwr": 24, "spd": 42, "wis": 22, "grt": 22 },
+    "evolvesTo": [
+      { "species": "voltaicore", "when": { "kind": "arc", "value": "early" } },
+      { "species": "radiantus", "when": { "kind": "arc", "value": "late" } },
+      { "species": "voltaicore", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-stormlynx",
+    "flavor": "A sleek storm-hunter that strikes from the heart of the squall."
+  },
+
+  {
+    "id": "luminaire",
+    "num": 31,
+    "name": "Luminaire",
+    "house": "flux",
+    "stage": "prime",
+    "statWeights": { "pwr": 22, "spd": 40, "wis": 26, "grt": 22 },
+    "evolvesTo": [
+      { "species": "voltaicore", "when": { "kind": "arc", "value": "early" } },
+      { "species": "radiantus", "when": { "kind": "arc", "value": "late" } },
+      { "species": "radiantus", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-luminaire",
+    "flavor": "Its body is a lantern of living current, lighting the deep blue dark."
+  },
+
+  {
+    "id": "ionyx",
+    "num": 32,
+    "name": "Ionyx",
+    "house": "flux",
+    "stage": "prime",
+    "statWeights": { "pwr": 22, "spd": 40, "wis": 24, "grt": 24 },
+    "evolvesTo": [
+      { "species": "voltaicore", "when": { "kind": "arc", "value": "early" } },
+      { "species": "radiantus", "when": { "kind": "arc", "value": "late" } },
+      { "species": "voltaicore", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-ionyx",
+    "flavor": "Drifts on charged tides, calm and unhurried, yet impossible to outrun."
+  },
+
+  {
+    "id": "voltaicore",
+    "num": 33,
+    "name": "Voltaicore",
+    "house": "flux",
+    "stage": "apex",
+    "statWeights": { "pwr": 26, "spd": 46, "wis": 24, "grt": 24 },
+    "evolvesTo": [],
+    "spriteId": "sprite-voltaicore",
+    "flavor": "The tempest given a heartbeat — pure velocity wrapped around a storm-core."
+  },
+
+  {
+    "id": "radiantus",
+    "num": 34,
+    "name": "Radiantus",
+    "house": "flux",
+    "stage": "apex",
+    "statWeights": { "pwr": 24, "spd": 44, "wis": 26, "grt": 26 },
+    "evolvesTo": [],
+    "spriteId": "sprite-radiantus",
+    "flavor": "Crowned in radiant current, it outpaces light across the open tide."
+  },
+
+  {
+    "id": "emberit",
+    "num": 35,
+    "name": "Emberit",
+    "house": "forge",
+    "stage": "sprite",
+    "statWeights": { "pwr": 23, "spd": 23, "wis": 23, "grt": 31 },
+    "evolvesTo": [
+      { "species": "forgeling", "when": { "kind": "rhythm", "value": "steady" } },
+      { "species": "cindcub", "when": { "kind": "rhythm", "value": "bursty" } },
+      { "species": "forgeling", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-emberit",
+    "flavor": "A pot-bellied little furnace-bot, ember-vents glowing through its riveted shell."
+  },
+
+  {
+    "id": "forgeling",
+    "num": 36,
+    "name": "Forgeling",
+    "house": "forge",
+    "stage": "rookie",
+    "statWeights": { "pwr": 24, "spd": 22, "wis": 22, "grt": 32 },
+    "evolvesTo": [
+      { "species": "anvilisk", "when": { "kind": "traitClass", "value": "endurance" } },
+      { "species": "slaghorn", "when": { "kind": "traitClass", "value": "tempo" } },
+      { "species": "kilnox", "when": { "kind": "traitClass", "value": "breadth" } },
+      { "species": "anvilisk", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-forgeling",
+    "flavor": "Plods on heavy treads, its armor thickening with every cycle."
+  },
+
+  {
+    "id": "cindcub",
+    "num": 37,
+    "name": "Cindcub",
+    "house": "forge",
+    "stage": "rookie",
+    "statWeights": { "pwr": 23, "spd": 23, "wis": 21, "grt": 33 },
+    "evolvesTo": [
+      { "species": "anvilisk", "when": { "kind": "traitClass", "value": "endurance" } },
+      { "species": "slaghorn", "when": { "kind": "traitClass", "value": "tempo" } },
+      { "species": "kilnox", "when": { "kind": "traitClass", "value": "breadth" } },
+      { "species": "slaghorn", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-cindcub",
+    "flavor": "A scrappy cinder-cub that vents sparks when it charges."
+  },
+
+  {
+    "id": "anvilisk",
+    "num": 38,
+    "name": "Anvilisk",
+    "house": "forge",
+    "stage": "evolved",
+    "statWeights": { "pwr": 22, "spd": 20, "wis": 20, "grt": 38 },
+    "evolvesTo": [
+      { "species": "smeltitan", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "ironmaw", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "basaltus", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "ironmaw", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-anvilisk",
+    "flavor": "Built like an anvil and twice as stubborn — nothing moves it."
+  },
+
+  {
+    "id": "slaghorn",
+    "num": 39,
+    "name": "Slaghorn",
+    "house": "forge",
+    "stage": "evolved",
+    "statWeights": { "pwr": 24, "spd": 24, "wis": 20, "grt": 32 },
+    "evolvesTo": [
+      { "species": "smeltitan", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "ironmaw", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "basaltus", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "smeltitan", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-slaghorn",
+    "flavor": "Pistons hammer in rhythm, horns of cooling slag jutting from its crown."
+  },
+
+  {
+    "id": "kilnox",
+    "num": 40,
+    "name": "Kilnox",
+    "house": "forge",
+    "stage": "evolved",
+    "statWeights": { "pwr": 22, "spd": 22, "wis": 22, "grt": 34 },
+    "evolvesTo": [
+      { "species": "smeltitan", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "ironmaw", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "basaltus", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "basaltus", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-kilnox",
+    "flavor": "A walking kiln whose many vents read heat from every direction."
+  },
+
+  {
+    "id": "smeltitan",
+    "num": 41,
+    "name": "Smeltitan",
+    "house": "forge",
+    "stage": "prime",
+    "statWeights": { "pwr": 24, "spd": 22, "wis": 22, "grt": 42 },
+    "evolvesTo": [
+      { "species": "magmarok", "when": { "kind": "arc", "value": "early" } },
+      { "species": "adamantor", "when": { "kind": "arc", "value": "late" } },
+      { "species": "magmarok", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-smeltitan",
+    "flavor": "A towering smelter-construct, its core a contained sun of molten iron."
+  },
+
+  {
+    "id": "ironmaw",
+    "num": 42,
+    "name": "Ironmaw",
+    "house": "forge",
+    "stage": "prime",
+    "statWeights": { "pwr": 26, "spd": 22, "wis": 22, "grt": 40 },
+    "evolvesTo": [
+      { "species": "magmarok", "when": { "kind": "arc", "value": "early" } },
+      { "species": "adamantor", "when": { "kind": "arc", "value": "late" } },
+      { "species": "adamantor", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-ironmaw",
+    "flavor": "Jaws of forged plate that crush ore — and grudges — without strain."
+  },
+
+  {
+    "id": "basaltus",
+    "num": 43,
+    "name": "Basaltus",
+    "house": "forge",
+    "stage": "prime",
+    "statWeights": { "pwr": 24, "spd": 22, "wis": 24, "grt": 40 },
+    "evolvesTo": [
+      { "species": "magmarok", "when": { "kind": "arc", "value": "early" } },
+      { "species": "adamantor", "when": { "kind": "arc", "value": "late" } },
+      { "species": "magmarok", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-basaltus",
+    "flavor": "Sheathed in cooled basalt, it weathers any blow and simply endures."
+  },
+
+  {
+    "id": "magmarok",
+    "num": 44,
+    "name": "Magmarok",
+    "house": "forge",
+    "stage": "apex",
+    "statWeights": { "pwr": 26, "spd": 24, "wis": 24, "grt": 46 },
+    "evolvesTo": [],
+    "spriteId": "sprite-magmarok",
+    "flavor": "An apex furnace-titan, ember-seams blazing, ground trembling at each step."
+  },
+
+  {
+    "id": "adamantor",
+    "num": 45,
+    "name": "Adamantor",
+    "house": "forge",
+    "stage": "apex",
+    "statWeights": { "pwr": 28, "spd": 22, "wis": 26, "grt": 44 },
+    "evolvesTo": [],
+    "spriteId": "sprite-adamantor",
+    "flavor": "Forged to last forever — its adamant shell has never once been breached."
   }
 ]

@@ -56,13 +56,14 @@ Universal egg: **Mote** (first molt commits House). Shipped lines (MVP):
   Seraphix·Thoughtwarden·Halcyore → Aurelion·Mindspire
 - **CIPHER:** Glyphit → Cipherling·Bitfang → Runeclaw·Vectorix·Glyphound →
   Cryptarch·Matrixion·Sigilus → Enigmax·Keystrix
-
-Reserved for M2 (names are canon — do not repurpose):
-
 - **FLUX:** Sparkit → Fluxling·Voltby → Arcfin·Photonix·Surgewing →
   Stormlynx·Luminaire·Ionyx → Voltaicore·Radiantus
 - **FORGE:** Emberit → Forgeling·Cindcub → Anvilisk·Slaghorn·Kilnox →
   Smeltitan·Ironmaw·Basaltus → Magmarok·Adamantor
+
+All four playable lines are SHIPPED (45 base species, nums 1–45). Reserved for M2 (names are
+canon — do not repurpose):
+
 - **Hybrids:** Mistral line (Aether×Flux): Zephling→Galewisp→Aeolyx→Mistralis;
   Obsidian line (Forge×Cipher): Shardling→Vitrix→Obsidianth→Tessellor
 

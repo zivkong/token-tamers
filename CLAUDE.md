@@ -160,7 +160,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   capped vitality bonus (+0.15 max at 200M session tokens) — the only volume input.
 - **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C;
   Archive keeps one strictly-best record per species.
-- **Scope:** M1 (shipped) = Claude Code + OpenCode adapters, Aether+Cipher lines, shell with
+- **Scope:** M1 (shipped) = Claude Code + OpenCode adapters, all four house lines
+  (Aether/Cipher/Flux/Forge, 45 species), shell with
   Pet/Dex/Archive/Settings. M2.1–M2.7 = DNA codec/export, battle engine, DNA apply/fusion,
   Codex adapter, collections/deco, leagues/drifter, weather/seasons. M3 = art pipeline,
   future adapters, polish.

@@ -39,6 +39,8 @@ import {
 
 import { aetherSprites } from './designs/aether';
 import { cipherSprites } from './designs/cipher';
+import { fluxSprites } from './designs/flux';
+import { forgeSprites } from './designs/forge';
 import { sceneSprites } from './designs/scenes';
 import speciesRaw from '../content/species.json' with { type: 'json' };
 import habitatsRaw from '../content/habitats.json' with { type: 'json' };
@@ -107,7 +109,7 @@ function bankFrames(sprite: SpriteDef, bank: AnimBank): number[][][] {
 // ---------------------------------------------------------------------------
 
 function allSprites(): SpriteDef[] {
-  return [...aetherSprites, ...cipherSprites, ...sceneSprites];
+  return [...aetherSprites, ...cipherSprites, ...fluxSprites, ...forgeSprites, ...sceneSprites];
 }
 
 // ---------------------------------------------------------------------------

@@ -26,8 +26,8 @@ shape your pet wears.
 | ---------- | -------------------------------- | ----------------------- | ---------------- | --------- | ------------ |
 | **Aether** | `claude-*` · MiniMax             | 🌤 Sky Court (flyers)   | ethereal / mind  | WIS       | Shipped (M1) |
 | **Cipher** | `gpt-*`/`o*` · GLM · MiMo        | ⛰ Crag Beasts (ground) | glyph / geometry | PWR       | Shipped (M1) |
-| **Flux**   | `gemini-*` · Qwen · Kimi         | 🌊 Tide Runners (swift) | light / current  | SPD       | Lines in M2  |
-| **Forge**  | `llama*` · `mistral*` · DeepSeek | 🔥 Iron Brood (robots)  | metal / ember    | GRT       | Lines in M2  |
+| **Flux**   | `gemini-*` · Qwen · Kimi         | 🌊 Tide Runners (swift) | light / current  | SPD       | Shipped      |
+| **Forge**  | `llama*` · `mistral*` · DeepSeek | 🔥 Iron Brood (robots)  | metal / ember    | GRT       | Shipped      |
 | **Wild**   | anything unmapped                | 🌱 The Bloom (plants)   | `???` silhouette | neutral   | Dormant gene |
 
 **The Kingdoms.** Aether's **Sky Court** are winged sky-creatures that never touch the ground —
@@ -45,9 +45,9 @@ started with.
 same. Only popular families are mapped today — anything else (e.g. `phi*`, `gemma*`,
 `yi-*`) rests in **Wild** until a future pack adopts it.
 
-**M1 vs M2.** Aether and Cipher have their creature lines now. Flux and Forge pets wear
-their House colors today but borrow the starter form until those lines arrive in M2 —
-nothing is lost, and the House label and Diet are already correct.
+**All four playable lines are live.** Aether, Cipher, Flux, and Forge each have their full
+11-form creature line now — code into any of them and your pet grows along its own kingdom.
+(Wild stays the dormant gene: a `???` silhouette for anything not yet mapped — see below.)
 
 **About "stat lean."** Every pet gets the same fixed stat budget across PWR / SPD /
 WIS / GRT — the lean only changes how that one budget is _distributed_. An Aether pet
