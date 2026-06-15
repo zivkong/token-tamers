@@ -38,6 +38,7 @@ import {
 } from '../../tui/src/render/sprite';
 
 import { aetherSprites } from './designs/aether';
+import { bloomSprites } from './designs/bloom';
 import { cipherSprites } from './designs/cipher';
 import { fluxSprites } from './designs/flux';
 import { forgeSprites } from './designs/forge';
@@ -59,7 +60,7 @@ const HOUSE_TINT: Record<House, string> = {
   cipher: '#f87171',
   flux: '#f472b6',
   forge: '#ff8c42',
-  wild: '#9aa6c4',
+  wild: '#5ec962',
 };
 
 interface SpeciesLike {
@@ -109,7 +110,14 @@ function bankFrames(sprite: SpriteDef, bank: AnimBank): number[][][] {
 // ---------------------------------------------------------------------------
 
 function allSprites(): SpriteDef[] {
-  return [...aetherSprites, ...cipherSprites, ...fluxSprites, ...forgeSprites, ...sceneSprites];
+  return [
+    ...aetherSprites,
+    ...cipherSprites,
+    ...fluxSprites,
+    ...forgeSprites,
+    ...bloomSprites,
+    ...sceneSprites,
+  ];
 }
 
 // ---------------------------------------------------------------------------

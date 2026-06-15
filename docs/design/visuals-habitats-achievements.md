@@ -159,12 +159,14 @@ A sprite's `house` field already selects the tint; the kingdom selects the **sha
   motif:** glowing **ember-vents** in the seams (the pulsing core, glint slot) + **bolt/rivet
   studs** that increase with stage. **Locomotion:** idle = ember-pulse / vent-flicker; walk =
   heavy clank-step; jump = piston-launch; play = ground-pound.
-- **🌱 The Bloom — Wild** (slate, neutral, `???` dormant). _Plants / feral nature._ Archetypes:
-  moss-stags, bloom-sprites, thorn-coils, fungal-owls. **Body plan:** asymmetric, organic,
-  sprouting; rooted base of tendrils. **Signature motif:** a **bloom/leaf-crown** that opens as
-  it matures + **root-tendrils** for a base. Doubles as the home for unmapped model families
-  (stays `???` until discovered) — so plants are also a narrative reward. The shared **Mote**
-  egg lives here as the neutral, pre-House orb.
+- **🌱 The Bloom — Wild** (verdant green `#5ec962`, neutral/balanced budget). _Plants / feral
+  nature._ Archetypes: moss-stags, bloom-sprites, thorn-coils, fungal-owls. **Body plan:**
+  asymmetric, organic, sprouting; rooted base of tendrils + a soft bulb body with a gentle face.
+  **Signature motif:** a **bloom-crown** of petals/leaves (or thorns, or a mushroom cap) that
+  opens wider as it matures + **root-tendrils** for a base + drifting pollen glints. SHIPPED as
+  the real 5th house — the feral home for unmapped model families (an unmapped model grows a
+  Bloom rather than a blank silhouette; the dormant-gene "awakening" into a mapped House still
+  applies). The shared **Mote** egg lives here as the neutral, pre-House orb.
 
 > **Invariant guard:** the kingdom is cosmetic shape only. The maker→House grouping, the
 > kingdom→House mapping, and the creature archetypes never affect stats, grades, rarity, or

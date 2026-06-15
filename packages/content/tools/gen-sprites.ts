@@ -26,6 +26,7 @@ import { fileURLToPath } from 'node:url';
 
 import type { SpriteDef } from '@token-tamers/core';
 import { aetherSprites } from './designs/aether';
+import { bloomSprites } from './designs/bloom';
 import { cipherSprites } from './designs/cipher';
 import { fluxSprites } from './designs/flux';
 import { forgeSprites } from './designs/forge';
@@ -35,7 +36,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** Assemble the full pack in a fixed, stable order. */
 export function buildAllSprites(): SpriteDef[] {
-  return [...aetherSprites, ...cipherSprites, ...fluxSprites, ...forgeSprites, ...sceneSprites];
+  return [
+    ...aetherSprites,
+    ...cipherSprites,
+    ...fluxSprites,
+    ...forgeSprites,
+    ...bloomSprites,
+    ...sceneSprites,
+  ];
 }
 
 function main(): void {

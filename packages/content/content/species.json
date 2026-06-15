@@ -10,7 +10,8 @@
       { "species": "wisp", "when": { "kind": "default" } },
       { "species": "glyphit", "when": { "kind": "default" } },
       { "species": "sparkit", "when": { "kind": "default" } },
-      { "species": "emberit", "when": { "kind": "default" } }
+      { "species": "emberit", "when": { "kind": "default" } },
+      { "species": "sprout", "when": { "kind": "default" } }
     ],
     "spriteId": "sprite-mote",
     "flavor": "A softly glowing orb that flickers with potential. Its House is not yet determined."
@@ -706,5 +707,178 @@
     "evolvesTo": [],
     "spriteId": "sprite-adamantor",
     "flavor": "Forged to last forever — its adamant shell has never once been breached."
+  },
+
+  {
+    "id": "sprout",
+    "num": 46,
+    "name": "Sprout",
+    "house": "wild",
+    "stage": "sprite",
+    "statWeights": { "pwr": 25, "spd": 25, "wis": 25, "grt": 25 },
+    "evolvesTo": [
+      { "species": "mosskit", "when": { "kind": "rhythm", "value": "steady" } },
+      { "species": "thornkit", "when": { "kind": "rhythm", "value": "bursty" } },
+      { "species": "mosskit", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-sprout",
+    "flavor": "A determined little seedling with a single curious bud. It grows wherever it is planted."
+  },
+
+  {
+    "id": "mosskit",
+    "num": 47,
+    "name": "Mosskit",
+    "house": "wild",
+    "stage": "rookie",
+    "statWeights": { "pwr": 24, "spd": 24, "wis": 26, "grt": 26 },
+    "evolvesTo": [
+      { "species": "bramblox", "when": { "kind": "traitClass", "value": "endurance" } },
+      { "species": "pollenix", "when": { "kind": "traitClass", "value": "tempo" } },
+      { "species": "sporecap", "when": { "kind": "traitClass", "value": "breadth" } },
+      { "species": "bramblox", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-mosskit",
+    "flavor": "A mossy cub that creeps along quietly, soaking up whatever light it finds."
+  },
+
+  {
+    "id": "thornkit",
+    "num": 48,
+    "name": "Thornkit",
+    "house": "wild",
+    "stage": "rookie",
+    "statWeights": { "pwr": 26, "spd": 26, "wis": 24, "grt": 24 },
+    "evolvesTo": [
+      { "species": "bramblox", "when": { "kind": "traitClass", "value": "endurance" } },
+      { "species": "pollenix", "when": { "kind": "traitClass", "value": "tempo" } },
+      { "species": "sporecap", "when": { "kind": "traitClass", "value": "breadth" } },
+      { "species": "pollenix", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-thornkit",
+    "flavor": "A prickly sprout that lashes out with thorny tendrils when startled."
+  },
+
+  {
+    "id": "bramblox",
+    "num": 49,
+    "name": "Bramblox",
+    "house": "wild",
+    "stage": "evolved",
+    "statWeights": { "pwr": 25, "spd": 23, "wis": 24, "grt": 28 },
+    "evolvesTo": [
+      { "species": "verdantyr", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "bloomwarden", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "gnarloak", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "bloomwarden", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-bramblox",
+    "flavor": "A dense knot of living bramble, rooted so deep nothing can uproot it."
+  },
+
+  {
+    "id": "pollenix",
+    "num": 50,
+    "name": "Pollenix",
+    "house": "wild",
+    "stage": "evolved",
+    "statWeights": { "pwr": 24, "spd": 28, "wis": 24, "grt": 24 },
+    "evolvesTo": [
+      { "species": "verdantyr", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "bloomwarden", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "gnarloak", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "verdantyr", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-pollenix",
+    "flavor": "Drifts on its own pollen-clouds, scattering seeds with every restless hop."
+  },
+
+  {
+    "id": "sporecap",
+    "num": 51,
+    "name": "Sporecap",
+    "house": "wild",
+    "stage": "evolved",
+    "statWeights": { "pwr": 24, "spd": 24, "wis": 28, "grt": 24 },
+    "evolvesTo": [
+      { "species": "verdantyr", "when": { "kind": "consistency", "value": "high" } },
+      { "species": "bloomwarden", "when": { "kind": "consistency", "value": "mid" } },
+      { "species": "gnarloak", "when": { "kind": "consistency", "value": "low" } },
+      { "species": "gnarloak", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-sporecap",
+    "flavor": "A walking mushroom-cap that reads the world through a hundred tiny spores."
+  },
+
+  {
+    "id": "verdantyr",
+    "num": 52,
+    "name": "Verdantyr",
+    "house": "wild",
+    "stage": "prime",
+    "statWeights": { "pwr": 27, "spd": 27, "wis": 28, "grt": 28 },
+    "evolvesTo": [
+      { "species": "sylvaroot", "when": { "kind": "arc", "value": "early" } },
+      { "species": "eldergrove", "when": { "kind": "arc", "value": "late" } },
+      { "species": "sylvaroot", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-verdantyr",
+    "flavor": "Crowned in perpetual bloom, it turns barren ground green just by passing through."
+  },
+
+  {
+    "id": "bloomwarden",
+    "num": 53,
+    "name": "Bloomwarden",
+    "house": "wild",
+    "stage": "prime",
+    "statWeights": { "pwr": 28, "spd": 27, "wis": 28, "grt": 27 },
+    "evolvesTo": [
+      { "species": "sylvaroot", "when": { "kind": "arc", "value": "early" } },
+      { "species": "eldergrove", "when": { "kind": "arc", "value": "late" } },
+      { "species": "eldergrove", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-bloomwarden",
+    "flavor": "A guardian of the wild grove, petals unfurling like a shield around it."
+  },
+
+  {
+    "id": "gnarloak",
+    "num": 54,
+    "name": "Gnarloak",
+    "house": "wild",
+    "stage": "prime",
+    "statWeights": { "pwr": 28, "spd": 28, "wis": 26, "grt": 28 },
+    "evolvesTo": [
+      { "species": "sylvaroot", "when": { "kind": "arc", "value": "early" } },
+      { "species": "eldergrove", "when": { "kind": "arc", "value": "late" } },
+      { "species": "sylvaroot", "when": { "kind": "default" } }
+    ],
+    "spriteId": "sprite-gnarloak",
+    "flavor": "An ancient, gnarled sapling-beast — feral, patient, and impossibly tough."
+  },
+
+  {
+    "id": "sylvaroot",
+    "num": 55,
+    "name": "Sylvaroot",
+    "house": "wild",
+    "stage": "apex",
+    "statWeights": { "pwr": 30, "spd": 31, "wis": 29, "grt": 30 },
+    "evolvesTo": [],
+    "spriteId": "sprite-sylvaroot",
+    "flavor": "The apex of the wild bloom: a radiant grove-spirit wreathed in flowering vines."
+  },
+
+  {
+    "id": "eldergrove",
+    "num": 56,
+    "name": "Eldergrove",
+    "house": "wild",
+    "stage": "apex",
+    "statWeights": { "pwr": 30, "spd": 29, "wis": 31, "grt": 30 },
+    "evolvesTo": [],
+    "spriteId": "sprite-eldergrove",
+    "flavor": "An age-old root-titan — a whole living forest condensed into one slow, deep heart."
   }
 ]

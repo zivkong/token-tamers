@@ -77,13 +77,13 @@ assignment is content data, freely re-balanced (model rules are **not** in
 **Houses (v1)** — identity & cosmetics only, equal stat budgets. Only popular families
 are mapped; the rest stay **Wild** until a pack adopts them:
 
-| House      | Model families (mixed by design)                                                                                                              | Stat flavor (content-tunable, always equal total budget) |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| **Aether** | `claude-*` · MiniMax (`minimax*`, `abab*`)                                                                                                    | WIS-lean                                                 |
-| **Cipher** | `gpt-*` / `o*` · GLM (`glm*`, `codegeex*`) · MiMo (`mimo*`)                                                                                   | PWR-lean                                                 |
-| **Flux**   | `gemini-*` · Qwen (`qwen*`, `qwq*`, `qvq*`) · Kimi (`kimi*`, `moonshot*`)                                                                     | SPD-lean                                                 |
-| **Forge**  | `llama*` · `mistral*` · DeepSeek (`deepseek*`)                                                                                                | GRT-lean                                                 |
-| **Wild**   | unmapped model IDs → stored as a **dormant gene** ("???"), awakens when a registry update adds the pattern (version-agnostic by construction) | neutral                                                  |
+| House      | Model families (mixed by design)                                                                                                                                                                  | Stat flavor (content-tunable, always equal total budget) |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| **Aether** | `claude-*` · MiniMax (`minimax*`, `abab*`)                                                                                                                                                        | WIS-lean                                                 |
+| **Cipher** | `gpt-*` / `o*` · GLM (`glm*`, `codegeex*`) · MiMo (`mimo*`)                                                                                                                                       | PWR-lean                                                 |
+| **Flux**   | `gemini-*` · Qwen (`qwen*`, `qwq*`, `qvq*`) · Kimi (`kimi*`, `moonshot*`)                                                                                                                         | SPD-lean                                                 |
+| **Forge**  | `llama*` · `mistral*` · DeepSeek (`deepseek*`)                                                                                                                                                    | GRT-lean                                                 |
+| **Wild**   | unmapped model IDs → **The Bloom** (plants/feral); also a **dormant gene** — when a registry update maps the model, it awakens into its newly-recognized House (version-agnostic by construction) | neutral (balanced)                                       |
 
 - Each distinct model ID consumed = a **gene** in the pet's diet profile. Dominant House →
   species line; cross-House diet → hybrid lines; high gene diversity feeds the Polyglot/Prism end
@@ -138,8 +138,9 @@ Trait combos — checked at every molt, locked at the week's final molt.
 
 ## §7 — Evolution Tree (v1 content) (design baseline §7)
 
-Dex target: **112 entries** — 45 base species + 8 hybrid-line species + 35 pattern variants + 12
-fusion-locked specials (hidden) + 12 reserved/Ancient slots.
+Dex target: **112 entries** — 56 base species + 8 hybrid-line species + 35 pattern variants + 12
+fusion-locked specials (hidden) + 1 reserved/Ancient slot. (Adding the Wild/Bloom line consumed
+11 of the original 12 reserved slots; `dexTotal` is unchanged at 112.)
 
 ### Stage 0 — universal egg (design baseline §7)
 
@@ -188,6 +189,15 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 - Evolved: **Anvilisk** · **Slaghorn** · **Kilnox**
 - Prime: **Smeltitan** · **Ironmaw** · **Basaltus**
 - Apex: **Magmarok** · **Adamantor**
+
+**WILD — The Bloom (plants/feral)** (any unmapped model gene; neutral/balanced lean; the feral
+house, doubling as the dormant-gene home until a model is mapped)
+
+- Sprite: **Sprout**
+- Rookie: **Mosskit** · **Thornkit**
+- Evolved: **Bramblox** · **Pollenix** · **Sporecap**
+- Prime: **Verdantyr** · **Bloomwarden** · **Gnarloak**
+- Apex: **Sylvaroot** · **Eldergrove**
 
 ### Branch logic at each molt (design baseline §7)
 

@@ -87,10 +87,7 @@ export function renderDexPage(ctx: RenderContext): void {
     buf.text(canvasX + 1, y, `${marker} #${numStr}`, selected ? OWNED : LOCKED, bg);
     // House-tinted identity dot for discovered species.
     const dot = row.owned ? '●' : '·';
-    const dotFg =
-      row.owned && row.house && row.house !== 'hybrid' && row.house !== 'wild'
-        ? houseColor(row.house)
-        : LOCKED;
+    const dotFg = row.owned && row.house && row.house !== 'hybrid' ? houseColor(row.house) : LOCKED;
     buf.text(canvasX + 9, y, dot, dotFg, bg);
     buf.text(canvasX + 11, y, row.label, fg, bg);
     hits.add(`dex:row:${rowIndex}`, canvasX, y, canvasCols, 1);

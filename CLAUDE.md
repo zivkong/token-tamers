@@ -141,15 +141,17 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - **Houses (identity ONLY; mixed-provenance, NOT provider brands):** each House blends
   makers by theme, never all-Western/all-anything. Aether `claude-*`+MiniMax WIS ·
   Cipher `gpt-*`/`o*`+GLM+MiMo PWR · Flux `gemini-*`+Qwen+Kimi SPD · Forge
-  `llama*`/`mistral*`+DeepSeek GRT · Wild unmapped ("???" dormant gene). Matching is
+  `llama*`/`mistral*`+DeepSeek GRT · Wild = unmapped → The Bloom (plants, neutral; still a
+  dormant gene that awakens to a mapped House later). Matching is
   case-insensitive; popular families only (rest stay Wild); model→House is freely
   re-balanced content data (NOT in `registry-freeze.json` — only ids are additive-only).
   The maker→House grouping never affects stats/grades/speed (invariant 3). Full map:
   `models.json` + `docs/design/evolution-grades-lineage.md` §Houses.
 - **Creature Kingdoms (sprite identity layer; cosmetic shape ONLY):** each House's species
   are a real creature family — Aether=Sky Court (flying), Cipher=Crag Beasts (ground predator),
-  Flux=Tide Runners (aquatic), Forge=Iron Brood (robots), Wild=The Bloom (plants). Body-plan +
-  signature motif carried across a line (lineage continuity); never affects mechanics
+  Flux=Tide Runners (aquatic), Forge=Iron Brood (robots), Wild=The Bloom (plants, green tint).
+  All five lines SHIPPED (56 base species). Body-plan + signature motif carried across a line
+  (lineage continuity); never affects mechanics
   (invariant 3). **Species size law (2026-06-15, higher-res):** square px egg 12 · sprite 16 ·
   rookie 20 · evolved 24 · prime 28 · apex 32 (apex = renderer safe max; habitats 96×48,
   trinkets 20×20); enforced by the content-pack test. Bible:
@@ -160,8 +162,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   capped vitality bonus (+0.15 max at 200M session tokens) — the only volume input.
 - **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C;
   Archive keeps one strictly-best record per species.
-- **Scope:** M1 (shipped) = Claude Code + OpenCode adapters, all four house lines
-  (Aether/Cipher/Flux/Forge, 45 species), shell with
+- **Scope:** M1 (shipped) = Claude Code + OpenCode adapters, all five house lines
+  (Aether/Cipher/Flux/Forge/Wild-Bloom, 56 species), shell with
   Pet/Dex/Archive/Settings. M2.1–M2.7 = DNA codec/export, battle engine, DNA apply/fusion,
   Codex adapter, collections/deco, leagues/drifter, weather/seasons. M3 = art pipeline,
   future adapters, polish.

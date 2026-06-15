@@ -22,13 +22,13 @@ Each House is also a **Creature Kingdom** — its pets are a distinct kind of an
 recognize from silhouette alone. That's pure looks: the kingdom never changes power, only the
 shape your pet wears.
 
-| House      | Diet (model families)¹           | Kingdom (creatures)     | Theme            | Stat lean | Status       |
-| ---------- | -------------------------------- | ----------------------- | ---------------- | --------- | ------------ |
-| **Aether** | `claude-*` · MiniMax             | 🌤 Sky Court (flyers)   | ethereal / mind  | WIS       | Shipped (M1) |
-| **Cipher** | `gpt-*`/`o*` · GLM · MiMo        | ⛰ Crag Beasts (ground) | glyph / geometry | PWR       | Shipped (M1) |
-| **Flux**   | `gemini-*` · Qwen · Kimi         | 🌊 Tide Runners (swift) | light / current  | SPD       | Shipped      |
-| **Forge**  | `llama*` · `mistral*` · DeepSeek | 🔥 Iron Brood (robots)  | metal / ember    | GRT       | Shipped      |
-| **Wild**   | anything unmapped                | 🌱 The Bloom (plants)   | `???` silhouette | neutral   | Dormant gene |
+| House      | Diet (model families)¹           | Kingdom (creatures)     | Theme             | Stat lean | Status       |
+| ---------- | -------------------------------- | ----------------------- | ----------------- | --------- | ------------ |
+| **Aether** | `claude-*` · MiniMax             | 🌤 Sky Court (flyers)   | ethereal / mind   | WIS       | Shipped (M1) |
+| **Cipher** | `gpt-*`/`o*` · GLM · MiMo        | ⛰ Crag Beasts (ground) | glyph / geometry  | PWR       | Shipped (M1) |
+| **Flux**   | `gemini-*` · Qwen · Kimi         | 🌊 Tide Runners (swift) | light / current   | SPD       | Shipped      |
+| **Forge**  | `llama*` · `mistral*` · DeepSeek | 🔥 Iron Brood (robots)  | metal / ember     | GRT       | Shipped      |
+| **Wild**   | anything unmapped                | 🌱 The Bloom (plants)   | feral / overgrown | neutral   | Shipped      |
 
 **The Kingdoms.** Aether's **Sky Court** are winged sky-creatures that never touch the ground —
 floating moth-sages and sky-mantas trailing veils of light. Cipher's **Crag Beasts** are heavy
@@ -45,9 +45,10 @@ started with.
 same. Only popular families are mapped today — anything else (e.g. `phi*`, `gemma*`,
 `yi-*`) rests in **Wild** until a future pack adopts it.
 
-**All four playable lines are live.** Aether, Cipher, Flux, and Forge each have their full
+**All five lines are live.** Aether, Cipher, Flux, Forge, and Wild each have their full
 11-form creature line now — code into any of them and your pet grows along its own kingdom.
-(Wild stays the dormant gene: a `???` silhouette for anything not yet mapped — see below.)
+Wild's **Bloom** doubles as the home for any model the game doesn't recognize yet (see below) —
+so there's no blank silhouette anymore; an unmapped model simply grows a feral plant-beast.
 
 **About "stat lean."** Every pet gets the same fixed stat budget across PWR / SPD /
 WIS / GRT — the lean only changes how that one budget is _distributed_. An Aether pet
@@ -71,14 +72,21 @@ several makers, your everyday model mix — not its brand — is what settles yo
 identity. Mix across Houses and the Diet blends, which is exactly how the hybrid lines
 and fusion specials of later milestones come into reach.
 
-## Wild — the dormant gene
+## Wild — The Bloom (the feral house)
 
-**Wild** is the House for anything Token Tamers doesn't yet recognize. A brand-new
-model ID with no mapping renders as a `???` silhouette with a neutral budget — not a
-bug, a **dormant gene**. The registry is additive-only: when a future content pack (or
-an [update](getting-started.md)) teaches the game that model's family, the gene
-"awakens" and the silhouette resolves into its real House. Nothing is lost in the
-meantime.
+**Wild** is the House for anything Token Tamers doesn't yet recognize — and it's a real,
+playable line now: **The Bloom**, a kingdom of feral plant-beasts with a neutral (balanced)
+stat budget. Code mostly with a model the game hasn't mapped (e.g. `phi*`, `gemma*`, `yi-*`)
+and your pet grows a Bloom — a Sprout that climbs to a towering grove-spirit, same 11-form
+track as every other house.
+
+It keeps its **dormant-gene** nature too: the registry is additive-only, so when a future
+content pack (or an [update](getting-started.md)) teaches the game that model's family, the
+gene "awakens" and that model moves into its newly-recognized House. Nothing is lost — and in
+the meantime your unmapped models grow a real creature instead of a blank silhouette.
+
+(Note: a shared DNA hash referencing a _species_ your build doesn't have still shows as a
+`???` Dex silhouette until you update — that forward-compatible discovery is unchanged.)
 
 ## See also
 

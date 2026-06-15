@@ -40,7 +40,7 @@ export const HOUSE_ACCENT: Record<House, string> = {
   cipher: '#f87171', // glyph / geometry — red
   flux: '#f472b6', // light / current — rose magenta
   forge: '#ff8c42', // metal / ember — bright orange (legible on the dark theme)
-  wild: '#9aa6c4', // ??? unknown — light slate (kept bright enough for dark bg)
+  wild: '#5ec962', // The Bloom (plants/feral) + the home of unmapped genes — verdant green
 };
 
 /** House identity color as a hex string (for `buildPalette`). */

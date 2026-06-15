@@ -45,7 +45,18 @@
     "ironmaw": 42,
     "basaltus": 43,
     "magmarok": 44,
-    "adamantor": 45
+    "adamantor": 45,
+    "sprout": 46,
+    "mosskit": 47,
+    "thornkit": 48,
+    "bramblox": 49,
+    "pollenix": 50,
+    "sporecap": 51,
+    "verdantyr": 52,
+    "bloomwarden": 53,
+    "gnarloak": 54,
+    "sylvaroot": 55,
+    "eldergrove": 56
   },
   "traits": [
     "daybreaker",
@@ -89,6 +100,7 @@
     "house-apex-cipher",
     "house-apex-flux",
     "house-apex-forge",
+    "house-apex-wild",
     "molt-count-10",
     "molt-count-50",
     "pattern-chimera",

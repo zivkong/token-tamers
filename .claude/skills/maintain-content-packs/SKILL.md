@@ -23,8 +23,11 @@ pack tests (`pnpm test`).
   permanent Dex entry, still battle-legal. Every hash ever shared stays valid forever.
 - **No model judgment.** Houses/model IDs are identity & cosmetics ONLY. Equal stat
   budgets per stage; `statWeights` redistribute, never exceed (tests enforce).
-- **Unknown model IDs → `wild`** house, stored as a dormant gene ("???" silhouette),
-  awakened when a later registry update adds the pattern.
+- **Unknown model IDs → `wild`** house — now a real playable line, **The Bloom**
+  (plants/feral, neutral/balanced budget). Still a dormant gene: when a later registry update
+  maps the model, it awakens into its newly-recognized House. (An unknown _species_ referenced
+  in a shared hash still renders as a "???" Dex silhouette — that forward-compat discovery is
+  unchanged; only the unmapped-_model_ rendering became a Bloom creature instead of blank.)
 - **Spoilers:** fusion-pool contents (M2+) exist only under `packages/content/` —
   never in docs/wiki/README. `scripts/check-spoilers.sh` greps; pools are published
   as _types_ with riddle hints only.
@@ -48,7 +51,7 @@ skill.
 Each distinct model ID consumed = a gene in the diet profile. Dominant House →
 species line; cross-House diet (≥35/35) → hybrid lines.
 
-## Evolution tree v1 (Dex target 112: 45 base + 8 hybrid + 35 pattern + 12 fusion + 12 reserved)
+## Evolution tree v1 (Dex target 112: 56 base + 8 hybrid + 35 pattern + 12 fusion + 1 reserved)
 
 Universal egg: **Mote** (first molt commits House). Shipped lines (MVP):
 
@@ -60,9 +63,11 @@ Universal egg: **Mote** (first molt commits House). Shipped lines (MVP):
   Stormlynx·Luminaire·Ionyx → Voltaicore·Radiantus
 - **FORGE:** Emberit → Forgeling·Cindcub → Anvilisk·Slaghorn·Kilnox →
   Smeltitan·Ironmaw·Basaltus → Magmarok·Adamantor
+- **WILD (The Bloom):** Sprout → Mosskit·Thornkit → Bramblox·Pollenix·Sporecap →
+  Verdantyr·Bloomwarden·Gnarloak → Sylvaroot·Eldergrove
 
-All four playable lines are SHIPPED (45 base species, nums 1–45). Reserved for M2 (names are
-canon — do not repurpose):
+All five playable lines are SHIPPED (56 base species, nums 1–56; Wild = the feral Bloom for
+unmapped models, neutral budget). Reserved for M2 (names are canon — do not repurpose):
 
 - **Hybrids:** Mistral line (Aether×Flux): Zephling→Galewisp→Aeolyx→Mistralis;
   Obsidian line (Forge×Cipher): Shardling→Vitrix→Obsidianth→Tessellor

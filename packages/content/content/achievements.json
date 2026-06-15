@@ -222,6 +222,13 @@
     "reward": { "kind": "title", "id": "forge-master", "name": "Forge Master" }
   },
   {
+    "id": "house-apex-wild",
+    "name": "Bloom Mastery",
+    "description": "Reached the Apex stage with a full Wild (Bloom) lineage.",
+    "condition": { "type": "house_apex", "house": "wild" },
+    "reward": { "kind": "title", "id": "bloom-master", "name": "Bloom Master" }
+  },
+  {
     "id": "habitat-beach-cove-unlock",
     "name": "Shore Leave",
     "description": "Earned a vacation spot — the Beach Cove is yours.",
