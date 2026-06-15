@@ -28,7 +28,7 @@ export function freshPet(generation: number, hatchedAt: number, calibrating: boo
 }
 
 export function initialState(config: EngineConfig): GameState {
-  const firstAnchor = config.adapters[0]?.weekAnchor ?? 0;
+  const firstAnchor = config.cycle?.weekAnchor ?? 0;
   // When `startAt` is given (the fresh-init path), the pet hatches and starts
   // living from `startAt` so the Calibration Egg plays normally from day one.
   // Otherwise keep the legacy anchor-derived behavior so existing savefiles and

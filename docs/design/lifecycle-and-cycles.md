@@ -18,33 +18,46 @@ Probe data directories:
 
 Multi-select confirm of detected providers.
 
-### Step 2 — Per provider: ask plan type
+### Step 2 — Choose the cycle (ONE pet-global question)
+
+The pet has a single life, so there is **one** cycle clock, chosen once — never per
+adapter. The wizard asks a single question:
 
 - **Subscription with limit windows** (Claude Pro/Max, ChatGPT plans) →
-  **dynamic cycle policy**
-- **API / pay-as-you-go / no limits** (API keys, OpenCode any provider) →
-  **static cycle policy**: the wizard converts the canonical rhythm into fixed windows at init —
-  default **5-hour session windows** and a **7-day week** anchored to a chosen epoch (default:
-  next Monday 00:00 local; configurable).
+  **subscription cycle**: 5-hour session windows are inferred from usage gaps in a chosen
+  **anchor adapter** — the provider whose subscription reset rhythm drives the molt clock. When
+  more than one adapter is enabled the wizard asks which one is the anchor; a single adapter is
+  the implicit anchor. Other adapters still feed essence, but never open or move windows.
+- **API / pay-as-you-go / no limits / fixed cadence** (API keys, OpenCode, mixed) →
+  **static cycle**: fixed **5-hour session windows** tiled from a **7-day week** anchored to a
+  chosen epoch (default: next Monday 00:00 local; configurable). Any adapter's usage opens a
+  window.
+
+The default offered follows the enabled adapters' hints (any subscription-style provider ⇒
+subscription, else static). **Adapters carry no plan of their own** — within one adapter, API-
+and subscription-billed usage coexist and are ingested together as essence (invariant 3 forbids
+billing/model judgment). So Claude subscription + Claude API in Claude Code, or OpenCode running
+DeepSeek-via-API alongside a GLM subscription, all feed the same pet undifferentiated.
 
 ### Step 3 — Write config
 
-Write to `~/.tokentamers/config.json`:
+Write to `~/.tokentamers/config.json`. The cycle is pet-global; adapters are pure data sources:
 
 ```json
 {
-  "adapters": [
-    {
-      "provider": "...",
-      "paths": "...",
-      "plan": "...",
-      "cycle_policy": "...",
-      "week_anchor": "..."
-    }
-  ],
-  "…": "…"
+  "schemaVersion": 4,
+  "cycle": {
+    "policy": "subscription | static",
+    "anchorAdapter": "claude-code",
+    "weekAnchor": 0
+  },
+  "adapters": [{ "provider": "...", "paths": ["..."] }]
 }
 ```
+
+(`anchorAdapter` is present only for the subscription policy. Old `config.json` from before
+schema v4 — where `plan`/`cyclePolicy`/`weekAnchor` lived on each adapter — migrates forward
+automatically: the cli synthesizes `cycle` from the legacy adapters and slims each adapter.)
 
 ### Step 4 — Backfill scan
 
@@ -65,10 +78,12 @@ Warn if a provider's local persistence is disabled (Codex `history` off, etc.).
 
 ### Re-run semantics
 
-Re-running `tt init` adds/removes adapters **without touching pet state**. When a valid
-`state.json` already exists, re-init only rewrites `config.json` (the adapter set); it never
-re-hatches the egg, re-seeds the baseline, or backfills. Existing adapters keep their checkpoints;
-a newly added adapter has no checkpoint yet, so the next catch-up scans its full history.
+Re-running `tt init` adds/removes adapters and re-confirms the cycle **without touching pet
+state**. When a valid `state.json` already exists, re-init only rewrites `config.json` (the
+cycle + adapter set); it never re-hatches the egg, re-seeds the baseline, or backfills. The
+**week anchor is preserved** from the existing config so an existing pet's rebirth schedule never
+shifts. Existing adapters keep their checkpoints; a newly added adapter has no checkpoint yet, so
+the next catch-up scans its full history.
 
 ---
 
@@ -104,32 +119,40 @@ _Abstraction over the lifecycle._
 
 ### Abstract event table
 
-The engine consumes only two abstract events; policies produce them:
+The engine consumes only two abstract events, derived **once** over the merged stream of all
+adapters (one clock for the pet — never per adapter):
 
-| Abstract event      | Dynamic policy (subscription)                                             | Static policy (API/OpenCode)                                                          |
-| ------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| **MOLT_CHECKPOINT** | Inferred 5-h session-window close (from usage gaps + plan reset schedule) | Fixed 5-h windows from anchor; a window only "closes" as a molt if it contained usage |
-| **REBIRTH**         | Weekly limit reset                                                        | Every 7 days from week anchor                                                         |
+| Abstract event      | Subscription policy                                                                         | Static policy                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **MOLT_CHECKPOINT** | Inferred 5-h session-window close, from usage gaps in the **anchor adapter's** stream alone | Fixed 5-h windows from anchor; a window only "closes" as a molt if it contained usage |
+| **REBIRTH**         | Every 7 days from the week anchor                                                           | Every 7 days from the week anchor                                                     |
+
+Under the subscription policy only the **anchor adapter** opens/closes windows (its session
+rhythm is the clock); every adapter's usage inside an open window still feeds the molt. Under the
+static policy any adapter's usage can open a fixed tile. Either way, a single molt covers the
+whole pet, and grade/trait/evolution rolls fire once per window off the combined signals.
 
 ### Real-world signal mapping table
 
 Mapping of real-world signals (now per-policy):
 
-| Real-world event                                                                | Game meaning                               |
-| ------------------------------------------------------------------------------- | ------------------------------------------ |
-| Token consumption (any provider)                                                | Nutrition / essence                        |
-| Model-ID mix                                                                    | Diet → House/species (identity only)       |
-| Session window close                                                            | **Molt** — evolution checkpoint            |
-| Week boundary                                                                   | **Rebirth** — pet ascends, new egg hatches |
-| Riding a window to its cap (dynamic) / near-continuous use of a window (static) | Trait trigger (Marathoner)                 |
-| Hitting weekly limit exactly (dynamic only)                                     | Rare "Limitbreaker" evolution              |
-| Week of zero usage                                                              | Pet goes **Dormant** (cocoon, not death)   |
+| Real-world event                                                                     | Game meaning                               |
+| ------------------------------------------------------------------------------------ | ------------------------------------------ |
+| Token consumption (any provider)                                                     | Nutrition / essence                        |
+| Model-ID mix                                                                         | Diet → House/species (identity only)       |
+| Session window close                                                                 | **Molt** — evolution checkpoint            |
+| Week boundary                                                                        | **Rebirth** — pet ascends, new egg hatches |
+| Riding a window to its cap (subscription) / near-continuous use of a window (static) | Trait trigger (Marathoner)                 |
+| Hitting weekly limit exactly (subscription only)                                     | Rare "Limitbreaker" evolution              |
+| Week of zero usage                                                                   | Pet goes **Dormant** (cocoon, not death)   |
 
 ### Multi-provider normalization rule
 
-Multi-provider players: all adapters feed ONE pet. Essence is normalized per adapter against
-that adapter's own baseline, then summed — so adding a second agent never inflates power, only
-diversifies diet.
+Multi-provider players: all adapters feed ONE pet on ONE clock. Essence is normalized per adapter
+against that adapter's own baseline, then combined — so adding a second agent never inflates
+power, only diversifies diet. The clock is global: the subscription policy's molt windows are
+driven by the anchor adapter alone, while every adapter (anchor or not, API or subscription
+billed) contributes normalized essence to whatever window is open.
 
 ### Weekly three-act arc
 

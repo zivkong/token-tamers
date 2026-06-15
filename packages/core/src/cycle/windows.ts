@@ -2,7 +2,7 @@
  * Window and week time math — constants, floor helpers, and event constructors.
  */
 
-import type { MoltEvent, RebirthEvent, UsageEvent } from '../types';
+import type { CycleConfig, MoltEvent, RebirthEvent, UsageEvent } from '../types';
 
 export const WINDOW_MS = 5 * 60 * 60 * 1000;
 export const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -13,6 +13,21 @@ export const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
  * {@link eggHatchMolts}.
  */
 export const EGG_HATCH_MS = 10 * 60 * 1000;
+
+/**
+ * The subset of `events` that DEFINES the window boundaries under `cycle`. For
+ * subscription that is the anchor adapter's stream alone (its session rhythm is
+ * the clock); for static every event is eligible (windows are fixed, opened by any
+ * usage). When no anchor is configured (single-adapter setups) the full stream is
+ * the anchor.
+ */
+export function windowDrivingEvents(
+  events: readonly UsageEvent[],
+  cycle: CycleConfig,
+): readonly UsageEvent[] {
+  if (cycle.policy === 'static' || !cycle.anchorAdapter) return events;
+  return events.filter((e) => e.adapter === cycle.anchorAdapter);
+}
 
 /** Floor `ts` to the start of its fixed window tiled from `anchor`. */
 export function windowStartFor(ts: number, anchor: number): number {

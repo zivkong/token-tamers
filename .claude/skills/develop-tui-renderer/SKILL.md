@@ -198,16 +198,18 @@ responsibilities:
   page falls back to `—`). The app version is the single `apps/cli/src/version.ts` const
   (kept in sync with package.json), re-exported from `main.ts`. Rule for any future info
   page: derive process/fs facts in the cli, pass them in — never reach for them in `tui`.
-- **`SettingsState`** — a live working copy of `updateMode` + the adapter configs plus
-  `selected` (a flat field index: **index 0 = update mode**, then two fields per adapter, so
-  `settingsFieldCount = 1 + adapters*2`, always ≥ 1). The page renders it and a hit region per
+- **`SettingsState`** — a live working copy of `updateMode` + the pet-global cycle clock
+  (`cyclePolicy`, `anchorAdapter`) + read-only `adapters`, plus `selected` (a flat field index:
+  **0 = update mode, 1 = cycle policy, 2 = anchor adapter**). The anchor field (index 2) appears
+  ONLY when `cyclePolicy === 'subscription'` and more than one adapter is configured, so
+  `settingsFieldCount` is 2 or 3 (`anchorFieldShown`). The page renders it and a hit region per
   field but owns NO mutation. The shell drives editing: ↑↓ move `selected` (`moveSelection`),
   ←→ cycle the focused value (`cycleSelectedField` in `pages/settings.ts`). On each change the
   shell persists to the RIGHT store by field: the update-mode field (`isUpdateFieldSelected`)
-  → `options.onUpdateModeChange(mode)` → settings.json; adapter fields →
-  `options.onAdaptersChange(adapters)` → config.json. Edits apply on the **next launch**, never
-  mid-session — cycle policy reshapes molt windows, which must not shift under a running pet; the
-  update mode is read at launch too. The update toggle only WRITES the mode string — it never
-  imports the updater network surface (the isolation gate holds; off stays the default).
-  Adding/removing adapters and editing scan paths stays in `tt init` (needs detection + text
-  input). The pet game itself stays fully idle: Settings is optional config, never gameplay.
+  → `options.onUpdateModeChange(mode)` → settings.json; the cycle fields →
+  `options.onCycleChange(policy, anchorAdapter)` → config.json. Edits apply on the **next
+  launch**, never mid-session — the cycle reshapes molt windows, which must not shift under a
+  running pet; the update mode is read at launch too. The update toggle only WRITES the mode
+  string — it never imports the updater network surface (the isolation gate holds; off stays the
+  default). Adapters are pure data sources (read-only here); adding/removing them and editing scan
+  paths stays in `tt init`. The pet game itself stays fully idle: Settings is optional config.

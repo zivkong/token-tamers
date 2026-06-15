@@ -117,9 +117,13 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - Renderer tests are golden frames (string-buffer snapshots); adapter tests use
   fixtures of real (anonymized) logs; engine tests assert determinism properties.
 - Game-state schema changes need a `schemaVersion` bump + migration in the cli store.
-  Current `SCHEMA_VERSION` = 3 (v3 added `state.dexRecords`, the per-species top-3
-  snapshot store; the cli store back-fills it from `archive` and auto-repairs corrupt
-  saves — `apps/cli/src/stores/migrate-dex-records.ts`).
+  Current `SCHEMA_VERSION` = 4. v3 added `state.dexRecords` (per-species top-3 snapshot
+  store; cli back-fills from `archive`, auto-repairs corrupt saves —
+  `apps/cli/src/stores/migrate-dex-records.ts`). v4 moved the cycle clock from
+  per-adapter to a single pet-global `UserConfig.cycle` (CycleConfig); the cli config
+  store (`apps/cli/src/stores/config.ts`) migrates old configs forward — synthesizes
+  `cycle` from the legacy per-adapter `plan`/`cyclePolicy`/`weekAnchor` and slims each
+  adapter to `{ provider, paths }`.
 - User data: `~/.tokentamers/config.json` (UserConfig) + `state.json` (GameState) +
   `settings.json` (SettingsFile: `color` + per-adapter `adapterRoots`). **Zero env config:**
   the project reads nothing from `process.env` — the data dir is fixed at `~/.tokentamers`
@@ -146,8 +150,11 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   habitats + trinkets; meter weighting 40/40/10/10).
 - **Cycle:** molt = 5-h session-window close (the evolution/trait/mutation/grade
   moment; eggs fast-hatch ~10 min after first usage); rebirth = week boundary
-  (archive + new egg, never evolves).
-  Dynamic policy (subscriptions, inferred windows) vs static (API/fixed anchor).
+  (archive + new egg, never evolves). ONE pet-global clock (`UserConfig.cycle`,
+  never per adapter), chosen once at `tt init`: **subscription** (windows inferred
+  from usage gaps in a chosen anchor adapter) vs **static** (fixed tiles from the
+  week anchor). Adapters are pure data sources (`{provider, paths}`) — API and
+  subscription usage within one adapter are undifferentiated essence (invariant 3).
 - **Stages:** egg(Mote) → sprite → rookie → evolved → prime → apex; branch by
   rhythm / trait class / consistency / arc — all data-driven (`evolvesTo`).
   **Maturity-paced (~5-day climb):** a stage evolves only after accruing its

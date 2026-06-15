@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { createEngine, growthProgress, requiredMaturity, type GameState } from '../src/index';
-import { makePack, staticAdapter } from './fixture';
+import { adapters, makePack, staticCycle } from './fixture';
 
 /** A real engine state with the pet fields overridden (pure-function inputs). */
 function stateWith(overrides: Partial<GameState['pet']>): GameState {
-  const st = createEngine(makePack(), { adapters: [staticAdapter()] }).state();
+  const st = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() }).state();
   return { ...st, pet: { ...st.pet, ...overrides } };
 }
 

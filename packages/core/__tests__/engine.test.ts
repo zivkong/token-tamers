@@ -7,7 +7,15 @@ import {
   type GameState,
   type UsageEvent,
 } from '../src/index';
-import { dynamicAdapter, ev, HOUR, makePack, staticAdapter, WEEK_ANCHOR } from './fixture';
+import {
+  adapters,
+  ev,
+  HOUR,
+  makePack,
+  staticCycle,
+  subscriptionCycle,
+  WEEK_ANCHOR,
+} from './fixture';
 
 const WEEK_MS = 7 * 24 * HOUR;
 
@@ -33,7 +41,7 @@ describe('engine — house commitment from model patterns', () => {
     expect(matchModelRule(makePack().models, 'o3-mini')?.house).toBe('cipher');
     expect(matchModelRule(makePack().models, 'llama-3')?.house).toBe('wild');
 
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest([ev(0, { modelId: 'claude-opus-4' })]);
     // Stop after the 10-min egg-hatch checkpoint but before the first 5h window:
     // the House is committed at the hatch (the egg's first molt).
@@ -45,7 +53,7 @@ describe('engine — house commitment from model patterns', () => {
   });
 
   it('dominant gene by essence decides the House on first molt', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest([
       ev(0, { modelId: 'gpt-4o', inputTokens: 10000 }),
       ev(HOUR, { modelId: 'claude-x', inputTokens: 100 }),
@@ -55,7 +63,7 @@ describe('engine — house commitment from model patterns', () => {
   });
 
   it('unmatched model would commit to wild (here the pack maps * to wild)', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest([ev(0, { modelId: 'llama-3' })]);
     eng.advanceTo(WEEK_ANCHOR + 6 * HOUR);
     expect(eng.state().pet.house).toBe('wild');
@@ -66,7 +74,7 @@ describe('engine — egg fast-hatch', () => {
   const MIN = 60 * 1000;
 
   it('hatches the egg ~10 minutes after first usage, not at the 5h close', () => {
-    const eng = createEngine(makePack(), { adapters: [dynamicAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: subscriptionCycle() });
     eng.ingest([ev(0)]);
     // Just before the 10-minute hatch close: still an egg.
     eng.advanceTo(WEEK_ANCHOR + 9 * MIN);
@@ -83,7 +91,11 @@ describe('engine — egg fast-hatch', () => {
     // The first egg is placed mid-week via startAt; usage from earlier in the
     // same week (before the egg existed) must NOT define the hatch time.
     const startAt = WEEK_ANCHOR + 3 * 24 * HOUR; // mid-week
-    const eng = createEngine(makePack(), { adapters: [dynamicAdapter()], startAt });
+    const eng = createEngine(makePack(), {
+      adapters: adapters(),
+      cycle: subscriptionCycle(),
+      startAt,
+    });
     eng.ingest([
       ev(HOUR), // day-0 history, days before the egg — must be ignored
       ev(3 * 24 * HOUR + 30 * MIN), // first feeding 30 min after the egg is placed
@@ -100,11 +112,11 @@ describe('engine — egg fast-hatch', () => {
   it('is identical whether advanced in one big step or many small ones', () => {
     const events = [ev(0), ev(30 * MIN), ev(6 * HOUR), ev(7 * HOUR)];
 
-    const big = createEngine(makePack(), { adapters: [dynamicAdapter()] });
+    const big = createEngine(makePack(), { adapters: adapters(), cycle: subscriptionCycle() });
     big.ingest(events);
     big.advanceTo(WEEK_ANCHOR + 13 * HOUR);
 
-    const small = createEngine(makePack(), { adapters: [dynamicAdapter()] });
+    const small = createEngine(makePack(), { adapters: adapters(), cycle: subscriptionCycle() });
     small.ingest(events);
     for (const t of [5 * MIN, 11 * MIN, 3 * HOUR, 7 * HOUR, 13 * HOUR]) {
       small.advanceTo(WEEK_ANCHOR + t);
@@ -118,7 +130,7 @@ describe('engine — egg fast-hatch', () => {
 
 describe('engine — molt-only evolution', () => {
   it('no molts => no evolution, stays an egg', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest([ev(0)]);
     // Advance to before even the short egg-hatch close (5 min < 10 min): the
     // first window has not closed, so nothing has molted.
@@ -130,7 +142,7 @@ describe('engine — molt-only evolution', () => {
   });
 
   it('each molt advances at most one stage, paced by the maturity clock', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     // Molt 1 is the egg-hatch checkpoint (10 min in) → sprite.
     eng.advanceTo(WEEK_ANCHOR + HOUR);
@@ -154,7 +166,7 @@ describe('engine — molt-only evolution', () => {
   });
 
   it('never advances more than one stage between consecutive molts', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     const stageOf = (s: string) =>
       ['egg', 'sprite', 'rookie', 'evolved', 'prime', 'apex'].indexOf(s);
@@ -174,7 +186,7 @@ describe('engine — molt-only evolution', () => {
   });
 
   it('reaches Apex over a full active week and never beyond', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     eng.advanceTo(WEEK_ANCHOR + WEEK_MS - HOUR);
     const st = eng.state();
@@ -185,7 +197,7 @@ describe('engine — molt-only evolution', () => {
 
 describe('engine — monotonic grades', () => {
   it('grade never decreases across many molts', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     let prev = 0;
     const checkpoints = [6, 11, 21, 31, 41, 100, 160].map((h) => WEEK_ANCHOR + h * HOUR);
@@ -198,7 +210,7 @@ describe('engine — monotonic grades', () => {
   });
 
   it('records lastGradeRoll for the transparency UI', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     eng.advanceTo(WEEK_ANCHOR + 6 * HOUR);
     const roll = eng.state().pet.lastGradeRoll;
@@ -211,7 +223,7 @@ describe('engine — monotonic grades', () => {
 
   it('A->S odds are capped at 6% even with max activity modifier', () => {
     // Drive a pet to grade A then inspect the roll chance whenever from === 'A'.
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     const seenAtoS: number[] = [];
     for (let h = 6; h < 160; h += 5) {
@@ -226,7 +238,7 @@ describe('engine — monotonic grades', () => {
 describe('engine — normalization (model-neutral, pillar 2)', () => {
   it('10x token volume with the same pattern yields the same grade trajectory', () => {
     const run = (mult: number) => {
-      const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+      const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
       const events = denseWeek().map((e) => ({
         ...e,
         inputTokens: e.inputTokens * mult,
@@ -245,7 +257,7 @@ describe('engine — normalization (model-neutral, pillar 2)', () => {
 
   it('different model id (same pattern) does not change grade trajectory', () => {
     const run = (modelId: string) => {
-      const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+      const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
       eng.ingest(denseWeek(modelId));
       eng.advanceTo(WEEK_ANCHOR + WEEK_MS - HOUR);
       return eng.state().pet.grade;
@@ -259,7 +271,7 @@ describe('engine — determinism & resume', () => {
   it('same state + events + now => deep-equal results', () => {
     const events = denseWeek();
     const mk = () => {
-      const e = createEngine(makePack(), { adapters: [staticAdapter()] });
+      const e = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
       e.ingest(events);
       return e;
     };
@@ -274,18 +286,22 @@ describe('engine — determinism & resume', () => {
   it('replay from scratch equals resume from a mid-week snapshot', () => {
     const events = denseWeek();
     // Full run to the end.
-    const full = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const full = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     full.ingest(events);
     full.advanceTo(WEEK_ANCHOR + 100 * HOUR);
     const fullState = full.state();
 
     // Two-step run: snapshot mid-week, resume from it (re-feeding all events).
-    const step1 = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const step1 = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     step1.ingest(events);
     step1.advanceTo(WEEK_ANCHOR + 40 * HOUR);
     const snapshot = step1.state();
 
-    const resumed = createEngine(makePack(), { adapters: [staticAdapter()] }, snapshot);
+    const resumed = createEngine(
+      makePack(),
+      { adapters: adapters(), cycle: staticCycle() },
+      snapshot,
+    );
     resumed.ingest(events); // caller re-feeds full history on resume
     resumed.advanceTo(WEEK_ANCHOR + 100 * HOUR);
 
@@ -293,7 +309,7 @@ describe('engine — determinism & resume', () => {
   });
 
   it('state() is JSON-safe and round-trips', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     eng.advanceTo(WEEK_ANCHOR + 30 * HOUR);
     const st = eng.state();
@@ -304,7 +320,7 @@ describe('engine — determinism & resume', () => {
   });
 
   it('advancing to the same now twice is idempotent for state', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     eng.advanceTo(WEEK_ANCHOR + 30 * HOUR);
     const s1 = eng.state();
@@ -316,7 +332,7 @@ describe('engine — determinism & resume', () => {
 
 describe('engine — rebirth, lineage, archive', () => {
   it('rebirth archives the life, increments generation, restarts at C', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     const effects = eng.advanceTo(WEEK_ANCHOR + WEEK_MS + HOUR);
     expect(effects.some((e) => e.type === 'rebirth')).toBe(true);
@@ -328,7 +344,7 @@ describe('engine — rebirth, lineage, archive', () => {
   });
 
   it('archive overwrites only when strictly better (grade, then stat total)', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     const st = eng.state();
     // Manually craft an engine state with a known archive entry, then rebirth a
     // worse life and confirm no overwrite, a better life and confirm overwrite.
@@ -343,7 +359,7 @@ describe('engine — rebirth, lineage, archive', () => {
   });
 
   it('captures per-species Dex records across the life (dex_record effects + state)', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     const effects = eng.advanceTo(WEEK_ANCHOR + WEEK_MS + HOUR);
     expect(effects.some((e) => e.type === 'dex_record')).toBe(true);
@@ -364,12 +380,12 @@ describe('engine — rebirth, lineage, archive', () => {
   });
 
   it('tolerates a resumed pre-v3 snapshot with no dexRecords (no crash)', () => {
-    const seed = createEngine(makePack(), { adapters: [staticAdapter()] }).state();
+    const seed = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() }).state();
     const legacy = { ...seed } as Record<string, unknown>;
     delete legacy.dexRecords; // simulate a save written before SCHEMA_VERSION 3
     const eng = createEngine(
       makePack(),
-      { adapters: [staticAdapter()] },
+      { adapters: adapters(), cycle: staticCycle() },
       legacy as unknown as GameState,
     );
     eng.ingest(denseWeek());
@@ -379,7 +395,7 @@ describe('engine — rebirth, lineage, archive', () => {
   });
 
   it('inheritance carries stats forward as a per-stat floor (cap 70%)', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     eng.advanceTo(WEEK_ANCHOR + WEEK_MS + HOUR);
     const st = eng.state();
@@ -389,7 +405,7 @@ describe('engine — rebirth, lineage, archive', () => {
   });
 
   it('a zero-usage week makes the new egg dormant', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     // Usage only in week 0; week 1 has none.
     eng.ingest(denseWeek());
     eng.advanceTo(WEEK_ANCHOR + 2 * WEEK_MS + HOUR);
@@ -403,7 +419,7 @@ describe('engine — rebirth, lineage, archive', () => {
 
 describe('engine — achievements & completion', () => {
   it('grants stage and grade achievements with their rewards', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     const effects = eng.advanceTo(WEEK_ANCHOR + WEEK_MS - HOUR);
     const ach = effects.filter(
@@ -420,7 +436,7 @@ describe('engine — achievements & completion', () => {
   });
 
   it('does not grant the same achievement twice', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     const e1 = eng.advanceTo(WEEK_ANCHOR + 30 * HOUR);
     const e2 = eng.advanceTo(WEEK_ANCHOR + 60 * HOUR);
@@ -430,7 +446,7 @@ describe('engine — achievements & completion', () => {
   });
 
   it('completion() is a weighted union (dex 40, achv 40, hab 10, trk 10)', () => {
-    const eng = createEngine(makePack(), { adapters: [staticAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() });
     eng.ingest(denseWeek());
     eng.advanceTo(WEEK_ANCHOR + WEEK_MS - HOUR);
     const c = eng.completion();
@@ -446,7 +462,7 @@ describe('engine — achievements & completion', () => {
 
 describe('engine — dynamic policy parity', () => {
   it('dynamic policy also molts and evolves deterministically', () => {
-    const eng = createEngine(makePack(), { adapters: [dynamicAdapter()] });
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: subscriptionCycle() });
     // Continuous usage opens one window per 5h+ gap.
     const events: UsageEvent[] = [];
     for (let w = 0; w < 6; w++) {

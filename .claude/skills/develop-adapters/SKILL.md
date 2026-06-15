@@ -10,6 +10,12 @@ and `docs/design/architecture.md` (adapter layer). Adapters are versioned plugin
 `UsageEvent` stream; the engine never knows which agent produced an event. Format
 drift in any provider = adapter patch, never an engine change.
 
+**Adapters are pure data sources.** `AdapterConfig` is `{ provider, paths }` only — no plan,
+no cycle policy, no clock. Within one adapter, API-billed and subscription-billed usage coexist
+in the same stream and are emitted together (invariant 3: no billing/model judgment — every
+token is essence). The cycle clock is a single pet-global choice (`UserConfig.cycle`), never per
+adapter; see `develop-game-engine`.
+
 ## Iron rules
 
 - **Read-only, always.** Open provider files for reading only; never write inside a
@@ -64,8 +70,9 @@ drift in any provider = adapter patch, never an engine change.
 - Caveats: ≥3 JSONL format generations → format detection required; some early-Sept-2025
   builds lack model metadata (skip those); `history.jsonl` can be size-capped;
   local persistence can be disabled by user config (init must detect & warn).
-- ChatGPT plans have 5-hour + weekly windows → dynamic cycle policy, same shape as
-  Claude subscriptions.
+- ChatGPT plans have 5-hour + weekly windows, the same shape as Claude subscriptions —
+  informational only. The adapter still carries no policy; if the player picks the global
+  subscription cycle with this provider as the anchor, its session rhythm drives the clock.
 
 ## OpenCode — SHIPPED (`src/opencode/{index,parse}.ts`) — verified June 2026, v1.17.4
 
@@ -96,7 +103,9 @@ drift in any provider = adapter patch, never an engine change.
   than throw if the live WAL db is locked.
 - **Read-only enforcement**: open with `{ readOnly: true }` — must not create `-shm` or
   `-wal` files; if open fails, catch and return empty.
-- No inherent rate limits → **static / api cycle policy** (`defaultPlan: 'api'`).
+- No inherent rate-limit windows. The adapter's optional `defaultPlan: 'api'` is just a HINT
+  the `tt init` wizard uses to default the global cycle choice toward **static** — it sets no
+  per-adapter policy (the cycle is pet-global).
 
 **Legacy fallback** (OpenCode < ~v1.x):
 

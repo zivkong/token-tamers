@@ -19,8 +19,9 @@ must be initialized once via the repo's Wiki tab before Actions can push to it.
 
 ## Page map (target)
 
-Home/philosophy · Getting started (`tt init`, per-provider setup, plan types,
-static vs dynamic cycles, 10-min egg fast-hatch, adapter troubleshooting, updating
+Home/philosophy · Getting started (`tt init`, adapter detection, the one global
+cycle choice — subscription vs static — and anchor-adapter pick, 10-min egg
+fast-hatch, adapter troubleshooting, updating
 — the opt-in, off-by-default `tt update`) · Game
 guide (lifecycle, egg→sprite hatch, stages, Houses, traits table, patterns,
 mutations, Dormant) · Grades & the Archive (formula concepts, overwrite rules,

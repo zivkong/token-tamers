@@ -128,12 +128,12 @@ describe('runShell loop', () => {
     expect(sink.toString()).toContain('⚙ Settings');
   });
 
-  it('edits an adapter plan with ←→ and persists the change', async () => {
+  it('edits the global cycle policy with ←→ and persists the change', async () => {
     const input = manualInput();
     const host = makeHost();
     const sink = new StringSink();
-    let savedPlan: string | null = null;
     let savedPolicy: string | null = null;
+    let savedAnchor: string | null = null;
     let saveCount = 0;
     const done = runShell({
       host,
@@ -144,20 +144,22 @@ describe('runShell loop', () => {
       size: () => ({ cols: 100, rows: 30 }),
       manageTerminal: false,
       maxFrames: 5,
-      adapters: [{ provider: 'claude-code', plan: 'subscription', policy: 'dynamic' }],
-      onAdaptersChange: (a) => {
+      adapters: [{ provider: 'claude-code' }],
+      cyclePolicy: 'subscription',
+      anchorAdapter: 'claude-code',
+      onCycleChange: (policy, anchor) => {
         saveCount += 1;
-        savedPlan = a[0]?.plan ?? null;
-        savedPolicy = a[0]?.policy ?? null;
+        savedPolicy = policy;
+        savedAnchor = anchor;
       },
     });
     input.push({ type: 'key', name: '4' }); // open settings (update-mode field focused)
-    input.push({ type: 'key', name: 'down' }); // move to the first adapter's plan field
-    input.push({ type: 'key', name: 'right' }); // cycle plan subscription -> api
+    input.push({ type: 'key', name: 'down' }); // move to the global cycle field (index 1)
+    input.push({ type: 'key', name: 'right' }); // cycle subscription -> static
     await done;
     expect(saveCount).toBe(1);
-    expect(savedPlan).toBe('api'); // plan cycled
-    expect(savedPolicy).toBe('dynamic'); // cycle policy untouched
+    expect(savedPolicy).toBe('static'); // policy cycled
+    expect(savedAnchor).toBe(''); // static drops the anchor
   });
 
   it('edits the opt-in update mode with ←→ and persists to settings.json path', async () => {
@@ -175,9 +177,11 @@ describe('runShell loop', () => {
       size: () => ({ cols: 100, rows: 30 }),
       manageTerminal: false,
       maxFrames: 4,
-      adapters: [{ provider: 'claude-code', plan: 'subscription', policy: 'dynamic' }],
+      adapters: [{ provider: 'claude-code' }],
+      cyclePolicy: 'subscription',
+      anchorAdapter: 'claude-code',
       updateMode: 'off',
-      onAdaptersChange: () => {
+      onCycleChange: () => {
         adapterSaves += 1;
       },
       onUpdateModeChange: (mode) => {
@@ -188,6 +192,6 @@ describe('runShell loop', () => {
     input.push({ type: 'key', name: 'right' }); // cycle off -> notify
     await done;
     expect(savedMode).toBe('notify'); // update mode persisted via its own hook
-    expect(adapterSaves).toBe(0); // adapter persistence untouched
+    expect(adapterSaves).toBe(0); // cycle persistence untouched
   });
 });

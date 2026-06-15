@@ -10,7 +10,7 @@
  * `styled` is false every helper returns plain text that reads well in CI.
  */
 
-import type { ColorPreference, UpdateMode } from '@token-tamers/core';
+import type { ColorPreference, CyclePolicyKind, UpdateMode } from '@token-tamers/core';
 import { fgSgr, hexToRgb, type ColorMode } from '@token-tamers/tui';
 
 // ---------------------------------------------------------------------------
@@ -89,22 +89,50 @@ export function formatEnableQuestion(displayName: string, styled: boolean): stri
   return `  Enable ${bold(displayName, styled)}? ${yn} `;
 }
 
-/** Format the plan-type question with the adapter's defaultPlan highlighted. */
-export function formatPlanQuestion(
-  defaultPlan: 'subscription' | 'api' | undefined,
-  styled: boolean,
-): string {
-  const def = defaultPlan === 'api' ? 'api' : 'subscription';
+/**
+ * Format the pet-global cycle question. ONE clock for the pet:
+ *   (s)ubscription — 5-h windows inferred from your subscription's session rhythm
+ *   st(a)tic       — fixed 5-h windows from an anchor (API / no inherent limits)
+ */
+export function formatCycleQuestion(defaultPolicy: CyclePolicyKind, styled: boolean): string {
+  const key = defaultPolicy === 'static' ? 'a' : 's';
   if (!styled) {
-    return `  Plan — (s)ubscription or (a)pi? [${def === 'subscription' ? 's' : 'a'}] `;
+    return `  Cycle — (s)ubscription (limit windows) or st(a)tic (fixed/API)? [${key}] `;
   }
   const sub =
-    def === 'subscription'
+    defaultPolicy === 'subscription'
       ? bold(paint(HOUSE_TINTS.accent, '(s)ubscription', styled), styled)
       : dim('(s)ubscription', styled);
-  const api =
-    def === 'api' ? bold(paint(HOUSE_TINTS.accent, '(a)pi', styled), styled) : dim('(a)pi', styled);
-  return `  Plan — ${sub} or ${api}? ${dim(def === 'subscription' ? '[s] ' : '[a] ', styled)}`;
+  const stat =
+    defaultPolicy === 'static'
+      ? bold(paint(HOUSE_TINTS.accent, 'st(a)tic', styled), styled)
+      : dim('st(a)tic', styled);
+  return `  Cycle — ${sub} or ${stat}? ${dim(`[${key}]`, styled)} `;
+}
+
+/** Map a raw cycle answer to a policy; an answer starting 'a' = static, else subscription. */
+export function parseCycleChoice(raw: string, fallback: CyclePolicyKind): CyclePolicyKind {
+  const c = raw.trim().toLowerCase()[0];
+  if (c === 'a' || c === 't') return 'static';
+  if (c === 's') return 'subscription';
+  return fallback;
+}
+
+/**
+ * Format the anchor question (subscription + multiple adapters): which provider's
+ * subscription drives the molt clock. Options are numbered; the default is `[1]`.
+ */
+export function formatAnchorQuestion(adapterIds: readonly string[], styled: boolean): string {
+  const opts = adapterIds.map((id, i) => `(${i + 1}) ${id}`).join('  ');
+  if (!styled) return `  Anchor — whose subscription drives the clock? ${opts} [1] `;
+  return `  Anchor — ${dim('whose subscription drives the clock?', styled)} ${opts} ${dim('[1]', styled)} `;
+}
+
+/** Map a raw anchor answer (1-based index) to an adapter id; out-of-range = first. */
+export function parseAnchorChoice(raw: string, adapterIds: readonly string[]): string {
+  const n = Number.parseInt(raw.trim(), 10);
+  if (Number.isInteger(n) && n >= 1 && n <= adapterIds.length) return adapterIds[n - 1]!;
+  return adapterIds[0]!;
 }
 
 /** Format the "enter a custom data path" prompt shown when an agent isn't found. */

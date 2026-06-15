@@ -2,7 +2,7 @@
  * Model-pattern matching, House/gene resolution, and species stat budgeting.
  */
 
-import type { ModelRule, PetState, SpeciesDef, Stats, UsageEvent } from '../types';
+import type { ModelRule, PetState, SpeciesDef, Stats } from '../types';
 import { STAGE_STAT_BUDGET } from './constants';
 
 /** First-match-wins model->House/gene resolution with '*' wildcard support. */
@@ -38,16 +38,6 @@ export function statsForSpecies(species: SpeciesDef): Stats {
     wis: Math.round(w.wis * scale),
     grt: Math.round(w.grt * scale),
   };
-}
-
-/** Filter events to a single adapter's contribution inside a window. */
-export function windowEvents(
-  events: readonly UsageEvent[],
-  adapter: string,
-  windowStart: number,
-  windowEnd: number,
-): UsageEvent[] {
-  return events.filter((e) => e.adapter === adapter && e.ts >= windowStart && e.ts < windowEnd);
 }
 
 export function cloneStats(s: Stats): Stats {

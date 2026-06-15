@@ -3,13 +3,49 @@
  */
 
 import fs from 'node:fs';
-import type { UserConfig } from '@token-tamers/core';
+import { SCHEMA_VERSION, type CycleConfig, type UserConfig } from '@token-tamers/core';
 import { pathFor, readJsonOrNull, writeJsonAtomic } from './atomic';
 
 export const CONFIG_FILE = 'config.json';
 
+/** The pre-v4 per-adapter shape (cycle fields lived on each adapter). */
+interface LegacyAdapter {
+  provider: string;
+  paths: string[];
+  plan?: 'subscription' | 'api';
+  cyclePolicy?: 'dynamic' | 'static';
+  weekAnchor?: number;
+}
+
 export function loadConfig(): UserConfig | null {
-  return readJsonOrNull<UserConfig>(CONFIG_FILE);
+  const raw = readJsonOrNull<UserConfig & { adapters: LegacyAdapter[] }>(CONFIG_FILE);
+  return raw === null ? null : migrateConfig(raw);
+}
+
+/**
+ * Forward-migrate a loaded config to the current schema.
+ *
+ * v3 → v4: the cycle clock moved from per-adapter (`plan`/`cyclePolicy`/
+ * `weekAnchor`) to a single pet-global `cycle` (CycleConfig). A config that
+ * predates v4 has no `cycle`; synthesize one from its legacy adapters — if any
+ * adapter ran the dynamic (subscription) policy, the pet is on a subscription
+ * clock anchored to the FIRST such adapter; otherwise it is static. The week
+ * anchor carries over from the first adapter. Each adapter is then slimmed to
+ * `{ provider, paths }`. Idempotent: a config that already has `cycle` is returned
+ * unchanged (aside from the stamped schema version).
+ */
+function migrateConfig(raw: UserConfig & { adapters: LegacyAdapter[] }): UserConfig {
+  const adapters = (raw.adapters ?? []).map((a) => ({ provider: a.provider, paths: a.paths }));
+  const cycle = raw.cycle ?? synthesizeCycle(raw.adapters ?? []);
+  return { schemaVersion: SCHEMA_VERSION, cycle, adapters, render: raw.render };
+}
+
+/** Derive a pet-global CycleConfig from legacy per-adapter cycle fields. */
+function synthesizeCycle(adapters: readonly LegacyAdapter[]): CycleConfig {
+  const weekAnchor = adapters[0]?.weekAnchor ?? 0;
+  const sub = adapters.find((a) => a.cyclePolicy === 'dynamic' || a.plan === 'subscription');
+  if (sub) return { policy: 'subscription', anchorAdapter: sub.provider, weekAnchor };
+  return { policy: 'static', weekAnchor };
 }
 
 export function saveConfig(config: UserConfig): void {

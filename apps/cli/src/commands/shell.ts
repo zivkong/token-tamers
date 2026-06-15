@@ -4,14 +4,7 @@
 
 import os from 'node:os';
 import { runShell, type AdapterInfo, type ColorMode, type ShellInfo } from '@token-tamers/tui';
-import type {
-  AdapterConfig,
-  ColorPreference,
-  CyclePolicyKind,
-  SettingsFile,
-  UpdateMode,
-  UserConfig,
-} from '@token-tamers/core';
+import type { ColorPreference, SettingsFile, UpdateMode, UserConfig } from '@token-tamers/core';
 import { catchUp, NotInitializedError } from '../services/catchup';
 import { createShellHost } from '../services/shell-host';
 import { backgroundUpdateCheck, pendingUpdate } from '../services/update-check';
@@ -50,33 +43,28 @@ function buildShellInfo(config: UserConfig): ShellInfo {
   };
 }
 
-/** The editable adapter summaries handed to the Settings page, in config order. */
+/** The read-only adapter summaries handed to the Settings page, in config order. */
 function toAdapterInfo(config: UserConfig): AdapterInfo[] {
-  return config.adapters.map((a) => ({
-    provider: a.provider,
-    plan: a.plan,
-    policy: a.cyclePolicy,
-  }));
+  return config.adapters.map((a) => ({ provider: a.provider }));
 }
 
 /**
- * Persist edited adapter plan/cycle toggles back to config.json. Edits map to
- * `config.adapters` by index (the Settings page preserves order) and only touch
- * `plan` + `cyclePolicy`; paths, week anchor, and the rest are kept intact. The
+ * Persist the edited pet-global cycle clock back to config.json. Only `cycle` is
+ * touched (policy + anchor); adapters, paths, and the week anchor are kept intact.
+ * Static drops the anchor; subscription keeps the chosen anchor adapter. The
  * running engine keeps the original config, so changes apply on the next launch.
  */
-function persistAdapters(config: UserConfig, edited: AdapterInfo[]): void {
+function persistCycle(config: UserConfig, policy: string, anchorAdapter: string): void {
   const next: UserConfig = {
     ...config,
-    adapters: config.adapters.map((a, i) => {
-      const e = edited[i];
-      if (!e) return a;
-      return {
-        ...a,
-        plan: e.plan as AdapterConfig['plan'],
-        cyclePolicy: e.policy as CyclePolicyKind,
-      };
-    }),
+    cycle:
+      policy === 'subscription'
+        ? {
+            policy: 'subscription',
+            anchorAdapter: anchorAdapter || config.adapters[0]?.provider,
+            weekAnchor: config.cycle.weekAnchor,
+          }
+        : { policy: 'static', weekAnchor: config.cycle.weekAnchor },
   };
   saveConfig(next);
 }
@@ -119,8 +107,10 @@ export async function runShellCommand(noColor: boolean, out: Out): Promise<void>
       color,
       info,
       adapters: toAdapterInfo(config),
+      cyclePolicy: config.cycle.policy,
+      anchorAdapter: config.cycle.anchorAdapter ?? '',
       updateMode: settings.update?.mode ?? 'off',
-      onAdaptersChange: (edited) => persistAdapters(config, edited),
+      onCycleChange: (policy, anchorAdapter) => persistCycle(config, policy, anchorAdapter),
       onUpdateModeChange: (mode) => persistUpdateMode(settings, mode),
     });
   } finally {

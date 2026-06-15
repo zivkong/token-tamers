@@ -91,6 +91,8 @@ interface DiversityCounts {
   morningCount: number;
   totalEssence: number;
   totalTokens: number;
+  /** Essence contributed by each adapter present in the window. */
+  essenceByAdapter: Map<string, number>;
 }
 
 /** Scan events once for all diversity/essence counts. */
@@ -99,6 +101,7 @@ function collectDiversityCounts(sorted: readonly UsageEvent[]): DiversityCounts 
   const adapters = new Set<string>();
   const models = new Set<string>();
   const langs = new Set<string>();
+  const essenceByAdapter = new Map<string, number>();
   let nightCount = 0;
   let morningCount = 0;
   let totalEssence = 0;
@@ -112,8 +115,10 @@ function collectDiversityCounts(sorted: readonly UsageEvent[]): DiversityCounts 
     const h = hourOf(ev.ts);
     if (h < 6 || h >= 22) nightCount++;
     if (h >= 5 && h < 9) morningCount++;
-    totalEssence += eventEssence(ev);
+    const ess = eventEssence(ev);
+    totalEssence += ess;
     totalTokens += eventTokens(ev);
+    essenceByAdapter.set(ev.adapter, (essenceByAdapter.get(ev.adapter) ?? 0) + ess);
   }
 
   return {
@@ -125,7 +130,37 @@ function collectDiversityCounts(sorted: readonly UsageEvent[]): DiversityCounts 
     morningCount,
     totalEssence,
     totalTokens,
+    essenceByAdapter,
   };
+}
+
+/**
+ * Combined essence ratio under the multi-provider normalization rule (design §6):
+ * each adapter's window essence is normalized against ITS OWN baseline mean, then
+ * combined — so adding a second agent diversifies diet without inflating power.
+ *
+ * `Σ essence_a` over adapters that have a baseline, divided by `Σ mean_a` over
+ * those same adapters. Active adapters with no baseline yet are treated as neutral
+ * (excluded from both sums). With nothing normalizable the ratio is 1 when the
+ * window had usage, else 0 — matching single-adapter cold start. Reduces EXACTLY
+ * to `totalEssence / mean` for one adapter.
+ */
+function combinedEssenceRatio(
+  essenceByAdapter: Map<string, number>,
+  baselineMeanByAdapter: Record<string, number>,
+  eventCount: number,
+): number {
+  let num = 0;
+  let den = 0;
+  for (const [adapter, essence] of essenceByAdapter) {
+    const mean = baselineMeanByAdapter[adapter] ?? 0;
+    if (mean > 0) {
+      num += essence;
+      den += mean;
+    }
+  }
+  if (den > 0) return num / den;
+  return eventCount > 0 ? 1 : 0;
 }
 
 interface GapStats {
@@ -146,14 +181,17 @@ function computeGapStats(sorted: readonly UsageEvent[]): GapStats {
 
 /**
  * Compute window signals. `events` are the usage events inside the window (any
- * order). `baselineMean` is the per-adapter rolling mean window essence used to
- * normalize; pass 0 when no baseline exists yet (essenceRatio defaults to 1).
+ * order, any adapter — one window covers the whole pet). `baselineMeanByAdapter`
+ * maps each adapter id to its rolling mean window essence; the combined
+ * `essenceRatio` normalizes each adapter against its own baseline then sums (see
+ * {@link combinedEssenceRatio}). Pass `{}` when no baseline exists yet
+ * (essenceRatio defaults to 1 for a non-empty window).
  */
 export function computeWindowSignals(
   events: readonly UsageEvent[],
   windowStart: number,
   windowEnd: number,
-  baselineMean: number,
+  baselineMeanByAdapter: Record<string, number>,
 ): WindowSignals {
   const span = windowEnd - windowStart || WINDOW_MS;
   const sorted = [...events].sort((a, b) => a.ts - b.ts);
@@ -170,8 +208,11 @@ export function computeWindowSignals(
   const longestSessionEvents = sessionSizes.length ? Math.max(...sessionSizes) : 0;
   const shortSessionCount = sessionSizes.filter((n) => n <= 2).length;
 
-  const essenceRatio =
-    baselineMean > 0 ? counts.totalEssence / baselineMean : eventCount > 0 ? 1 : 0;
+  const essenceRatio = combinedEssenceRatio(
+    counts.essenceByAdapter,
+    baselineMeanByAdapter,
+    eventCount,
+  );
 
   return {
     sessionCount: counts.sessions.size,

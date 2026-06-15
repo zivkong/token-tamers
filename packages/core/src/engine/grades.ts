@@ -129,12 +129,16 @@ export function gradeOdds(
   let modifier = 1;
   let totalTokens = 0;
   if (pending.length > 0) {
-    let baselineMean = 0;
-    for (const b of Object.values(state.baselines)) baselineMean += b.meanWindowTokens;
+    // Per-adapter baseline means: the combined essence ratio normalizes each
+    // adapter against its own baseline (design §6), matching the molt path.
+    const meanByAdapter: Record<string, number> = {};
+    for (const [adapter, b] of Object.entries(state.baselines)) {
+      meanByAdapter[adapter] = b.meanWindowTokens;
+    }
     // windowStart === windowEnd makes computeWindowSignals fall back to the full
     // 5-h span for cap proximity, scored from the events' own timestamps.
     const start = Math.min(...pending.map((e) => e.ts));
-    const signals = computeWindowSignals(pending, start, start, baselineMean);
+    const signals = computeWindowSignals(pending, start, start, meanByAdapter);
     modifier = activityModifier(signals, state.pet.traits);
     totalTokens = signals.totalTokens;
   }

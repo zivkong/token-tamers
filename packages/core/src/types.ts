@@ -82,16 +82,39 @@ export interface Stats {
 // Cycle policies (real time -> abstract molt/rebirth events)
 // ---------------------------------------------------------------------------
 
-export type CyclePolicyKind = 'dynamic' | 'static';
+/**
+ * The pet-global cycle clock. ONE clock per pet, never per adapter — the pet has
+ * a single life. The player-facing choice:
+ *  - **subscription** — 5-h session windows inferred from usage gaps in the
+ *    ANCHOR adapter's stream (the provider whose subscription reset rhythm drives
+ *    the molt clock). Other adapters still feed essence; they never move the clock.
+ *  - **static** — fixed 5-h windows tiled from `weekAnchor`; any adapter's usage
+ *    can open a window.
+ */
+export type CyclePolicyKind = 'subscription' | 'static';
 
+export interface CycleConfig {
+  policy: CyclePolicyKind;
+  /**
+   * Subscription policy only: the adapter id whose usage gaps drive the inferred
+   * 5-h window clock. Omitted for static. When only one adapter is configured it
+   * is the implicit anchor.
+   */
+  anchorAdapter?: string;
+  /** Epoch ms of the 7-day rebirth anchor; Monday 00:00 local by convention. Both policies. */
+  weekAnchor: number;
+}
+
+/**
+ * A pure data source. An adapter declares only WHERE its logs live — every token
+ * it reports is essence, regardless of billing mode (API vs subscription usage in
+ * one provider are NOT distinguished; invariant 3 forbids model/billing judgment).
+ * The cycle clock is global (see {@link CycleConfig}), never per adapter.
+ */
 export interface AdapterConfig {
   provider: string;
   /** Data roots this adapter scans. */
   paths: string[];
-  plan: 'subscription' | 'api';
-  cyclePolicy: CyclePolicyKind;
-  /** Epoch ms of the week anchor (static policy); Monday 00:00 local by convention. */
-  weekAnchor: number;
 }
 
 export interface MoltEvent {
@@ -426,6 +449,8 @@ export type GameEffect =
 
 export interface EngineConfig {
   adapters: AdapterConfig[];
+  /** The pet-global cycle clock (molt windows + weekly rebirth). */
+  cycle: CycleConfig;
   /**
    * Optional epoch-ms instant the pet starts living from on a fresh `tt init`.
    * When present, `initialState` seeds `simulatedTo` and `pet.hatchedAt` to it so
@@ -475,6 +500,8 @@ export interface Engine {
 
 export interface UserConfig {
   schemaVersion: number;
+  /** The pet-global cycle clock; chosen once at `tt init`. */
+  cycle: CycleConfig;
   adapters: AdapterConfig[];
   render?: { fps?: number; color?: 'truecolor' | '256' | '8' | 'none' };
 }

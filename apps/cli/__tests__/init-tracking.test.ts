@@ -198,16 +198,10 @@ describe('catchUp — a late-added adapter is forward-only (no stranding, no bac
     expect(before.baselines['opencode']).toBeUndefined();
 
     // The user adds OpenCode to config.json by hand (NO re-init) — it has a long
-    // history, all of which PREDATES the current sim clock (2024-03-20).
+    // history, all of which PREDATES the current sim clock (2024-03-20). Adapters
+    // are pure data sources now; the cycle clock stays whatever init wrote.
     const cfg = loadConfig()!;
-    const weekAnchor = cfg.adapters.find((a) => a.provider === 'claude-code')!.weekAnchor;
-    cfg.adapters.push({
-      provider: 'opencode',
-      paths: [opencodeDir],
-      plan: 'api',
-      cyclePolicy: 'static',
-      weekAnchor,
-    });
+    cfg.adapters.push({ provider: 'opencode', paths: [opencodeDir] });
     fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify(cfg, null, 2) + '\n', 'utf8');
     writeOpencodeFixture(opencodeDir, '2024-03-08T08:00:00.000Z', 8);
 

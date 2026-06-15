@@ -1,15 +1,15 @@
 /**
  * Settings page: a board of build/config facts plus the shell's only editable
- * surface — the opt-in update mode and per-adapter `plan` / `cycle` toggles.
- * Everything else (version, runtime, display, data dir) is read-only; Token
- * Tamers is fully idle, so adding/removing adapters and editing scan paths stays
- * in `tt init`.
+ * surface — the opt-in update mode and the pet-global cycle clock (policy + the
+ * subscription anchor adapter). Everything else (version, runtime, display, data
+ * dir, the adapter list) is read-only; Token Tamers is fully idle, so adding/
+ * removing adapters and editing scan paths stays in `tt init`.
  *
  * Editing is keyboard/mouse driven by the shell: ↑↓ move `selected` across the
- * flat field list (index 0 = update mode, then two fields per adapter), ←→ cycle
- * the focused field's value. The page stays a pure render of `info` (static) +
- * `settings` (live) and registers a hit region per field; the shell owns mutation
- * + persistence (update mode → settings.json, adapters → config.json).
+ * flat field list (0 = update mode, 1 = cycle policy, 2 = anchor when shown), ←→
+ * cycle the focused field's value. The page stays a pure render of `info` (static)
+ * + `settings` (live) and registers a hit region per field; the shell owns
+ * mutation + persistence (update mode → settings.json, cycle → config.json).
  */
 
 import type { ColorMode, Rgb } from '../terminal/ansi';
@@ -26,18 +26,25 @@ const UNKNOWN = '—';
 
 /** The cyclable values for each editable field, in toggle order. */
 export const UPDATE_VALUES: readonly string[] = ['off', 'notify', 'auto'];
-export const PLAN_VALUES: readonly string[] = ['subscription', 'api'];
-export const POLICY_VALUES: readonly string[] = ['dynamic', 'static'];
+export const CYCLE_VALUES: readonly string[] = ['subscription', 'static'];
 
-/** Flat-list selection index of the global update-mode field (always first). */
+/** Flat-list selection indices of the global editable fields. */
 export const UPDATE_FIELD_INDEX = 0;
+export const CYCLE_FIELD_INDEX = 1;
+export const ANCHOR_FIELD_INDEX = 2;
+
+/** Whether the subscription anchor field is shown (subscription + >1 adapter). */
+export function anchorFieldShown(state: SettingsState): boolean {
+  return state.cyclePolicy === 'subscription' && state.adapters.length > 1;
+}
 
 /**
- * Number of editable fields: the global update mode (index 0) plus two per
- * adapter. Always ≥ 1, so the Settings page is editable even with no adapters.
+ * Number of editable fields: the update mode (0) and the cycle policy (1) are
+ * always present; the subscription anchor (2) appears only when subscription is
+ * active with more than one adapter.
  */
 export function settingsFieldCount(state: SettingsState): number {
-  return 1 + state.adapters.length * 2;
+  return anchorFieldShown(state) ? 3 : 2;
 }
 
 /** Wrap a value to the next/previous entry in its option list. */
@@ -55,23 +62,32 @@ export function isUpdateFieldSelected(state: SettingsState): boolean {
 
 /**
  * Cycle the currently-focused field by `delta` (+1 / -1), mutating the working
- * copy in place. Index 0 is the global update mode; thereafter even/odd offsets
- * are an adapter's plan / cycle policy. No-op when nothing is focused. The shell
- * calls this, then persists (update mode → settings.json, adapters → config.json).
+ * copy in place. Index 0 = update mode, 1 = cycle policy, 2 = subscription anchor.
+ * No-op when nothing is focused. The shell calls this, then persists (update mode
+ * → settings.json, cycle → config.json).
  */
 export function cycleSelectedField(state: SettingsState, delta: number): void {
   if (state.selected < 0 || state.selected >= settingsFieldCount(state)) return;
-  if (isUpdateFieldSelected(state)) {
+  if (state.selected === UPDATE_FIELD_INDEX) {
     state.updateMode = nextValue(UPDATE_VALUES, state.updateMode, delta);
     return;
   }
-  const adapterField = state.selected - 1;
-  const adapter = state.adapters[Math.floor(adapterField / 2)];
-  if (!adapter) return;
-  if (adapterField % 2 === 0) {
-    adapter.plan = nextValue(PLAN_VALUES, adapter.plan, delta);
-  } else {
-    adapter.policy = nextValue(POLICY_VALUES, adapter.policy, delta);
+  if (state.selected === CYCLE_FIELD_INDEX) {
+    state.cyclePolicy = nextValue(CYCLE_VALUES, state.cyclePolicy, delta);
+    // Keep the anchor coherent with the policy: subscription needs an anchor (the
+    // first adapter by default); static has none. The anchor field then appears/
+    // disappears via settingsFieldCount.
+    if (state.cyclePolicy === 'subscription') {
+      if (!state.anchorAdapter) state.anchorAdapter = state.adapters[0]?.provider ?? '';
+    } else {
+      state.anchorAdapter = '';
+    }
+    return;
+  }
+  // Anchor field: cycle through the configured adapter ids.
+  if (state.selected === ANCHOR_FIELD_INDEX && anchorFieldShown(state)) {
+    const ids = state.adapters.map((a) => a.provider);
+    state.anchorAdapter = nextValue(ids, state.anchorAdapter, delta);
   }
 }
 
@@ -113,9 +129,12 @@ export function renderSettingsPage(ctx: RenderContext): void {
   // Opt-in update mode — the first EDITABLE field (off ▸ notify ▸ auto).
   y = drawUpdateField(ctx, y, row);
 
-  // Editable adapters.
+  // Pet-global cycle clock — editable: policy (▸ anchor when subscription).
+  y = drawCycleFields(ctx, y);
+
+  // Read-only adapter list (data sources only; managed by `tt init`).
   y += 1;
-  drawAdapters(ctx, y);
+  drawAdapters(ctx, row);
 
   // Standard footer: the editing-controls hint. The nav legend is intentionally
   // gone — the global "── Menu ──" buttons below already provide page navigation.
@@ -163,52 +182,47 @@ function drawUpdateField(
   return y + 1;
 }
 
-/** Draw the editable adapter block; returns the next free canvas row. */
-function drawAdapters(ctx: RenderContext, top: number): number {
-  const { buf, layout, settings } = ctx;
-  const labelX = layout.canvasX + 1;
-  const adapters = settings?.adapters ?? [];
-
-  buf.text(labelX, top, 'Adapters', LABEL, null);
-  buf.text(
-    layout.canvasX + 13,
-    top,
-    adapters.length === 0 ? 'none configured — run `tt init`' : `${adapters.length} configured`,
-    DIM,
-    null,
-  );
-
-  let y = top + 1;
-  for (let ai = 0; ai < adapters.length; ai++) {
-    const adapter = adapters[ai];
-    if (!adapter) continue;
-    drawField(ctx, y, { adapterIndex: ai, field: 'plan', provider: adapter.provider });
-    y += 1;
-    drawField(ctx, y, { adapterIndex: ai, field: 'cycle', provider: null });
-    y += 1;
+/**
+ * Draw the editable cycle fields: the policy (index 1) and, when subscription is
+ * active with more than one adapter, the anchor adapter (index 2). Returns the
+ * next free canvas row. Read-only fallback when there is no live settings state.
+ */
+function drawCycleFields(ctx: RenderContext, y: number): number {
+  const { settings } = ctx;
+  if (!settings) {
+    ctx.buf.text(ctx.layout.canvasX + 1, y, 'Cycle', LABEL, null);
+    ctx.buf.text(ctx.layout.canvasX + 13, y, UNKNOWN, DIM, null);
+    return y + 1;
   }
-  return y;
+  drawEditableField(ctx, y, {
+    index: CYCLE_FIELD_INDEX,
+    label: 'Cycle',
+    value: settings.cyclePolicy,
+  });
+  let next = y + 1;
+  if (anchorFieldShown(settings)) {
+    drawEditableField(ctx, next, {
+      index: ANCHOR_FIELD_INDEX,
+      label: 'Anchor',
+      value: settings.anchorAdapter,
+    });
+    next += 1;
+  }
+  return next;
 }
 
-interface FieldOpts {
-  adapterIndex: number;
-  field: 'plan' | 'cycle';
-  /** Provider name to print on the plan row; null on the cycle row. */
-  provider: string | null;
+interface EditableField {
+  index: number;
+  label: string;
+  value: string;
 }
 
-/** Draw one editable field row (provider + label + ‹ value ›) and its hit region. */
-function drawField(ctx: RenderContext, y: number, opts: FieldOpts): void {
+/** Draw one global editable field row (label + ‹ value ›) and its hit region. */
+function drawEditableField(ctx: RenderContext, y: number, f: EditableField): void {
   const { buf, hits, layout, settings } = ctx;
   const { canvasX, canvasCols } = layout;
-  const adapter = settings?.adapters[opts.adapterIndex];
-  if (!adapter) return;
-
-  // +1: the global update-mode field occupies selection index 0.
-  const index = 1 + opts.adapterIndex * 2 + (opts.field === 'plan' ? 0 : 1);
-  const selected = settings?.selected === index;
-  const value = opts.field === 'plan' ? adapter.plan : adapter.policy;
-  const segment = `‹ ${value} ›`;
+  const selected = settings?.selected === f.index;
+  const segment = `‹ ${f.value} ›`;
 
   if (selected) {
     for (let x = 1; x < canvasCols - 1; x++) {
@@ -217,8 +231,17 @@ function drawField(ctx: RenderContext, y: number, opts: FieldOpts): void {
   }
   const bg = selected ? SELECT_BG : null;
   buf.text(canvasX + 1, y, selected ? '›' : ' ', VALUE_SELECTED, bg);
-  if (opts.provider) buf.text(canvasX + 3, y, opts.provider, TEXT, bg);
-  buf.text(canvasX + 17, y, opts.field === 'plan' ? 'plan' : 'cycle', DIM, bg);
-  buf.text(canvasX + 23, y, segment, selected ? VALUE_SELECTED : TEXT, bg);
-  hits.add(`settings:field:${index}`, canvasX, y, canvasCols, 1);
+  buf.text(canvasX + 3, y, f.label, LABEL, bg);
+  buf.text(canvasX + 13, y, segment, selected ? VALUE_SELECTED : TEXT, bg);
+  hits.add(`settings:field:${f.index}`, canvasX, y, canvasCols, 1);
+}
+
+/** Draw the read-only adapter list (data sources; managed by `tt init`). */
+function drawAdapters(ctx: RenderContext, row: (l: string, v: string, fg?: Rgb) => void): void {
+  const adapters = ctx.settings?.adapters ?? [];
+  if (adapters.length === 0) {
+    row('Adapters', 'none configured — run `tt init`', DIM);
+    return;
+  }
+  row('Adapters', adapters.map((a) => a.provider).join(', '), DIM);
 }

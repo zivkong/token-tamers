@@ -7,13 +7,13 @@ import {
   WEEK_MS,
   WINDOW_MS,
 } from '../src/cycle';
-import { dynamicAdapter, ev, HOUR, staticAdapter, WEEK_ANCHOR } from './fixture';
+import { ev, HOUR, staticCycle, subscriptionCycle, WEEK_ANCHOR } from './fixture';
 
 describe('cycle — static policy', () => {
   it('fires a molt only for windows that contained usage', () => {
     // Usage in window 0 (0h) and window 2 (10h), none in window 1.
     const events = [ev(0), ev(10 * HOUR)];
-    const cfg = staticAdapter();
+    const cfg = staticCycle();
     const out = deriveCycleEvents(events, cfg, 0, WEEK_ANCHOR + 20 * HOUR);
     const molts = out.filter((e) => e.type === 'molt');
     expect(molts).toHaveLength(2);
@@ -31,7 +31,7 @@ describe('cycle — static policy', () => {
   it('windows align to fixed 5h tiles from the anchor', () => {
     // Event at 4h59m is still in window 0; event at 5h01m is window 1.
     const events = [ev(WINDOW_MS - 60000), ev(WINDOW_MS + 60000)];
-    const cfg = staticAdapter();
+    const cfg = staticCycle();
     const out = deriveCycleEvents(events, cfg, 0, WEEK_ANCHOR + 12 * HOUR);
     const molts = out.filter((e) => e.type === 'molt');
     expect(molts).toHaveLength(2);
@@ -41,7 +41,7 @@ describe('cycle — static policy', () => {
 
   it('emits a rebirth at each 7-day boundary', () => {
     const events = [ev(HOUR), ev(8 * 24 * HOUR)];
-    const cfg = staticAdapter();
+    const cfg = staticCycle();
     const out = deriveCycleEvents(events, cfg, 0, WEEK_ANCHOR + 8 * 24 * HOUR);
     const rebirths = out.filter((e) => e.type === 'rebirth');
     expect(rebirths).toHaveLength(1);
@@ -55,7 +55,7 @@ describe('cycle — static policy', () => {
     // 33 full 5h windows fit in a 168h week (last closes at 165h, before 168h).
     // Put an event in that final in-week window; its molt precedes the rebirth.
     const events = [ev(33 * WINDOW_MS - HOUR)];
-    const cfg = staticAdapter();
+    const cfg = staticCycle();
     const out = deriveCycleEvents(events, cfg, 0, WEEK_ANCHOR + WEEK_MS + HOUR);
     const types = out.map((e) => e.type);
     expect(types).toEqual(['molt', 'rebirth']);
@@ -64,7 +64,7 @@ describe('cycle — static policy', () => {
 
   it('only emits events strictly after `after` and at or before `now`', () => {
     const events = [ev(0), ev(10 * HOUR)];
-    const cfg = staticAdapter();
+    const cfg = staticCycle();
     // after = first molt close, so only the second molt should appear.
     const out = deriveCycleEvents(events, cfg, WEEK_ANCHOR + WINDOW_MS, WEEK_ANCHOR + 20 * HOUR);
     const molts = out.filter((e) => e.type === 'molt');
@@ -76,7 +76,7 @@ describe('cycle — static policy', () => {
 describe('cycle — dynamic policy', () => {
   it('opens a window at first usage and closes 5h later', () => {
     const events = [ev(0), ev(HOUR), ev(2 * HOUR)];
-    const cfg = dynamicAdapter();
+    const cfg = subscriptionCycle();
     const out = deriveCycleEvents(events, cfg, 0, WEEK_ANCHOR + 6 * HOUR);
     const molts = out.filter((e) => e.type === 'molt');
     expect(molts).toHaveLength(1);
@@ -89,7 +89,7 @@ describe('cycle — dynamic policy', () => {
   it('opens a fresh window after the prior window closes', () => {
     // First window 0..5h (events at 0,1h). Gap; new event at 6h opens window 6..11h.
     const events = [ev(0), ev(HOUR), ev(6 * HOUR)];
-    const cfg = dynamicAdapter();
+    const cfg = subscriptionCycle();
     const out = deriveCycleEvents(events, cfg, 0, WEEK_ANCHOR + 12 * HOUR);
     const molts = out.filter((e) => e.type === 'molt');
     expect(molts).toHaveLength(2);
@@ -99,7 +99,7 @@ describe('cycle — dynamic policy', () => {
 
   it('does not emit a molt for a window whose close is beyond now', () => {
     const events = [ev(0)];
-    const cfg = dynamicAdapter();
+    const cfg = subscriptionCycle();
     // now is before the 5h close.
     const out = deriveCycleEvents(events, cfg, 0, WEEK_ANCHOR + 2 * HOUR);
     expect(out.filter((e) => e.type === 'molt')).toHaveLength(0);

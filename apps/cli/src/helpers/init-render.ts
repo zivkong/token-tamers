@@ -118,9 +118,20 @@ export function renderAdapterSkipped(styled: boolean): string {
   return `  ${dim('→ skipped', styled)}\n`;
 }
 
-export function renderAdapterEnabled(plan: string, styled: boolean): string {
-  if (!styled) return `  enabled (${plan}).\n`;
-  return `  ${paint(HOUSE_TINTS.aether, '●', styled)} ${dim(`enabled · ${plan}`, styled)}\n`;
+export function renderAdapterEnabled(styled: boolean): string {
+  if (!styled) return '  enabled.\n';
+  return `  ${paint(HOUSE_TINTS.aether, '●', styled)} ${dim('enabled', styled)}\n`;
+}
+
+/** Print the chosen pet-global cycle clock (subscription names its anchor adapter). */
+export function renderCycleChoice(
+  policy: string,
+  anchorAdapter: string | undefined,
+  styled: boolean,
+): string {
+  const label = policy === 'subscription' ? `subscription · anchor ${anchorAdapter}` : 'static';
+  if (!styled) return `  Cycle: ${label}.\n`;
+  return `  ${paint(HOUSE_TINTS.aether, '◆', styled)} ${dim(`cycle · ${label}`, styled)}\n`;
 }
 
 // ---------------------------------------------------------------------------

@@ -7,7 +7,11 @@ import type { Grade } from '../types';
 // v2: added `pet.stageMolts` (the per-stage maturity clock).
 // v3: added `state.dexRecords` (per-species top-3 snapshot store). Old saves
 // migrate forward by back-filling it from `archive` (see the cli state store).
-export const SCHEMA_VERSION = 3;
+// v4: the cycle clock moved from per-adapter (`AdapterConfig.plan`/`cyclePolicy`/
+// `weekAnchor`) to a single pet-global `UserConfig.cycle` (CycleConfig). Old
+// config.json migrates forward by synthesizing `cycle` from the legacy adapters
+// and slimming each adapter to `{ provider, paths }` (see the cli config store).
+export const SCHEMA_VERSION = 4;
 
 /** Max historical snapshots kept per species in the Dex record store. */
 export const MAX_DEX_RECORDS = 3;

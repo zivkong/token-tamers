@@ -7,7 +7,34 @@
 
 import { deriveCycleEvents, WEEK_MS } from '../cycle';
 import { eventEssence } from '../evaluation';
-import type { AdapterBaseline, AdapterConfig, GameState, MoltEvent, UsageEvent } from '../types';
+import type {
+  AdapterBaseline,
+  AdapterConfig,
+  CycleConfig,
+  GameState,
+  MoltEvent,
+  UsageEvent,
+} from '../types';
+
+/** Snapshot of each adapter's current rolling mean window essence. */
+export function baselineMeans(baselines: Record<string, AdapterBaseline>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [adapter, b] of Object.entries(baselines)) out[adapter] = b.meanWindowTokens;
+  return out;
+}
+
+/**
+ * Fold a closed window's essence into each contributing adapter's own baseline
+ * (design §6 — per-adapter self-normalization). Groups the window's events by
+ * adapter in deterministic order and applies the running-mean accumulator.
+ */
+export function foldWindowBaselines(state: GameState, evs: readonly UsageEvent[]): void {
+  const essenceByAdapter = new Map<string, number>();
+  for (const ev of evs) {
+    essenceByAdapter.set(ev.adapter, (essenceByAdapter.get(ev.adapter) ?? 0) + eventEssence(ev));
+  }
+  for (const [adapter, essence] of essenceByAdapter) updateBaseline(state, adapter, essence);
+}
 
 export function updateBaseline(state: GameState, adapter: string, windowEssence: number): void {
   const prev = state.baselines[adapter];
@@ -37,18 +64,23 @@ export function hasFullWeekBaseline(baselines: Record<string, AdapterBaseline>):
 }
 
 /**
- * Seed the per-adapter normalization baselines purely from backfill history.
+ * Seed each adapter's normalization baseline from backfill history.
  *
- * For each adapter, derive every CLOSED 5-h window up to `now` using the SAME
- * cycle-derivation code the engine uses at runtime, then fold each window's
- * total essence through the exact `updateBaseline` accumulator — so the seeded
- * baseline equals what the engine would have produced by replaying those molts.
+ * The baseline answers "what's a normal-sized 5-h window of essence for THIS
+ * adapter?", so it is derived per adapter from that adapter's OWN event stream —
+ * each adapter self-normalizes (a non-anchor provider still gets a baseline even
+ * when the live molt clock is driven by a different anchor). Window SHAPE follows
+ * the global policy: static ⇒ fixed tiles from the week anchor; subscription ⇒
+ * 5-h windows inferred from the adapter's own usage gaps. Each window's essence is
+ * folded through the exact `updateBaseline` accumulator.
  *
- * Pure function of its inputs: identical (events, adapters, now) => identical
- * baselines. No wall clock, no randomness.
+ * For a single-adapter pet this is identical to replaying the global clock's molts
+ * (the lone adapter IS the anchor), so the seed == replay property holds for the
+ * common case. Pure: identical (events, cycle, adapters, now) => identical baselines.
  */
 export function seedBaselinesFromHistory(
   events: readonly UsageEvent[],
+  cycle: CycleConfig,
   adapters: readonly AdapterConfig[],
   now: number,
 ): Record<string, AdapterBaseline> {
@@ -58,14 +90,19 @@ export function seedBaselinesFromHistory(
     const adEvents = events
       .filter((e) => e.adapter === adapter.provider)
       .sort((a, b) => a.ts - b.ts);
-    // Only the normal 5-h windows feed the baseline; egg-hatch checkpoints are
-    // deliberately excluded from normalization (they never call updateBaseline
-    // in replay either), so this stays equal to the engine's accumulation.
-    const cycles = deriveCycleEvents(adEvents, adapter, -Infinity, now);
-    for (const cycle of cycles) {
-      if (cycle.type !== 'molt') continue;
-      const essence = windowEssence(adEvents, cycle);
-      updateBaseline(scratch, adapter.provider, essence);
+    if (adEvents.length === 0) continue;
+    // Self-derive this adapter's windows: static tiles, or subscription windows
+    // inferred from its OWN gaps (anchor = this adapter). Only the normal 5-h
+    // windows feed the baseline; egg-hatch checkpoints are excluded (they never
+    // call updateBaseline in replay either).
+    const adCycle: CycleConfig =
+      cycle.policy === 'static'
+        ? cycle
+        : { policy: 'subscription', anchorAdapter: adapter.provider, weekAnchor: cycle.weekAnchor };
+    const cycles = deriveCycleEvents(adEvents, adCycle, -Infinity, now);
+    for (const ev of cycles) {
+      if (ev.type !== 'molt') continue;
+      updateBaseline(scratch, adapter.provider, windowEssence(adEvents, ev));
     }
   }
   return scratch.baselines;

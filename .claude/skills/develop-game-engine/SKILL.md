@@ -37,28 +37,38 @@ identical results, forever. The engine is provider-blind: it consumes only norma
   obeys it. Keep the checkpoint a pure fn of (events, weekAnchor) — never gate the
   window SHAPE on pet state (it reshapes the chain and breaks replay==resume).
 
-## Cycle policies (real time → abstract events)
+## Cycle policy (ONE pet-global clock → abstract events)
 
-| Abstract event  | Dynamic policy (subscription)             | Static policy (API / OpenCode)                    |
-| --------------- | ----------------------------------------- | ------------------------------------------------- |
-| MOLT_CHECKPOINT | Inferred 5-h window close from usage gaps | Fixed 5-h windows from anchor; molts only if used |
-| REBIRTH         | Weekly limit reset                        | Every 7 days from week anchor                     |
+The cycle is pet-global, never per adapter: `EngineConfig.cycle` is a `CycleConfig
+{ policy: 'subscription' | 'static'; anchorAdapter?: string; weekAnchor }`. Molts +
+rebirths are derived ONCE over the merged event stream (`deriveCycleEvents`), so a
+single molt covers the whole pet (grade/trait/evolution roll once per window).
 
-Multi-provider players feed ONE pet: essence is normalized per adapter against that
-adapter's OWN baseline, then summed — a second agent diversifies diet, never inflates
-power.
+| Abstract event  | Subscription policy                                                            | Static policy                                           |
+| --------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| MOLT_CHECKPOINT | Inferred 5-h window close from usage gaps in the ANCHOR adapter's stream alone | Fixed 5-h windows from `weekAnchor`; molts only if used |
+| REBIRTH         | Every 7 days from `weekAnchor`                                                 | Every 7 days from `weekAnchor`                          |
+
+Adapters are pure data sources (`{ provider, paths }`) — no per-adapter plan/policy;
+API- and subscription-billed usage in one adapter are undifferentiated essence
+(invariant 3). Under the subscription policy only the anchor adapter opens/closes
+windows; every adapter still feeds essence into the open window. Multi-provider players
+feed ONE pet: essence is normalized per adapter against that adapter's OWN baseline, then
+combined (`combinedEssenceRatio`) — a second agent diversifies diet, never inflates power.
+The v3→v4 schema bump moved the cycle from per-adapter to `UserConfig.cycle` (cli config
+store migrates old configs forward).
 
 ## Signal mapping
 
-| Real-world signal                | Game meaning                                      |
-| -------------------------------- | ------------------------------------------------- |
-| Token consumption (any provider) | Nutrition/essence (baseline-normalized)           |
-| Model-ID mix                     | Diet → House/species (identity ONLY)              |
-| Session window close             | Molt                                              |
-| Week boundary                    | Rebirth                                           |
-| Riding a window to its cap       | Marathoner trigger                                |
-| Hitting weekly limit exactly     | Rare Limitbreaker evolution (dynamic policy only) |
-| Week of zero usage               | Dormant (cocoon, not death)                       |
+| Real-world signal                | Game meaning                                           |
+| -------------------------------- | ------------------------------------------------------ |
+| Token consumption (any provider) | Nutrition/essence (baseline-normalized)                |
+| Model-ID mix                     | Diet → House/species (identity ONLY)                   |
+| Session window close             | Molt                                                   |
+| Week boundary                    | Rebirth                                                |
+| Riding a window to its cap       | Marathoner trigger                                     |
+| Hitting weekly limit exactly     | Rare Limitbreaker evolution (subscription policy only) |
+| Week of zero usage               | Dormant (cocoon, not death)                            |
 
 ## Weekly arc & weather
 

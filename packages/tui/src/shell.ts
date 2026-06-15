@@ -56,15 +56,19 @@ export interface ShellOptions {
   color?: ColorMode;
   /** Static build/config facts surfaced on the Settings page. */
   info?: ShellInfo;
-  /** Initial adapter configs (a working copy is edited on the Settings page). */
+  /** Configured adapters (read-only display on the Settings page). */
   adapters?: AdapterInfo[];
+  /** Initial pet-global cycle policy ('subscription' | 'static'); defaults to 'static'. */
+  cyclePolicy?: string;
+  /** Initial subscription anchor adapter id; '' when static. */
+  anchorAdapter?: string;
   /** Initial opt-in update mode ('off' | 'notify' | 'auto'); defaults to 'off'. */
   updateMode?: string;
   /**
-   * Persist edited adapter plan/cycle toggles. Called on each change with the
-   * full working copy; the host writes config.json (applied on next launch).
+   * Persist the edited pet-global cycle clock. Called on each change with the new
+   * policy + anchor; the host writes config.json (applied on next launch).
    */
-  onAdaptersChange?: (adapters: AdapterInfo[]) => void;
+  onCycleChange?: (policy: string, anchorAdapter: string) => void;
   /**
    * Persist the edited opt-in update mode. Called with the new mode; the host
    * writes settings.json (applied on next launch). Off by default — the offline
@@ -109,8 +113,8 @@ interface ShellRuntime {
   info?: ShellInfo;
   /** Live, editable adapter state for the Settings page. */
   settings: SettingsState;
-  /** Persist hook for adapter edits (from options). */
-  onAdaptersChange?: (adapters: AdapterInfo[]) => void;
+  /** Persist hook for the pet-global cycle edit (from options). */
+  onCycleChange?: (policy: string, anchorAdapter: string) => void;
   /** Persist hook for the opt-in update-mode edit (from options). */
   onUpdateModeChange?: (mode: string) => void;
 }
@@ -139,9 +143,15 @@ function freshUi(): Record<PageId, PageUiState> {
  * the opt-in update mode. The update-mode field is always present (index 0), so
  * `selected` starts there and the page is editable even with no adapters.
  */
-function initialSettings(adapters: AdapterInfo[] | undefined, updateMode?: string): SettingsState {
-  const copy = (adapters ?? []).map((a) => ({ ...a }));
-  return { updateMode: updateMode ?? 'off', adapters: copy, selected: 0 };
+function initialSettings(options: ShellOptions): SettingsState {
+  const copy = (options.adapters ?? []).map((a) => ({ ...a }));
+  return {
+    updateMode: options.updateMode ?? 'off',
+    cyclePolicy: options.cyclePolicy ?? 'static',
+    anchorAdapter: options.anchorAdapter ?? '',
+    adapters: copy,
+    selected: 0,
+  };
 }
 
 /**
@@ -167,8 +177,8 @@ export async function runShell(options: ShellOptions): Promise<void> {
     flashUntilFrame: 0,
     quit: false,
     info: options.info,
-    settings: initialSettings(options.adapters, options.updateMode),
-    onAdaptersChange: options.onAdaptersChange,
+    settings: initialSettings(options),
+    onCycleChange: options.onCycleChange,
     onUpdateModeChange: options.onUpdateModeChange,
   };
 
@@ -339,12 +349,11 @@ function openDexDetail(rt: ShellRuntime, host: ShellHost): void {
 /** Cycle the focused Settings field and persist (no-op off the Settings page). */
 function adjustSetting(rt: ShellRuntime, delta: number): void {
   if (rt.page !== 'settings') return;
-  if (settingsFieldCount(rt.settings) === 0) return;
-  // The update-mode field persists to settings.json; adapter fields to config.json.
+  // The update-mode field persists to settings.json; the cycle fields to config.json.
   const updateField = isUpdateFieldSelected(rt.settings);
   cycleSelectedField(rt.settings, delta);
   if (updateField) rt.onUpdateModeChange?.(rt.settings.updateMode);
-  else rt.onAdaptersChange?.(rt.settings.adapters);
+  else rt.onCycleChange?.(rt.settings.cyclePolicy, rt.settings.anchorAdapter);
 }
 
 function handleMouse(

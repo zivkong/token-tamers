@@ -13,16 +13,16 @@ const TEST_INFO: ShellInfo = {
 };
 
 /**
- * A deterministic editable Settings state: update mode set to 'notify', with the
- * second adapter's plan focused (index 3 = 1 update field + adapter 1's plan).
+ * A deterministic editable Settings state: update mode 'notify', the pet-global
+ * subscription cycle anchored to claude-code, with the Anchor field focused
+ * (index 2 — shown because the policy is subscription and >1 adapter is configured).
  */
 const TEST_SETTINGS: SettingsState = {
   updateMode: 'notify',
-  adapters: [
-    { provider: 'claude-code', plan: 'subscription', policy: 'dynamic' },
-    { provider: 'codex', plan: 'api', policy: 'static' },
-  ],
-  selected: 3,
+  cyclePolicy: 'subscription',
+  anchorAdapter: 'claude-code',
+  adapters: [{ provider: 'claude-code' }, { provider: 'codex' }],
+  selected: 2,
 };
 
 function input(over: Partial<FrameInput>): FrameInput {
@@ -69,7 +69,7 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('renders the settings page with editable adapters', () => {
+  it('renders the settings page with the editable global cycle + anchor', () => {
     const out = renderFrameToString(
       100,
       30,

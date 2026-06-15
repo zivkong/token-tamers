@@ -1,47 +1,57 @@
 /**
- * Cycle derivation: turn a sorted UsageEvent stream + AdapterConfig into the two
- * abstract events the engine consumes — MoltEvent (5-h window close) and
- * RebirthEvent (week boundary). Design §5.
+ * Cycle derivation: turn a sorted UsageEvent stream + the pet-global CycleConfig
+ * into the two abstract events the engine consumes — MoltEvent (5-h window close)
+ * and RebirthEvent (week boundary). Design §5.
  *
- * Two policies:
- *  - **static** (API / OpenCode): fixed 5-h windows tiled from `weekAnchor`, plus
- *    fixed 7-day weeks. A window only molts if it contained usage.
- *  - **dynamic** (subscription): 5-h session windows inferred from usage — a
- *    window opens at the first event, closes 5 h later; the next event after the
- *    close opens a fresh window. A window molts at its close if it had usage.
- *    Weeks are anchored exactly like static for the MVP.
+ * ONE clock per pet (never per adapter — the pet has a single life):
+ *  - **static** (API / fixed anchor): fixed 5-h windows tiled from `weekAnchor`,
+ *    plus fixed 7-day weeks. A window only molts if it contained usage from ANY
+ *    adapter.
+ *  - **subscription**: 5-h session windows inferred from usage gaps in the ANCHOR
+ *    adapter's stream — a window opens at the first anchor event, closes 5 h
+ *    later; the next anchor event at/after the close opens a fresh window. Other
+ *    adapters never open or move windows; they only feed essence into whatever
+ *    window is open (handled by the engine). Weeks are anchored like static.
  *
  * Pure: time enters only as event timestamps and config anchors.
  */
 
-import type { AdapterConfig, CycleEvent, MoltEvent, RebirthEvent, UsageEvent } from '../types';
+import type { CycleConfig, CycleEvent, MoltEvent, RebirthEvent, UsageEvent } from '../types';
 import { dynamicMolts } from './dynamic';
 import { staticMolts } from './static';
-import { makeRebirth, WEEK_MS, weekStartFor } from './windows';
+import { makeRebirth, WEEK_MS, weekStartFor, windowDrivingEvents } from './windows';
 
-export { EGG_HATCH_MS, eggHatchMolts, WEEK_MS, weekStartFor, WINDOW_MS } from './windows';
+export {
+  EGG_HATCH_MS,
+  eggHatchMolts,
+  WEEK_MS,
+  weekStartFor,
+  WINDOW_MS,
+  windowDrivingEvents,
+} from './windows';
 export { unconsumedEvents } from './pending';
 
 /**
  * Derive the cycle events whose `at` (close time) falls in `(after, now]`.
  *
- * `events` must be sorted ascending by `ts`. `after` is the high-water mark of
- * already-processed cycle closes (exclusive); only closes strictly after it and
- * at or before `now` are emitted. Rebirths and molts that close at the same
- * instant are ordered molt-first (the week's final molt precedes its rebirth).
+ * `events` must be sorted ascending by `ts` and may span all adapters. `after` is
+ * the high-water mark of already-processed cycle closes (exclusive); only closes
+ * strictly after it and at or before `now` are emitted. Rebirths and molts that
+ * close at the same instant are ordered molt-first (the week's final molt precedes
+ * its rebirth).
  */
 export function deriveCycleEvents(
   events: readonly UsageEvent[],
-  config: AdapterConfig,
+  cycle: CycleConfig,
   after: number,
   now: number,
 ): CycleEvent[] {
   const molts =
-    config.cyclePolicy === 'static'
-      ? staticMolts(events, config.weekAnchor, after, now)
-      : dynamicMolts(events, after, now);
+    cycle.policy === 'static'
+      ? staticMolts(events, cycle.weekAnchor, after, now)
+      : dynamicMolts(windowDrivingEvents(events, cycle), after, now);
 
-  const rebirths = weekRebirths(config.weekAnchor, after, now);
+  const rebirths = weekRebirths(cycle.weekAnchor, after, now);
 
   return mergeOrdered(molts, rebirths);
 }

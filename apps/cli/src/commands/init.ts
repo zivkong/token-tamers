@@ -18,6 +18,8 @@ import {
   SCHEMA_VERSION,
   type AdapterConfig,
   type ColorPreference,
+  type CycleConfig,
+  type CyclePolicyKind,
   type EngineConfig,
   type GameState,
   type SettingsFile,
@@ -28,6 +30,7 @@ import { adapterFor } from '../services/catchup';
 import {
   dataDir,
   loadCheckpoints,
+  loadConfig,
   loadPending,
   loadSettings,
   loadState,
@@ -42,7 +45,10 @@ import {
 import {
   shouldStyle,
   formatEnableQuestion,
-  formatPlanQuestion,
+  formatCycleQuestion,
+  formatAnchorQuestion,
+  parseCycleChoice,
+  parseAnchorChoice,
   formatColorQuestion,
   formatPathQuestion,
   formatUpdateQuestion,
@@ -56,6 +62,7 @@ import {
   renderAdapterMissing,
   renderAdapterSkipped,
   renderAdapterEnabled,
+  renderCycleChoice,
   renderCustomPathSet,
   renderColorChoice,
   renderUpdateChoice,
@@ -136,21 +143,31 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
 
   const warnings: string[] = [];
   const adapterConfigs: AdapterConfig[] = [];
+  const enabledAdapters: ProviderAdapter[] = [];
   const enabled: string[] = [];
   let settingsDirty = false;
+  let cycle: CycleConfig = { policy: 'static', weekAnchor: nextMondayLocal(now()) };
 
   try {
     out(renderBanner(styled));
 
     out(renderStepHeader(1, 3, 'Detecting agents', styled));
     for (const adapter of allAdapters) {
-      const res = await configureAdapter({ adapter, settings, ask, out, styled, now });
+      const res = await configureAdapter({ adapter, settings, ask, out, styled });
       warnings.push(...res.warnings);
       if (res.settingsChanged) settingsDirty = true;
       if (res.config) {
         adapterConfigs.push(res.config);
+        enabledAdapters.push(adapter);
         enabled.push(adapter.id);
       }
+    }
+
+    // ONE cycle clock for the pet (never per adapter). Ask only when at least one
+    // adapter is enabled; the week anchor is preserved across re-inits so an
+    // existing pet's rebirth schedule never shifts.
+    if (adapterConfigs.length > 0) {
+      cycle = await askCycle({ enabledAdapters, ask, out, styled, now });
     }
 
     out(renderStepHeader(2, 3, 'Preferences', styled));
@@ -185,7 +202,7 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     return { enabled, warnings, wrote: false };
   }
 
-  const config: UserConfig = { schemaVersion: SCHEMA_VERSION, adapters: adapterConfigs };
+  const config: UserConfig = { schemaVersion: SCHEMA_VERSION, cycle, adapters: adapterConfigs };
   saveConfig(config);
 
   // Re-run semantics (design §4): re-init adds/removes adapters WITHOUT touching
@@ -196,13 +213,13 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   out(renderStepHeader(3, 3, savedState ? 'Updating' : 'Hatching', styled));
   if (savedState !== null) {
     out(renderRerunMessage(styled));
-    await backfillNewAdapters({ adapterConfigs, saved: savedState, now, out, styled });
+    await backfillNewAdapters({ adapterConfigs, cycle, saved: savedState, now, out, styled });
     out(renderNextStepsLine(styled));
     out(renderWarnings(warnings, styled));
     return { enabled, warnings, wrote: true };
   }
 
-  await firstInitBackfill(adapterConfigs, now, out, styled);
+  await firstInitBackfill(adapterConfigs, cycle, now, out, styled);
   out(renderWarnings(warnings, styled));
   return { enabled, warnings, wrote: true };
 }
@@ -213,7 +230,6 @@ interface ConfigureAdapterOptions {
   ask: Asker;
   out: (s: string) => void;
   styled: boolean;
-  now: () => number;
 }
 
 interface ConfigureAdapterResult {
@@ -227,10 +243,11 @@ interface ConfigureAdapterResult {
  * Detect, optionally recover, and confirm one adapter. When detection fails at
  * the default (or settings-configured) roots, offer a custom path: a non-empty
  * answer is saved to settings.json `adapterRoots` and detection retries there.
- * Returns the AdapterConfig to persist (or null if missing/skipped).
+ * Returns the AdapterConfig to persist (or null if missing/skipped). An adapter
+ * is a pure data source now — no per-adapter plan/cycle (the clock is global).
  */
 async function configureAdapter(o: ConfigureAdapterOptions): Promise<ConfigureAdapterResult> {
-  const { adapter, settings, ask, out, styled, now } = o;
+  const { adapter, settings, ask, out, styled } = o;
   const warnings: string[] = [];
   let settingsChanged = false;
 
@@ -262,25 +279,63 @@ async function configureAdapter(o: ConfigureAdapterOptions): Promise<ConfigureAd
     return { config: null, warnings, settingsChanged };
   }
 
-  const planDefault = adapter.defaultPlan ?? 'subscription';
-  const planRaw = await ask(
-    formatPlanQuestion(adapter.defaultPlan, styled),
-    planDefault === 'api' ? 'a' : 's',
-  );
-  const isApi = planRaw.trim().toLowerCase().startsWith('a');
-  const plan = isApi ? 'api' : 'subscription';
-  out(renderAdapterEnabled(plan, styled));
+  out(renderAdapterEnabled(styled));
   return {
-    config: {
-      provider: adapter.id,
-      paths: detection.paths,
-      plan,
-      cyclePolicy: isApi ? 'static' : 'dynamic',
-      weekAnchor: nextMondayLocal(now()),
-    },
+    config: { provider: adapter.id, paths: detection.paths },
     warnings,
     settingsChanged,
   };
+}
+
+interface AskCycleOptions {
+  enabledAdapters: readonly ProviderAdapter[];
+  ask: Asker;
+  out: (s: string) => void;
+  styled: boolean;
+  now: () => number;
+}
+
+/**
+ * Ask the single pet-global cycle question. The default policy follows the
+ * enabled adapters' hints (any `defaultPlan: 'subscription'` ⇒ subscription, else
+ * static). For subscription with multiple adapters, also pick the anchor adapter
+ * whose session rhythm drives the molt clock; a single adapter is the implicit
+ * anchor. The week anchor is preserved from an existing config so re-init never
+ * shifts an existing pet's rebirth schedule.
+ */
+async function askCycle(o: AskCycleOptions): Promise<CycleConfig> {
+  const { enabledAdapters, ask, out, styled, now } = o;
+  const ids = enabledAdapters.map((a) => a.id);
+  const weekAnchor = loadConfig()?.cycle.weekAnchor ?? nextMondayLocal(now());
+
+  const defaultPolicy: CyclePolicyKind = enabledAdapters.some(
+    (a) => (a.defaultPlan ?? 'subscription') === 'subscription',
+  )
+    ? 'subscription'
+    : 'static';
+  const policy = parseCycleChoice(
+    await ask(formatCycleQuestion(defaultPolicy, styled), defaultPolicy === 'static' ? 'a' : 's'),
+    defaultPolicy,
+  );
+
+  if (policy === 'static') {
+    out(renderCycleChoice('static', undefined, styled));
+    return { policy: 'static', weekAnchor };
+  }
+
+  let anchorAdapter = ids[0]!;
+  if (ids.length > 1) {
+    const subDefault = enabledAdapters.find(
+      (a) => (a.defaultPlan ?? 'subscription') === 'subscription',
+    );
+    const fallbackIdx = subDefault ? ids.indexOf(subDefault.id) + 1 : 1;
+    anchorAdapter = parseAnchorChoice(
+      await ask(formatAnchorQuestion(ids, styled), String(fallbackIdx)),
+      ids,
+    );
+  }
+  out(renderCycleChoice('subscription', anchorAdapter, styled));
+  return { policy: 'subscription', anchorAdapter, weekAnchor };
 }
 
 /**
@@ -312,12 +367,13 @@ function tildeDataDir(): string {
  */
 async function backfillNewAdapters(input: {
   adapterConfigs: AdapterConfig[];
+  cycle: CycleConfig;
   saved: GameState;
   now: () => number;
   out: (s: string) => void;
   styled: boolean;
 }): Promise<void> {
-  const { adapterConfigs, saved, now, out, styled } = input;
+  const { adapterConfigs, cycle, saved, now, out, styled } = input;
   const checkpoints: CheckpointMap = loadCheckpoints();
   const fresh = adapterConfigs.filter((cfg) => checkpoints[cfg.provider] === undefined);
   if (fresh.length === 0) return;
@@ -333,7 +389,7 @@ async function backfillNewAdapters(input: {
     checkpoints[cfg.provider] = result.checkpoint;
   }
 
-  const engine = createEngine(contentPackV1, { adapters: adapterConfigs }, saved);
+  const engine = createEngine(contentPackV1, { adapters: adapterConfigs, cycle }, saved);
   engine.ingest([...loadPending(), ...events]);
   engine.seedBaselines(saved.simulatedTo);
   engine.advanceTo(now());
@@ -356,6 +412,7 @@ async function backfillNewAdapters(input: {
  */
 async function firstInitBackfill(
   adapterConfigs: AdapterConfig[],
+  cycle: CycleConfig,
   now: () => number,
   out: (s: string) => void,
   styled: boolean,
@@ -372,7 +429,7 @@ async function firstInitBackfill(
     checkpoints[cfg.provider] = result.checkpoint;
   }
 
-  const engineConfig: EngineConfig = { adapters: adapterConfigs, startAt };
+  const engineConfig: EngineConfig = { adapters: adapterConfigs, cycle, startAt };
   const engine = createEngine(contentPackV1, engineConfig);
   engine.ingest(events);
   engine.seedBaselines(startAt);

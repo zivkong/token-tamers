@@ -9,11 +9,17 @@ See the [README](../../README.md#install) for per-OS install instructions
 
 1. **Detection** — probes for installed agents (Claude Code: `~/.config/claude/projects/`
    or `~/.claude/projects/`; OpenCode: `~/.local/share/opencode/`).
-2. **Plan type per provider:**
-   - _Subscription with limit windows_ (Claude Pro/Max) → **dynamic cycle policy**:
-     molt windows inferred from your real usage gaps.
-   - _API / pay-as-you-go_ → **static cycle policy**: fixed 5-hour windows and a 7-day
+2. **Cycle** — one choice for your whole pet (it has a single life), not per adapter:
+   - _Subscription with limit windows_ (Claude Pro/Max, ChatGPT plans) → **subscription
+     cycle**: molt windows are inferred from your real usage gaps in a chosen **anchor
+     adapter** (the provider whose subscription rhythm sets the clock). If you've enabled
+     more than one adapter, you pick which is the anchor; the others still feed your pet.
+   - _API / pay-as-you-go / mixed_ → **static cycle**: fixed 5-hour windows and a 7-day
      week anchored to a configurable epoch (default: next Monday 00:00 local).
+
+   Either way, adapters are just data sources — within one adapter, API and subscription
+   usage both count (the game never judges how you pay).
+
 3. **Backfill** — scans existing logs to establish your normalization baseline.
    Your first week hatches a **Calibration Egg**: it plays normally, but grades are
    provisional until a baseline exists.
@@ -27,14 +33,14 @@ Re-running `tt init` adds/removes adapters without touching pet state.
 
 Open `tt` and press **4** (or click **⚙ Settings**) to see what's in effect: the version
 number, your runtime, the active color mode and fps, where your data lives
-(`~/.tokentamers/`), the opt-in update mode, and each configured adapter. Three things are
-editable right there — press **↑↓** to focus a field and **←→** to change it: the **Updates**
-mode (`off ▸ notify ▸ auto`; see below), and each adapter's **plan** (subscription/api) and
-**cycle policy** (dynamic/static). The update mode saves to `~/.tokentamers/settings.json` and
-adapter changes to `config.json`; both apply the next time you launch `tt` (changing the cycle
-policy reshapes molt windows, so it never shifts mid-session under your pet). Adding or removing
-an agent, or changing scan paths, is still done by re-running `tt init`. You can also print the
-version non-interactively with `tt --version`.
+(`~/.tokentamers/`), the opt-in update mode, and your configured adapters (read-only). The
+editable fields — press **↑↓** to focus and **←→** to change — are the **Updates** mode
+(`off ▸ notify ▸ auto`; see below), the pet-global **Cycle** policy (subscription/static), and,
+when you're on subscription with more than one adapter, the **Anchor** adapter. The update mode
+saves to `~/.tokentamers/settings.json` and the cycle to `config.json`; both apply the next time
+you launch `tt` (the cycle reshapes molt windows, so it never shifts mid-session under your pet).
+Adding or removing an agent, or changing scan paths, is still done by re-running `tt init`. You
+can also print the version non-interactively with `tt --version`.
 
 Token Tamers reads **no environment variables** — every preference lives in a file under
 `~/.tokentamers/`. `settings.json` (hand-editable, created on demand) holds your `color`

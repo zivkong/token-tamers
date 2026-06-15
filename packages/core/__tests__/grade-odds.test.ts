@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { createEngine, gradeOdds, type GameState, type Grade } from '../src/index';
-import { ev, makePack, staticAdapter } from './fixture';
+import { adapters, ev, makePack, staticCycle } from './fixture';
 
 /** A fresh GameState whose pet sits at `grade` (defaults to the starting C). */
 function stateAtGrade(grade: Grade = 'C'): GameState {
-  const st = createEngine(makePack(), { adapters: [staticAdapter()] }).state();
+  const st = createEngine(makePack(), { adapters: adapters(), cycle: staticCycle() }).state();
   st.pet.grade = grade;
   return st;
 }

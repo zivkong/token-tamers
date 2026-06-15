@@ -84,10 +84,10 @@ function mk(grade: string, recordedAt: number) {
 }
 
 describe('v2 → v3 dex-records migration + auto-repair', () => {
-  it('back-fills dexRecords from the archive and bumps schemaVersion to 3', () => {
+  it('back-fills dexRecords from the archive and bumps schemaVersion to current', () => {
     writeState(V2_STATE);
     const st = loadState()!;
-    expect(st.schemaVersion).toBe(3);
+    expect(st.schemaVersion).toBe(4);
     expect(st.dexRecords).toHaveLength(1);
     const rec = st.dexRecords[0]!;
     expect(rec.speciesId).toBe('ember');

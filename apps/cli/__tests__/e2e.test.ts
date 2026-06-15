@@ -86,13 +86,16 @@ describe('tt init --yes -> status (e2e)', () => {
 
     const config = loadConfig();
     expect(config?.adapters[0]?.provider).toBe('claude-code');
-    expect(config?.adapters[0]?.cyclePolicy).toBe('dynamic');
+    // The cycle is pet-global now; claude-code's subscription hint defaults it to
+    // the subscription policy, with the lone adapter as the implicit anchor.
+    expect(config?.cycle.policy).toBe('subscription');
+    expect(config?.cycle.anchorAdapter).toBe('claude-code');
 
     const state = loadState();
     expect(state).not.toBeNull();
     expect(state?.pet).toBeTruthy();
-    // Fresh init writes the current schema (v3) with the per-species record store.
-    expect(state?.schemaVersion).toBe(3);
+    // Fresh init writes the current schema (v4 — pet-global cycle config).
+    expect(state?.schemaVersion).toBe(4);
     expect(Array.isArray(state?.dexRecords)).toBe(true);
 
     // status output mentions the pet (name/stage/grade fields present).
@@ -129,7 +132,7 @@ describe('tt init --yes -> status (e2e)', () => {
     await statusCommand(() => {}, now);
 
     const upgraded = loadState()!;
-    expect(upgraded.schemaVersion).toBe(3);
+    expect(upgraded.schemaVersion).toBe(4);
     expect(Array.isArray(upgraded.dexRecords)).toBe(true);
     // The Archive entry was preserved into the new record store.
     expect(upgraded.dexRecords.some((r) => r.speciesId === 'wisp')).toBe(true);

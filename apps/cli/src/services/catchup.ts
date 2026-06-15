@@ -96,14 +96,17 @@ export async function catchUp(now: () => number = Date.now): Promise<CatchUpResu
   if (freshBacklog.length > 0) {
     const freshConfigs = config.adapters.filter((a) => freshProviders.has(a.provider));
     // Calibrate the new adapter's normalization baseline from its full history…
-    Object.assign(saved.baselines, seedBaselinesFromHistory(freshBacklog, freshConfigs, at));
+    Object.assign(
+      saved.baselines,
+      seedBaselinesFromHistory(freshBacklog, config.cycle, freshConfigs, at),
+    );
     // …but only its events at/after the sim clock count going forward.
     for (const ev of freshBacklog) {
       if (ev.ts >= saved.simulatedTo) liveEvents.push(ev);
     }
   }
 
-  const engineConfig: EngineConfig = { adapters: config.adapters };
+  const engineConfig: EngineConfig = { adapters: config.adapters, cycle: config.cycle };
   const engine = createEngine(contentPackV1, engineConfig, saved);
   // Re-feed the open-window buffer persisted last run alongside the new scan so
   // events in an as-yet-unclosed window are never lost (checkpoints advanced past

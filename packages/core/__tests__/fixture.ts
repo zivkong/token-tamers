@@ -7,6 +7,7 @@
 import type {
   AdapterConfig,
   ContentPack,
+  CycleConfig,
   EvolutionBranch,
   SpeciesDef,
   Stats,
@@ -161,24 +162,27 @@ export function makePack(): ContentPack {
 /** Monday 2024-01-01 00:00:00 UTC as the week anchor. */
 export const WEEK_ANCHOR = Date.UTC(2024, 0, 1, 0, 0, 0, 0);
 
-export function staticAdapter(weekAnchor = WEEK_ANCHOR): AdapterConfig {
-  return {
-    provider: 'claude-code',
-    paths: [],
-    plan: 'api',
-    cyclePolicy: 'static',
-    weekAnchor,
-  };
+/** A pure data-source adapter (no cycle fields — the clock is global now). */
+export function adapter(provider = 'claude-code'): AdapterConfig {
+  return { provider, paths: [] };
 }
 
-export function dynamicAdapter(weekAnchor = WEEK_ANCHOR): AdapterConfig {
-  return {
-    provider: 'claude-code',
-    paths: [],
-    plan: 'subscription',
-    cyclePolicy: 'dynamic',
-    weekAnchor,
-  };
+/** The default test adapter set. */
+export function adapters(provider = 'claude-code'): AdapterConfig[] {
+  return [adapter(provider)];
+}
+
+/** Pet-global static cycle clock (fixed 5-h tiles from the week anchor). */
+export function staticCycle(weekAnchor = WEEK_ANCHOR): CycleConfig {
+  return { policy: 'static', weekAnchor };
+}
+
+/** Pet-global subscription cycle clock anchored to one adapter's session rhythm. */
+export function subscriptionCycle(
+  weekAnchor = WEEK_ANCHOR,
+  anchorAdapter = 'claude-code',
+): CycleConfig {
+  return { policy: 'subscription', anchorAdapter, weekAnchor };
 }
 
 let uid = 0;

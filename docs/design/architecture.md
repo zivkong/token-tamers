@@ -98,11 +98,12 @@ Each button is its label + hotkey, left-aligned (not centered). The **Completion
 in the menu** — it is shown per-page (Dex/Archive top-right; see Per-page completion). Click to
 switch pages; active page highlighted; hover highlight on mouse-move. The `⚙ Settings`
 button opens a board of build/config facts (version, runtime, display, data-dir path, the
-keybinding help) plus the shell's one editable surface: per-adapter **plan**
-(subscription/api) and **cycle policy** (dynamic/static) toggles — ↑↓ to focus a field, ←→
-to change it. Edits persist to `~/.tokentamers/config.json` and apply on the next launch
-(cycle policy reshapes molt windows, which must not shift under a running pet). Adding or
-removing adapters and editing scan paths stays in `tt init`. Everything else is read-only;
+keybinding help) plus the shell's one editable surface: the pet-global **Cycle** policy
+(subscription/static) and, when subscription is active with more than one adapter, the
+**Anchor** adapter — ↑↓ to focus a field, ←→ to change it. Edits persist to
+`~/.tokentamers/config.json` and apply on the next launch (the cycle reshapes molt windows,
+which must not shift under a running pet). Adapters are pure data sources, shown read-only;
+adding or removing them and editing scan paths stays in `tt init`. Everything else is read-only;
 the pet game stays fully idle (pillar one — Settings is optional config, never gameplay).
 M1 ships `⚙ Settings` and `⏻ Quit`; the cosmetic/social buttons land in M2.2–M2.6.
 
@@ -300,7 +301,10 @@ adapter patch, not engine change). Each adapter handles its own quirks:
 | **codex**       | Cumulative `token_count` → delta computation required; 3 format generations (≥0.44, mid, 2025/08); `archived_sessions/` present; sessions/ wins over archive on duplicates |
 | **opencode**    | Per-message JSON tree walk; multi-root via settings.json `adapterRoots` (no env); project/global storage split; prune-tolerant ingestion                                   |
 
-Engine consumes only UsageEvents + CyclePolicy events; it is provider-blind.
+Adapters are pure data sources: `AdapterConfig` is `{ provider, paths }` only. The cycle clock
+is a single pet-global `CycleConfig { policy: 'subscription' | 'static'; anchorAdapter?; weekAnchor }`
+on `UserConfig`/`EngineConfig` — never per adapter. The engine consumes only UsageEvents + the
+abstract molt/rebirth events derived once from that global `CycleConfig`; it is provider-blind.
 
 ---
 

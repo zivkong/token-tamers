@@ -44,7 +44,12 @@ import {
   type UsageEvent,
 } from '../types';
 import { achievementConditionMet, patternSatisfied } from './achievements';
-import { hasFullWeekBaseline, seedBaselinesFromHistory, updateBaseline } from './baseline';
+import {
+  baselineMeans,
+  foldWindowBaselines,
+  hasFullWeekBaseline,
+  seedBaselinesFromHistory,
+} from './baseline';
 import { consistencyBand, pickBranch, type BranchInputs } from './branches';
 import { computeCompletion } from './completion';
 import {
@@ -56,13 +61,7 @@ import {
   MUTATION_IDS,
 } from './constants';
 import { rollGrade } from './grades';
-import {
-  cloneStats,
-  matchModelRule,
-  scaleInheritedStats,
-  statsForSpecies,
-  windowEvents,
-} from './houses';
+import { cloneStats, matchModelRule, scaleInheritedStats, statsForSpecies } from './houses';
 import { tryCaptureSnapshot } from './dex-records';
 import { evolutionGateMet, requiredMaturity } from './maturity';
 import { isStrictlyBetter, scaleStats } from './rebirth';
@@ -80,11 +79,6 @@ export { hasFullWeekBaseline, seedBaselinesFromHistory } from './baseline';
 export { BATTLE_READY_STAGE, growthProgress, requiredMaturity, stageMature } from './maturity';
 export { isBattleReady, isGraftReady, type GrowthProgress } from './maturity';
 export { matchModelRule } from './houses';
-
-interface InternalCycleEvent {
-  adapter: string;
-  event: CycleEvent;
-}
 
 class GameEngine implements Engine {
   private readonly pack: ContentPack;
@@ -119,9 +113,9 @@ class GameEngine implements Engine {
     const cycles = this.buildCycles(all, after, now);
 
     const rng = createRng(this.state_.rngState);
-    for (const { adapter, event } of cycles) {
+    for (const event of cycles) {
       if (event.type === 'molt') {
-        this.replayMolt(adapter, event, all, rng, effects);
+        this.replayMolt(event, all, rng, effects);
       } else {
         this.replayRebirth(event, all, effects);
       }
@@ -136,12 +130,10 @@ class GameEngine implements Engine {
   }
 
   pendingEvents(): UsageEvent[] {
-    const out: UsageEvent[] = [];
     const now = this.state_.simulatedTo;
-    for (const adapter of this.config.adapters) {
-      for (const ev of unconsumedEvents(this.buffer, adapter, now)) out.push(ev);
-    }
-    return out.sort((a, b) => a.ts - b.ts || cmpStr(a.adapter, b.adapter));
+    return unconsumedEvents(this.buffer, this.config.cycle, now).sort(
+      (a, b) => a.ts - b.ts || cmpStr(a.adapter, b.adapter),
+    );
   }
 
   /**
@@ -151,7 +143,12 @@ class GameEngine implements Engine {
    * the pet), then clears the Calibration flag once a full week is observed.
    */
   seedBaselines(now: number): void {
-    const seeded = seedBaselinesFromHistory(this.buffer, this.config.adapters, now);
+    const seeded = seedBaselinesFromHistory(
+      this.buffer,
+      this.config.cycle,
+      this.config.adapters,
+      now,
+    );
     for (const [adapter, baseline] of Object.entries(seeded)) {
       this.state_.baselines[adapter] = baseline;
     }
@@ -161,32 +158,31 @@ class GameEngine implements Engine {
 
   // --- cycle derivation -----------------------------------------------------
 
-  private buildCycles(
-    all: readonly UsageEvent[],
-    after: number,
-    now: number,
-  ): InternalCycleEvent[] {
-    const cycles: InternalCycleEvent[] = [];
-    for (const adapter of this.config.adapters) {
-      const adEvents = all.filter((e) => e.adapter === adapter.provider);
-      const derived = deriveCycleEvents(adEvents, adapter, after, now);
-      for (const event of derived) cycles.push({ adapter: adapter.provider, event });
-      // Additive egg-hatch checkpoints (one per week); each is a no-op unless the
-      // pet is still an egg when replayed (see replayMolt). They never touch the
-      // normal 5-h window chain, so pending/determinism are unaffected. Floor the
-      // search at the generation's placement so the egg hatches off its own first
-      // feeding, not history predating it (the first egg is placed mid-week).
-      const hatchFloor = this.state_.pet.hatchedAt;
-      for (const event of eggHatchMolts(adEvents, adapter.weekAnchor, after, now, hatchFloor)) {
-        cycles.push({ adapter: adapter.provider, event });
-      }
+  private buildCycles(all: readonly UsageEvent[], after: number, now: number): CycleEvent[] {
+    // ONE clock for the pet (design §5): derive molts + rebirths once over the
+    // merged stream using the pet-global CycleConfig — never per adapter.
+    const cycles: CycleEvent[] = [...deriveCycleEvents(all, this.config.cycle, after, now)];
+    // Additive egg-hatch checkpoints (one per week, off ANY adapter's first
+    // feeding); each is a no-op unless the pet is still an egg when replayed (see
+    // replayMolt). They never touch the normal 5-h window chain, so
+    // pending/determinism are unaffected. Floor the search at the generation's
+    // placement so the egg hatches off its own first feeding, not history
+    // predating it (the first egg is placed mid-week).
+    const hatchFloor = this.state_.pet.hatchedAt;
+    const weekAnchor = this.config.cycle.weekAnchor;
+    for (const event of eggHatchMolts(all, weekAnchor, after, now, hatchFloor)) {
+      cycles.push(event);
     }
     cycles.sort((a, b) => {
-      if (a.event.at !== b.event.at) return a.event.at - b.event.at;
-      const ta = a.event.type === 'molt' ? 0 : 1;
-      const tb = b.event.type === 'molt' ? 0 : 1;
+      if (a.at !== b.at) return a.at - b.at;
+      const ta = a.type === 'molt' ? 0 : 1;
+      const tb = b.type === 'molt' ? 0 : 1;
       if (ta !== tb) return ta - tb;
-      return cmpStr(a.adapter, b.adapter);
+      // Among molts at the same instant, a hatch checkpoint sorts after a normal
+      // window close (stable, deterministic).
+      const ha = a.type === 'molt' && a.hatch ? 1 : 0;
+      const hb = b.type === 'molt' && b.hatch ? 1 : 0;
+      return ha - hb;
     });
     return cycles;
   }
@@ -194,7 +190,6 @@ class GameEngine implements Engine {
   // --- molt -----------------------------------------------------------------
 
   private replayMolt(
-    adapter: string,
     event: MoltEvent,
     all: readonly UsageEvent[],
     rng: Rng,
@@ -205,9 +200,10 @@ class GameEngine implements Engine {
     // hatched (this generation) it is a no-op, leaving the normal molt chain and
     // RNG stream untouched.
     if (event.hatch && pet.stage !== 'egg') return;
-    const evs = windowEvents(all, adapter, event.windowStart, event.windowEnd);
-    const baselineMean = this.state_.baselines[adapter]?.meanWindowTokens ?? 0;
-    const signals = computeWindowSignals(evs, event.windowStart, event.windowEnd, baselineMean);
+    // One window covers the WHOLE pet: every adapter's usage in [start, end).
+    const evs = all.filter((e) => e.ts >= event.windowStart && e.ts < event.windowEnd);
+    const meanByAdapter = baselineMeans(this.state_.baselines);
+    const signals = computeWindowSignals(evs, event.windowStart, event.windowEnd, meanByAdapter);
 
     // A hatch checkpoint hatches the egg and rolls like any molt, but it is a
     // bonus peek at the first 10 min — it must NOT feed diet or the normalization
@@ -223,7 +219,7 @@ class GameEngine implements Engine {
     }
 
     pet.moltCount += 1;
-    if (!isHatch) this.accumulateDiet(pet, evs, baselineMean);
+    if (!isHatch) this.accumulateDiet(pet, evs, meanByAdapter);
 
     if (!committedThisMolt) {
       this.progressStage(pet, signals, rng, effects, event.at);
@@ -236,7 +232,9 @@ class GameEngine implements Engine {
     rollGrade(pet, signals, rng, effects);
 
     effects.push({ type: 'molt', at: event.at });
-    if (!isHatch) updateBaseline(this.state_, adapter, signals.totalEssence);
+    // Normalize per adapter against its OWN baseline (design §6): fold each
+    // adapter's window essence into that adapter's running mean.
+    if (!isHatch) foldWindowBaselines(this.state_, evs);
     this.evaluateAchievements(event.at, effects);
     this.capture('molt', event.at, effects);
   }
@@ -285,9 +283,17 @@ class GameEngine implements Engine {
     return this.pack.species.filter((sp) => sp.stage === 'sprite').sort((a, b) => a.num - b.num)[0];
   }
 
-  private accumulateDiet(pet: PetState, evs: readonly UsageEvent[], baselineMean: number): void {
-    const denom = baselineMean > 0 ? baselineMean : 1;
+  private accumulateDiet(
+    pet: PetState,
+    evs: readonly UsageEvent[],
+    meanByAdapter: Record<string, number>,
+  ): void {
+    // Each event's essence is normalized against ITS adapter's own baseline mean
+    // (design §6), so diet diversity never inflates with raw volume or adapter
+    // count. Cold-start adapters (no baseline yet) use a neutral denominator of 1.
     for (const ev of evs) {
+      const mean = meanByAdapter[ev.adapter] ?? 0;
+      const denom = mean > 0 ? mean : 1;
       const rule = matchModelRule(this.pack.models, ev.modelId);
       const gene = rule ? rule.geneId : `wild:${ev.modelId}`;
       pet.dietGenes[gene] = (pet.dietGenes[gene] ?? 0) + eventEssence(ev) / denom;

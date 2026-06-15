@@ -21,13 +21,13 @@ export interface PageUiState {
   speciesId?: string | null;
 }
 
-/** One configured adapter as shown (and edited) on the Settings page. */
+/**
+ * One configured adapter as shown on the Settings page. Adapters are pure data
+ * sources now (read-only here) — the cycle clock is a single pet-global setting,
+ * not a per-adapter toggle. Adding/removing adapters stays in `tt init`.
+ */
 export interface AdapterInfo {
   provider: string;
-  /** Editable: 'subscription' | 'api'. */
-  plan: string;
-  /** Editable cycle policy kind: 'dynamic' | 'static'. */
-  policy: string;
 }
 
 /**
@@ -51,19 +51,24 @@ export interface ShellInfo {
 }
 
 /**
- * Live, editable Settings state the shell owns: the opt-in update mode plus a
- * working copy of the adapter configs, and which editable field is focused. The
- * flat field list is `[updateMode, (adapter0 plan, adapter0 cycle), …]`: index 0
- * is always the update mode, then each adapter contributes two fields — so
- * `selected` ranges over `1 + adapters.length * 2`. Edits mutate this copy and
- * persist via the shell's hooks (`onUpdateModeChange` → settings.json,
- * `onAdaptersChange` → config.json); both take effect on the next launch, never
- * mid-session (cycle policy reshapes molt windows, which must not shift under a
- * running pet).
+ * Live, editable Settings state the shell owns: the opt-in update mode plus the
+ * pet-global cycle clock (policy + subscription anchor), and which editable field
+ * is focused. The flat field list is `[updateMode, cyclePolicy, anchor?]`: index 0
+ * is the update mode, index 1 the cycle policy, and index 2 the subscription
+ * anchor adapter — present ONLY when the policy is subscription and more than one
+ * adapter is configured. Edits mutate this copy and persist via the shell's hooks
+ * (`onUpdateModeChange` → settings.json, `onCycleChange` → config.json); both take
+ * effect on the next launch, never mid-session (the cycle reshapes molt windows,
+ * which must not shift under a running pet).
  */
 export interface SettingsState {
   /** Opt-in update mode: 'off' | 'notify' | 'auto'. */
   updateMode: string;
+  /** Pet-global cycle policy: 'subscription' | 'static'. */
+  cyclePolicy: string;
+  /** Subscription anchor adapter id (the molt-clock driver); '' when static. */
+  anchorAdapter: string;
+  /** Configured adapters (read-only display). */
   adapters: AdapterInfo[];
   selected: number;
 }

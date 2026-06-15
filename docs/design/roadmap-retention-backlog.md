@@ -31,8 +31,8 @@ implementation starts (GitHub + Claude Code)).
 > **Note:** M1 has shipped (engine, Claude Code adapter, TUI shell, starter content pack, `tt` CLI). The nine items below
 > define what was declared in scope for that milestone.
 
-1. `tt init` wizard: adapter detection, plan type, cycle policy, week anchor, backfill baseline,
-   Calibration Egg
+1. `tt init` wizard: adapter detection, the one global cycle policy (subscription/static) +
+   anchor-adapter pick, week anchor, backfill baseline, Calibration Egg
 2. **Claude Code adapter** (reference) + the adapter interface contract
 3. Cycle policies: dynamic (subscription) + static (API), molt/rebirth events
 4. Core evolution: Houses via models.json, stage track to Apex, traits, pattern locking, mutations,
