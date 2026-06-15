@@ -49,10 +49,12 @@ Key contracts live in `packages/core/src/types.ts`.
 6. **Additive-only registries** — never remove/renumber species, trait, achievement,
    habitat, or trinket ids. Unknown ids = dormant genes, render as "???".
 7. **Hashes parse forever** — DNA/hash codecs are versioned; old codes stay valid.
-   The DNA **encoder** is shipped (`packages/core/src/dna/`, schema 2, format
-   `TT<schema>-c<rev>-<payload>-<sig>`); the registry tables are append-only and a
-   golden test locks the byte layout. `decodeDna` never rejects newer schemas/unknown
-   ids — it recovers known fields and marks the rest dormant.
+   The DNA **encoder** is shipped (`packages/core/src/dna/`): an opaque, license-key
+   token `TTX<v>-XXXX-…` (whitened high-entropy body + FNV integrity tag + reserved
+   extension area), deterministic so the Dex renders it live and battles/replays
+   reproduce. Registry tables are append-only and a golden test locks the byte layout;
+   `decodeDna` never rejects newer schemas/unknown ids — it recovers known fields and
+   marks the rest dormant. (It's obfuscation, not encryption — shared codes carry no secret.)
 8. **Zero runtime dependencies** — devDependencies only; the `tt` bundle is self-contained.
 9. **Content as data** — never hardcode species/model/trait specifics in engine code.
 10. **Spoiler rule** — fusion-pool contents exist only under `packages/content/content/`;
@@ -187,8 +189,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   (`pages/dex-detail.ts`) shows the sprite, a battle/graft-readiness banner, and
   each record's stats + **DNA code** + graft tier.
 - **DNA codes / battle-graft readiness:** `encodeDna`/`decodeDna` produce a shareable
-  `TT2-c<rev>-…` code per snapshot; battle/fusion (M2.2/M2.3) stay future, so the code
-  is display/share-only for now. A snapshot is battle-eligible AND graft-eligible only
+  opaque `TTX<v>-XXXX-…` license-key token per snapshot; battle/fusion (M2.2/M2.3) stay
+  future, so the code is display/share-only for now. A snapshot is battle-eligible AND graft-eligible only
   once `stage` ≥ Evolved (the readiness gate). Graft potency scales with the DONOR's
   grade (C = 0 … S = small hard cap) — a documented forward spec
   (`dna-hash-battles.md` §9) + the pure `graftPotency` helper.

@@ -62,8 +62,17 @@ describe('DNA codec', () => {
     }
   });
 
-  it('emits the documented TT<schema>-c<rev>-<payload>-<sig> shape', () => {
-    expect(encodeDna(snap(), { speciesNum: 14 })).toMatch(/^TT2-c1-[0-9A-Z]+-[0-9A-Z]+$/);
+  it('emits an opaque license-key token (TTX<v>-XXXX-…)', () => {
+    expect(encodeDna(snap(), { speciesNum: 14 })).toMatch(/^TTX1(-[0-9A-Z]+)+$/);
+  });
+
+  it('whitening avalanches — a one-field change rewrites most of the body', () => {
+    const a = encodeDna(snap({ generation: 6 }), { speciesNum: 14 }).replace(/[^0-9A-Z]/g, '');
+    const b = encodeDna(snap({ generation: 7 }), { speciesNum: 14 }).replace(/[^0-9A-Z]/g, '');
+    let same = 0;
+    for (let i = 0; i < Math.min(a.length, b.length); i++) if (a[i] === b[i]) same++;
+    // A whitened token diffuses a single-field change; the bodies should barely overlap.
+    expect(same).toBeLessThan(Math.min(a.length, b.length) * 0.5);
   });
 
   it('is deterministic (byte-identical on repeat)', () => {
@@ -90,11 +99,11 @@ describe('DNA codec', () => {
     ).toMatchSnapshot();
   });
 
-  it('detects tampering via the signature but still recovers fields', () => {
-    const parts = encodeDna(snap(), { speciesNum: 14 }).split('-');
-    const payload = parts[2]!;
-    const flipped = (payload[0] === '0' ? '1' : '0') + payload.slice(1);
-    const d = decodeDna(`TT2-c1-${flipped}-${parts[3]}`);
+  it('detects tampering via the integrity tag without throwing', () => {
+    const code = encodeDna(snap(), { speciesNum: 14 });
+    // Flip the first body char (just after the `TTX1-` prefix) to a different symbol.
+    const ch = code[5] === 'A' ? 'B' : 'A';
+    const d = decodeDna(code.slice(0, 5) + ch + code.slice(6));
     expect(d.sigValid).toBe(false);
     expect(typeof d.speciesNum).toBe('number');
   });
@@ -106,10 +115,13 @@ describe('DNA codec', () => {
     expect(d.stage).toBe('egg');
   });
 
-  it('parses a newer-schema header without throwing, recovering known fields', () => {
-    const future = encodeDna(snap(), { speciesNum: 14 }).replace(/^TT2-/, 'TT9-');
+  it('tolerates unknown trailing data — recovers leading fields, never throws', () => {
+    // A newer code may carry extra trailing groups (reserved extension area);
+    // the stable keystream prefix keeps the known leading fields decodable.
+    const future = encodeDna(snap(), { speciesNum: 14 }) + '-ABCD';
+    expect(() => decodeDna(future)).not.toThrow();
     const d = decodeDna(future);
-    expect(d.schema).toBe(9);
+    expect(d.schema).toBe(1);
     expect(d.speciesNum).toBe(14);
     expect(d.grade).toBe('A');
     expect(d.house).toBe('aether');

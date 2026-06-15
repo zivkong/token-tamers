@@ -90,16 +90,39 @@ export function base32ToBytes(s: string): number[] {
   return out;
 }
 
-/**
- * Deterministic FNV-1a/32 over an ASCII string, rendered as a fixed 5-char
- * base32 signature. Integrity/typo check, NOT cryptographic security.
- */
-export function checksum(input: string): string {
+/** Deterministic FNV-1a/32 over a byte array (integrity tag, NOT cryptographic). */
+export function fnv32(bytes: number[]): number {
   let h = 0x811c9dc5;
-  for (let i = 0; i < input.length; i++) {
-    h ^= input.charCodeAt(i);
+  for (const b of bytes) {
+    h ^= b;
     h = Math.imul(h, 0x01000193);
   }
-  const u = h >>> 0;
-  return bytesToBase32([(u >>> 16) & 0xff, (u >>> 8) & 0xff, u & 0xff]);
+  return h >>> 0;
+}
+
+/**
+ * Deterministic byte keystream (mulberry32) used to WHITEN the payload so the
+ * code reads as a high-entropy opaque token (no tell-tale zero runs / patterns)
+ * rather than a short editable string. Reversible — XOR with the same seed
+ * restores the bytes. This is obfuscation, not encryption: a shared code carries
+ * no secret (any client must decode it), so the keystream seed travels with the
+ * code (the integrity tag). Pure.
+ */
+export function keystream(seed: number, n: number): number[] {
+  let a = seed >>> 0;
+  const out: number[] = [];
+  for (let i = 0; i < n; i++) {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    out.push(((t ^ (t >>> 14)) >>> 0) & 0xff);
+  }
+  return out;
+}
+
+/** Insert a separator every `size` chars (license-key style grouping). */
+export function groupChars(s: string, size = 4): string {
+  const parts: string[] = [];
+  for (let i = 0; i < s.length; i += size) parts.push(s.slice(i, i + size));
+  return parts.join('-');
 }

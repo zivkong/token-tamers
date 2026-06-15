@@ -146,11 +146,15 @@ capped}` (null at the S cap) — with the open window's events it folds in the l
 
 ## DNA codec, readiness gate, graft potency (M2.1 encoder shipped)
 
-- **Codec** lives in `src/dna/` (NOT engine): `encodeDna(snapshot, {speciesNum})` →
-  `TT2-c<rev>-<payload>-<sig>`, pure inverse `decodeDna`. No `node:*`/`Buffer` (invariant 4) — hand-rolled varint + Crockford base32 in `dna/payload.ts`; enums encode as indices
-  into the **append-only** `dna/registry.ts` tables (invariant 7). Field order is fixed and
-  append-only; a golden test locks the byte layout (never edit existing golden codes — add
-  new ones on a schema bump). `decodeDna` never throws on newer schemas/unknown ids.
+- **Codec** lives in `src/dna/` (NOT engine): `encodeDna(snapshot, {speciesNum})` → an opaque
+  `TTX<v>-XXXX-…` license-key token, pure inverse `decodeDna`. Deterministic (same snapshot ⇒
+  same code — required for live Dex display + battle replays). No `node:*`/`Buffer` (invariant 4)
+  — hand-rolled varint + Crockford base32 + a mulberry32 whitening keystream in `dna/payload.ts`;
+  body = `[FNV tag:4][whiten(payload)]`, the payload a fixed/append-only varint stream + a reserved
+  `extLen` TLV area, enums encoded as indices into the **append-only** `dna/registry.ts` tables
+  (invariant 7). Whitening is obfuscation, NOT encryption (the seed travels in the tag). A golden
+  test locks the byte layout (never edit existing golden codes — add new ones on a schema bump);
+  `decodeDna` never throws on newer schemas / unknown ids / extra trailing data.
 - **Readiness gate** (`engine/maturity.ts`): a snapshot is battle/graft-eligible only once
   `stage` ≥ `BATTLE_READY_STAGE` (Evolved). `isBattleReady`/`isGraftReady`/`stageMature` are
   pure, stage-only (so a decoded foreign code's readiness is tamper-evident). Identity-based,

@@ -52,7 +52,8 @@ M3 follows as art pipeline, future adapters, and polish.
 
 #### M2.1 — DNA Codec & Export (social foundation)
 
-- Hash codec in `packages/core` — encode/decode `TT<schema>-<content_min>-<payload>-<sig>`
+- Hash codec in `packages/core` — encode/decode the opaque `TTX<v>-XXXX-…` token (**encoder
+  shipped**; see `dna-hash-battles.md` §10)
 - Forward-compatibility parsing: old clients parse newer hashes, dormant genes, `graded_under` tags
 - Content schema draft & hash payload spec finalized
 - `tt dna export` command

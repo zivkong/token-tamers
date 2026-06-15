@@ -64,7 +64,7 @@ describe('golden frames (100x30, no-color)', () => {
     // Name, readiness banner, the shareable DNA code, and the graft tier all show.
     expect(out).toContain('Ember');
     expect(out).toContain('Battle-ready');
-    expect(out).toContain('TT2-c1-');
+    expect(out).toContain('TTX1-');
     expect(out).toContain('Graft small');
     expect(out).toMatchSnapshot();
   });

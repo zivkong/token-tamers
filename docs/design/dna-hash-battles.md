@@ -88,7 +88,7 @@ The donor pet's grade at time of export carries into the DNA code:
   visible to the recipient.
 - **S-spliced marker.** If the donor was grade S at export, the resulting fused pet receives an
   **S-spliced** marker. This marker is visible in the Archive display
-  (`[S]★ … TT2-c14-x9F…`) and in battle view.
+  (`[S]★ … TTX1-AFAA-21QC-…`) and in battle view.
 - **Stat-floor bonus.** An S-grade DNA code confers a stat-floor bonus on the fused pet (see §11,
   grade stat-floor ~+5%). Non-S DNA codes do not carry this bonus.
 - S-grade DNA still confers the fusion stat-floor + S-spliced marker when used as a fusion
@@ -163,36 +163,36 @@ cross-provider battles are fought House-vs-House, not brand-vs-brand.
 
 ### Format
 
-```
-TT<schema>-<content_min>-<payload>-<sig>
-```
-
-| Field           | Meaning                                                                       |
-| --------------- | ----------------------------------------------------------------------------- |
-| `TT`            | Fixed prefix; identifies the string as a Token Tamers code                    |
-| `<schema>`      | Integer schema version; increments when the payload encoding changes          |
-| `<content_min>` | Minimum content pack version required to fully decode this hash (e.g. `c14`)  |
-| `<payload>`     | Compact encoded payload (species, genes, traits, stats, grade, lineage, etc.) |
-| `<sig>`         | Signature / integrity check                                                   |
-
-Example codes visible in the Archive mockup (§12):
+The shipped format is an **opaque, license-key-style token** (revised from the baseline's
+`TT<schema>-<content_min>-<payload>-<sig>` sketch per maintainer decision — same semantic content,
+a "proper encoded" presentation):
 
 ```
-TT2-c14-mK4…
-TT2-c14-x9F…
-TT2-c14-qL2…
+TTX<v>-XXXX-XXXX-…        e.g.  TTX1-AFAA-21QC-V22T-E5V9-GV2R-2W7S-6SG1-WBS2-NJAF-C
 ```
 
-Now implemented (M2.1 scope) in `packages/core/src/dna/` — the hash **encoder** (`encodeDna`) and a
-pure inverse (`decodeDna`, used for round-trip tests) are pure, deterministic, and have no I/O
-dependencies (no `node:*` — a hand-rolled Crockford base32, not `Buffer`). The `<payload>` is a flat
-unsigned-varint stream in a FIXED, APPEND-ONLY field order — species `num`, grade, stage, house,
-PWR/SPD/WIS/GRT, generation, pattern, rhythm, then length-prefixed trait and mutation lists — where
-each enum encodes as its index in the append-only `dna/registry.ts` tables (`DNA_SCHEMA_VERSION` =
-2). The `<sig>` is a deterministic FNV-1a checksum over the header+payload (tamper-evidence, not
-cryptographic). A golden test locks the byte layout forever; future schema bumps only append fields
-and add new golden codes. The fusion/battle engines that consume decoded codes are M2.2/M2.3 work,
-so the code is currently display/share-only.
+| Field    | Meaning                                                                                              |
+| -------- | ---------------------------------------------------------------------------------------------------- |
+| `TTX`    | Fixed prefix; identifies the string as a Token Tamers exchange code                                  |
+| `<v>`    | Visible format version; increments when the payload encoding changes (mirrors the inner `formatVer`) |
+| `XXXX-…` | A single high-entropy body in Crockford base32, dash-grouped every 4 chars                           |
+
+The body decodes to `[ integrity-tag:4 ][ whiten(payload) ]`. The **payload** is a flat
+unsigned-varint stream in a FIXED, APPEND-ONLY field order — `formatVer`, `content_min` (the pack
+revision floor, encoded inside the payload), species `num`, grade, stage, house, PWR/SPD/WIS/GRT,
+generation, pattern, rhythm, length-prefixed trait and mutation lists, then a reserved **extension
+length** (`extLen` = 0 today; future TLV data appends here). Each enum encodes as its index in the
+append-only `dna/registry.ts` tables. The **integrity tag** is a deterministic FNV-1a/32 over the
+payload; it also seeds a **whitening keystream** (mulberry32) XORed over the payload so the token is
+high-entropy with no tell-tale zero runs — obfuscation, NOT encryption (a shared code carries no
+secret; the seed travels with it so any client can decode).
+
+Now implemented (M2.1 scope) in `packages/core/src/dna/`: the **encoder** `encodeDna` and a pure
+inverse `decodeDna` are pure, deterministic (same snapshot ⇒ same code, so the Dex can render it
+live and battles/replays are reproducible), and have no I/O — no `node:*`, a hand-rolled base32 and
+keystream, not `Buffer`. A golden test locks the byte layout forever; future schema bumps only
+append fields / TLV records and add new golden codes. The fusion/battle engines that consume decoded
+codes are M2.2/M2.3 work, so the code is currently display/share-only.
 
 ### Forward-Compatibility Parsing Rules
 
@@ -311,9 +311,9 @@ contents are redacted per the spoiler rule — pool contents are internal, see
 faithfully):
 
 ```
-#014 Mistral      [A]  PWR 72 SPD 91 WIS 64 GRT 80   gen 6   TT2-c14-mK4…
-#0xx [redacted] ★ [S]  PWR 88 SPD 95 WIS 79 GRT 90   gen 11  TT2-c14-x9F…
-#0xx [redacted]   [B]  PWR 61 SPD 55 WIS 84 GRT 58   gen 4   TT2-c14-qL2…
+#014 Mistral      [A]  PWR 72 SPD 91 WIS 64 GRT 80   gen 6   TTX1-AFAA-21QC-…
+#0xx [redacted] ★ [S]  PWR 88 SPD 95 WIS 79 GRT 90   gen 11  TTX1-18F5-PHBE-…
+#0xx [redacted]   [B]  PWR 61 SPD 55 WIS 84 GRT 58   gen 4   TTX1-K7Q2-RM9B-…
 ```
 
 The `★` marker on the S-grade row denotes S-spliced status. The two redacted rows correspond
