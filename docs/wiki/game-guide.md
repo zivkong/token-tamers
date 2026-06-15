@@ -30,17 +30,19 @@ just grows more slowly, and a week with no usage at all rests as a [Dormant](#do
 
 ## Houses (identity & cosmetics only — equal stat budgets)
 
-| House  | Diet (mixed model families)      | Theme            | Stat lean |
-| ------ | -------------------------------- | ---------------- | --------- |
-| Aether | `claude-*` · MiniMax             | ethereal / mind  | WIS       |
-| Cipher | `gpt-*` / `o*` · GLM · MiMo      | glyph / geometry | PWR       |
-| Flux   | `gemini-*` · Qwen · Kimi         | light / current  | SPD       |
-| Forge  | `llama*` · `mistral*` · DeepSeek | metal / ember    | GRT       |
-| Wild   | anything unmapped                | "???" silhouette | neutral   |
+| House  | Diet (mixed model families)      | Kingdom (creatures)     | Theme            | Stat lean |
+| ------ | -------------------------------- | ----------------------- | ---------------- | --------- |
+| Aether | `claude-*` · MiniMax             | 🌤 Sky Court (flyers)   | ethereal / mind  | WIS       |
+| Cipher | `gpt-*` / `o*` · GLM · MiMo      | ⛰ Crag Beasts (ground) | glyph / geometry | PWR       |
+| Flux   | `gemini-*` · Qwen · Kimi         | 🌊 Tide Runners (swift) | light / current  | SPD       |
+| Forge  | `llama*` · `mistral*` · DeepSeek | 🔥 Iron Brood (robots)  | metal / ember    | GRT       |
+| Wild   | anything unmapped                | 🌱 The Bloom (plants)   | "???" silhouette | neutral   |
 
 Each House blends models from several makers, grouped by _vibe_, not brand — no House
-is all-Western or all-anything. No House is stronger; no model is better food. "Lean"
-redistributes an equal budget. (Full list + glob patterns: [Houses](houses.md).)
+is all-Western or all-anything. Each is also a **Creature Kingdom** that gives its pets a real
+animal body (flyers, ground beasts, swift swimmers, robots, plants) — looks only. No House is
+stronger; no model is better food. "Lean" redistributes an equal budget. (Full list + glob
+patterns + kingdoms: [Houses](houses.md).)
 
 ## The vitals panel: Food, Diet, Grow, Odds
 

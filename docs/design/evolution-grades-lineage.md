@@ -150,7 +150,14 @@ fusion-locked specials (hidden) + 12 reserved/Ancient slots.
 
 Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 
-**AETHER** (`claude-*` + MiniMax genes; WIS-lean; ethereal/mind theme)
+> **Creature Kingdoms (visual identity layer, 2026-06-15).** Each House's sprites are designed as
+> a concrete creature kingdom — purely cosmetic shape, never a mechanic (invariant: no model
+> judgment). Aether = **Sky Court** (flying animals) · Cipher = **Crag Beasts** (ground predators)
+> · Flux = **Tide Runners** (aquatic/swift) · Forge = **Iron Brood** (robots/constructs) · Wild =
+> **The Bloom** (plants/feral). Full body-plan bible + the higher-resolution size law (egg 12 …
+> apex 32) live in `visuals-habitats-achievements.md` §13 → _Species identity system_.
+
+**AETHER — Sky Court (flying)** (`claude-*` + MiniMax genes; WIS-lean; ethereal/mind theme)
 
 - Sprite: **Wisp**
 - Rookie: **Aetherling** · **Murmur**
@@ -158,7 +165,7 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 - Prime: **Seraphix** · **Thoughtwarden** · **Halcyore**
 - Apex: **Aurelion** · **Mindspire**
 
-**CIPHER** (`gpt-*`/`o*` + GLM + MiMo genes; PWR-lean; glyph/geometry theme)
+**CIPHER — Crag Beasts (ground predators)** (`gpt-*`/`o*` + GLM + MiMo genes; PWR-lean; glyph/geometry theme)
 
 - Sprite: **Glyphit**
 - Rookie: **Cipherling** · **Bitfang**
@@ -166,7 +173,7 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 - Prime: **Cryptarch** · **Matrixion** · **Sigilus**
 - Apex: **Enigmax** · **Keystrix**
 
-**FLUX** (`gemini-*` + Qwen + Kimi genes; SPD-lean; light/current theme)
+**FLUX — Tide Runners (aquatic/swift)** (`gemini-*` + Qwen + Kimi genes; SPD-lean; light/current theme)
 
 - Sprite: **Sparkit**
 - Rookie: **Fluxling** · **Voltby**
@@ -174,7 +181,7 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 - Prime: **Stormlynx** · **Luminaire** · **Ionyx**
 - Apex: **Voltaicore** · **Radiantus**
 
-**FORGE** (`llama*`/`mistral*` + DeepSeek genes; GRT-lean; metal/ember theme)
+**FORGE — Iron Brood (robots/constructs)** (`llama*`/`mistral*` + DeepSeek genes; GRT-lean; metal/ember theme)
 
 - Sprite: **Emberit**
 - Rookie: **Forgeling** · **Cindcub**

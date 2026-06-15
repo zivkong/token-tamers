@@ -300,13 +300,15 @@ describe('content counts', () => {
 //   - Every species/habitat/trinket id must resolve in the sprites array
 //
 // SIZE LAW (square px, keyed by stage); the egg stage is the 'mote' species.
+// 2026-06-15 higher-resolution ramp (was 10/12/14/16/18/20) — uniform +4, apex 32 is the
+// renderer's safe ceiling. See docs/design/visuals-habitats-achievements.md §13.
 const SPECIES_STAGE_SIZE: Record<Stage, number> = {
-  egg: 10,
-  sprite: 12,
-  rookie: 14,
-  evolved: 16,
-  prime: 18,
-  apex: 20,
+  egg: 12,
+  sprite: 16,
+  rookie: 20,
+  evolved: 24,
+  prime: 28,
+  apex: 32,
 };
 // ---------------------------------------------------------------------------
 
@@ -329,7 +331,7 @@ describe('sprite data integrity', () => {
     }
   });
 
-  it('every species sprite is EXACTLY square at its stage size (10/12/14/16/18/20)', () => {
+  it('every species sprite is EXACTLY square at its stage size (12/16/20/24/28/32)', () => {
     const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
     for (const sp of contentPackV1.species) {
       const sprite = spriteMap.get(sp.spriteId);

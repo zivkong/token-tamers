@@ -68,15 +68,20 @@ and **2 legendary Apex forms**. With the shared Mote egg, the two M1 lines total
 
 ## The shipped lines
 
-| House line | Diet (mixed model families)      | Forms | Status       |
-| ---------- | -------------------------------- | ----- | ------------ |
-| **Aether** | `claude-*` · MiniMax             | 11    | Shipped (M1) |
-| **Cipher** | `gpt-*` · `o*` · GLM · MiMo      | 11    | Shipped (M1) |
-| **Flux**   | `gemini-*` · Qwen · Kimi         | 11    | Lines in M2  |
-| **Forge**  | `llama*` · `mistral*` · DeepSeek | 11    | Lines in M2  |
+Every line is also a **Creature Kingdom** — a body-plan its whole lineage shares, so the forms
+all read as one kind of animal growing up (and keep a signature feature from hatchling to Apex):
+
+| House line | Kingdom (creatures)     | Diet (mixed model families)      | Forms | Status       |
+| ---------- | ----------------------- | -------------------------------- | ----- | ------------ |
+| **Aether** | 🌤 Sky Court (flyers)   | `claude-*` · MiniMax             | 11    | Shipped (M1) |
+| **Cipher** | ⛰ Crag Beasts (ground) | `gpt-*` · `o*` · GLM · MiMo      | 11    | Shipped (M1) |
+| **Flux**   | 🌊 Tide Runners (swift) | `gemini-*` · Qwen · Kimi         | 11    | Lines in M2  |
+| **Forge**  | 🔥 Iron Brood (robots)  | `llama*` · `mistral*` · DeepSeek | 11    | Lines in M2  |
 
 Each line is fed by a _mix_ of model makers grouped by theme, not one brand — see
-[Houses](houses.md) for the full map and how your model usage picks which line you grow.
+[Houses](houses.md) for the full map, the creature kingdoms, and how your model usage picks
+which line you grow. (Forms get bigger and more detailed each stage, from a 12px egg up to a
+32px Apex — but the _names_ stay yours to discover.)
 
 ## Pattern overlays — the special forms
 

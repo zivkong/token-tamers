@@ -13,16 +13,17 @@ pixel-art pets in the terminal, with grade determining visual _richness_, at <1%
 - Palette-indexed integer grids (`SpriteDef`): `frames[frame][row][col]` = palette
   index, `0` = transparent. **Assets NEVER store RGB** — House tint + grade LUT
   resolve color at render time (palette indirection: one asset, many beauty levels).
-- **Size law (owner direction 2026-06-13 — small, high-density characters, ~1/3 of the
-  old 48–64px sizing; SUPERSEDES it).** Species sprites are **exactly square**, sized by
+- **Size law (owner direction 2026-06-15 — higher-resolution, SUPERSEDES the 2026-06-13
+  10–20px ramp).** Species sprites are **exactly square**, even, on a uniform +4 ramp by
   stage:
 
   | Stage | egg | sprite | rookie | evolved | prime | apex |
   | ----- | --- | ------ | ------ | ------- | ----- | ---- |
-  | px    | 10  | 12     | 14     | 16      | 18    | 20   |
+  | px    | 12  | 16     | 20     | 24      | 28    | 32   |
 
   Habitats are **96×48**, trinkets **12×12**. These are exact, enforced by the
-  content-pack test — not a range.
+  content-pack test — not a range. Apex 32px is the renderer's safe ceiling (an apex sits
+  ~1/3 the habitat width at the golden 100×30 terminal); do not exceed it.
 
 - **Animation banks (required for every species):** besides the idle `frames`, every
   species ships `walk`, `jump`, and `play` banks (`SpriteDef.walk/jump/play`), each with
@@ -43,7 +44,7 @@ pixel-art pets in the terminal, with grade determining visual _richness_, at <1%
 - **Originality (hard rule):** every pet must pass a "clearly its own monster"
   check — no resemblance to existing franchise creatures, poses, or signature
   palettes.
-- **Tone, not gradient (size law tone rule).** At 10–20px ordered-dither gradients
+- **Tone, not gradient (size law tone rule).** At 12–32px ordered-dither gradients
   read as noise. Author **flat tones**: a small fixed vocabulary — `outline=1`,
   `shadow≈3`, `body≈7`, `light≈11`, `rim=13` (`RIM_LO`), `glint=15` — with at most a
   2–3px dither seam where two tones meet. Depth comes from a clean silhouette plus a few
@@ -55,8 +56,16 @@ pixel-art pets in the terminal, with grade determining visual _richness_, at <1%
   dark outline with selective anti-alias pixels; rim-light pixels on the silhouette edge
   (the signature pop) — budgeted by grade (S gets animated rim light). Reserve heavier
   ordered-dither ramps for the larger habitats, not the tiny pets.
-- House themes: Aether wispy/cloud (WIS), Cipher angular/glyph (PWR), Flux
-  light/current (SPD), Forge metal/ember (GRT).
+- **House = Creature Kingdom (body-plan, not just color).** Each House's species are a
+  concrete creature family; design the silhouette so the kingdom reads at 16px before color
+  resolves. Aether = **Sky Court** (flying — floats, wing-planes, single halo-eye, veil-trails,
+  WIS) · Cipher = **Crag Beasts** (ground predators — heavy planted stance, faceted carapace,
+  glyph-seam glints, blade/horn/claw, PWR) · Flux = **Tide Runners** (aquatic/swift — horizontal
+  teardrop, fins, current-ribbons, SPD) · Forge = **Iron Brood** (robots/constructs — boxy
+  riveted plating, ember-vent glints, GRT) · Wild = **The Bloom** (plants/feral — asymmetric,
+  bloom-crown, root-tendrils). Carry the lineage motif (eye shape, core/halo position, signature
+  feature) unchanged in _kind_ across a line, growing only in count/size. Full bible:
+  `docs/design/visuals-habitats-achievements.md` §13 → _Species identity system_.
 
 ## Grade beauty ladder (richness budget, applied by the renderer)
 

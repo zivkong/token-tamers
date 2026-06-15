@@ -18,13 +18,26 @@ which one you use just colors your pet's identity. It never changes power.
 
 ## The five Houses
 
-| House      | Diet (model families)¹           | Theme            | Stat lean | Status       |
-| ---------- | -------------------------------- | ---------------- | --------- | ------------ |
-| **Aether** | `claude-*` · MiniMax             | ethereal / mind  | WIS       | Shipped (M1) |
-| **Cipher** | `gpt-*`/`o*` · GLM · MiMo        | glyph / geometry | PWR       | Shipped (M1) |
-| **Flux**   | `gemini-*` · Qwen · Kimi         | light / current  | SPD       | Lines in M2  |
-| **Forge**  | `llama*` · `mistral*` · DeepSeek | metal / ember    | GRT       | Lines in M2  |
-| **Wild**   | anything unmapped                | `???` silhouette | neutral   | Dormant gene |
+Each House is also a **Creature Kingdom** — its pets are a distinct kind of animal you can
+recognize from silhouette alone. That's pure looks: the kingdom never changes power, only the
+shape your pet wears.
+
+| House      | Diet (model families)¹           | Kingdom (creatures)     | Theme            | Stat lean | Status       |
+| ---------- | -------------------------------- | ----------------------- | ---------------- | --------- | ------------ |
+| **Aether** | `claude-*` · MiniMax             | 🌤 Sky Court (flyers)   | ethereal / mind  | WIS       | Shipped (M1) |
+| **Cipher** | `gpt-*`/`o*` · GLM · MiMo        | ⛰ Crag Beasts (ground) | glyph / geometry | PWR       | Shipped (M1) |
+| **Flux**   | `gemini-*` · Qwen · Kimi         | 🌊 Tide Runners (swift) | light / current  | SPD       | Lines in M2  |
+| **Forge**  | `llama*` · `mistral*` · DeepSeek | 🔥 Iron Brood (robots)  | metal / ember    | GRT       | Lines in M2  |
+| **Wild**   | anything unmapped                | 🌱 The Bloom (plants)   | `???` silhouette | neutral   | Dormant gene |
+
+**The Kingdoms.** Aether's **Sky Court** are winged sky-creatures that never touch the ground —
+floating moth-sages and sky-mantas trailing veils of light. Cipher's **Crag Beasts** are heavy
+ground predators in faceted, glyph-etched armor. Flux's **Tide Runners** are streamlined,
+fast-darting creatures of current and fin. Forge's **Iron Brood** are riveted constructs with
+glowing ember-vents. Wild's **The Bloom** are feral plant-beasts — and the home of every
+not-yet-recognized model, waiting to sprout. A creature keeps its kingdom's look — and its own
+signature feature — as it grows, so an Apex still reads as the grown-up of the hatchling you
+started with.
 
 ¹ The glob patterns behind each: Aether `minimax*`/`abab*`; Cipher `glm*`/`codegeex*`,
 `mimo*`; Flux `qwen*`/`qwq*`/`qvq*`, `kimi*`/`moonshot*`; Forge `deepseek*`. Matching is

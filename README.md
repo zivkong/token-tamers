@@ -59,10 +59,11 @@ turns your real work patterns into a creature:
   ride a session window to its cap and it earns _Marathoner_; juggle many short
   sessions and a _Swarm_ emerges. Nine traits, four hidden pattern forms.
 - **Your model mix becomes identity** — every House blends models from several makers by
-  _vibe_, not brand: **Aether** (ethereal — `claude-*`, MiniMax), **Cipher** (glyphs —
-  `gpt-*`/`o*`, GLM, MiMo), **Flux** (light — `gemini-*`, Qwen, Kimi), **Forge** (ember —
-  `llama*`, `mistral*`, DeepSeek). Identity only — no House is stronger, no model is better
-  food.
+  _vibe_, not brand, and each is a **creature kingdom** all its own: **Aether** (ethereal
+  flyers — `claude-*`, MiniMax), **Cipher** (glyph-armored ground beasts — `gpt-*`/`o*`, GLM,
+  MiMo), **Flux** (swift water-runners — `gemini-*`, Qwen, Kimi), **Forge** (ember-cored robots
+  — `llama*`, `mistral*`, DeepSeek), and **Wild** (feral plant-beasts, for anything unmapped).
+  Identity only — no House is stronger, no model is better food.
 - **Grades are a slow, honest thrill** — every molt rolls C→B→A→S with **published
   odds** (25% / 10% / 3%, activity-modified, A→S hard-capped at 6%). Grades never go
   down. No pity timer. The UI always shows your exact odds. A heavy session also adds a

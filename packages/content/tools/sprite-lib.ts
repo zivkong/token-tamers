@@ -16,10 +16,10 @@
  * body painted with ~indices 3..12 reads great at every grade.
  *
  * TYPICAL CREATURE RECIPE (mirror-then-shade-then-edge):
- *   const c = PixelCanvas.create(40, 40);          // even W/H, 32..48 for pets
- *   fillEllipse(c, 20, 22, 12, 14, 8);             // body mass, mid-ramp
- *   fillEllipse(c, 20, 12, 7, 7, 9);               // head
- *   bezier(c, 28, 16, 38, 6, 34, 20, 5);           // a horn / tail wisp
+ *   const c = PixelCanvas.create(24, 24);          // even W/H, the stage size (12..32)
+ *   fillEllipse(c, 12, 14, 7, 8, 8);               // body mass, mid-ramp
+ *   fillEllipse(c, 12, 7, 4, 4, 9);                // head
+ *   bezier(c, 17, 9, 23, 3, 21, 12, 5);            // a horn / tail wisp / wing
  *   // ... draw only the LEFT half, then:
  *   mirrorX(c);                                     // bilateral symmetry
  *   shade(c, { dir: 'upper-left', bands: 8, lo: 3, hi: 12, dither: true });
@@ -29,8 +29,11 @@
  *   const frames = [c.grid, bobFrame(c, 1).grid];    // idle bob
  *   const def = buildSprite('sprite-foo', frames, 2);
  *
- * SIZE LAW (enforce in your design module):
- *   - pets:     even-sized, min 32x32, max 48x48 (height EVEN — half-block pairs)
+ * SIZE LAW (2026-06-15 — enforce in your design module; the content-pack test is the gate):
+ *   - pets: EXACTLY square, even, by stage — egg 12, sprite 16, rookie 20, evolved 24,
+ *           prime 28, apex 32 (apex 32 is the renderer's safe ceiling; height EVEN —
+ *           half-block pairs). Each House = a creature Kingdom body-plan (Sky Court /
+ *           Crag Beasts / Tide Runners / Iron Brood / Bloom); see the create-sprites skill.
  *   - habitats: 96x48
  *   - trinkets: 12x12
  *

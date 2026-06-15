@@ -146,6 +146,14 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   re-balanced content data (NOT in `registry-freeze.json` — only ids are additive-only).
   The maker→House grouping never affects stats/grades/speed (invariant 3). Full map:
   `models.json` + `docs/design/evolution-grades-lineage.md` §Houses.
+- **Creature Kingdoms (sprite identity layer; cosmetic shape ONLY):** each House's species
+  are a real creature family — Aether=Sky Court (flying), Cipher=Crag Beasts (ground predator),
+  Flux=Tide Runners (aquatic), Forge=Iron Brood (robots), Wild=The Bloom (plants). Body-plan +
+  signature motif carried across a line (lineage continuity); never affects mechanics
+  (invariant 3). **Species size law (2026-06-15, higher-res):** square px egg 12 · sprite 16 ·
+  rookie 20 · evolved 24 · prime 28 · apex 32 (apex = renderer safe max; habitats 96×48,
+  trinkets 12×12); enforced by the content-pack test. Bible:
+  `docs/design/visuals-habitats-achievements.md` §13 + the `create-sprites` skill.
 - **Grades:** C→B 25%, B→A 10%, A→S 3% base; activity modifier ×0.5–2.0 (model- and
   volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI (the pet
   page's **Odds** row = the live current→next forecast via `core.gradeOdds`). Plus a

@@ -31,13 +31,19 @@ pack tests (`pnpm test`).
 
 ## Houses (v1) — models.json (ordered, first match wins, '\*' wildcard)
 
-| House  | Model-ID family                                     | Theme            | Stat lean |
-| ------ | --------------------------------------------------- | ---------------- | --------- |
-| Aether | `claude-*`                                          | ethereal / mind  | WIS       |
-| Cipher | `gpt-*` / `o*`                                      | glyph / geometry | PWR       |
-| Flux   | `gemini-*`                                          | light / current  | SPD       |
-| Forge  | open-weight (llama/qwen/mistral/deepseek/phi/gemma) | metal / ember    | GRT       |
-| Wild   | anything unmatched                                  | "???"            | neutral   |
+| House  | Model-ID family                                     | Kingdom (creature identity) | Theme            | Stat lean |
+| ------ | --------------------------------------------------- | --------------------------- | ---------------- | --------- |
+| Aether | `claude-*`                                          | Sky Court (flying)          | ethereal / mind  | WIS       |
+| Cipher | `gpt-*` / `o*`                                      | Crag Beasts (ground)        | glyph / geometry | PWR       |
+| Flux   | `gemini-*`                                          | Tide Runners (aquatic)      | light / current  | SPD       |
+| Forge  | open-weight (llama/qwen/mistral/deepseek/phi/gemma) | Iron Brood (robots)         | metal / ember    | GRT       |
+| Wild   | anything unmatched                                  | The Bloom (plants)          | "???"            | neutral   |
+
+**Kingdom = cosmetic creature body-plan only** (flying/ground/aquatic/robot/plant), never a
+mechanic — same no-model-judgment rule as the House itself. The kingdom→House mapping is
+re-balanceable content art, NOT frozen in `registry-freeze.json` (only ids are additive-only).
+Full body-plan bible: `docs/design/visuals-habitats-achievements.md` §13 + the **create-sprites**
+skill.
 
 Each distinct model ID consumed = a gene in the diet profile. Dominant House →
 species line; cross-House diet (≥35/35) → hybrid lines.
@@ -85,6 +91,10 @@ Every fork needs a `default` branch so evaluation never dead-ends. Pattern varia
 ## Sprites
 
 Every species/habitat/trinket id must resolve to a `SpriteDef` in sprites.json.
-Current sprites are deterministic placeholders from `tools/gen-sprites.ts` (re-run
-with `pnpm tsx packages/content/tools/gen-sprites.ts`). For art rules, use the
+Sprites are generated deterministically from `tools/gen-sprites.ts` (re-run with
+`pnpm tsx packages/content/tools/gen-sprites.ts`); species art is authored per-kingdom
+in `tools/designs/*.ts`. Species sprites are exactly square at the **2026-06-15 size law**:
+egg 12 · sprite 16 · rookie 20 · evolved 24 · prime 28 · apex 32 (habitats 96×48, trinkets
+12×12) — enforced by the content-pack test. Each House's creatures follow its **Kingdom**
+body-plan (Sky Court / Crag Beasts / Tide Runners / Iron Brood / Bloom). For art rules, use the
 **create-sprites** skill.
