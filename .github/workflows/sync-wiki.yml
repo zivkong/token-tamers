@@ -1,0 +1,74 @@
+name: Sync Wiki
+
+# Mirrors docs/wiki/*.md (the source of truth) into the GitHub wiki on every
+# push to main that touches them. The wiki becomes a read-only mirror — edit
+# pages under docs/wiki/ and let this workflow publish them.
+#
+# One-time prerequisite: the wiki repo must exist before Actions can push to it.
+# Create the first page once via the repo's "Wiki" tab in the GitHub UI (any
+# content — this workflow overwrites it), then this job takes over.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/wiki/**'
+      - '.github/workflows/sync-wiki.yml'
+  workflow_dispatch:
+
+# Pushing to the wiki needs write access to repository contents; nothing else.
+permissions:
+  contents: write
+
+# Never let two syncs race on the wiki remote.
+concurrency:
+  group: sync-wiki
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Publish docs/wiki to the GitHub wiki
+        env:
+          # Auto-provided, auto-masked in logs. Never echoed.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SRC_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          # Clone the wiki repo (must be initialized once via the UI first).
+          if ! git clone "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.wiki.git" wiki 2>/dev/null; then
+            echo "::error::Wiki repo not reachable. Create the first wiki page once via the GitHub UI (Wiki tab), then re-run."
+            exit 1
+          fi
+
+          # Mirror: drop existing published pages (keep _Sidebar/_Footer meta
+          # pages and .git), then copy the source tree in.
+          find wiki -maxdepth 1 -type f -name '*.md' ! -name '_*' -delete
+          cp docs/wiki/*.md wiki/
+
+          # GitHub's wiki landing page must be named Home.md; our source uses
+          # kebab-case home.md. Rename it and repoint any links to match.
+          if [ -f wiki/home.md ]; then
+            mv wiki/home.md wiki/Home.md
+            sed -i 's/(home\.md)/(Home.md)/g' wiki/*.md
+          fi
+
+          cd wiki
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo 'Wiki already up to date — nothing to publish.'
+            exit 0
+          fi
+
+          git commit -m "docs(wiki): sync from docs/wiki @ ${SRC_SHA}"
+          git push

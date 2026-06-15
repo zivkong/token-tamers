@@ -10,6 +10,13 @@ Source of truth: this skill (page map + policies); mechanics detail lives in
 `docs/wiki/` (synced to the GitHub wiki); keep pages in sync with content-pack
 changes in the same PR.
 
+**Wiki publishing is automated** — `.github/workflows/sync-wiki.yml` mirrors
+`docs/wiki/*.md` into the GitHub wiki on every push to `main` that touches them
+(`home.md` → the wiki's `Home.md` landing page). The wiki is therefore a
+**read-only mirror**: never hand-edit pages in the GitHub wiki UI — edit under
+`docs/wiki/` and let the workflow publish. One-time prerequisite: the wiki repo
+must be initialized once via the repo's Wiki tab before Actions can push to it.
+
 ## Page map (target)
 
 Home/philosophy · Getting started (`tt init`, per-provider setup, plan types,
