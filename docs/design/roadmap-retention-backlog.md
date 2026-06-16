@@ -45,126 +45,197 @@ implementation starts (GitHub + Claude Code)).
 8. `tt watch` + statusline one-liner; `--no-color` fallback
 9. CLAUDE.md + the four project skills; docs/wiki skeleton + CI spoiler check; CI zero-network check
 
-### Post-MVP — Granular Milestones
+### Post-MVP — the Season roadmap (unified)
 
-M2 was too large; it is decomposed into seven independently shippable milestones (M2.1–M2.7).
-M3 follows as art pipeline, future adapters, and polish.
+**Seasons are the single planning unit.** The old M-milestone ids (M1–M3) are retained only as
+**engineering tags** in parentheses so the design-baseline lineage is traceable — they are no
+longer a parallel schedule. The release spine is: **Season 0 → Season 1 → Season 2 → Season 3**,
+with a continuous **Art & Polish** track running underneath. Each Season bumps the pack `season`
+and (when it adds content) raises the live `dexTotal` to that Season's obtainable roster, so 100%
+is always reachable inside the current Season.
 
-#### Season scoping (overlay on the milestones)
+| Season       | Codename        | Headline                                                  | Status      |
+| ------------ | --------------- | --------------------------------------------------------- | ----------- |
+| **Season 0** | **Genesis**     | Foundation (shipped) + **Battle** + **Deco/collection**   | in progress |
+| **Season 1** | **Crossbreed**  | The whole **DNA grafting + fusion** system + its content  | next        |
+| **Season 2** | **Coliseum** \* | **Leagues + standings**, Drifter DNA, **Codex adapter**   | planned     |
+| **Season 3** | **Tempest** \*  | **Weather/live-ops** + the full **collections** build-out | planned     |
+| _ongoing_    | **Atelier** \*  | Art pipeline, hand-crafted sprites, more adapters, perf   | continuous  |
 
-**Seasons are the player-facing release units; the M-ids are the engineering milestones that fill
-them.** The current scope decision (2026-06-16):
+\* Season 2/3 codenames are provisional working titles.
 
-| Season                   | Theme          | Milestones it ships                                                                      | Status                                  |
-| ------------------------ | -------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
-| **Season 0**             | **Genesis**    | M1 (shipped) + M2.1 codec (shipped) + **M2.2 Battle** + **deco subset of M2.5**          | M1/M2.1 shipped; battle + deco to build |
-| **Season 1**             | **Crossbreed** | **M2.3** — the entire DNA apply + grafting + fusion system, with its content             | to build                                |
-| **Season 2+ / live-ops** | (rolling)      | M2.4 Codex adapter · rest of M2.5 collections · M2.6 leagues/drifter · M2.7 weather · M3 | future                                  |
+Invariants every Season honors: battle/graft engines are **pure + seeded** (invariant 5, no
+`Date.now`/`Math.random`); all new species/traits/achievements/habitats/trinkets are **additive**
+to the one content tree (invariants 6–7); the model→House map never affects stats/grades/speed
+(invariant 3); schema bumps are backend-only and never surface as player copy.
 
-Notes that follow from this split:
+---
 
-- **Battle is Season 0, grafting/fusion is Season 1.** Battle only needs the shipped DNA codec
-  (decode-only): you battle your own archive records, or a foreign code pasted into `tt battle`
-  (the Dex detail page already displays a pet's code for sharing). No `tt dna` command and no
-  apply/graft is needed in Season 0.
-- **"Basic unlockables" = the deco loop on existing content** (the content-free subset of M2.5):
-  `tt deco` + Deco page + loadout storage + declarative unlock-condition schema over the existing
-  12 habitats / 6 trinkets / 72 achievements. The full M2.5 content expansion (toward ~120
-  achievements, Ancestral Grove tiers, etc.) is a later Season.
-- **Season 1 "Crossbreed" is the whole DNA story** — `tt dna export`/`apply`, the graft engine
-  (Layer A: `GRAFT_POTENCY`, trait-splice, grade carry, S-spliced marker, one-per-life) AND the
-  fusion content it produces (Layer B: hybrid sub-lines, fusion pools, fusion Apex, Chimera-class,
-  cutscenes/cosmetics). It bumps the pack `season` 0 → 1 and raises `dexTotal` to the Season-1 roster.
-- **Leagues (M2.6) deferred past Season 1.** Battles ship without standings in Season 0; the
-  retention risk (§19) is acknowledged — local Leagues are the first live-ops Season after Crossbreed.
+#### Season 0 — "Genesis" (current)
 
-#### M2.1 — DNA Codec & Export (social foundation)
+**Goal:** the launch creature game is feature-complete to _play with what you've raised_ — you
+can fight your pets and dress their world. No new content is authored this Season; it makes the
+shipped 56 species / 72 achievements / 12 habitats / 6 trinkets fully _usable_.
 
-- Hash codec in `packages/core` — encode/decode the opaque `TTX<v>-XXXX-…` token (**encoder
-  shipped**; see `dna-hash-battles.md` §10)
-- Forward-compatibility parsing: old clients parse newer hashes, dormant genes, `graded_under` tags
-- Content schema draft & hash payload spec finalized
-- `tt dna export` command
-- Riddle-hint copy for Vigil / Tempest / Prism / Chimera DNA types
+**Already shipped (the foundation, M1 + M2.1 codec):** five House lines · 56 species · evolution /
+traits / patterns / mutations / monotonic grade rolls · rebirth + lineage · Archive · Dex +
+per-species record store + Dex-detail (shows the DNA code + battle/graft readiness banners) ·
+the DNA **codec** (encode/decode `TTX…`, forward-compat) · clickable 4:3 TUI shell
+(Pet/Dex/Archive/Settings) · Claude Code + OpenCode adapters · `tt watch` + statusline · opt-in
+updater · the Seasons framing itself (`season: 0`, `dexTotal: 56`, Settings "Season" row).
 
-#### M2.2 — Battle Engine & TUI · **Season 0**
+**Deliverable A — Battle system** (eng tag: M2.2). Battle consumes a **decoded code read-only**;
+it never mutates the pet's stats/grade/Dex (so it cannot violate invariant 3 — no model becomes
+"stronger"; the House wheel is _circular_ and stat budgets stay equal).
 
-- Deterministic battle formula: `outcome = f(hashA, hashB, ruleset_version)`
-- 4-House type wheel (Aether > Cipher > Flux > Forge > Aether; Wild neutral)
-- Trait procs & behavioral counters (Sprinter counters Marathoner, Deepdiver counters Swarm)
-- Grade stat-floor (~+5% for S)
-- Ruleset negotiation & versioning; battle math tuning (damage formula, proc rates, multipliers)
-- `tt battle` command; Battle TUI page (split-pane, HP bars, lunges, screen-shake, floating damage)
-- Archive-record battles
+- [ ] **A1 — Battle engine** (new `packages/core/src/battle/`): pure `simulateBattle(snapA, snapB,
+ruleset)` → a deterministic, replayable event timeline + outcome. RNG seeded from the two
+      hashes + `rulesetVersion` (invariant 5). Same inputs ⇒ identical timeline, forever.
+- [ ] **A2 — House type wheel:** Aether > Cipher > Flux > Forge > Aether; Wild neutral. Circular by
+      construction (no House is net-stronger). Multiplier table lives as **content data**, not
+      hardcoded (invariant 9).
+- [ ] **A3 — Trait procs & behavioral counters:** data-driven proc table (Sprinter counters
+      Marathoner, Deepdiver counters Swarm, …).
+- [ ] **A4 — Grade stat-floor (~+5% for S):** applied as a battle-only floor (never a permanent
+      stat add — equal budgets hold).
+- [ ] **A5 — Ruleset versioning + negotiation:** `rulesetVersion` in the engine; two codes battle
+      under the min common version so cross-version replays stay reproducible.
+- [ ] **A6 — `tt battle` command** (`apps/cli/src/commands/battle.ts`): live pet vs. an Archive
+      record, or vs. a pasted `TTX…` code (`tt battle <code>`); enforces the Evolved readiness
+      gate; text summary in non-interactive mode.
+- [ ] **A7 — Battle TUI page** (`packages/tui/src/pages/battle.ts`): split-pane, HP bars, lunges,
+      screen-shake, floating damage; renders the engine timeline; golden-frame tests.
+- [ ] **A8 — Shell entry point:** pick an opponent from the Archive/Dex and launch a battle.
+- [ ] **A9 — Determinism + golden tests** (engine timeline + page frames) and a **wiki page** for
+      battles (rules, the House wheel, the "no model is stronger" guarantee).
 
-#### M2.3 — DNA Apply & Fusion Pools · **Season 1 ("Crossbreed")**
+**Deliverable B — Deco & basic-unlockables loop** (eng tag: M2.5 subset; content-free).
 
-- `tt dna apply <code>` with timing tiers (Sprite/Rookie = graft, Evolved = pool entry, Prime = fusion Apex)
-- One-application-per-lifetime enforcement; DNA merge breeding (trait pool splicing)
-- Cross-provider fusion first-class (Chimera-class flagship); grade carry, S-spliced marker, stat-floor bonus
-- Fusion pool evaluation logic (Vigil / Tempest / Prism / Chimera); first fusion pool lineup + Chimera-class pool design
-- Fusion cutscene (parents slide in, overlap, white flash, two-tone reveal)
-- Fusion cosmetics (two-tone split per parent, S-spliced gold outline); DNA TUI page
+- [ ] **B1 — Unlock-condition schema as data:** formalize each habitat/trinket's unlock condition
+      as declarative content (achievements already carry condition + reward); verify all 72
+      achievements map to a reward.
+- [ ] **B2 — Loadout storage:** equipped habitat + trinket slots in `UserConfig` (backend schema
+      bump + cli migration — `SCHEMA_VERSION`, never surfaced).
+- [ ] **B3 — `tt deco` command** (`apps/cli/src/commands/deco.ts`) + `--auto` (auto-equip the
+      newest/best unlocked).
+- [ ] **B4 — Deco TUI page** (`packages/tui/src/pages/deco.ts`): browse unlocked habitats/trinkets,
+      equip into slots; golden frames.
+- [ ] **B5 — Pet page integration:** render the equipped habitat (96×48) behind the pet + trinkets
+      in their slots; basic idle interaction (pet plays with a trinket). (Full trait×trinket
+      animation matrix is a later Season.)
+- [ ] **B6 — Completion wiring + wiki:** confirm deco unlocks feed the Completion Meter
+      (habitats/trinkets 10%/10%); wiki page for the collect-and-decorate loop.
 
-#### M2.4 — Codex Adapter
+**Explicitly NOT in Season 0:** any DNA apply/graft/fusion, hybrid/fusion species, Leagues/
+standings, Drifter DNA, weather, the Codex adapter, and the full collections content expansion.
 
-- Codex adapter: delta algorithm + format-generation detection
-- Integration with adapter registry + `tt init` detection
-- Static-policy edge cases: DST, timezone, week-anchor migration
+---
 
-#### M2.5 — Collections: Achievements, Habitats, Trinkets, Deco · (**deco loop = Season 0**; content expansion = later)
+#### Season 1 — "Crossbreed" (next)
 
-- Full achievements.json v1 (~120 total): lineage, evolution, traits, rhythm, grades, social, collection meta, calendar
-- Full habitat set: pattern-themed (×4), House (×4), Ancestral Grove (×3 tiers), Gilded Sanctum, Cocoon Hollow
-- Full trinket set: trait milestones, molt milestones, weather, DNA export, fusion, archive completion
-- Unlock-condition schema as declarative data; habitat/trinket unlock schemas + idle-interaction animation matrix
-- `tt deco` command + `--auto` mode; Deco TUI page; loadout storage in local config
-- Habitat sprites (96×48) + trinket sprites (12×12)
-- Habitat live-sync touches (day/night tint, weather ambient effects, grade aura interaction)
+**Goal:** turn DNA codes from a shareable curio into the game's social/breeding economy. This
+Season ships the **entire** grafting + fusion system **and** the new creatures it produces. Bumps
+the pack `season` 0 → 1 and raises `dexTotal` to the Season-1 roster.
 
-#### M2.6 — Leagues & Drifter DNA
+**Deliverable A — Graft / fusion engine** (eng tag: M2.3 · `dna-hash-battles.md` §9).
 
-- Team League standings format; `tt league import <codes>` command; League TUI page
-- Seasonal league titles recorded in lineage
-- `tt dna drifter` — deterministic calendar-seeded solo-dev DNA bridge
-- Solo-dev bridge: every machine on the same month produces an identical code, fully offline
+- [ ] **A1 — `applyDna(state, donorSnapshot, ruleset)`** (new `packages/core/src/fusion/`): pure,
+      seeded; effect depends on the recipient's **stage tier** — Sprite/Rookie = species graft
+      (hybrid sub-line), Evolved = guaranteed fusion-pool entry next molt, Prime = fusion Apex.
+- [ ] **A2 — Consume `GRAFT_POTENCY`:** donor-grade-scaled grade-up nudge + battle stat-floor
+      (C = 0 … S hard-capped at +0.08), grade-based only (invariant 3), capped below base odds.
+- [ ] **A3 — DNA merge breeding:** splice donor traits into the recipient's trait pool for future
+      molt rolls.
+- [ ] **A4 — Grade carry + S-spliced marker + stat-floor bonus** (S-grade donor only; battle-only
+      floor, equal budgets preserved).
+- [ ] **A5 — One-application-per-lifetime:** `pet.dnaApplied` flag (backend schema bump + cli
+      migration); resets on rebirth. Enforce the Evolved readiness gate on apply.
+- [ ] **A6 — Determinism + golden codes:** new enum ids appended to `dna/registry.ts`
+      (additive-only, invariant 7); golden tests for apply outcomes.
 
-#### M2.7 — Weather & Live Ops · (a later live-ops Season)
+**Deliverable B — Hybrid & fusion content** (eng tag: M2.3 content; spoiler rule applies).
 
-- Weekly weather seed evaluation (ISO week → trait rate bias, ambient habitat effects)
-- Monthly weather events (special week, re-earnable trinket/habitat, twisted trait table)
-- 12-month content calendar; Legacy milestones (Gen 25/52, Four-House Master, Perfect Season)
+- [ ] **B1 — Hybrid-line species** (the public cross-House sub-lines, e.g. Aether×Flux) added to
+      `species.json` with `since: 1` + sprites at the size law; the species-graft targets.
+- [ ] **B2 — Fusion pools** (the reserved fusion-locked specials in `fusion-pools.json` — Vigil /
+      Tempest / Prism / Chimera lineups); pool-evaluation logic. **Contents stay internal
+      (spoiler gate).**
+- [ ] **B3 — Fusion Apex variants** (Prime tier) + the **Chimera-class flagship** (cross-provider,
+      Polyhost + Switcher).
+- [ ] **B4 — Riddle-hint copy** for each DNA type (the Tempest/Prism/Chimera TODOs).
 
-> **Note (2026-06-16 rescope):** the **"Crossbreed" content pack is Season 1**, shipped with the
-> grafting/fusion engine in **M2.3** — not here. Each later Season is still a quarterly additive
-> pack (+1 hybrid line, +6–10 species, +1 habitat set, +1 DNA pool, +1 achievement page) that
-> bumps the pack `season` and raises the live `dexTotal` to that Season's obtainable roster.
+**Deliverable C — DNA commands + UI** (eng tag: M2.3 surface).
 
-### M3 — Art Pipeline, Future Adapters & Polish
+- [ ] **C1 — `tt dna export`** (render the shareable code — codec shipped) and **`tt dna apply
+<code>`**.
+- [ ] **C2 — DNA TUI page** (`packages/tui/src/pages/dna.ts`): show your code, paste/apply a code,
+      fusion preview; golden frames.
+- [ ] **C3 — Fusion cutscene** (parents slide in, overlap, white flash, two-tone reveal) +
+      **fusion cosmetics** (two-tone split per parent, S-spliced gold outline).
 
-- Hand-crafted sprites for all species (replace procedural placeholders)
-- Sprite compiler tool (PNG → palette-indexed JSON)
-- Cutscenes: molt crack & re-form, gradeshift burst, fusion cinematic
-- Pattern-variant art completion
-- Windows path support; CI bench harness + initial perf budgets
-- Future adapters: Gemini CLI, Copilot CLI, Amp, Goose, Cursor
-- Page-by-page mockups for any remaining TUI pages
+**Deliverable D — Pack & completion.**
+
+- [ ] **D1 — Bump `season` 0 → 1**; raise `dexTotal` to the Season-1 obtainable roster (base +
+      hybrids + fusion entries). Fusion-locked specials require DNA trading — solo Dex ceiling
+      stays intentional (§19 solo-dev cliff; "social by DNA" pillar).
+- [ ] **D2 — +1 habitat set, +1 achievement page** themed to Crossbreed.
+
+---
+
+#### Season 2 — "Coliseum" (planned) — competition & more providers
+
+Makes battles _matter_ and widens the player pool. Addresses the §19 "battles are shallow without
+standings" risk — the first Season to do so.
+
+- [ ] Team League standings format; `tt league import <codes>`; League TUI page (eng tag: M2.6).
+- [ ] Seasonal league titles recorded in lineage.
+- [ ] `tt dna drifter` — deterministic calendar-seeded solo-dev DNA bridge (same month ⇒ identical
+      code, fully offline).
+- [ ] **Codex adapter** (eng tag: M2.4): delta algorithm + format-generation detection; `tt init`
+      detection; static-policy DST/timezone/week-anchor edge cases.
+
+---
+
+#### Season 3 — "Tempest" (planned) — live-ops & the full collection
+
+- [ ] Weekly weather seed evaluation (ISO week → trait-rate bias, ambient habitat effects) (M2.7).
+- [ ] Monthly weather events (special week, re-earnable trinket/habitat, twisted trait table).
+- [ ] **Full collections build-out** (rest of M2.5): toward ~120 achievements; full habitat set
+      (Ancestral Grove ×3 tiers, Gilded Sanctum, Cocoon Hollow); full trinket set; trait×trinket
+      idle-animation matrix; habitat live-sync (day/night tint, weather, grade-aura).
+- [ ] 12-month content calendar; Legacy milestones (Gen 25/52, Four-House Master, Perfect Season).
+
+---
+
+#### Ongoing track — "Atelier" (art & polish, eng tag: M3)
+
+Runs continuously alongside the Seasons rather than as one milestone:
+
+- [ ] Hand-crafted sprites for all species (replace procedural placeholders); sprite compiler
+      (PNG/Aseprite → palette-indexed JSON).
+- [ ] Cutscenes: molt crack & re-form, gradeshift burst, fusion cinematic; pattern-variant art.
+- [ ] Future adapters: Gemini CLI, Copilot CLI, Amp, Goose, Cursor.
+- [ ] Windows path support; CI bench harness + perf budgets; remaining TUI page mockups.
 
 ### Dependency graph
 
 ```
-M1 (shipped) ─┬─ Season 0 "Genesis" ─────────────────────────────────────────────────┐
-              │   M2.1 (DNA codec, shipped) · M2.2 (battle engine + TUI) · deco subset of M2.5
-              │                                                                          │
-              ├─► Season 1 "Crossbreed":  M2.3 (DNA apply + grafting + fusion pools + content)
-              │                                                                          │
-              ├─► Later live-ops Seasons: M2.6 (leagues + drifter) · M2.7 (weather) · rest of M2.5
-              ├─► M2.4 (Codex adapter) — independent, can run in parallel
-              └─► M3 (art pipeline + polish) — after content shape stabilizes
+Season 0 "Genesis" (current)
+  shipped: foundation + DNA codec
+  build:   Battle engine ─┐         Deco/collection loop
+                          │
+Season 1 "Crossbreed" ◄───┘  graft/fusion engine + hybrid/fusion content + tt dna export/apply
+  (needs the codec; battle's decode path is reused by apply)
+                          │
+Season 2 "Coliseum" ◄─────┘  Leagues + standings (needs Battle) · Drifter DNA · Codex adapter
+                          │
+Season 3 "Tempest" ◄──────┘  weather/live-ops · full collections build-out
+                          │
+Atelier (ongoing) ────────┴─ art pipeline · future adapters · perf — alongside every Season
 ```
 
-(Engineering dependency still holds underneath the Season labels: M2.1 → M2.2 and M2.1 → M2.3;
-M2.3 → M2.5 content; M2.2 → M2.6.)
+Underlying engineering dependencies (unchanged): codec → battle, codec → graft/fusion, battle →
+leagues, graft/fusion content → full collections.
 
 ---
 
@@ -225,71 +296,67 @@ requires the seasonal cadence below — added to plan.**
 
 ## §20 — Implementation Backlog (design baseline §20)
 
-These items are tracked as GitHub issues from day one. The list below preserves the original
-baseline items, now grouped by the new milestone structure (§18). Items marked `[x]` were
-complete at baseline freeze; all others remain open.
+These items are tracked as GitHub issues. The list is now grouped by **Season** (matching the
+unified roadmap in §18); the old M-id remains in parentheses as the engineering tag. `[x]` = done.
 
-### Completed at baseline
+### Shipped — Season 0 foundation (the baseline + M1 + M2.1 codec)
 
 - [x] OpenCode adapter: SQLite (`opencode.db`) primary + legacy storage-tree walk, prune-tolerant
-- [x] Full evolution tree v1 (§7) — sprites pending
+- [x] Full evolution tree v1 (§7) — sprites procedural for now
 - [x] models.json v1 pattern list (major hosted + open-weight model-ID families)
 - [x] pnpm workspace + tsup + ESLint(+Prettier) + Vitest scaffold
 - [x] Rename in-game "Codex" (collision with OpenAI Codex) → Archive
-- [x] Write CLAUDE.md v1 + the four project skills
-- [x] Wiki page skeletons in docs/wiki + CI spoiler check
+- [x] Write CLAUDE.md v1 + the project skills; wiki skeletons + CI spoiler check
+- [x] DNA **codec** + forward-compat parsing (M2.1) — opaque `TTX…`, obfuscation not signing
+- [x] Golden-frame test harness for the renderer (string-buffer snapshots)
+- [x] README pledge text for "no model judgment" + "read-only, never spends tokens"
+- [x] Seasons framing: `season`/`dexTotal`, Settings "Season" row
 
-### M2.1 — DNA Codec & Export
+### Season 0 — "Genesis" · open (Battle + Deco)
 
-- [ ] Content schema draft; hash payload spec + signing scheme
-- [ ] Riddle-hint copy for each DNA type
+- [ ] Battle engine + math: damage formula, proc rates, House-wheel multipliers (data-driven) (M2.2)
+- [ ] `tt battle` + Battle TUI page mockup & golden frames (M2.2)
+- [ ] Deco: unlock-condition schema as data; loadout storage; `tt deco` + Deco page mockup (M2.5 subset)
+- [ ] Completion-meter wiring verified for habitats/trinkets via deco
+- [ ] Riddle-hint copy carry-over check (export-side is S1; battle needs none)
 
-### M2.2 — Battle Engine & TUI
+### Season 1 — "Crossbreed" · open (DNA grafting + fusion)
 
-- [ ] Battle math: damage formula, proc rates, House-wheel multipliers
-- [ ] Page-by-page mockups: Battle page inside the 4:3 shell
+- [ ] Graft/fusion engine: `applyDna`, apply-timing tiers, one-per-life, trait splice (M2.3)
+- [ ] First fusion pool lineup; Chimera-class pool design (M2.3, spoiler-internal)
+- [ ] Hybrid-line species + sprites (`since: 1`); fusion Apex variants
+- [ ] `tt dna export`/`apply`; DNA TUI page mockup; fusion cutscene + cosmetics
+- [ ] Riddle-hint copy for each DNA type (M2.1 carry-over)
+- [ ] Pack bump `season` 0 → 1 + `dexTotal` raise; +habitat set, +achievement page
 
-### M2.3 — DNA Apply & Fusion Pools
+### Season 2 — "Coliseum" · open (competition & providers)
 
-- [ ] First fusion pool lineup; Chimera-class pool design
+- [ ] Team League standings format + League TUI page mockup (M2.6)
+- [ ] Local Drifter DNA generation spec (`tt dna drifter`) (M2.6)
+- [ ] Codex adapter: delta algorithm + format-generation detection spec (M2.4)
+- [ ] Static-policy edge cases: timezone changes, DST, week-anchor migration (M2.4)
 
-### M2.4 — Codex Adapter
+### Season 3 — "Tempest" · open (live-ops & full collection)
 
-- [ ] Codex adapter: delta algorithm + format-generation detection spec
-- [ ] Static-policy edge cases: timezone changes, DST, week-anchor migration
+- [ ] achievements.json: full ~120-achievement list + reward mapping (M2.5)
+- [ ] Full habitat/trinket sets + idle-interaction animation matrix (trait × trinket) (M2.5)
+- [ ] Weather seed evaluation + monthly events (M2.7)
+- [ ] 12-month content calendar; Legacy milestones (M2.7)
 
-### M2.5 — Collections: Achievements, Habitats, Trinkets, Deco
-
-- [ ] achievements.json v1: full 120-achievement list + reward mapping
-- [ ] Completion Meter weighting formula
-- [ ] Habitat/trinket v1 art list + unlock-condition schema; idle-interaction animation matrix (trait × trinket)
-- [ ] Page-by-page mockups: Deco page inside the 4:3 shell
-
-### M2.6 — Leagues & Drifter DNA
-
-- [ ] Team League standings format + local Drifter DNA generation spec
-- [ ] Page-by-page mockups: League page inside the 4:3 shell
-
-### M2.7 — Weather, Seasons & Live Ops
-
-- [ ] 12-month content calendar + Season 1 pack outline
-
-### M3 — Art Pipeline, Future Adapters & Polish
+### Atelier — ongoing (art & polish, M3)
 
 - [ ] Sprite compiler tool (PNG/Aseprite → palette-indexed JSON)
+- [ ] Hand-crafted sprites for all species; cutscenes; pattern-variant art
 - [ ] Future adapters: Gemini CLI, Copilot CLI, Amp, Goose, Cursor
-- [ ] Windows path support (%USERPROFILE% variants for all three adapters)
-- [ ] CI bench harness + initial perf budgets; size-limit config; import-boundary rules; dependency-change gate; jscpd/knip advisory
-- [ ] Page-by-page mockups: DNA page inside the 4:3 shell
-- [ ] Mouse hit-region registry design + SGR parser edge cases (tmux passthrough, mosh, Windows Terminal)
+- [ ] Windows path support (%USERPROFILE% variants for all adapters)
+- [ ] CI bench harness + perf budgets; size-limit; dependency-change gate; jscpd/knip advisory
+- [ ] Remaining TUI page mockups; mouse hit-region + SGR parser edge cases (tmux/mosh/Win Terminal)
 
-### Cross-cutting (not milestone-specific)
+### Cross-cutting (any Season)
 
 - [ ] Grade roll tuning: base rates, activity-modifier weights, caps
 - [ ] Molt evaluation spec: per-adapter field parsing + normalization math
-- [ ] Golden-frame test harness for the renderer (string-buffer snapshots)
 - [ ] Name/namespace availability check for "Token Tamers" (npm, GitHub, app registries)
-- [ ] README pledge text for "no model judgment" + "read-only, never spends tokens"
 
 ---
 

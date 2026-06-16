@@ -169,8 +169,11 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
     `tt dna export`/`apply`, the graft engine (`GRAFT_POTENCY`, trait-splice, grade carry,
     S-spliced marker, one-per-life) AND the fusion content it produces (hybrid sub-lines, fusion
     pools, fusion Apex, Chimera-class, cutscenes/cosmetics). Bumps `season` 0 → 1.
-  - **Later Seasons:** Codex adapter, Leagues + Drifter DNA, weather/live-ops, the full
-    collections expansion, art pipeline. The long-term cross-Season vision is ~112 Dex entries.
+  - **Season 2 — "Coliseum" (planned):** Leagues + standings, Drifter DNA, Codex adapter.
+  - **Season 3 — "Tempest" (planned):** weather/live-ops + the full collections build-out
+    (~120 achievements, full habitat/trinket sets). Long-term cross-Season vision ~112 Dex entries.
+  - **"Atelier" (ongoing track):** art pipeline, hand-crafted sprites, future adapters, perf.
+  - (S2/S3/Atelier names are provisional. Full deliverable lists: `docs/design/roadmap-retention-backlog.md` §18.)
 - **Cycle:** molt = 5-h session-window close (the evolution/trait/mutation/grade
   moment; eggs fast-hatch ~10 min after first usage); rebirth = week boundary
   (archive + new egg, never evolves). ONE pet-global clock (`UserConfig.cycle`,
@@ -234,8 +237,10 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
     loop (the content-free subset of M2.5).
   - **Season 1 — "Crossbreed":** the entire **DNA apply + grafting + fusion** system (M2.3) +
     the hybrid/fusion **content** (the "Crossbreed" pack).
-  - **Later:** Codex adapter (M2.4), the rest of collections (M2.5), Leagues/Drifter (M2.6),
-    weather/live-ops (M2.7), and M3 = art pipeline, future adapters, polish.
+  - **Season 2 — "Coliseum":** Leagues/standings + Drifter (M2.6) + Codex adapter (M2.4).
+  - **Season 3 — "Tempest":** weather/live-ops (M2.7) + full collections build-out (rest of M2.5).
+  - **"Atelier" (ongoing):** M3 = art pipeline, future adapters, polish — alongside every Season.
+  - Single source of truth for deliverables: `docs/design/roadmap-retention-backlog.md` §18.
 
 ## AI-native development policy (full text: docs/design/architecture.md)
 

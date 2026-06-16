@@ -232,8 +232,12 @@ screenshot it. That's the point.
 - [ ] **Season 1 — Crossbreed:** **DNA export/apply** (paste codes to friends) · DNA
       **grafting** · hybrid lines (Aether×Flux, Forge×Cipher) · fusion pools 🤫 · cross-provider
       Chimera forms
-- [ ] **Later Seasons:** Codex CLI adapter · Team Leagues · Drifter DNA for solo devs · monthly
-      weather events · the sprite compiler pipeline
+- [ ] **Season 2 — Coliseum:** Team Leagues + standings · Drifter DNA for solo devs · Codex CLI adapter
+- [ ] **Season 3 — Tempest:** monthly weather events · the full collection (more achievements,
+      habitats & trinkets)
+- [ ] **Ongoing:** hand-crafted sprite art · the sprite compiler pipeline · more adapters
+
+<sub>Season 2/3 names are provisional. Full plan: [`docs/design/roadmap-retention-backlog.md`](docs/design/roadmap-retention-backlog.md).</sub>
 
 Full design reference: [`docs/design/`](docs/design/) · player wiki: [`docs/wiki/`](docs/wiki/)
 
