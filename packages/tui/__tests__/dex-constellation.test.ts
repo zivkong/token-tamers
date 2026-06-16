@@ -44,16 +44,17 @@ function ctxOf(pack: ContentPack, state = makeState()): RenderContext {
 }
 
 describe('dex constellation node model', () => {
-  it('marks owned/unseen stars and counts the House roster', () => {
+  it('marks owned/unseen stars, roots at the Mote, and counts the roster', () => {
     const ctx = ctxOf(makePack());
     const aether = buildHouseNodes(ctx, DEX_HOUSES.indexOf('aether'));
-    expect(aether).toHaveLength(1);
-    expect(aether[0]).toMatchObject({ speciesId: 'wisp', owned: true, grade: 'C' });
+    // Every sky begins at the shared Mote (tier 0, first) then the House's stars.
+    expect(aether[0]!.stage).toBe('egg');
+    expect(aether.find((n) => n.speciesId === 'wisp')).toMatchObject({ owned: true, grade: 'C' });
 
     const forgeIdx = DEX_HOUSES.indexOf('forge');
     const forge = buildHouseNodes(ctx, forgeIdx);
-    expect(forge[0]).toMatchObject({ speciesId: 'ember', owned: false, grade: null });
-    expect(houseNodeCount(ctx, forgeIdx)).toBe(1);
+    expect(forge.find((n) => n.speciesId === 'ember')).toMatchObject({ owned: false, grade: null });
+    expect(houseNodeCount(ctx, forgeIdx)).toBe(2); // Mote + Ember
   });
 
   it('orders stars by tier and links in-House parents', () => {
@@ -77,8 +78,10 @@ describe('dex constellation node model', () => {
     };
     const pack = { ...makePack(), species: [rookie, sprite] }; // deliberately out of order
     const nodes = buildHouseNodes(ctxOf(pack), DEX_HOUSES.indexOf('aether'));
-    expect(nodes.map((n) => n.speciesId)).toEqual(['a1', 'a2']); // tier asc: sprite then rookie
-    expect(nodes[1]!.parents).toEqual(['a1']);
+    // Tier asc: Mote (egg) → sprite → rookie.
+    expect(nodes.map((n) => n.speciesId)).toEqual(['mote', 'a1', 'a2']);
+    expect(nodes.find((n) => n.speciesId === 'a2')!.parents).toEqual(['a1']);
+    expect(nodes.find((n) => n.speciesId === 'a1')!.parents).toEqual(['mote']); // sprite ← Mote
   });
 
   it('renders the ornate gold tile for a legend slot', () => {

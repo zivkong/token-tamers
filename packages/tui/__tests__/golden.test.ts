@@ -82,11 +82,12 @@ describe('golden frames (100x30, no-color)', () => {
   });
 
   it('renders a locked star with the "?" focus tile', () => {
-    // Forge sky: Ember has a record but is not owned, so it reads as undiscovered.
+    // Forge sky: index 0 is the Mote, index 1 is Ember — which has a record but is
+    // not owned, so it reads as undiscovered. Select it to show the "?" tile.
     const out = renderFrameToString(
       100,
       30,
-      input({ page: 'dex', ui: { selected: 0, scroll: 0, house: 3 } }),
+      input({ page: 'dex', ui: { selected: 1, scroll: 0, house: 3 } }),
     );
     expect(out).toContain('Forge');
     expect(out).toContain('???');

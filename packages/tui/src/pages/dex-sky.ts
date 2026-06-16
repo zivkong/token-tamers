@@ -40,6 +40,18 @@ const DIM: Rgb = { r: 120, g: 126, b: 146 };
 const READY: Rgb = { r: 74, g: 222, b: 128 };
 const SEALED: Rgb = { r: 150, g: 152, b: 160 };
 const LEGEND_GOLD: Rgb = { r: 251, g: 191, b: 36 };
+const WHITE: Rgb = { r: 255, g: 255, b: 255 };
+const MOTE_STAR: Rgb = { r: 236, g: 230, b: 208 };
+
+/** A small palette of dim hues for the decorative background starfield. */
+const FIELD_COLORS: Rgb[] = [
+  { r: 130, g: 150, b: 210 }, // pale blue
+  { r: 210, g: 210, b: 235 }, // white
+  { r: 210, g: 180, b: 110 }, // faint gold
+  { r: 130, g: 205, b: 205 }, // cyan
+  { r: 205, g: 140, b: 180 }, // rose
+];
+const FIELD_GLYPHS = ['·', '˚', '.', '⋆'] as const;
 
 const HOUSE_KINGDOM: Record<House, string> = {
   aether: 'Sky Court',
@@ -108,6 +120,12 @@ function placeNodes(nodes: HouseNode[], rect: Rect, house: string): Placed[] {
     const sway = Math.round(Math.sin(tier * 0.95 + phase) * rect.w * 0.1);
     const slot = rect.w / (tierNodes.length + 1);
     tierNodes.forEach((node, i) => {
+      const idx = indexOf.get(node.speciesId) ?? 0;
+      // The Mote anchors dead-center at the very foot — no sway/jitter.
+      if (node.stage === 'egg') {
+        out.push({ node, idx, x: rect.x + Math.floor(rect.w / 2), y: rect.y + rect.h - 1 });
+        return;
+      }
       const s = seed(house, node.num);
       const jitterX = Math.round(((s % 100) / 100 - 0.5) * slot * 0.55);
       const jitterY = (Math.floor(s / 100) % 3) - 1;
@@ -117,7 +135,7 @@ function placeNodes(nodes: HouseNode[], rect: Rect, house: string): Placed[] {
         rect.x + rect.w - 2,
       );
       const y = clamp(baseRow + jitterY, top, bottom);
-      out.push({ node, idx: indexOf.get(node.speciesId) ?? 0, x, y });
+      out.push({ node, idx, x, y });
     });
   }
   return out;
@@ -164,24 +182,96 @@ function drawDots(buf: RenderContext['buf'], a: Pt, b: Pt, color: Rgb): void {
   }
 }
 
-/** A single star: grade-glow badge if owned, dim "?" if not; highlight if selected. */
+/** Base color of a star by state (egg origin / owned grade glow / legend / locked). */
+function starColor(node: HouseNode): Rgb {
+  if (node.stage === 'egg') return MOTE_STAR;
+  if (node.owned && node.grade) return GRADE_ACCENT[node.grade];
+  return node.legend ? LEGEND_GOLD : LOCKED_STAR;
+}
+
+/** A single star: grade-glow badge if owned, ✦ for the Mote, dim "?" if unseen. */
 function drawStar(ctx: RenderContext, p: Placed, selected: boolean): void {
-  const { buf, hits } = ctx;
+  const { buf, hits, frame, mode } = ctx;
   const { node } = p;
-  const glyph = node.owned && node.grade ? GRADE_BADGE[node.grade] : '?';
-  let fg: Rgb =
-    node.owned && node.grade ? GRADE_ACCENT[node.grade] : node.legend ? LEGEND_GOLD : LOCKED_STAR;
-  if (selected) fg = mix(fg, { r: 255, g: 255, b: 255 }, 0.4);
+  const bright = node.stage === 'egg' || node.owned;
+  const glyph =
+    node.stage === 'egg' ? '✦' : node.owned && node.grade ? GRADE_BADGE[node.grade] : '?';
+  let fg = starColor(node);
+  // Shine: bright stars twinkle on a per-star phase (a no-op in --no-color).
+  if (bright && mode !== 'none') {
+    const tw = (Math.sin(frame * 0.3 + node.num) + 1) / 2;
+    fg = mix(fg, WHITE, 0.12 + tw * 0.32);
+  }
+  if (selected) fg = mix(fg, WHITE, 0.4);
   const bg = selected ? SELECT_BG : null;
   if (selected) buf.set(p.x - 1, p.y, { ch: ' ', fg: null, bg });
   buf.textBold(p.x, p.y, glyph, fg, bg);
   if (selected) buf.set(p.x + 1, p.y, { ch: ' ', fg: null, bg });
-  // Name under owned stars when there's a row to spare (the field-guide read).
+  drawStarLabel(ctx, p, selected);
+  if (selected) drawSelectAura(ctx, p);
+  hits.add(`dex:star:${p.idx}`, p.x - 1, p.y, 3, 1);
+}
+
+/** The Mote's label sits beside it; an owned star's name sits on the row below. */
+function drawStarLabel(ctx: RenderContext, p: Placed, selected: boolean): void {
+  const { buf } = ctx;
+  const { node } = p;
+  const fg = selected ? TEXT : DIM;
+  if (node.stage === 'egg') {
+    buf.text(p.x + 2, p.y, 'Mote', fg, null);
+    return;
+  }
   if (node.owned && p.y + 1 < ctx.layout.canvasRows - 1) {
     const label = node.name.slice(0, 9);
-    buf.text(p.x - Math.floor(label.length / 2), p.y + 1, label, selected ? TEXT : DIM, null);
+    buf.text(p.x - Math.floor(label.length / 2), p.y + 1, label, fg, null);
   }
-  hits.add(`dex:star:${p.idx}`, p.x - 1, p.y, 3, 1);
+}
+
+/** A twinkling sparkle aura around the selected star (color modes only). */
+function drawSelectAura(ctx: RenderContext, p: Placed): void {
+  if (ctx.mode === 'none') return;
+  const { buf, frame } = ctx;
+  const spots = [
+    { x: p.x - 2, y: p.y },
+    { x: p.x + 2, y: p.y },
+    { x: p.x, y: p.y - 1 },
+  ];
+  spots.forEach((s, i) => {
+    if ((frame + i) % 3 !== 0) return;
+    if (buf.get(s.x, s.y).ch !== ' ') return;
+    buf.text(
+      s.x,
+      s.y,
+      FIELD_GLYPHS[(frame + i) % FIELD_GLYPHS.length]!,
+      mix(WHITE, SKY, 0.2),
+      null,
+    );
+  });
+}
+
+/**
+ * A sparse, multi-hued, twinkling background starfield drawn into the sky's
+ * voids. Pure decoration, so it's color-modes-only (skipped in --no-color, which
+ * keeps golden frames clean) and only ever fills already-empty cells.
+ */
+function drawStarfield(ctx: RenderContext, rect: Rect): void {
+  if (ctx.mode === 'none') return;
+  const { buf, frame } = ctx;
+  const count = Math.floor((rect.w * rect.h) / 32);
+  for (let i = 0; i < count; i++) {
+    const s = seed('starfield', i * 7 + 1);
+    const x = rect.x + (s % Math.max(1, rect.w));
+    const y = rect.y + (Math.floor(s / 131) % Math.max(1, rect.h));
+    if ((frame + (s % 11)) % 11 < 2) continue; // brief blink-off
+    if (buf.get(x, y).ch !== ' ') continue;
+    const color = FIELD_COLORS[s % FIELD_COLORS.length]!;
+    const lit = (Math.sin(frame * 0.2 + i) + 1) / 2;
+    buf.set(x, y, {
+      ch: FIELD_GLYPHS[(s >>> 4) % FIELD_GLYPHS.length]!,
+      fg: mix(color, SKY, 0.45 + lit * 0.25),
+      bg: null,
+    });
+  }
 }
 
 /** Render one House's sky into `rect`. Returns nothing; draws + registers hits. */
@@ -192,10 +282,9 @@ export function renderSky(
   selected: number,
   house: House,
 ): void {
-  // The shared origin — every line descends to the Mote at the foot of the sky.
-  const moteX = rect.x + Math.floor(rect.w / 2);
-  const moteY = rect.y + rect.h - 1;
-  if (nodes.length === 0) {
+  const placed = placeNodes(nodes, rect, house);
+  // No discovered/known species beyond the Mote → a gentle hint above the origin.
+  if (!placed.some((p) => p.node.stage !== 'egg')) {
     ctx.buf.text(
       rect.x + 2,
       rect.y + Math.floor(rect.h / 2),
@@ -203,25 +292,10 @@ export function renderSky(
       DIM,
       null,
     );
-    drawMote(ctx, moteX, moteY, house);
-    return;
   }
-  const placed = placeNodes(nodes, rect, house);
   drawLines(ctx, placed, house);
-  // Root stars (the sprites) trail down to the Mote.
-  const seedColor = mix(houseColor(house), SKY, 0.4);
-  for (const p of placed) {
-    if (p.node.parents.length === 0)
-      drawDots(ctx.buf, { x: p.x, y: p.y }, { x: moteX, y: moteY }, seedColor);
-  }
   for (const p of placed) drawStar(ctx, p, p.idx === selected);
-  drawMote(ctx, moteX, moteY, house);
-}
-
-/** The shared origin star: a ✦ seed + label at the foot of every sky. */
-function drawMote(ctx: RenderContext, x: number, y: number, house: House): void {
-  ctx.buf.textBold(x, y, '✦', mix(houseColor(house), { r: 255, g: 255, b: 255 }, 0.35), null);
-  ctx.buf.text(x + 2, y, 'Mote', DIM, null);
+  drawStarfield(ctx, rect);
 }
 
 // ─── Focus rail ────────────────────────────────────────────────────────────
@@ -292,8 +366,12 @@ export function renderFocusRail(
   const { buf } = ctx;
   for (let i = 0; i < rect.h; i++) buf.set(rect.x, rect.y + i, { ch: '│', fg: RULE, bg: null });
   const ix = rect.x + 2;
-  drawRailIcon(ctx, { ...rect, x: ix, w: rect.w - 3 }, node, house);
   const metaY = rect.y + Math.min(6, Math.max(3, rect.h - 6)) + 2;
+  if (node?.stage === 'egg') {
+    drawMoteRail(ctx, { ...rect, x: ix, w: rect.w - 3 }, node, house, metaY);
+    return;
+  }
+  drawRailIcon(ctx, { ...rect, x: ix, w: rect.w - 3 }, node, house);
   if (!node) {
     buf.textBold(ix, metaY, '???', SEALED, null);
     return;
@@ -318,6 +396,39 @@ export function renderFocusRail(
   buf.text(ix, metaY + 1, `${titleCase(house)} · ${HOUSE_KINGDOM[house]}`, DIM, null);
   buf.text(ix, metaY + 2, `Dex #${String(node.num).padStart(3, '0')}`, DIM, null);
   drawRailRecord(ctx, ix, metaY + 3, node);
+}
+
+/** The Mote focus panel: its sprite (tinted to the sky) + origin copy. */
+function drawMoteRail(
+  ctx: RenderContext,
+  rect: Rect,
+  node: HouseNode,
+  house: House,
+  metaY: number,
+): void {
+  const { buf, frame, mode } = ctx;
+  const rows = Math.min(6, Math.max(3, rect.h - 6));
+  const cx = rect.x + Math.floor(rect.w / 2);
+  const sprite = findSprite(ctx.pack, findSpecies(ctx.pack, node.speciesId)?.spriteId ?? '');
+  if (sprite) {
+    const scale = rows / Math.max(1, Math.ceil(sprite.height / 2));
+    const destW = Math.max(1, Math.round(sprite.width * scale));
+    drawSprite(buf, sprite, buildPalette(houseTint(house), 'B', frame), {
+      x: cx - Math.floor(destW / 2),
+      y: rect.y + 1,
+      destW,
+      destH: rows,
+      frame,
+      mode,
+    });
+  } else {
+    buf.textBold(cx, rect.y + 1 + Math.floor(rows / 2), '✦', MOTE_STAR, null);
+  }
+  buf.textBold(rect.x, metaY, 'Mote ✦', MOTE_STAR, null);
+  buf.text(rect.x, metaY + 1, 'The shared origin —', DIM, null);
+  buf.text(rect.x, metaY + 2, 'every tamer begins', DIM, null);
+  buf.text(rect.x, metaY + 3, 'here, then commits', DIM, null);
+  buf.text(rect.x, metaY + 4, 'to a House.', DIM, null);
 }
 
 /** Stage + stats + readiness for an owned star; the locked hint otherwise. */

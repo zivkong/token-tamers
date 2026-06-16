@@ -80,8 +80,8 @@ export function clampHouse(index: number): number {
 export function buildHouseNodes(ctx: RenderContext, houseIndex: number): HouseNode[] {
   const house = DEX_HOUSES[clampHouse(houseIndex)]!;
   const owned = new Set(ctx.state.dexOwned);
-  // The egg (Mote) is excluded — it's the universal origin, drawn as the shared
-  // anchor at the foot of EVERY sky (`renderSky`), not a per-House selectable star.
+  // The egg (Mote) is the shared origin — selectable at the foot of EVERY sky,
+  // so it's added once per House; the House's own stars are sprite-and-up.
   const inHouse = ctx.pack.species.filter((s) => s.house === house && s.stage !== 'egg');
   const parentsOf = new Map<string, string[]>();
   for (const sp of inHouse) {
@@ -91,8 +91,11 @@ export function buildHouseNodes(ctx: RenderContext, houseIndex: number): HouseNo
       parentsOf.set(ev.species, list);
     }
   }
+  const moteSp = ctx.pack.species.find((s) => s.stage === 'egg');
+  const moteId = moteSp?.id ?? 'mote';
   const nodes: HouseNode[] = inHouse.map((sp) => {
     const isOwned = owned.has(sp.id);
+    const inParents = parentsOf.get(sp.id) ?? [];
     return {
       speciesId: sp.id,
       name: sp.name,
@@ -102,8 +105,20 @@ export function buildHouseNodes(ctx: RenderContext, houseIndex: number): HouseNo
       owned: isOwned,
       grade: isOwned ? bestGradeFor(ctx, sp.id) : null,
       legend: isLegendSpecies(),
-      parents: parentsOf.get(sp.id) ?? [],
+      // Root stars (the sprites) descend from the shared Mote.
+      parents: inParents.length ? inParents : [moteId],
     };
+  });
+  nodes.push({
+    speciesId: moteId,
+    name: moteSp?.name ?? 'Mote',
+    num: moteSp?.num ?? 0,
+    stage: 'egg',
+    tier: 0,
+    owned: moteSp ? owned.has(moteSp.id) : false,
+    grade: moteSp ? bestGradeFor(ctx, moteSp.id) : null,
+    legend: false,
+    parents: [],
   });
   nodes.sort((a, b) => a.tier - b.tier || a.num - b.num);
   return nodes;
