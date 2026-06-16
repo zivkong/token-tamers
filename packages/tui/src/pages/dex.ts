@@ -10,7 +10,7 @@
  * scaffold. Pure given (state, pack, ui, frame) so golden frames stay stable.
  */
 
-import { drawPageFooter, drawPageHeader } from '../components';
+import { drawPageFooter, drawPageHeader, pageFooterY } from '../components';
 import { houseColor } from '../helpers/lookup';
 import { GRADE_ORDER, type Grade, type House, type Stage } from '@token-tamers/core';
 import type { RenderContext } from './types';
@@ -149,7 +149,7 @@ function drawHouseTabs(ctx: RenderContext, y: number, active: number): void {
 
 export function renderDexPage(ctx: RenderContext): void {
   const { layout, ui, pack } = ctx;
-  const { canvasX, canvasCols, canvasRows } = layout;
+  const { canvasX, canvasCols } = layout;
   const houseIndex = clampHouse(ui.house ?? 0);
   ui.house = houseIndex;
   const house = DEX_HOUSES[houseIndex]!;
@@ -166,7 +166,7 @@ export function renderDexPage(ctx: RenderContext): void {
   drawHouseTabs(ctx, bodyY, houseIndex);
 
   const skyTop = bodyY + 2;
-  const footerY = canvasRows - 1;
+  const footerY = pageFooterY(layout);
   const railW =
     canvasCols >= RAIL_MIN_COLS ? Math.min(32, Math.max(24, Math.floor(canvasCols * 0.34))) : 0;
   const skyW = canvasCols - railW;

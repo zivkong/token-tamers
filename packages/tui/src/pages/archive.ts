@@ -8,7 +8,7 @@
 import { bestSpeciesRecords, type DexSnapshot, type Stats } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
 import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
-import { drawPageFooter, drawPageHeader, PAGE_HEADER_ROWS } from '../components';
+import { drawPageFooter, drawPageHeader, PAGE_FOOTER_ROWS, PAGE_HEADER_ROWS } from '../components';
 import { findSpecies } from '../helpers/lookup';
 import type { RenderContext } from './types';
 
@@ -70,7 +70,9 @@ export function renderArchivePage(ctx: RenderContext): void {
   buf.text(canvasX + COL.stats, colY, 'BEST STATS', DIM, null);
 
   const listTop = colY + 1;
-  const visible = canvasRows - ARCHIVE_LIST_OFFSET - 1;
+  // Reserve the footer line + its bottom-padding gap so the list stops one row
+  // clear of the legend, matching the Pet page's content height above the menu.
+  const visible = canvasRows - ARCHIVE_LIST_OFFSET - PAGE_FOOTER_ROWS;
 
   if (records.length === 0) {
     buf.text(canvasX + 1, listTop, 'No records yet — your first rebirth writes here.', DIM, null);

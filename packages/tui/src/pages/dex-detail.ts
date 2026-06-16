@@ -17,7 +17,7 @@ import {
   type House,
 } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
-import { drawDivider, drawPageFooter, drawPageHeader } from '../components';
+import { drawDivider, drawPageFooter, drawPageHeader, pageFooterY } from '../components';
 import { buildPalette, drawSprite, GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
 import { findSpecies, findSprite, houseColor, houseTint } from '../helpers/lookup';
 import type { RenderContext } from './types';
@@ -48,7 +48,7 @@ function statLine(s: DexSnapshot['stats']): string {
 
 export function renderDexDetailPage(ctx: RenderContext): void {
   const { buf, layout, pack, ui } = ctx;
-  const { canvasX, canvasCols, canvasRows } = layout;
+  const { canvasX, canvasCols } = layout;
   const speciesId = ui.speciesId ?? null;
   const species = speciesId ? findSpecies(pack, speciesId) : undefined;
   const record = speciesId
@@ -77,7 +77,7 @@ export function renderDexDetailPage(ctx: RenderContext): void {
   const recTop = bodyY + SPRITE_ROWS + 1;
   drawDivider(buf, recTop, { x: canvasX + 1, width: canvasCols - 2, label: 'Records' });
   const cardsTop = recTop + 2;
-  const footerY = canvasRows - 1;
+  const footerY = pageFooterY(layout);
   const maxCards = Math.max(0, Math.min(record.top.length, Math.floor((footerY - cardsTop) / 2)));
   for (let i = 0; i < maxCards; i++) {
     drawRecordCard(ctx, record.top[i]!, i, cardsTop + i * 2);

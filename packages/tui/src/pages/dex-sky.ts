@@ -15,6 +15,7 @@ import {
   type House,
 } from '@token-tamers/core';
 import { mix, type Rgb } from '../terminal/ansi';
+import { pageFooterY } from '../components';
 import { buildPalette, drawSprite, GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
 import { QMARK_TILE, LOCKED_PALETTE, legendPalette } from '../render/tiles';
 import { findSpecies, findSprite, houseColor, houseTint } from '../helpers/lookup';
@@ -221,7 +222,7 @@ function drawStarLabel(ctx: RenderContext, p: Placed, selected: boolean): void {
     buf.text(p.x + 2, p.y, 'Mote', fg, null);
     return;
   }
-  if (node.owned && p.y + 1 < ctx.layout.canvasRows - 1) {
+  if (node.owned && p.y + 1 < pageFooterY(ctx.layout)) {
     const label = node.name.slice(0, 9);
     buf.text(p.x - Math.floor(label.length / 2), p.y + 1, label, fg, null);
   }

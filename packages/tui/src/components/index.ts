@@ -10,7 +10,9 @@ export { drawMarquee, type MarqueeOptions } from './marquee';
 export {
   drawPageHeader,
   drawPageFooter,
+  pageFooterY,
   PAGE_HEADER_ROWS,
+  PAGE_FOOTER_ROWS,
   PAGE_TITLE,
   PAGE_DIM,
   type PageHeaderOptions,
