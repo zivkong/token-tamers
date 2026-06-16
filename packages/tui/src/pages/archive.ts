@@ -8,7 +8,7 @@
 import { bestSpeciesRecords, type DexSnapshot, type Stats } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
 import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
-import { drawPageFooter, drawPageHeader, PAGE_FOOTER_ROWS, PAGE_HEADER_ROWS } from '../components';
+import { drawPageFooter, drawPageHeader, pageBodyBottom, PAGE_HEADER_ROWS } from '../components';
 import { findSpecies } from '../helpers/lookup';
 import type { RenderContext } from './types';
 
@@ -50,7 +50,7 @@ export function clampScroll(
 
 export function renderArchivePage(ctx: RenderContext): void {
   const { buf, hits, layout, state, pack, ui } = ctx;
-  const { canvasX, canvasCols, canvasRows } = layout;
+  const { canvasX, canvasCols } = layout;
   const records: readonly DexSnapshot[] = bestSpeciesRecords(state.dexRecords);
 
   // Standard page header with an Archive-coverage bar: how many of the Dex's
@@ -70,9 +70,9 @@ export function renderArchivePage(ctx: RenderContext): void {
   buf.text(canvasX + COL.stats, colY, 'BEST STATS', DIM, null);
 
   const listTop = colY + 1;
-  // Reserve the footer line + its bottom-padding gap so the list stops one row
-  // clear of the legend, matching the Pet page's content height above the menu.
-  const visible = canvasRows - ARCHIVE_LIST_OFFSET - PAGE_FOOTER_ROWS;
+  // Stop the list at the body's lower bound — one clearance row above the legend
+  // (which itself sits one row clear of the menu), so it breathes on both sides.
+  const visible = pageBodyBottom(layout) - listTop;
 
   if (records.length === 0) {
     buf.text(canvasX + 1, listTop, 'No records yet — your first rebirth writes here.', DIM, null);

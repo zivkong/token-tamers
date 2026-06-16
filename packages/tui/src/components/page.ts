@@ -5,13 +5,16 @@
  *   row 0       `icon Title` (left)  ………………  optional completion readout (right)
  *   row 1       the one standard divider rule (`drawDivider`)
  *   row 2       the divider's reserved gap row
- *   row 3…N-3   page body (list / table / fields), starting at PAGE_HEADER_ROWS
+ *   row 3…N-4   page body (list / table / fields), starting at PAGE_HEADER_ROWS
+ *   row N-3     a clearance gap row above the legend (so the body never crowds it)
  *   row N-2     a left-aligned footer status line (`drawPageFooter`)
  *   row N-1     a bottom-padding gap before the global `── Menu ──` divider
  *
- * That trailing gap row mirrors the Pet page's bottom-padding gap (see
- * `petSections` in render/layout.ts), so every page's content stops the same
- * distance above the menu divider — the legend never crowds the menu.
+ * The legend gets breathing room on BOTH sides: a clearance gap above (so the
+ * body never butts against it) and a bottom-padding gap below (mirroring the Pet
+ * page's bottom-padding gap — see `petSections` in render/layout.ts) so every
+ * page's content stops the same distance above the menu divider. Body content is
+ * bounded by `pageBodyBottom`; the legend is drawn on `pageFooterY`.
  *
  * The Pet page is the game canvas and is deliberately exempt. The global
  * `── Menu ──` divider + buttons are frame chrome below every page (see
@@ -38,18 +41,27 @@ export const PAGE_HEADER_ROWS = 3;
  * status/legend line plus a bottom-padding gap row beneath it. The gap keeps the
  * legend one row clear of the global `── Menu ──` divider, matching the Pet page's
  * bottom-padding gap so all pages share the same content height above the menu.
- * Pages that size their body to the bottom must reserve this many rows.
  */
 export const PAGE_FOOTER_ROWS = 2;
 
 /**
- * Row the footer/legend line is drawn on (and the exclusive lower bound for any
- * page body): `canvasY + canvasRows - PAGE_FOOTER_ROWS`. Body content must stay
- * strictly above this row; the row below it is the bottom-padding gap. Centralized
- * here so pages never hand-roll `canvasRows - 1` and drift out of lockstep.
+ * Row the footer/legend line is drawn on:
+ * `canvasY + canvasRows - PAGE_FOOTER_ROWS`. The row below it is the
+ * bottom-padding gap. Centralized here so pages never hand-roll `canvasRows - 1`.
  */
 export function pageFooterY(layout: RenderContext['layout']): number {
   return layout.canvasY + layout.canvasRows - PAGE_FOOTER_ROWS;
+}
+
+/**
+ * Exclusive lower bound for any page body — one row above the legend, leaving a
+ * clearance gap between the body and the legend. Body content must stay strictly
+ * above this row (`row < pageBodyBottom`); the row AT `pageBodyBottom` is that
+ * clearance gap, and the legend sits on the next row (`pageFooterY`). Pages that
+ * size their body to the bottom use this so the legend breathes on both sides.
+ */
+export function pageBodyBottom(layout: RenderContext['layout']): number {
+  return pageFooterY(layout) - 1;
 }
 
 export interface PageHeaderOptions {

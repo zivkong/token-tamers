@@ -17,7 +17,7 @@ import {
   type House,
 } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
-import { drawDivider, drawPageFooter, drawPageHeader, pageFooterY } from '../components';
+import { drawDivider, drawPageFooter, drawPageHeader, pageBodyBottom } from '../components';
 import { buildPalette, drawSprite, GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
 import { findSpecies, findSprite, houseColor, houseTint } from '../helpers/lookup';
 import type { RenderContext } from './types';
@@ -77,8 +77,11 @@ export function renderDexDetailPage(ctx: RenderContext): void {
   const recTop = bodyY + SPRITE_ROWS + 1;
   drawDivider(buf, recTop, { x: canvasX + 1, width: canvasCols - 2, label: 'Records' });
   const cardsTop = recTop + 2;
-  const footerY = pageFooterY(layout);
-  const maxCards = Math.max(0, Math.min(record.top.length, Math.floor((footerY - cardsTop) / 2)));
+  const bodyBottom = pageBodyBottom(layout);
+  const maxCards = Math.max(
+    0,
+    Math.min(record.top.length, Math.floor((bodyBottom - cardsTop) / 2)),
+  );
   for (let i = 0; i < maxCards; i++) {
     drawRecordCard(ctx, record.top[i]!, i, cardsTop + i * 2);
   }

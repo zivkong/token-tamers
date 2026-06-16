@@ -11,6 +11,7 @@ export {
   drawPageHeader,
   drawPageFooter,
   pageFooterY,
+  pageBodyBottom,
   PAGE_HEADER_ROWS,
   PAGE_FOOTER_ROWS,
   PAGE_TITLE,

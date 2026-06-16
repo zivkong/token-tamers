@@ -10,7 +10,7 @@
  * scaffold. Pure given (state, pack, ui, frame) so golden frames stay stable.
  */
 
-import { drawPageFooter, drawPageHeader, pageFooterY } from '../components';
+import { drawPageFooter, drawPageHeader, pageBodyBottom } from '../components';
 import { houseColor } from '../helpers/lookup';
 import { GRADE_ORDER, type Grade, type House, type Stage } from '@token-tamers/core';
 import type { RenderContext } from './types';
@@ -166,14 +166,14 @@ export function renderDexPage(ctx: RenderContext): void {
   drawHouseTabs(ctx, bodyY, houseIndex);
 
   const skyTop = bodyY + 2;
-  const footerY = pageFooterY(layout);
+  const bodyBottom = pageBodyBottom(layout);
   const railW =
     canvasCols >= RAIL_MIN_COLS ? Math.min(32, Math.max(24, Math.floor(canvasCols * 0.34))) : 0;
   const skyW = canvasCols - railW;
-  const skyRect: Rect = { x: canvasX, y: skyTop, w: Math.max(1, skyW - 1), h: footerY - skyTop };
+  const skyRect: Rect = { x: canvasX, y: skyTop, w: Math.max(1, skyW - 1), h: bodyBottom - skyTop };
   renderSky(ctx, skyRect, nodes, selected, house);
   if (railW > 0) {
-    const railRect: Rect = { x: canvasX + skyW, y: skyTop, w: railW, h: footerY - skyTop };
+    const railRect: Rect = { x: canvasX + skyW, y: skyTop, w: railW, h: bodyBottom - skyTop };
     renderFocusRail(ctx, railRect, nodes[selected], house);
   }
 
