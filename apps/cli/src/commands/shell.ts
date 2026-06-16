@@ -3,9 +3,16 @@
  */
 
 import os from 'node:os';
-import { runShell, type AdapterInfo, type ColorMode, type ShellInfo } from '@token-tamers/tui';
+import {
+  runShell,
+  type AdapterInfo,
+  type BattleView,
+  type ColorMode,
+  type PageId,
+  type ShellInfo,
+} from '@token-tamers/tui';
 import type { ColorPreference, SettingsFile, UpdateMode, UserConfig } from '@token-tamers/core';
-import { catchUp, NotInitializedError } from '../services/catchup';
+import { catchUp, NotInitializedError, type CatchUpResult } from '../services/catchup';
 import { createShellHost } from '../services/shell-host';
 import { backgroundUpdateCheck, pendingUpdate } from '../services/update-check';
 import { VERSION } from '../version';
@@ -78,21 +85,25 @@ function persistUpdateMode(settings: SettingsFile, mode: string): void {
   saveSettings({ ...settings, update: { mode: mode as UpdateMode } });
 }
 
-export async function runShellCommand(noColor: boolean, out: Out): Promise<void> {
-  let caught;
-  try {
-    caught = await catchUp();
-  } catch (err) {
-    if (err instanceof NotInitializedError) {
-      out(NOT_INIT_MSG);
-      return;
-    }
-    throw err;
-  }
+/** Options for launching the interactive shell from an already-caught-up engine. */
+export interface LaunchShellOptions {
+  noColor: boolean;
+  /** Page to open on (defaults to 'pet'); `tt battle` passes 'battle'. */
+  initialPage?: PageId;
+  /** A battle to play back immediately (e.g. from `tt battle <code>`). */
+  initialBattle?: BattleView;
+}
+
+/**
+ * Wire an already-caught-up engine into the interactive shell and run it. Shared
+ * by `tt` (the default shell) and `tt battle` (which opens straight on the Battle
+ * page). Persists state on exit.
+ */
+export async function launchShell(caught: CatchUpResult, opts: LaunchShellOptions): Promise<void> {
   const { config, engine } = caught;
   const { host, persist } = createShellHost(config, engine);
   const settings = loadSettings();
-  const color = resolveColorMode(noColor, settings.color);
+  const color = resolveColorMode(opts.noColor, settings.color);
   const info: ShellInfo = {
     ...buildShellInfo(config),
     updateMode: settings.update?.mode ?? 'off',
@@ -112,8 +123,24 @@ export async function runShellCommand(noColor: boolean, out: Out): Promise<void>
       updateMode: settings.update?.mode ?? 'off',
       onCycleChange: (policy, anchorAdapter) => persistCycle(config, policy, anchorAdapter),
       onUpdateModeChange: (mode) => persistUpdateMode(settings, mode),
+      initialPage: opts.initialPage,
+      initialBattle: opts.initialBattle,
     });
   } finally {
     persist();
   }
+}
+
+export async function runShellCommand(noColor: boolean, out: Out): Promise<void> {
+  let caught;
+  try {
+    caught = await catchUp();
+  } catch (err) {
+    if (err instanceof NotInitializedError) {
+      out(NOT_INIT_MSG);
+      return;
+    }
+    throw err;
+  }
+  await launchShell(caught, { noColor });
 }

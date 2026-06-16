@@ -1,8 +1,35 @@
 import { describe, it, expect } from 'vitest';
+import { simulateBattle, type Combatant } from '@token-tamers/core';
 import { renderFrameToString } from '../src/render/frame';
 import type { FrameInput } from '../src/render/frame';
-import type { ShellInfo, SettingsState } from '../src/pages/types';
+import type { BattleView, ShellInfo, SettingsState } from '../src/pages/types';
 import { makePack, makeState } from './fixtures';
+
+/** A deterministic, fully-played battle for the arena golden frames. */
+function makeBattleView(): BattleView {
+  const left: Combatant = {
+    speciesNum: 1,
+    speciesId: 'wisp',
+    name: 'Wisp',
+    house: 'aether',
+    grade: 'A',
+    stage: 'evolved',
+    stats: { pwr: 60, spd: 70, wis: 55, grt: 55 },
+    traits: ['sprinter'],
+  };
+  const right: Combatant = {
+    speciesNum: 2,
+    speciesId: 'ember',
+    name: 'Ember',
+    house: 'forge',
+    grade: 'B',
+    stage: 'evolved',
+    stats: { pwr: 65, spd: 50, wis: 50, grt: 75 },
+    traits: ['marathoner'],
+  };
+  const result = simulateBattle(left, right, makePack().battle);
+  return { left, right, result, cursor: 0, playing: false };
+}
 
 /** A deterministic ShellInfo for the Settings golden frame. */
 const TEST_INFO: ShellInfo = {
@@ -66,6 +93,29 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toContain('Battle-ready');
     expect(out).toContain('TTX1-');
     expect(out).toContain('Graft small');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the battle opponent picker', () => {
+    const out = renderFrameToString(100, 30, input({ page: 'battle' }));
+    expect(out).toContain('Battle');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the battle arena at the start of playback', () => {
+    const view = makeBattleView();
+    const out = renderFrameToString(100, 30, input({ page: 'battle', battle: view }));
+    expect(out).toContain('Wisp');
+    expect(out).toContain('Ember');
+    expect(out).toContain('HP');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the battle arena at the end with a winner banner', () => {
+    const view = makeBattleView();
+    const played: BattleView = { ...view, cursor: view.result.timeline.length };
+    const out = renderFrameToString(100, 30, input({ page: 'battle', battle: played }));
+    expect(out).toMatch(/wins!|Draw/);
     expect(out).toMatchSnapshot();
   });
 

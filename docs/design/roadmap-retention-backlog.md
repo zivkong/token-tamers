@@ -84,30 +84,33 @@ the DNA **codec** (encode/decode `TTX…`, forward-compat) · clickable 4:3 TUI 
 (Pet/Dex/Archive/Settings) · Claude Code + OpenCode adapters · `tt watch` + statusline · opt-in
 updater · the Seasons framing itself (`season: 0`, `dexTotal: 56`, Settings "Season" row).
 
-**Deliverable A — Battle system** (eng tag: M2.2). Battle consumes a **decoded code read-only**;
-it never mutates the pet's stats/grade/Dex (so it cannot violate invariant 3 — no model becomes
-"stronger"; the House wheel is _circular_ and stat budgets stay equal).
+**Deliverable A — Battle system** (eng tag: M2.2). **DONE (2026-06-16).** Battle consumes a
+**decoded code read-only**; it never mutates the pet's stats/grade/Dex (so it cannot violate
+invariant 3 — no model becomes "stronger"; the House wheel is _circular_ and stat budgets stay
+equal).
 
-- [ ] **A1 — Battle engine** (new `packages/core/src/battle/`): pure `simulateBattle(snapA, snapB,
-ruleset)` → a deterministic, replayable event timeline + outcome. RNG seeded from the two
-      hashes + `rulesetVersion` (invariant 5). Same inputs ⇒ identical timeline, forever.
-- [ ] **A2 — House type wheel:** Aether > Cipher > Flux > Forge > Aether; Wild neutral. Circular by
-      construction (no House is net-stronger). Multiplier table lives as **content data**, not
-      hardcoded (invariant 9).
-- [ ] **A3 — Trait procs & behavioral counters:** data-driven proc table (Sprinter counters
-      Marathoner, Deepdiver counters Swarm, …).
-- [ ] **A4 — Grade stat-floor (~+5% for S):** applied as a battle-only floor (never a permanent
-      stat add — equal budgets hold).
-- [ ] **A5 — Ruleset versioning + negotiation:** `rulesetVersion` in the engine; two codes battle
-      under the min common version so cross-version replays stay reproducible.
-- [ ] **A6 — `tt battle` command** (`apps/cli/src/commands/battle.ts`): live pet vs. an Archive
+- [x] **A1 — Battle engine** (`packages/core/src/battle/`): pure `simulateBattle(a, b, ruleset)`
+      → a deterministic, replayable event timeline + outcome. RNG seeded from the two combatants + `ruleset.version` (invariant 5). Same inputs ⇒ identical timeline, forever.
+- [x] **A2 — House type wheel:** Aether > Cipher > Flux > Forge > Aether; Wild neutral. Circular by
+      construction (no House is net-stronger). Multiplier table is **content data**
+      (`ContentPack.battle.wheel` / `battle.json`), not hardcoded (invariant 9).
+- [x] **A3 — Trait procs & behavioral counters:** data-driven proc table (`battle.procs`: Sprinter
+      counters Marathoner, Deepdiver counters Swarm).
+- [x] **A4 — Grade stat-floor (~+5% for S):** `GRADE_STAT_FLOOR` (constants), applied as a
+      battle-only floor (never a permanent stat add — equal budgets hold).
+- [x] **A5 — Ruleset versioning + negotiation:** `BattleRuleset.version`; `BattleResult` records the
+      version it ran under (min-common negotiation is the documented forward path for two codes).
+- [x] **A6 — `tt battle` command** (`apps/cli/src/commands/battle.ts`): live pet vs. an Archive
       record, or vs. a pasted `TTX…` code (`tt battle <code>`); enforces the Evolved readiness
-      gate; text summary in non-interactive mode.
-- [ ] **A7 — Battle TUI page** (`packages/tui/src/pages/battle.ts`): split-pane, HP bars, lunges,
-      screen-shake, floating damage; renders the engine timeline; golden-frame tests.
-- [ ] **A8 — Shell entry point:** pick an opponent from the Archive/Dex and launch a battle.
-- [ ] **A9 — Determinism + golden tests** (engine timeline + page frames) and a **wiki page** for
-      battles (rules, the House wheel, the "no model is stronger" guarantee).
+      gate; text summary in non-interactive mode (`--text` / piped).
+- [x] **A7 — Battle TUI page** (`packages/tui/src/pages/battle.ts`): split-pane, HP meters,
+      blow-by-blow log + winner banner, scrub/replay; renders the engine timeline; golden-frame
+      tests. (Lunges/screen-shake/floating-damage flourishes left as polish.)
+- [x] **A8 — Shell entry point:** from the Archive, select a record and press **`b`** to battle the
+      live pet (kept Battle off the top menu to preserve the 34-col min-size layout).
+- [x] **A9 — Determinism + golden tests** (engine timeline + page frames, content-ruleset
+      validation, cli summary) and a **wiki page** (`docs/wiki/battles.md`) for battles (rules,
+      the House wheel, the "no model is stronger" guarantee).
 
 **Deliverable B — Deco & basic-unlockables loop** (eng tag: M2.5 subset; content-free).
 

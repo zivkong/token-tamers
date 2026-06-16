@@ -8,6 +8,7 @@ AI coding-agent usage. Start here:
 - [Getting Started](getting-started.md) — install, `tt init`, the cycle choice, troubleshooting
 - [Game Guide](game-guide.md) — lifecycle, Houses, stages, traits, patterns, Dormancy
 - [Grades & the Archive](grades-and-archive.md) — the C→B→A→S roll system, records, odds
+- [Battles](battles.md) — fight your pets by DNA code; the House wheel and the fairness guarantee
 - [Architecture](architecture.md) — adapters → engine → TUI, determinism, content packs
 
 ### Reference

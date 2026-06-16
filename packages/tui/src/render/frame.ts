@@ -20,7 +20,9 @@ import { renderDexPage } from '../pages/dex';
 import { renderDexDetailPage } from '../pages/dex-detail';
 import { renderArchivePage } from '../pages/archive';
 import { renderSettingsPage } from '../pages/settings';
+import { renderBattlePage } from '../pages/battle';
 import type {
+  BattleView,
   CompletionBreakdown,
   LiveStats,
   PageId,
@@ -56,6 +58,8 @@ export interface FrameInput {
   settings?: SettingsState;
   /** Real-time token-consumption readout for the pet page (optional). */
   live?: LiveStats;
+  /** The loaded battle to play back on the Battle page (optional). */
+  battle?: BattleView;
 }
 
 /**
@@ -85,6 +89,7 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
     info: input.info,
     settings: input.settings,
     live: input.live,
+    battle: input.battle,
     completion: input.completion,
   };
 
@@ -103,6 +108,9 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
       break;
     case 'settings':
       renderSettingsPage(ctx);
+      break;
+    case 'battle':
+      renderBattlePage(ctx);
       break;
   }
 

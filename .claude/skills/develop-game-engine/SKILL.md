@@ -174,12 +174,14 @@ capped}` (null at the S cap) — with the open window's events it folds in the l
   **Season 1 ("Crossbreed") grafting/fusion engine (M2.3)**; `graftPotency`/`graftPotencyTier`
   exposed now for the Dex UI. Grade-based only, capped below base odds — never model/volume-derived.
 
-> **Season scoping (2026-06-16).** Engine work is split by Season: **Season 0 — the Battle engine**
-> (deterministic `f(hashA, hashB, ruleset)`, House type-wheel, trait procs, grade stat-floor — must
-> be PURE + seeded like the rest of core; consumes a decoded DNA code read-only) is the next core
-> build. **Season 1 — the grafting/fusion engine** (consumes `GRAFT_POTENCY`, trait-pool splice,
-> grade carry, S-spliced marker, one-per-life, hybrid/fusion species). The readiness gate above
-> guards both. Full spec: `docs/design/dna-hash-battles.md` §9 (graft/fusion) + §11 (battle).
+> **Season scoping (2026-06-16).** Engine work is split by Season: **Season 0 — the Battle engine
+> is SHIPPED** in `src/battle/` (`simulateBattle(a, b, ruleset)` = deterministic
+> `f(combatantA, combatantB, ruleset.version)`, the circular House type-wheel + trait procs read
+> from `ContentPack.battle` content data, the battle-only grade stat-floor `GRADE_STAT_FLOOR`;
+> PURE + seeded, consumes a decoded DNA snapshot read-only). **Season 1 — the grafting/fusion
+> engine** (consumes `GRAFT_POTENCY`, trait-pool splice, grade carry, S-spliced marker,
+> one-per-life, hybrid/fusion species) is the next core build. The readiness gate above guards
+> both. Full spec: `docs/design/dna-hash-battles.md` §9 (graft/fusion) + §11 (battle).
 
 ## Testing requirements
 

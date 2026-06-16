@@ -4,7 +4,20 @@
  * Each function checks one concern and returns an array of error strings.
  * validatePack() is the public entry point — it concatenates all results.
  */
-import type { ContentPack } from '@token-tamers/core';
+import type { ContentPack, House, TraitId } from '@token-tamers/core';
+
+const HOUSES: readonly House[] = ['aether', 'cipher', 'flux', 'forge', 'wild'];
+const TRAIT_IDS: readonly TraitId[] = [
+  'marathoner',
+  'sprinter',
+  'polyglot',
+  'nightshade',
+  'daybreaker',
+  'switcher',
+  'deepdiver',
+  'swarm',
+  'polyhost',
+];
 
 // ---------------------------------------------------------------------------
 // Duplicate id checkers
@@ -175,6 +188,40 @@ function checkModelRules(pack: ContentPack): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// Battle ruleset checker
+// ---------------------------------------------------------------------------
+
+function checkBattleRuleset(pack: ContentPack): string[] {
+  const errors: string[] = [];
+  const b = pack.battle;
+  if (!b) return ['Missing battle ruleset'];
+  if (!Number.isInteger(b.version) || b.version < 1) {
+    errors.push(`Battle ruleset version must be an integer >= 1, got ${b.version}`);
+  }
+  if (!(b.variance >= 0 && b.variance <= 1)) {
+    errors.push(`Battle variance must be within 0..1, got ${b.variance}`);
+  }
+  for (const m of b.wheel) {
+    if (!HOUSES.includes(m.attacker))
+      errors.push(`Battle wheel unknown attacker House: ${m.attacker}`);
+    if (!HOUSES.includes(m.defender))
+      errors.push(`Battle wheel unknown defender House: ${m.defender}`);
+    if (!(m.multiplier > 0) || !Number.isFinite(m.multiplier)) {
+      errors.push(`Battle wheel multiplier must be finite and > 0, got ${m.multiplier}`);
+    }
+  }
+  for (const p of b.procs) {
+    if (!TRAIT_IDS.includes(p.trait)) errors.push(`Battle proc unknown trait: ${p.trait}`);
+    if (!TRAIT_IDS.includes(p.counters))
+      errors.push(`Battle proc unknown counter trait: ${p.counters}`);
+    if (!(p.multiplier > 0) || !Number.isFinite(p.multiplier)) {
+      errors.push(`Battle proc multiplier must be finite and > 0, got ${p.multiplier}`);
+    }
+  }
+  return errors;
+}
+
+// ---------------------------------------------------------------------------
 // Public entry point
 // ---------------------------------------------------------------------------
 
@@ -194,5 +241,6 @@ export function validatePack(pack: ContentPack): string[] {
     ...checkAchievementRewards(pack),
     ...checkStatBudgets(pack),
     ...checkModelRules(pack),
+    ...checkBattleRuleset(pack),
   ];
 }

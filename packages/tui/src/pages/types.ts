@@ -3,13 +3,19 @@
  * the frame buffer, registers hit regions, and reads from a render context.
  */
 
-import type { ContentPack, GameState, GradeOddsPreview } from '@token-tamers/core';
+import type {
+  BattleResult,
+  Combatant,
+  ContentPack,
+  GameState,
+  GradeOddsPreview,
+} from '@token-tamers/core';
 import type { ColorMode } from '../terminal/ansi';
 import type { FrameBuffer } from '../render/buffer';
 import type { HitRegistry } from '../render/hit';
 import type { Layout } from '../render/layout';
 
-export type PageId = 'pet' | 'dex' | 'dex-detail' | 'archive' | 'settings';
+export type PageId = 'pet' | 'dex' | 'dex-detail' | 'archive' | 'settings' | 'battle';
 
 /** Transient per-page UI state the shell owns (selection, scroll). */
 export interface PageUiState {
@@ -19,6 +25,22 @@ export interface PageUiState {
   scroll: number;
   /** Dex-detail: the species being inspected (set when drilling in from the Dex). */
   speciesId?: string | null;
+}
+
+/**
+ * A loaded battle the Battle page plays back. The simulation runs ONCE (when the
+ * battle starts); the page then renders the timeline up to `cursor` as PURE
+ * playback (no RNG at render time), so it is golden-frame testable. `left` is the
+ * player's combatant (side 'a'), `right` the opponent (side 'b').
+ */
+export interface BattleView {
+  left: Combatant;
+  right: Combatant;
+  result: BattleResult;
+  /** Events applied so far, 0..timeline.length (the playback head). */
+  cursor: number;
+  /** Whether playback auto-advances each frame. */
+  playing: boolean;
 }
 
 /**
@@ -114,6 +136,8 @@ export interface RenderContext {
   settings?: SettingsState;
   /** Real-time token-consumption readout for the pet page (undefined in tests). */
   live?: LiveStats;
+  /** The loaded battle to play back on the Battle page (undefined ⇒ opponent picker). */
+  battle?: BattleView;
   /** Completion breakdown (0..100 each); each page surfaces its own slice. */
   completion: CompletionBreakdown;
 }

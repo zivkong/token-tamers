@@ -70,6 +70,7 @@ import { cloneState, freshPet, initialState } from './state';
 
 export { SCHEMA_VERSION, VITALITY_FULL_TOKENS, VITALITY_MAX_BONUS } from './constants';
 export { GRAFT_GRADE_BONUS_CAP, GRAFT_POTENCY, GRAFT_STAT_BOOST_CAP } from './constants';
+export { GRADE_STAT_FLOOR, GRADE_STAT_FLOOR_CAP } from './constants';
 export { bestSpeciesRecords, snapshotRank, tryCaptureSnapshot } from './dex-records';
 export { MAX_DEX_RECORDS, snapshotStrictlyBetter } from './dex-records';
 export { graftPotency, graftPotencyTier, type GraftPotency } from './graft';

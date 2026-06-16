@@ -92,5 +92,5 @@ export function renderArchivePage(ctx: RenderContext): void {
     hits.add(`archive:row:${rowIndex}`, canvasX, y, canvasCols, 1);
   }
 
-  drawPageFooter(ctx, `${ui.selected + 1}/${records.length} records  ↑↓ select`);
+  drawPageFooter(ctx, `${ui.selected + 1}/${records.length} records  ·  ↑↓ select  ·  b battle`);
 }

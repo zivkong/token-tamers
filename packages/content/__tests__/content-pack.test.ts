@@ -253,6 +253,55 @@ describe('model rule house resolution', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Battle ruleset (design §11)
+// ---------------------------------------------------------------------------
+
+describe('battle ruleset', () => {
+  const b = contentPackV1.battle;
+
+  it('is a versioned ruleset with a valid variance band', () => {
+    expect(b.version).toBeGreaterThanOrEqual(1);
+    expect(b.variance).toBeGreaterThanOrEqual(0);
+    expect(b.variance).toBeLessThanOrEqual(1);
+  });
+
+  it('the House wheel is circular and Wild-free (Wild stays neutral by omission)', () => {
+    const houses = b.wheel.flatMap((m) => [m.attacker, m.defender]);
+    expect(houses).not.toContain('wild');
+    // Every advantage edge has a reciprocal disadvantage that cancels it (no net-stronger House).
+    for (const m of b.wheel) {
+      if (m.multiplier <= 1) continue;
+      const reverse = b.wheel.find((r) => r.attacker === m.defender && r.defender === m.attacker);
+      expect(reverse, `${m.attacker}>${m.defender} needs a reciprocal edge`).toBeDefined();
+      expect(m.multiplier * reverse!.multiplier).toBeCloseTo(1, 5);
+    }
+  });
+
+  it('trait procs reference known traits', () => {
+    const traitIds = new Set(contentPackV1.traits.map((t) => t.id));
+    for (const p of b.procs) {
+      expect(traitIds).toContain(p.trait);
+      expect(traitIds).toContain(p.counters);
+    }
+  });
+
+  it('validatePack rejects a malformed wheel / proc / variance', () => {
+    const badWheel = {
+      ...contentPackV1,
+      battle: { ...b, wheel: [{ attacker: 'aether', defender: 'nope', multiplier: -1 }] },
+    };
+    expect(validatePack(badWheel as never).length).toBeGreaterThan(0);
+    const badProc = {
+      ...contentPackV1,
+      battle: { ...b, procs: [{ trait: 'nope', counters: 'swarm', multiplier: 1.2 }] },
+    };
+    expect(validatePack(badProc as never).length).toBeGreaterThan(0);
+    const badVar = { ...contentPackV1, battle: { ...b, variance: 5 } };
+    expect(validatePack(badVar as never).length).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // dexTotal sanity
 // ---------------------------------------------------------------------------
 

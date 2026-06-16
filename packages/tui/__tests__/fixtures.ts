@@ -65,6 +65,15 @@ export function makePack(): ContentPack {
     trinkets: [],
     sprites: [TEST_SPRITE],
     dexTotal: 6,
+    battle: {
+      version: 1,
+      wheel: [
+        { attacker: 'aether', defender: 'cipher', multiplier: 1.25 },
+        { attacker: 'cipher', defender: 'aether', multiplier: 0.8 },
+      ],
+      procs: [{ trait: 'sprinter', counters: 'marathoner', multiplier: 1.3 }],
+      variance: 0.15,
+    },
   };
 }
 

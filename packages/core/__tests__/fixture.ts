@@ -156,6 +156,24 @@ export function makePack(): ContentPack {
     ],
     sprites: [],
     dexTotal: 20,
+    battle: {
+      version: 1,
+      wheel: [
+        { attacker: 'aether', defender: 'cipher', multiplier: 1.25 },
+        { attacker: 'cipher', defender: 'flux', multiplier: 1.25 },
+        { attacker: 'flux', defender: 'forge', multiplier: 1.25 },
+        { attacker: 'forge', defender: 'aether', multiplier: 1.25 },
+        { attacker: 'cipher', defender: 'aether', multiplier: 0.8 },
+        { attacker: 'flux', defender: 'cipher', multiplier: 0.8 },
+        { attacker: 'forge', defender: 'flux', multiplier: 0.8 },
+        { attacker: 'aether', defender: 'forge', multiplier: 0.8 },
+      ],
+      procs: [
+        { trait: 'sprinter', counters: 'marathoner', multiplier: 1.3 },
+        { trait: 'deepdiver', counters: 'swarm', multiplier: 1.3 },
+      ],
+      variance: 0.15,
+    },
   };
 }
 

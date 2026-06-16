@@ -90,9 +90,17 @@ export { renderPetPage } from './pages/pet';
 export { renderDexPage, buildDexRows, clampScroll, type DexRow } from './pages/dex';
 export { renderArchivePage } from './pages/archive';
 export { renderSettingsPage } from './pages/settings';
+export {
+  renderBattlePage,
+  playerCombatant,
+  opponentCombatant,
+  hpAt,
+  BATTLE_STEP_FRAMES,
+} from './pages/battle';
 export type {
   PageId,
   PageUiState,
+  BattleView,
   RenderContext,
   ShellInfo,
   AdapterInfo,

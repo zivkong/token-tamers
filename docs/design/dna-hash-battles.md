@@ -217,6 +217,17 @@ Pillar 4):
 
 ## §11 — Battle System (design baseline §11)
 
+> **Status (2026-06-16): IMPLEMENTED (Season 0, M2.2).** The battle engine ships in
+> `packages/core/src/battle/` (`simulateBattle(a, b, ruleset)` → a deterministic, replayable
+> `BattleResult` timeline), the ruleset is **content data** on `ContentPack.battle`
+> (`BattleRuleset`: the House `wheel`, trait `procs`, `variance`, and the negotiated
+> `version` — `packages/content/content/battle.json`), and it is surfaced by `tt battle [code]`
+>
+> - the Battle TUI page (reached from the Archive with `b`, or launched straight into playback
+>   by the CLI). Battle consumes a decoded snapshot **read-only** — it never mutates the pet, its
+>   grade, or the Dex (invariants 1 & 3). The grade stat-floor lives in `engine/constants.ts`
+>   (`GRADE_STAT_FLOOR`, battle-only). DNA **apply/graft/fusion** remains Season 1.
+
 ### Determinism Formula
 
 Battles are fully deterministic:

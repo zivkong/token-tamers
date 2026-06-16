@@ -90,10 +90,12 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   rebirth, achievements, baseline, completion, constants, `maturity` incl. the
   readiness gate, `snapshot`/`dex-records` for the per-species record store,
   `graft` potency, index) · `dna/` (the shipped hash codec: codec, payload,
-  append-only registry)
+  append-only registry) · `battle/` (the pure battle engine: `simulate`, `wheel`,
+  `procs`, `combatant`, `seed` — consumes `ContentPack.battle` read-only)
 - `packages/tui/src/` — `terminal/` (ansi, input) · `render/` (buffer, sprite,
   layout, hit, frame, menu) · `components/` (shared UI: divider, meter — one
-  standardized look) · `pages/` (incl. `dex-detail` — the per-species record view)
+  standardized look) · `pages/` (incl. `dex-detail` — the per-species record view —
+  and `battle` — the split-pane battle playback + opponent picker)
   · `helpers/` (status, lookup) · `shell.ts` + `shell-io.ts` (stdio/terminal wiring)
 - `packages/adapters/src/` — `index.ts` (contracts + registry) · `helpers/`
   (jsonl incremental reading, shared by future adapters) · `<provider>/`
@@ -161,9 +163,11 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   100% is always reachable now. Backend version numbers (schema/hash floor) stay out of
   player-facing copy. Roadmap:
   - **Season 0 — "Genesis" (current):** five House lines, 56 species, `season: 0`,
-    `dexTotal: 56`. Shipped MVP **+ the Season-0 build targets: the Battle system** (engine +
-    `tt battle` + Battle page + archive-record battles) and **the basic-unlockables / deco loop**
-    (`tt deco` + Deco page + loadouts over the existing 12 habitats / 6 trinkets / 72
+    `dexTotal: 56`. Shipped MVP **+ the Battle system (DONE, M2.2)** — pure `simulateBattle` in
+    `packages/core/src/battle/`, the House wheel/proc ruleset as `ContentPack.battle` data,
+    `tt battle [code]`, the Battle TUI page (launched from the Archive with `b`), grade
+    stat-floor (`GRADE_STAT_FLOOR`, battle-only). STILL TO BUILD: **the basic-unlockables / deco
+    loop** (`tt deco` + Deco page + loadouts over the existing 12 habitats / 6 trinkets / 72
     achievements). NO DNA apply/graft and NO leagues in Season 0.
   - **Season 1 — "Crossbreed" (next):** the **entire DNA grafting + fusion system** —
     `tt dna export`/`apply`, the graft engine (`GRAFT_POTENCY`, trait-splice, grade carry,
@@ -232,9 +236,10 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - **Scope (Season-mapped; M-ids = engineering milestones):**
   - **Season 0 — "Genesis":** **shipped** = Claude Code + OpenCode adapters, all five house
     lines (Aether/Cipher/Flux/Forge/Wild-Bloom, 56 species), shell with Pet/Dex/Archive/Settings,
-    the per-species Dex record store + detail view, the DNA **encoder** (M2.1, codec only).
-    **To build for Season 0** = the **Battle** system (M2.2) and the **deco/basic-unlockables**
-    loop (the content-free subset of M2.5).
+    the per-species Dex record store + detail view, the DNA **encoder** (M2.1, codec only), and
+    the **Battle** system (M2.2 — `core/src/battle/`, `ContentPack.battle`, `tt battle`, Battle
+    page). **Still to build for Season 0** = the **deco/basic-unlockables** loop (the content-free
+    subset of M2.5).
   - **Season 1 — "Crossbreed":** the entire **DNA apply + grafting + fusion** system (M2.3) +
     the hybrid/fusion **content** (the "Crossbreed" pack).
   - **Season 2 — "Coliseum":** Leagues/standings + Drifter (M2.6) + Codex adapter (M2.4).

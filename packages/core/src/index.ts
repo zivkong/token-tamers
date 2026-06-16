@@ -28,6 +28,8 @@ export {
   BATTLE_READY_STAGE,
   bestSpeciesRecords,
   createEngine,
+  GRADE_STAT_FLOOR,
+  GRADE_STAT_FLOOR_CAP,
   GRAFT_GRADE_BONUS_CAP,
   GRAFT_POTENCY,
   GRAFT_STAT_BOOST_CAP,
@@ -70,3 +72,15 @@ export {
   TRAIT_CODES,
   type DecodedDna,
 } from './dna';
+
+// Battle engine — re-exported via battle/index barrel.
+export {
+  battleSeed,
+  combatantFromDecoded,
+  combatantFromSnapshot,
+  effectiveStats,
+  resolveProcs,
+  simulateBattle,
+  typeMultiplier,
+  type ProcResult,
+} from './battle';

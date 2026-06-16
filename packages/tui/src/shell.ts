@@ -25,6 +25,7 @@ import { renderFrame, type FrameInput } from './render/frame';
 import { menuButtonY, packMenu } from './render/menu';
 import type {
   AdapterInfo,
+  BattleView,
   CompletionBreakdown,
   LiveStats,
   PageId,
@@ -32,6 +33,7 @@ import type {
   ShellInfo,
   SettingsState,
 } from './pages/types';
+import { advanceBattlePlayback, buildBattleVsRecord, handleBattleKey } from './pages/battle';
 import { buildDexRows, DEX_LIST_OFFSET } from './pages/dex';
 import { ARCHIVE_LIST_OFFSET } from './pages/archive';
 import { cycleSelectedField, isUpdateFieldSelected, settingsFieldCount } from './pages/settings';
@@ -64,6 +66,10 @@ export interface ShellOptions {
   anchorAdapter?: string;
   /** Initial opt-in update mode ('off' | 'notify' | 'auto'); defaults to 'off'. */
   updateMode?: string;
+  /** Initial page to open on; defaults to 'pet'. `tt battle` opens on 'battle'. */
+  initialPage?: PageId;
+  /** A battle to play back immediately (set by `tt battle <code>`); undefined ⇒ picker. */
+  initialBattle?: BattleView;
   /**
    * Persist the edited pet-global cycle clock. Called on each change with the new
    * policy + anchor; the host writes config.json (applied on next launch).
@@ -117,6 +123,8 @@ interface ShellRuntime {
   onCycleChange?: (policy: string, anchorAdapter: string) => void;
   /** Persist hook for the opt-in update-mode edit (from options). */
   onUpdateModeChange?: (mode: string) => void;
+  /** The loaded battle to play back on the Battle page (undefined ⇒ opponent picker). */
+  battle?: BattleView;
 }
 
 /** Resolved loop dependencies (injected once, passed as a unit). */
@@ -135,6 +143,7 @@ function freshUi(): Record<PageId, PageUiState> {
     'dex-detail': { selected: 0, scroll: 0, speciesId: null },
     archive: { selected: 0, scroll: 0 },
     settings: { selected: 0, scroll: 0 },
+    battle: { selected: 0, scroll: 0 },
   };
 }
 
@@ -170,7 +179,7 @@ export async function runShell(options: ShellOptions): Promise<void> {
   const sizeFn = options.size ?? defaultSize;
 
   const rt: ShellRuntime = {
-    page: 'pet',
+    page: options.initialPage ?? 'pet',
     frame: 0,
     ui: freshUi(),
     flash: null,
@@ -180,6 +189,7 @@ export async function runShell(options: ShellOptions): Promise<void> {
     settings: initialSettings(options),
     onCycleChange: options.onCycleChange,
     onUpdateModeChange: options.onUpdateModeChange,
+    battle: options.initialBattle,
   };
 
   const inputSource = options.input ?? (manageTerminal ? stdinSource() : nullSource());
@@ -261,6 +271,7 @@ function renderOnce(
   if (rt.flash && rt.frame >= rt.flashUntilFrame) {
     rt.flash = null;
   }
+  if (rt.page === 'battle' && rt.battle) advanceBattlePlayback(rt.battle, rt.frame);
   const input: FrameInput = {
     page: rt.page,
     state: host.getState(),
@@ -273,6 +284,7 @@ function renderOnce(
     info: rt.info,
     settings: rt.settings,
     live: host.liveStats?.(),
+    battle: rt.battle,
   };
   renderFrame(buf, hits, input);
   buf.flush(writer);
@@ -291,6 +303,9 @@ function handleEvent(rt: ShellRuntime, ev: InputEvent, host: ShellHost): void {
 }
 
 function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
+  // Battle-page nav (scrub/play/pick) is owned by the battle module; global
+  // hotkeys below still win (they aren't battle-nav names), so order is safe.
+  if (handleBattleKey(rt, host, name)) return;
   switch (name) {
     case 'ctrl-c':
     case 'q':
@@ -307,6 +322,10 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
       return;
     case '4':
       rt.page = 'settings';
+      return;
+    case 'b':
+      // From the Archive, battle the live pet against the selected record.
+      if (rt.page === 'archive') startBattleFromArchive(rt, host);
       return;
     case 'up':
       moveSelection(rt, host, -1);
@@ -344,6 +363,14 @@ function openDexDetail(rt: ShellRuntime, host: ShellHost): void {
   detail.selected = 0;
   detail.scroll = 0;
   rt.page = 'dex-detail';
+}
+
+/** Battle the live pet against the selected Archive record; open the Battle page on success. */
+function startBattleFromArchive(rt: ShellRuntime, host: ShellHost): void {
+  const view = buildBattleVsRecord(host, rt.ui.archive.selected);
+  if (!view) return;
+  rt.battle = view;
+  rt.page = 'battle';
 }
 
 /** Cycle the focused Settings field and persist (no-op off the Settings page). */

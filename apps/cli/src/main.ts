@@ -6,6 +6,7 @@
  *   tt status    one-shot text status
  *   tt dex       text Dex listing
  *   tt archive   text Archive (best-record) listing
+ *   tt battle    battle the pet vs an Archive record or a pasted DNA code
  *   tt complete  completion meter breakdown
  *   tt adapters  adapter health/paths
  *   tt update    opt-in update check + self-replace (off by default)
@@ -22,6 +23,7 @@ import {
   statusCommand,
   dexCommand,
   archiveCommand,
+  battleCommand,
   completeCommand,
   adaptersCommand,
   watchCommand,
@@ -88,6 +90,10 @@ export async function dispatch(
       return guarded(() => dexCommand(out));
     case 'archive':
       return guarded(() => archiveCommand(out));
+    case 'battle':
+      return guarded(() =>
+        battleCommand({ code: parsed.rest[0], text: parsed.text, noColor: parsed.noColor }, out),
+      );
     case 'complete':
       return guarded(() => completeCommand(out));
     case 'adapters':

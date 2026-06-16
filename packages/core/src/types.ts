@@ -317,6 +317,110 @@ export interface ContentPack {
    * obtainable roster, so 100% is reachable within the current Season.
    */
   dexTotal: number;
+  /**
+   * Battle tuning (design §11). ALL combat multipliers live here as data, never
+   * hardcoded in the engine (invariant 9). The House wheel is circular and Wild
+   * is neutral, so no House — and thus no model — is ever net-stronger
+   * (invariant 3). See {@link BattleRuleset}.
+   */
+  battle: BattleRuleset;
+}
+
+// ---------------------------------------------------------------------------
+// Battle system (design §11) — pure, deterministic combat over decoded DNA.
+// ---------------------------------------------------------------------------
+
+/**
+ * The normalized combatant fed to the battle engine. It is the common subset of
+ * a {@link DexSnapshot} and a {@link DecodedDna}, so a live pet, an Archive
+ * record, and a pasted `TTX…` code all battle through ONE engine. Read-only:
+ * battle never mutates a combatant (invariant 1). `stats` are the recorded
+ * equal-budget values (invariant 3); the grade stat-floor is applied to a COPY
+ * inside the engine, never written back.
+ */
+export interface Combatant {
+  /** Content-pack species `num` — identity/display AND part of the battle seed. */
+  speciesNum: number;
+  /** Species id when resolvable (live pet / Archive record); '' for an unresolved foreign code. */
+  speciesId: string;
+  /** Display name when resolvable; '???' for dormant/unknown content. */
+  name: string;
+  house: House;
+  grade: Grade;
+  stage: Stage;
+  stats: Stats;
+  traits: TraitId[];
+}
+
+/** One House-vs-House multiplier on the type wheel (content-tunable; §11). */
+export interface HouseMatchup {
+  attacker: House;
+  defender: House;
+  /** Damage multiplier (> 0). 1 = neutral, > 1 advantage, < 1 disadvantage. */
+  multiplier: number;
+}
+
+/**
+ * A trait behavioral counter (§11): when `trait` is on the attacker and
+ * `counters` on the defender, the attacker's hit is amplified by `multiplier`
+ * (e.g. Sprinter counters Marathoner; Deepdiver counters Swarm). Trait-based,
+ * never model-based (invariant 3).
+ */
+export interface TraitProc {
+  trait: TraitId;
+  counters: TraitId;
+  multiplier: number;
+}
+
+/**
+ * The battle ruleset — ALL combat tuning as CONTENT DATA (invariant 9). `version`
+ * is the negotiated `rulesetVersion` (§11): two codes battle under the minimum
+ * common version so cross-version replays stay reproducible forever.
+ */
+export interface BattleRuleset {
+  /** Ruleset version; battles run under the min common version of both sides. */
+  version: number;
+  /** The 4-House type wheel (Aether>Cipher>Flux>Forge>Aether). Wild omitted ⇒ neutral. */
+  wheel: HouseMatchup[];
+  /** Trait behavioral counters. */
+  procs: TraitProc[];
+  /** Damage variance band, 0..1 — the only stochastic term, drawn from the seeded RNG. */
+  variance: number;
+}
+
+/** Which side of a battle a combatant is on. */
+export type BattleSide = 'a' | 'b';
+
+/**
+ * One entry in the deterministic battle timeline. The TUI page is PURE playback
+ * of this list (no RNG at render time), so it is golden-frame testable.
+ */
+export interface BattleEvent {
+  /** Turn ordinal (0-based). */
+  turn: number;
+  /** The attacking side this turn. */
+  actor: BattleSide;
+  kind: 'attack' | 'proc' | 'faint';
+  /** Damage dealt by this event (0 for a faint marker). */
+  damage: number;
+  /** Defender HP after the event (clamped ≥ 0). */
+  hpAfter: number;
+  /** The trait that procced, when `kind === 'proc'`. */
+  proc?: TraitId;
+}
+
+/**
+ * The deterministic result of a battle: outcome + the full replayable timeline.
+ * `outcome = f(combatantA, combatantB, ruleset.version)` (§11) — same inputs ⇒
+ * identical result, frame for frame, forever.
+ */
+export interface BattleResult {
+  /** The ruleset version this battle was resolved under. */
+  version: number;
+  winner: BattleSide | 'draw';
+  /** Starting HP per side (for HP-bar rendering). */
+  startHp: { a: number; b: number };
+  timeline: BattleEvent[];
 }
 
 // ---------------------------------------------------------------------------

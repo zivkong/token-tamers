@@ -11,6 +11,7 @@
  * embeds all content — zero runtime file reads needed.
  */
 import type {
+  BattleRuleset,
   ContentPack,
   ModelRule,
   SpeciesDef,
@@ -30,6 +31,7 @@ import achievementsRaw from '../content/achievements.json' with { type: 'json' }
 import habitatsRaw from '../content/habitats.json' with { type: 'json' };
 import trinketsRaw from '../content/trinkets.json' with { type: 'json' };
 import spritesRaw from '../content/sprites.json' with { type: 'json' };
+import battleRaw from '../content/battle.json' with { type: 'json' };
 
 const models = modelsRaw as ModelRule[];
 const species = speciesRaw as SpeciesDef[];
@@ -39,6 +41,7 @@ const achievements = achievementsRaw as AchievementDef[];
 const habitats = habitatsRaw as HabitatDef[];
 const trinkets = trinketsRaw as TrinketDef[];
 const sprites = spritesRaw as SpriteDef[];
+const battle = battleRaw as BattleRuleset;
 
 export const contentPackV1: ContentPack = {
   schemaVersion: 1,
@@ -55,6 +58,9 @@ export const contentPackV1: ContentPack = {
   sprites,
   // Live Dex denominator = Season 0's obtainable roster (the 56 base species).
   dexTotal: 56,
+  // Battle tuning (design §11) — the circular House wheel + trait counters. All
+  // content-tunable data; the engine reads it, never hardcodes it (invariant 9).
+  battle,
 };
 
 export { validatePack } from './validate';

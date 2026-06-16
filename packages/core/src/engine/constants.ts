@@ -42,6 +42,26 @@ export const STAGE_STAT_BUDGET = 240;
 export const MUTATION_IDS = ['palette-shift', 'offline-trait', 'stat-swap'] as const;
 
 /**
+ * Battle-only grade stat-floor (design §11). A pet's grade floors its EFFECTIVE
+ * battle stats slightly above the recorded values — S ≈ +5%, lower grades 0.
+ * This is applied to a COPY of the stats inside the battle engine and NEVER
+ * written back to any snapshot/state, so horizontal evolution's equal stat
+ * budgets (Design Pillar 3 / invariant 3) are preserved. Grade-based ONLY —
+ * never model- or volume-derived. It is the §9 stat-floor mechanism an S-grade
+ * fusion donor confers, surfaced here for battle. Capped like the project's other
+ * grade bonuses; tunable.
+ */
+export const GRADE_STAT_FLOOR: Record<Grade, number> = {
+  C: 0,
+  B: 0,
+  A: 0,
+  S: 0.05,
+};
+
+/** Absolute ceiling guarding future tuning of {@link GRADE_STAT_FLOOR}. */
+export const GRADE_STAT_FLOOR_CAP = 0.05;
+
+/**
  * Graft potency by DONOR grade (forward spec for DNA grafting / fusion, §9/§11).
  * When a DNA code is grafted into a recipient, the donor's recorded grade scales
  * how much the graft can move the recipient — and the lowest grade does nothing:
