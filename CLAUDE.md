@@ -157,11 +157,20 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   habitats + trinkets; meter weighting 40/40/10/10) — scoped to the current **Season** so 100%
   is always reachable now.
 - **Seasons:** the player-facing content cadence (the manifest's `season`, NOT a version
-  number). **Season 0 — "Genesis"** is the launch content (five House lines, 56 species,
-  `season: 0`, `dexTotal: 56`). Each later Season is a quarterly additive pack that bumps
-  `season` and raises `dexTotal` to its obtainable roster. **Season 1 — "Crossbreed"** (future,
-  M2.7) opens the first hybrid line + DNA fusion pools. The long-term cross-Season vision is
-  ~112 Dex entries. Backend version numbers (schema/hash floor) stay out of player-facing copy.
+  number). Each Season bumps `season` and raises `dexTotal` to its own obtainable roster, so
+  100% is always reachable now. Backend version numbers (schema/hash floor) stay out of
+  player-facing copy. Roadmap:
+  - **Season 0 — "Genesis" (current):** five House lines, 56 species, `season: 0`,
+    `dexTotal: 56`. Shipped MVP **+ the Season-0 build targets: the Battle system** (engine +
+    `tt battle` + Battle page + archive-record battles) and **the basic-unlockables / deco loop**
+    (`tt deco` + Deco page + loadouts over the existing 12 habitats / 6 trinkets / 72
+    achievements). NO DNA apply/graft and NO leagues in Season 0.
+  - **Season 1 — "Crossbreed" (next):** the **entire DNA grafting + fusion system** —
+    `tt dna export`/`apply`, the graft engine (`GRAFT_POTENCY`, trait-splice, grade carry,
+    S-spliced marker, one-per-life) AND the fusion content it produces (hybrid sub-lines, fusion
+    pools, fusion Apex, Chimera-class, cutscenes/cosmetics). Bumps `season` 0 → 1.
+  - **Later Seasons:** Codex adapter, Leagues + Drifter DNA, weather/live-ops, the full
+    collections expansion, art pipeline. The long-term cross-Season vision is ~112 Dex entries.
 - **Cycle:** molt = 5-h session-window close (the evolution/trait/mutation/grade
   moment; eggs fast-hatch ~10 min after first usage); rebirth = week boundary
   (archive + new egg, never evolves). ONE pet-global clock (`UserConfig.cycle`,
@@ -210,18 +219,23 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   (`pages/dex-detail.ts`) shows the sprite, a battle/graft-readiness banner, and
   each record's stats + **DNA code** + graft tier.
 - **DNA codes / battle-graft readiness:** `encodeDna`/`decodeDna` produce a shareable
-  opaque `TTX<v>-XXXX-…` license-key token per snapshot; battle/fusion (M2.2/M2.3) stay
-  future, so the code is display/share-only for now. A snapshot is battle-eligible AND graft-eligible only
-  once `stage` ≥ Evolved (the readiness gate). Graft potency scales with the DONOR's
-  grade (C = 0 … S = small hard cap) — a documented forward spec
-  (`dna-hash-battles.md` §9) + the pure `graftPotency` helper.
-- **Scope:** M1 (shipped) = Claude Code + OpenCode adapters, all five house lines
-  (Aether/Cipher/Flux/Forge/Wild-Bloom, 56 species), shell with
-  Pet/Dex/Archive/Settings, the per-species Dex record store + detail view, and the
-  DNA **encoder** (M2.1 pulled forward — codec only; battle/fusion still future).
-  M2.2–M2.7 = battle engine, DNA apply/fusion (grafting), Codex adapter,
-  collections/deco, leagues/drifter, weather/seasons. M3 = art pipeline, future
-  adapters, polish.
+  opaque `TTX<v>-XXXX-…` license-key token per snapshot. The codec is shipped; the code is
+  display/share-only today (the Dex detail page shows it). **Battle (Season 0)** consumes a
+  decoded code/snapshot read-only — you can `tt battle` your own archive records or a pasted
+  foreign code, no apply needed. **DNA apply/grafting/fusion is Season 1** (the whole system).
+  A snapshot is battle-eligible AND graft-eligible only once `stage` ≥ Evolved (the readiness
+  gate). Graft potency scales with the DONOR's grade (C = 0 … S = small hard cap) — a documented
+  forward spec (`dna-hash-battles.md` §9) + the pure `graftPotency` helper (Season-1 engine).
+- **Scope (Season-mapped; M-ids = engineering milestones):**
+  - **Season 0 — "Genesis":** **shipped** = Claude Code + OpenCode adapters, all five house
+    lines (Aether/Cipher/Flux/Forge/Wild-Bloom, 56 species), shell with Pet/Dex/Archive/Settings,
+    the per-species Dex record store + detail view, the DNA **encoder** (M2.1, codec only).
+    **To build for Season 0** = the **Battle** system (M2.2) and the **deco/basic-unlockables**
+    loop (the content-free subset of M2.5).
+  - **Season 1 — "Crossbreed":** the entire **DNA apply + grafting + fusion** system (M2.3) +
+    the hybrid/fusion **content** (the "Crossbreed" pack).
+  - **Later:** Codex adapter (M2.4), the rest of collections (M2.5), Leagues/Drifter (M2.6),
+    weather/live-ops (M2.7), and M3 = art pipeline, future adapters, polish.
 
 ## AI-native development policy (full text: docs/design/architecture.md)
 

@@ -50,6 +50,34 @@ implementation starts (GitHub + Claude Code)).
 M2 was too large; it is decomposed into seven independently shippable milestones (M2.1–M2.7).
 M3 follows as art pipeline, future adapters, and polish.
 
+#### Season scoping (overlay on the milestones)
+
+**Seasons are the player-facing release units; the M-ids are the engineering milestones that fill
+them.** The current scope decision (2026-06-16):
+
+| Season                   | Theme          | Milestones it ships                                                                      | Status                                  |
+| ------------------------ | -------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
+| **Season 0**             | **Genesis**    | M1 (shipped) + M2.1 codec (shipped) + **M2.2 Battle** + **deco subset of M2.5**          | M1/M2.1 shipped; battle + deco to build |
+| **Season 1**             | **Crossbreed** | **M2.3** — the entire DNA apply + grafting + fusion system, with its content             | to build                                |
+| **Season 2+ / live-ops** | (rolling)      | M2.4 Codex adapter · rest of M2.5 collections · M2.6 leagues/drifter · M2.7 weather · M3 | future                                  |
+
+Notes that follow from this split:
+
+- **Battle is Season 0, grafting/fusion is Season 1.** Battle only needs the shipped DNA codec
+  (decode-only): you battle your own archive records, or a foreign code pasted into `tt battle`
+  (the Dex detail page already displays a pet's code for sharing). No `tt dna` command and no
+  apply/graft is needed in Season 0.
+- **"Basic unlockables" = the deco loop on existing content** (the content-free subset of M2.5):
+  `tt deco` + Deco page + loadout storage + declarative unlock-condition schema over the existing
+  12 habitats / 6 trinkets / 72 achievements. The full M2.5 content expansion (toward ~120
+  achievements, Ancestral Grove tiers, etc.) is a later Season.
+- **Season 1 "Crossbreed" is the whole DNA story** — `tt dna export`/`apply`, the graft engine
+  (Layer A: `GRAFT_POTENCY`, trait-splice, grade carry, S-spliced marker, one-per-life) AND the
+  fusion content it produces (Layer B: hybrid sub-lines, fusion pools, fusion Apex, Chimera-class,
+  cutscenes/cosmetics). It bumps the pack `season` 0 → 1 and raises `dexTotal` to the Season-1 roster.
+- **Leagues (M2.6) deferred past Season 1.** Battles ship without standings in Season 0; the
+  retention risk (§19) is acknowledged — local Leagues are the first live-ops Season after Crossbreed.
+
 #### M2.1 — DNA Codec & Export (social foundation)
 
 - Hash codec in `packages/core` — encode/decode the opaque `TTX<v>-XXXX-…` token (**encoder
@@ -59,7 +87,7 @@ M3 follows as art pipeline, future adapters, and polish.
 - `tt dna export` command
 - Riddle-hint copy for Vigil / Tempest / Prism / Chimera DNA types
 
-#### M2.2 — Battle Engine & TUI
+#### M2.2 — Battle Engine & TUI · **Season 0**
 
 - Deterministic battle formula: `outcome = f(hashA, hashB, ruleset_version)`
 - 4-House type wheel (Aether > Cipher > Flux > Forge > Aether; Wild neutral)
@@ -69,7 +97,7 @@ M3 follows as art pipeline, future adapters, and polish.
 - `tt battle` command; Battle TUI page (split-pane, HP bars, lunges, screen-shake, floating damage)
 - Archive-record battles
 
-#### M2.3 — DNA Apply & Fusion Pools
+#### M2.3 — DNA Apply & Fusion Pools · **Season 1 ("Crossbreed")**
 
 - `tt dna apply <code>` with timing tiers (Sprite/Rookie = graft, Evolved = pool entry, Prime = fusion Apex)
 - One-application-per-lifetime enforcement; DNA merge breeding (trait pool splicing)
@@ -84,7 +112,7 @@ M3 follows as art pipeline, future adapters, and polish.
 - Integration with adapter registry + `tt init` detection
 - Static-policy edge cases: DST, timezone, week-anchor migration
 
-#### M2.5 — Collections: Achievements, Habitats, Trinkets, Deco
+#### M2.5 — Collections: Achievements, Habitats, Trinkets, Deco · (**deco loop = Season 0**; content expansion = later)
 
 - Full achievements.json v1 (~120 total): lineage, evolution, traits, rhythm, grades, social, collection meta, calendar
 - Full habitat set: pattern-themed (×4), House (×4), Ancestral Grove (×3 tiers), Gilded Sanctum, Cocoon Hollow
@@ -101,14 +129,16 @@ M3 follows as art pipeline, future adapters, and polish.
 - `tt dna drifter` — deterministic calendar-seeded solo-dev DNA bridge
 - Solo-dev bridge: every machine on the same month produces an identical code, fully offline
 
-#### M2.7 — Weather, Seasons & Live Ops
+#### M2.7 — Weather & Live Ops · (a later live-ops Season)
 
 - Weekly weather seed evaluation (ISO week → trait rate bias, ambient habitat effects)
 - Monthly weather events (special week, re-earnable trinket/habitat, twisted trait table)
-- **Season 1 — "Crossbreed"** content pack: the first hybrid line + DNA fusion pools 🤫,
-  +6–10 species, +1 habitat set, +1 DNA pool, +1 achievement page (bumps the pack `season`
-  0 → 1 and raises the live `dexTotal` to the Season-1 obtainable roster)
 - 12-month content calendar; Legacy milestones (Gen 25/52, Four-House Master, Perfect Season)
+
+> **Note (2026-06-16 rescope):** the **"Crossbreed" content pack is Season 1**, shipped with the
+> grafting/fusion engine in **M2.3** — not here. Each later Season is still a quarterly additive
+> pack (+1 hybrid line, +6–10 species, +1 habitat set, +1 DNA pool, +1 achievement page) that
+> bumps the pack `season` and raises the live `dexTotal` to that Season's obtainable roster.
 
 ### M3 — Art Pipeline, Future Adapters & Polish
 
@@ -123,12 +153,18 @@ M3 follows as art pipeline, future adapters, and polish.
 ### Dependency graph
 
 ```
-M1 (shipped)
- ├─► M2.1 (DNA codec + export) ──┬──► M2.2 (battle engine + TUI) ──► M2.6 (leagues + drifter)
- │                               └──► M2.3 (DNA apply + fusion pools) ──► M2.5 (collections + deco) ──► M2.7 (weather + seasons)
- ├─► M2.4 (Codex adapter) — independent, can run in parallel with M2.1–M2.2
- └─► M3 (art pipeline + polish) — follows after content shape stabilizes in M2.5–M2.7
+M1 (shipped) ─┬─ Season 0 "Genesis" ─────────────────────────────────────────────────┐
+              │   M2.1 (DNA codec, shipped) · M2.2 (battle engine + TUI) · deco subset of M2.5
+              │                                                                          │
+              ├─► Season 1 "Crossbreed":  M2.3 (DNA apply + grafting + fusion pools + content)
+              │                                                                          │
+              ├─► Later live-ops Seasons: M2.6 (leagues + drifter) · M2.7 (weather) · rest of M2.5
+              ├─► M2.4 (Codex adapter) — independent, can run in parallel
+              └─► M3 (art pipeline + polish) — after content shape stabilizes
 ```
+
+(Engineering dependency still holds underneath the Season labels: M2.1 → M2.2 and M2.1 → M2.3;
+M2.3 → M2.5 content; M2.2 → M2.6.)
 
 ---
 
@@ -160,12 +196,15 @@ requires the seasonal cadence below — added to plan.**
 
 ### Year-One Retention Plan (now in scope)
 
-- **Seasons** are the player-facing content cadence. **Season 0 — "Genesis"** is the launch
-  content (the M1 pack: five House lines, 56 species, `season: 0`). Each subsequent **quarterly
-  content pack** is the next Season: +1 hybrid line, +6–10 species, +1 habitat set, +1 DNA pool,
-  +1 achievement page — additive-only, hash-safe, **bundled in app releases the user installs**
-  (the game never fetches content itself). The pack `season` is the player-facing era; the
-  backend `schemaVersion`/`SCHEMA_VERSION` numbers are dev-only and never surface in the UI.
+- **Seasons** are the player-facing content cadence (see the Season-scoping overlay in §18 for
+  the milestone mapping). **Season 0 — "Genesis"** is the launch content (five House lines, 56
+  species, `season: 0`) **plus** the Season-0 build targets: the Battle system and the deco/
+  basic-unlockables loop. **Season 1 — "Crossbreed"** is the entire DNA grafting + fusion system
+  and the hybrid/fusion content it produces. Each subsequent Season after that is a **quarterly
+  content pack**: +1 hybrid line, +6–10 species, +1 habitat set, +1 DNA pool, +1 achievement page
+  — additive-only, hash-safe, **bundled in app releases the user installs** (the game never
+  fetches content itself). The pack `season` is the player-facing era; the backend
+  `schemaVersion`/`SCHEMA_VERSION` numbers are dev-only and never surface in the UI.
 - **Monthly weather events:** one special week per month with a unique re-earnable trinket/habitat
   and a twisted trait table.
 - **Team Leagues (opt-in):** weekly standings computed locally from hashes colleagues paste to each

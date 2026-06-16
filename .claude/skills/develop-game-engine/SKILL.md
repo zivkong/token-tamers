@@ -171,8 +171,15 @@ capped}` (null at the S cap) — with the open window's events it folds in the l
   never model-based (invariant 3).
 - **Graft potency** (`engine/graft.ts`, `GRAFT_POTENCY` in constants): donor-grade scaled,
   C = 0 … S hard-capped at +0.08 on both grade-up chance and stat boost. Forward spec for the
-  M2.3 fusion engine; `graftPotency`/`graftPotencyTier` exposed now for the Dex UI. Grade-based
-  only, capped below base odds — never model/volume-derived.
+  **Season 1 ("Crossbreed") grafting/fusion engine (M2.3)**; `graftPotency`/`graftPotencyTier`
+  exposed now for the Dex UI. Grade-based only, capped below base odds — never model/volume-derived.
+
+> **Season scoping (2026-06-16).** Engine work is split by Season: **Season 0 — the Battle engine**
+> (deterministic `f(hashA, hashB, ruleset)`, House type-wheel, trait procs, grade stat-floor — must
+> be PURE + seeded like the rest of core; consumes a decoded DNA code read-only) is the next core
+> build. **Season 1 — the grafting/fusion engine** (consumes `GRAFT_POTENCY`, trait-pool splice,
+> grade carry, S-spliced marker, one-per-life, hybrid/fusion species). The readiness gate above
+> guards both. Full spec: `docs/design/dna-hash-battles.md` §9 (graft/fusion) + §11 (battle).
 
 ## Testing requirements
 

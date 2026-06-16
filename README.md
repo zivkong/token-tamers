@@ -78,9 +78,11 @@ turns your real work patterns into a creature:
 unlock every habitat and trinket. One number to drive to 100 — `tt complete`.
 
 **Seasons.** Content lands in **Seasons**. You're in **Season 0 — Genesis**: the five
-founding House lines, 56 species. Each Season ships its own obtainable roster, so 100% is
-always reachable _now_ — the bar simply rises when the next Season lands.
-**Season 1 — Crossbreed** _(coming)_ opens the first hybrid line and DNA fusion pools 🤫.
+founding House lines, 56 species — growing to add **deterministic battles** and the full
+**collect-and-decorate** loop. Each Season ships its own obtainable roster, so 100% is always
+reachable _now_ — the bar simply rises when the next Season lands. **Season 1 — Crossbreed**
+_(coming)_ is all about **DNA** — export and graft codes with friends to fuse hybrid lines,
+fusion pools, and cross-provider Chimera forms 🤫.
 
 And if you stop coding for a week? Your pet curls into a cocoon — **Dormant, never
 dead** — and wakes when you return. Generation 14 will be waiting.
@@ -221,14 +223,17 @@ screenshot it. That's the point.
 
 ## 🗺️ Roadmap
 
-- [x] **M1 — the MVP (you are here):** Claude Code + OpenCode adapters · evolution engine
+- [x] **Season 0 — Genesis · shipped:** Claude Code + OpenCode adapters · evolution engine
       (all five house lines — Aether · Cipher · Flux · Forge · Wild, egg → Apex, 56 species) ·
-      traits, patterns, mutations · grade rolls · rebirth + lineage · the Archive ·
-      clickable TUI · 12 habitats, 6 trinkets, 44 achievements
-- [ ] **M2:** Codex CLI adapter · hybrid lines (Aether×Flux, Forge×Cipher) · DNA
-      export/apply (paste codes to friends) · deterministic battles · fusion pools 🤫 ·
-      Team Leagues · Drifter DNA for solo devs
-- [ ] **M3:** the Season cadence (quarterly content packs) · monthly weather events · sprite compiler pipeline
+      traits, patterns, mutations · grade rolls · rebirth + lineage · the Archive · clickable
+      TUI · 12 habitats, 6 trinkets, 72 achievements · shareable DNA codes
+- [ ] **Season 0 — Genesis · building:** deterministic **battles** (`tt battle`, House type
+      wheel, trait procs) · the **collect-and-decorate** loop (`tt deco`, equip habitats & trinkets)
+- [ ] **Season 1 — Crossbreed:** **DNA export/apply** (paste codes to friends) · DNA
+      **grafting** · hybrid lines (Aether×Flux, Forge×Cipher) · fusion pools 🤫 · cross-provider
+      Chimera forms
+- [ ] **Later Seasons:** Codex CLI adapter · Team Leagues · Drifter DNA for solo devs · monthly
+      weather events · the sprite compiler pipeline
 
 Full design reference: [`docs/design/`](docs/design/) · player wiki: [`docs/wiki/`](docs/wiki/)
 

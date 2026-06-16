@@ -14,7 +14,10 @@ Where items are noted as "TODO" or "content-tunable" in the source, they remain 
 - `tt dna export` — generate and display the pet's current DNA code.
 - `tt dna apply <code>` — apply a DNA code from another pet to this one.
 
-Now implemented as part of the `apps/cli` command surface (M2.3 scope).
+**Scope (2026-06-16 rescope): the `tt dna` command surface and the whole grafting/fusion system
+below are Season 1 ("Crossbreed") — milestone M2.3, not yet built.** The DNA _codec_ is shipped
+(M2.1), and Season 0's Battle system consumes a decoded code read-only (you can battle a pasted
+code without applying it), but `export`/`apply` and everything in this §9 land in Season 1.
 
 ### Apply-Timing Tiers by Stage
 
@@ -118,7 +121,7 @@ never a power spike (it mirrors the capped vitality bonus, `VITALITY_MAX_BONUS` 
 - These are tunable defaults living as named constants in `packages/core/src/engine/constants.ts`
   (`GRAFT_POTENCY`, `GRAFT_GRADE_BONUS_CAP`, `GRAFT_STAT_BOOST_CAP`). The pure `graftPotency(grade)`
   helper exposes them now so the Dex detail view can surface a record's graft tier; the fusion
-  engine that consumes them is M2.3 work.
+  engine that consumes them is M2.3 work — **Season 1 ("Crossbreed")**.
 
 ### Battle / Graft Readiness Gate (implemented — `BATTLE_READY_STAGE` = Evolved)
 
@@ -191,8 +194,9 @@ Now implemented (M2.1 scope) in `packages/core/src/dna/`: the **encoder** `encod
 inverse `decodeDna` are pure, deterministic (same snapshot ⇒ same code, so the Dex can render it
 live and battles/replays are reproducible), and have no I/O — no `node:*`, a hand-rolled base32 and
 keystream, not `Buffer`. A golden test locks the byte layout forever; future schema bumps only
-append fields / TLV records and add new golden codes. The fusion/battle engines that consume decoded
-codes are M2.2/M2.3 work, so the code is currently display/share-only.
+append fields / TLV records and add new golden codes. The battle engine (Season 0, M2.2) consumes
+decoded codes read-only; the grafting/fusion engine (Season 1, M2.3) is what _applies_ them. Until
+those ship, the code is display/share-only.
 
 ### Forward-Compatibility Parsing Rules
 
