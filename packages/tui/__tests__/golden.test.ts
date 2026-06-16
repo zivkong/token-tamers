@@ -74,10 +74,10 @@ describe('golden frames (100x30, no-color)', () => {
 
   it('renders the dex page', () => {
     const out = renderFrameToString(100, 30, input({ page: 'dex' }));
-    // The Aether sky, its House tabs, the owned Wisp star, and the Mote seed.
+    // The Aether sky, its House tabs, the owned Wisp star, and the Mote anchor.
     expect(out).toContain('Aether');
     expect(out).toContain('Wisp');
-    expect(out).toContain('from the Mote');
+    expect(out).toContain('Mote');
     expect(out).toMatchSnapshot();
   });
 

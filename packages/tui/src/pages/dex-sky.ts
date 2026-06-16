@@ -62,8 +62,28 @@ interface Placed {
   y: number;
 }
 
-/** Lay nodes out by tier (apex at the top of the sky, sprite/egg at the bottom). */
-function placeNodes(nodes: HouseNode[], rect: Rect): Placed[] {
+/**
+ * Deterministic per-House seed (FNV-style over the House name + a salt). Drives
+ * each sky's distinct star pattern — same House always lays out identically, so
+ * golden frames stay stable; different Houses diverge.
+ */
+function seed(house: string, salt: number): number {
+  let h = Math.imul(salt + 1, 2654435761) >>> 0;
+  for (let i = 0; i < house.length; i++) h = Math.imul(h ^ house.charCodeAt(i), 16777619) >>> 0;
+  return h >>> 0;
+}
+
+function clamp(v: number, lo: number, hi: number): number {
+  return v < lo ? lo : v > hi ? hi : v;
+}
+
+/**
+ * Lay the stars out by tier (apex at the top, sprite just above the Mote at the
+ * foot), but give each House its OWN pattern: a per-House spine "sway" (a sine
+ * bend keyed off the House) plus a per-star twinkle (a seeded x/y nudge). The
+ * bottom two rows are reserved for the shared Mote anchor.
+ */
+function placeNodes(nodes: HouseNode[], rect: Rect, house: string): Placed[] {
   if (nodes.length === 0) return [];
   let minTier = Infinity;
   let maxTier = -Infinity;
@@ -72,6 +92,9 @@ function placeNodes(nodes: HouseNode[], rect: Rect): Placed[] {
     if (n.tier > maxTier) maxTier = n.tier;
   }
   const span = Math.max(1, maxTier - minTier);
+  const top = rect.y;
+  const bottom = Math.max(top + 1, rect.y + rect.h - 3); // reserve the foot for the Mote
+  const phase = (seed(house, 0) % 628) / 100; // 0..2π, the House's spine bend
   const byTier = new Map<number, HouseNode[]>();
   for (const n of nodes) {
     const list = byTier.get(n.tier) ?? [];
@@ -81,25 +104,47 @@ function placeNodes(nodes: HouseNode[], rect: Rect): Placed[] {
   const indexOf = new Map(nodes.map((n, i) => [n.speciesId, i]));
   const out: Placed[] = [];
   for (const [tier, tierNodes] of byTier) {
-    const ry = rect.y + Math.round(((maxTier - tier) * (rect.h - 1)) / span);
+    const baseRow = top + Math.round(((maxTier - tier) * (bottom - top)) / span);
+    const sway = Math.round(Math.sin(tier * 0.95 + phase) * rect.w * 0.1);
+    const slot = rect.w / (tierNodes.length + 1);
     tierNodes.forEach((node, i) => {
-      const rx = rect.x + Math.round(((i + 1) * rect.w) / (tierNodes.length + 1));
-      out.push({ node, idx: indexOf.get(node.speciesId) ?? 0, x: rx, y: ry });
+      const s = seed(house, node.num);
+      const jitterX = Math.round(((s % 100) / 100 - 0.5) * slot * 0.55);
+      const jitterY = (Math.floor(s / 100) % 3) - 1;
+      const x = clamp(
+        Math.round(rect.x + (i + 1) * slot) + sway + jitterX,
+        rect.x + 1,
+        rect.x + rect.w - 2,
+      );
+      const y = clamp(baseRow + jitterY, top, bottom);
+      out.push({ node, idx: indexOf.get(node.speciesId) ?? 0, x, y });
     });
   }
   return out;
 }
 
-/** Faint dotted lineage line from each node down to its in-House parents. */
+/**
+ * One faint dotted lineage line from each star down to its NEAREST in-House
+ * parent — a single clean spine per node keeps the sky readable (the full
+ * multi-parent branching lives in the detail view), not a dense web.
+ */
 function drawLines(ctx: RenderContext, placed: Placed[], house: House): void {
   const { buf } = ctx;
   const dim = mix(houseColor(house), SKY, 0.5);
   const posById = new Map(placed.map((p) => [p.node.speciesId, p]));
   for (const p of placed) {
+    let nearest: Placed | undefined;
+    let best = Infinity;
     for (const parentId of p.node.parents) {
       const par = posById.get(parentId);
-      if (par) drawDots(buf, p, par, dim);
+      if (!par) continue;
+      const d = Math.hypot(par.x - p.x, par.y - p.y);
+      if (d < best) {
+        best = d;
+        nearest = par;
+      }
     }
+    if (nearest) drawDots(buf, p, nearest, dim);
   }
 }
 
@@ -147,6 +192,9 @@ export function renderSky(
   selected: number,
   house: House,
 ): void {
+  // The shared origin — every line descends to the Mote at the foot of the sky.
+  const moteX = rect.x + Math.floor(rect.w / 2);
+  const moteY = rect.y + rect.h - 1;
   if (nodes.length === 0) {
     ctx.buf.text(
       rect.x + 2,
@@ -155,14 +203,25 @@ export function renderSky(
       DIM,
       null,
     );
+    drawMote(ctx, moteX, moteY, house);
     return;
   }
-  const placed = placeNodes(nodes, rect);
+  const placed = placeNodes(nodes, rect, house);
   drawLines(ctx, placed, house);
+  // Root stars (the sprites) trail down to the Mote.
+  const seedColor = mix(houseColor(house), SKY, 0.4);
+  for (const p of placed) {
+    if (p.node.parents.length === 0)
+      drawDots(ctx.buf, { x: p.x, y: p.y }, { x: moteX, y: moteY }, seedColor);
+  }
   for (const p of placed) drawStar(ctx, p, p.idx === selected);
-  // The shared origin seed, anchored at the foot of every sky.
-  const seedY = rect.y + rect.h - 1;
-  ctx.buf.text(rect.x + 1, seedY, '✦ from the Mote', mix(houseColor(house), SKY, 0.3), null);
+  drawMote(ctx, moteX, moteY, house);
+}
+
+/** The shared origin star: a ✦ seed + label at the foot of every sky. */
+function drawMote(ctx: RenderContext, x: number, y: number, house: House): void {
+  ctx.buf.textBold(x, y, '✦', mix(houseColor(house), { r: 255, g: 255, b: 255 }, 0.35), null);
+  ctx.buf.text(x + 2, y, 'Mote', DIM, null);
 }
 
 // ─── Focus rail ────────────────────────────────────────────────────────────

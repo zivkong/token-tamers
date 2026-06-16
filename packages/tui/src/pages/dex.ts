@@ -80,7 +80,9 @@ export function clampHouse(index: number): number {
 export function buildHouseNodes(ctx: RenderContext, houseIndex: number): HouseNode[] {
   const house = DEX_HOUSES[clampHouse(houseIndex)]!;
   const owned = new Set(ctx.state.dexOwned);
-  const inHouse = ctx.pack.species.filter((s) => s.house === house);
+  // The egg (Mote) is excluded — it's the universal origin, drawn as the shared
+  // anchor at the foot of EVERY sky (`renderSky`), not a per-House selectable star.
+  const inHouse = ctx.pack.species.filter((s) => s.house === house && s.stage !== 'egg');
   const parentsOf = new Map<string, string[]>();
   for (const sp of inHouse) {
     for (const ev of sp.evolvesTo) {
@@ -112,16 +114,17 @@ export function houseNodeCount(ctx: RenderContext, houseIndex: number): number {
   return buildHouseNodes(ctx, houseIndex).length;
 }
 
-/** Draw the clickable House selector strip; returns nothing. */
+/** Draw the centered, clickable House selector strip; returns nothing. */
 function drawHouseTabs(ctx: RenderContext, y: number, active: number): void {
   const { buf, hits, layout } = ctx;
-  let x = layout.canvasX + 1;
+  const labels = DEX_HOUSES.map((h) => h[0]!.toUpperCase() + h.slice(1));
+  // Width: '‹ ' + each label + a trailing space + '›'.
+  const width = 2 + labels.reduce((w, l) => w + l.length + 1, 0) + 1;
+  let x = layout.canvasX + Math.max(1, Math.floor((layout.canvasCols - width) / 2));
   buf.text(x, y, '‹', TAB_DIM, null);
   x += 2;
-  DEX_HOUSES.forEach((house, i) => {
-    const label = house[0]!.toUpperCase() + house.slice(1);
-    const on = i === active;
-    if (on) buf.textBold(x, y, label, houseColor(house), null);
+  labels.forEach((label, i) => {
+    if (i === active) buf.textBold(x, y, label, houseColor(DEX_HOUSES[i]!), null);
     else buf.text(x, y, label, TAB_DIM, null);
     hits.add(`dex:house:${i}`, x, y, label.length, 1);
     x += label.length + 1;
