@@ -11,6 +11,18 @@ TUI core — NO framework (Ink/OpenTUI rejected by design; OpenTUI is the docume
 fallback if the renderer hits a wall). Zero runtime dependencies; works on any Node
 LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or content.
 
+> **TUI-first (binding).** The interactive shell is the PRIMARY player surface — most
+> players use the TUI, not the CLI. Every player-facing feature must be fully usable in the
+> shell; a feature is NOT done while it's CLI-only. When a feature lands, add its page (a
+> `renderFn(ctx: RenderContext)` in `src/pages/`, dispatched in `render/frame.ts`), an in-shell
+> entry point (a hotkey/menu item, or a contextual key on a related page — e.g. Battle is
+> launched from the Archive with `b`), and golden-frame tests, in the same change as the
+> engine/CLI work. Keep per-frame work pure (`f(state, pack, ui, frame)` → buffer) so playback/
+> animation stays deterministic and golden-testable; pre-compute anything stochastic (e.g. a
+> battle timeline) ONCE outside the renderer and play it back. If the shell lacks a primitive a
+> feature needs (e.g. free-text entry for pasting a code), call that out as an unfinished TUI
+> gap — don't declare the feature complete on the CLI alone. See the TUI-first rule in CLAUDE.md.
+
 ## Layout law (rev 1.1 — top-oriented, full-width)
 
 - The UI is a **top-oriented, full-width vertical stack** (`render/layout.ts`): sections
@@ -164,7 +176,7 @@ visual change is intended and reviewed.
 `hit.ts`, `layout.ts` (`computeLayout`/`petSections`), `menu.ts` (`packMenu` left-aligned
 flow), `frame.ts` (frame + menu draw), `shell.ts` (runShell loop) + `shell-io.ts` (default
 stdio/terminal wiring, split out to keep `shell.ts` under the line ceiling), `status.ts`
-(one-liners), `pages/` (pet, pet-vitals, dex, **dex-detail**, archive, settings), `lookup.ts`
+(one-liners), `pages/` (pet, pet-vitals, dex, **dex-detail**, archive, settings, **battle**), `lookup.ts`
 (pack helpers). Shared UI lives
 under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after);
 `page.ts` (the standard full-screen page scaffold — `drawPageHeader`/`drawPageFooter`/

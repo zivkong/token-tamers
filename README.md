@@ -78,9 +78,10 @@ turns your real work patterns into a creature:
 unlock every habitat and trinket. One number to drive to 100 — `tt complete`.
 
 **Seasons.** Content lands in **Seasons**. You're in **Season 0 — Genesis**: the five
-founding House lines, 56 species — growing to add **deterministic battles** and the full
-**collect-and-decorate** loop. Each Season ships its own obtainable roster, so 100% is always
-reachable _now_ — the bar simply rises when the next Season lands. **Season 1 — Crossbreed**
+founding House lines, 56 species, and **deterministic battles** (fight your pets by DNA code) —
+growing to add the full **collect-and-decorate** loop. Each Season ships its own obtainable
+roster, so 100% is always reachable _now_ — the bar simply rises when the next Season lands.
+**Season 1 — Crossbreed**
 _(coming)_ is all about **DNA** — export and graft codes with friends to fuse hybrid lines,
 fusion pools, and cross-provider Chimera forms 🤫.
 
@@ -161,15 +162,16 @@ job). Your egg hatches ~10 minutes after your first session closes. Your first w
 hatches a **Calibration Egg** while it learns what "normal" looks like for _you_ —
 then the real lineage begins.
 
-| Command       | What it does                                           |
-| ------------- | ------------------------------------------------------ |
-| `tt`          | The clickable shell: Pet, Dex, Archive, Settings pages |
-| `tt watch`    | Slim live view                                         |
-| `tt status`   | One-line status — drop it in your prompt / statusline  |
-| `tt dex`      | Collection progress, "???" silhouettes included        |
-| `tt archive`  | Hall of Fame: your best record per species             |
-| `tt complete` | The completion meter, your % toward 100                |
-| `tt adapters` | Adapter health, paths, warnings                        |
+| Command       | What it does                                              |
+| ------------- | --------------------------------------------------------- |
+| `tt`          | The clickable shell: Pet, Dex, Archive, Settings pages    |
+| `tt watch`    | Slim live view                                            |
+| `tt status`   | One-line status — drop it in your prompt / statusline     |
+| `tt dex`      | Collection progress, "???" silhouettes included           |
+| `tt archive`  | Hall of Fame: your best record per species                |
+| `tt battle`   | Battle your pet vs an Archive record or a pasted DNA code |
+| `tt complete` | The completion meter, your % toward 100                   |
+| `tt adapters` | Adapter health, paths, warnings                           |
 
 Everything honors `--no-color` and degrades gracefully: truecolor → 256 → 8 → ASCII.
 
@@ -226,9 +228,10 @@ screenshot it. That's the point.
 - [x] **Season 0 — Genesis · shipped:** Claude Code + OpenCode adapters · evolution engine
       (all five house lines — Aether · Cipher · Flux · Forge · Wild, egg → Apex, 56 species) ·
       traits, patterns, mutations · grade rolls · rebirth + lineage · the Archive · clickable
-      TUI · 12 habitats, 6 trinkets, 72 achievements · shareable DNA codes
-- [ ] **Season 0 — Genesis · building:** deterministic **battles** (`tt battle`, House type
-      wheel, trait procs) · the **collect-and-decorate** loop (`tt deco`, equip habitats & trinkets)
+      TUI · 12 habitats, 6 trinkets, 44 achievements · shareable DNA codes · deterministic
+      **battles** (battle from the Archive with `b`, or `tt battle`; House type wheel, trait procs)
+- [ ] **Season 0 — Genesis · building:** the **collect-and-decorate** loop (`tt deco`, equip
+      habitats & trinkets)
 - [ ] **Season 1 — Crossbreed:** **DNA export/apply** (paste codes to friends) · DNA
       **grafting** · hybrid lines (Aether×Flux, Forge×Cipher) · fusion pools 🤫 · cross-provider
       Chimera forms
@@ -242,9 +245,10 @@ screenshot it. That's the point.
 Full design reference: [`docs/design/`](docs/design/) · player wiki: [`docs/wiki/`](docs/wiki/)
 
 **Reference pages:** [Houses](docs/wiki/houses.md) · [Species](docs/wiki/species.md) ·
-[Achievements](docs/wiki/achievements.md) · [Trinkets](docs/wiki/trinkets.md) ·
-[Unlockables](docs/wiki/unlockables.md) — the five Houses, the lineage shape (no
-spoilers), all 44 achievements, the six trinkets, and every habitat and title.
+[Battles](docs/wiki/battles.md) · [Achievements](docs/wiki/achievements.md) ·
+[Trinkets](docs/wiki/trinkets.md) · [Unlockables](docs/wiki/unlockables.md) — the five Houses,
+the lineage shape (no spoilers), the battle rules, all 44 achievements, the six trinkets, and
+every habitat and title.
 
 ## 🛠️ Contributing
 

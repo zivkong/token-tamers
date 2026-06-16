@@ -291,7 +291,7 @@ export function advanceBattlePlayback(view: BattleView, frame: number): void {
 /**
  * Handle a key on the Battle page. Returns true when consumed (so the shell skips
  * its generic handling). Picker: ↑↓ select, Enter fight. Arena: Enter play/pause/
- * replay, ←→ scrub, Esc back to the picker (then to the pet page).
+ * replay, ←→ scrub, Esc back to the picker (then to the Archive page).
  */
 export function handleBattleKey(rt: BattleShell, host: BattleHost, name: string): boolean {
   if (rt.page !== 'battle') return false;

@@ -37,7 +37,12 @@ import { advanceBattlePlayback, buildBattleVsRecord, handleBattleKey } from './p
 import { buildDexRows, DEX_LIST_OFFSET } from './pages/dex';
 import { ARCHIVE_LIST_OFFSET } from './pages/archive';
 import { cycleSelectedField, isUpdateFieldSelected, settingsFieldCount } from './pages/settings';
-import type { ContentPack, GameEffect, GameState } from '@token-tamers/core';
+import {
+  isBattleReady,
+  type ContentPack,
+  type GameEffect,
+  type GameState,
+} from '@token-tamers/core';
 
 // Re-exported shell host/options contract (kept identical to src/index.ts).
 export interface ShellHost {
@@ -368,9 +373,18 @@ function openDexDetail(rt: ShellRuntime, host: ShellHost): void {
 /** Battle the live pet against the selected Archive record; open the Battle page on success. */
 function startBattleFromArchive(rt: ShellRuntime, host: ShellHost): void {
   const view = buildBattleVsRecord(host, rt.ui.archive.selected);
-  if (!view) return;
-  rt.battle = view;
-  rt.page = 'battle';
+  if (view) {
+    rt.battle = view;
+    rt.page = 'battle';
+    return;
+  }
+  // Tell the player WHY nothing happened — both sides must reach the Evolved gate.
+  flash(
+    rt,
+    isBattleReady(host.getState().pet)
+      ? 'That record is sealed — opponents must reach Evolved.'
+      : 'Your pet is sealed — battles unlock at Evolved.',
+  );
 }
 
 /** Cycle the focused Settings field and persist (no-op off the Settings page). */

@@ -8,7 +8,7 @@ description: Game-engine rules for Token Tamers — cycle policies, molts/rebirt
 Source of truth: `docs/design/lifecycle-and-cycles.md`,
 `docs/design/evolution-grades-lineage.md`, and `docs/design/dna-hash-battles.md`. The engine is PURE and
 DETERMINISTIC: no I/O, no `Date.now()`/`new Date()`/`Math.random()` (ESLint enforces) —
-time enters as event timestamps, randomness via the seeded RNG (`src/rng.ts`,
+time enters as event timestamps, randomness via the seeded RNG (`src/helpers/rng.ts`,
 mulberry32, serializable state). Same saved state + same events + same clock ⇒
 identical results, forever. The engine is provider-blind: it consumes only normalized
 `UsageEvent`s and cycle events.

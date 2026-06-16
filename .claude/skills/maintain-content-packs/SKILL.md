@@ -90,7 +90,7 @@ Every fork needs a `default` branch so evaluation never dead-ends. Pattern varia
 
 - Achievements: `{id, name, condition, reward}` — conditions are typed
   `AchievementCondition`s; evaluated at molt/rebirth; never require network,
-  purchases, or a specific model. v1 ships ~30 of the ~120 target. Categories:
+  purchases, or a specific model. Season 0 ships 44 of the ~120 long-term target. Categories:
   lineage, evolution, traits, rhythm, grades, social (M2), collection meta, calendar.
 - Habitats: starter set Terminal Den (default), Meadow, Rooftop Night. Unlocks are
   achievement-driven (pattern firsts → themed habitats like Vigil → Midnight

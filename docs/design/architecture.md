@@ -342,18 +342,18 @@ drop out instead of accumulating for the lifetime of the install.
 
 ### Current commands
 
-| Command               | Description                                        |
-| --------------------- | -------------------------------------------------- |
-| `tt init`             | One-time interactive wizard                        |
-| `tt`                  | The clickable 4:3 shell (all pages live inside it) |
-| `tt watch`            | Passive statusline / background watch mode         |
-| `tt status`           | Single-line status output                          |
-| `tt archive`          | View the Archive (best-per-species records)        |
-| `tt dex`              | View the Dex                                       |
-| `tt battle`           | Battle view                                        |
-| `tt dna export`       | Export a DNA code                                  |
-| `tt dna apply <code>` | Apply a DNA code                                   |
-| `tt adapters`         | Adapter health check / path listing                |
+| Command            | Description                                         |
+| ------------------ | --------------------------------------------------- |
+| `tt init`          | One-time interactive wizard                         |
+| `tt`               | The clickable 4:3 shell (all pages live inside it)  |
+| `tt watch`         | Passive statusline / background watch mode          |
+| `tt status`        | Single-line status output                           |
+| `tt archive`       | View the Archive (best-per-species records)         |
+| `tt dex`           | View the Dex                                        |
+| `tt battle [code]` | Battle the pet vs an Archive record or a DNA code   |
+| `tt complete`      | Completion-meter breakdown                          |
+| `tt adapters`      | Adapter health check / path listing                 |
+| `tt update`        | Opt-in update check / self-replace (off by default) |
 
 Statusline one-liner format: `🥚→ <species> [S]★ molt 7 ▓▓▓░`
 (The example in the design baseline uses a fusion-pool species name; replaced here with a
@@ -364,9 +364,7 @@ otherwise.)
 
 | Milestone | Command                                                                     |
 | --------- | --------------------------------------------------------------------------- |
-| M2.1      | `tt dna export`                                                             |
-| M2.2      | `tt battle`                                                                 |
-| M2.3      | `tt dna apply <code>`                                                       |
+| M2.3      | `tt dna export` / `tt dna apply <code>`                                     |
 | M2.5      | `tt deco` / `tt deco --auto`                                                |
 | M2.6      | `tt dna drifter` (local Drifter DNA from deterministic calendar seed)       |
 | M2.6      | `tt league import <codes>` (local Team League standings from pasted hashes) |
@@ -401,10 +399,11 @@ use any AI assistant). That is a feature, not a risk — PROVIDED the feedback l
 exist. The policy: _humans own architecture and contracts; CI owns quality and performance; AI
 writes the code._
 
-> Implementation note: the CLAUDE.md project memory and the four project skills are
+> Implementation note: the CLAUDE.md project memory and the seven project skills are
 > implemented. See `CLAUDE.md` (root), `CONTRIBUTING.md`, and `.claude/skills/` for
-> `develop-adapters`, `develop-tui-renderer`, `maintain-content-packs`, `create-sprites`, and
-> `write-wiki-docs`. The GitHub wiki source lives in `docs/wiki/`.
+> `develop-game-engine`, `develop-tui-renderer`, `develop-adapters`, `maintain-content-packs`,
+> `create-sprites`, `write-wiki-docs`, and `maintain-updater`. The GitHub wiki source lives in
+> `docs/wiki/`.
 
 ### Known AI Failure Modes → Mechanical Countermeasures
 
@@ -421,7 +420,7 @@ writes the code._
 
 These rules live in CLAUDE.md and CONTRIBUTING:
 
-- CLAUDE.md + the four skills are the **primary review layer** — every AI contributor's agent
+- CLAUDE.md + the project skills are the **primary review layer** — every AI contributor's agent
   reads them before writing code. Keep them current; a stale CLAUDE.md is a project bug.
 - **Small PRs, one concern each.** PR template includes the invariant checklist: offline,
   read-only, no-judgment, additive-only, perf budgets, no spoilers.

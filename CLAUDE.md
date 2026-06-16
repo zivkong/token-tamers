@@ -109,6 +109,15 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 
 ## Conventions
 
+- **TUI-first (player-facing primacy).** The interactive shell (`tt` with no args) is the
+  PRIMARY surface — most players live in the TUI, not the command line. Every player-facing
+  feature MUST be fully usable inside the TUI shell; NEVER ship a feature as CLI-only. A `tt
+<verb>` subcommand is a secondary, scriptable convenience that mirrors a TUI flow — not a
+  substitute for it. When you add a feature, wire its TUI page/entry point in the SAME change
+  as the engine/CLI, with golden-frame coverage; if a capability can't yet land in the TUI
+  (e.g. it needs text entry the shell lacks), say so explicitly and treat the TUI gap as
+  unfinished work, not "done". (e.g. Battle is reached in-shell from the Archive via `b`, not
+  only via `tt battle`.)
 - TypeScript strict, ESM only, Node ≥ 20; moduleResolution Bundler (no `.js` import suffixes).
 - **Filenames are kebab-case** (`scripts/check-kebab-case.sh` gates commits/CI).
   Only exceptions: conventional root files (README.md, LICENSE, SECURITY.md,
@@ -167,7 +176,7 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
     `packages/core/src/battle/`, the House wheel/proc ruleset as `ContentPack.battle` data,
     `tt battle [code]`, the Battle TUI page (launched from the Archive with `b`), grade
     stat-floor (`GRADE_STAT_FLOOR`, battle-only). STILL TO BUILD: **the basic-unlockables / deco
-    loop** (`tt deco` + Deco page + loadouts over the existing 12 habitats / 6 trinkets / 72
+    loop** (`tt deco` + Deco page + loadouts over the existing 12 habitats / 6 trinkets / 44
     achievements). NO DNA apply/graft and NO leagues in Season 0.
   - **Season 1 — "Crossbreed" (next):** the **entire DNA grafting + fusion system** —
     `tt dna export`/`apply`, the graft engine (`GRAFT_POTENCY`, trait-splice, grade carry,
