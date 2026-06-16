@@ -379,18 +379,20 @@ describe('content counts', () => {
 // SIZE LAW (square px, keyed by stage); the egg stage is the 'mote' species.
 // 2026-06-15 higher-resolution ramp (was 10/12/14/16/18/20) — uniform +4, apex 32 is the
 // renderer's safe ceiling. See docs/design/visuals-habitats-achievements.md §13.
+// Octant size law (art direction v2, 2026-06-16): octant source px, square, even,
+// height divisible by 4. Supersedes the old half-block 12/16/20/24/28/32 law.
 const SPECIES_STAGE_SIZE: Record<Stage, number> = {
-  egg: 12,
-  sprite: 16,
-  rookie: 20,
-  evolved: 24,
-  prime: 28,
-  apex: 32,
+  egg: 16,
+  sprite: 20,
+  rookie: 24,
+  evolved: 28,
+  prime: 32,
+  apex: 36,
 };
 // ---------------------------------------------------------------------------
 
 describe('sprite data integrity', () => {
-  it('all palette indices are 0–15 (0=transparent, 1=outline, 2..14=ramp, 15=glint)', () => {
+  it('all palette indices are 0–20 (0=transparent, 1=outline, 2..14=ramp, 15=glint, 16..18=accent, 20=belly)', () => {
     for (const sprite of contentPackV1.sprites) {
       for (const frame of sprite.frames) {
         for (const row of frame) {
@@ -400,7 +402,7 @@ describe('sprite data integrity', () => {
               `sprite '${sprite.id}' has out-of-range index ${idx}`,
             ).toBeGreaterThanOrEqual(0);
             expect(idx, `sprite '${sprite.id}' has out-of-range index ${idx}`).toBeLessThanOrEqual(
-              15,
+              20,
             );
           }
         }
@@ -408,7 +410,7 @@ describe('sprite data integrity', () => {
     }
   });
 
-  it('every species sprite is EXACTLY square at its stage size (12/16/20/24/28/32)', () => {
+  it('every species sprite is EXACTLY square at its stage size (16/20/24/28/32/36)', () => {
     const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
     for (const sp of contentPackV1.species) {
       const sprite = spriteMap.get(sp.spriteId);
@@ -454,15 +456,15 @@ describe('sprite data integrity', () => {
     }
   });
 
-  it('habitat sprites are exactly 96x48 with a palette of 8..15 hexes and >= 2 frames', () => {
+  it('habitat sprites are exactly 128x96 with a palette of 8..15 hexes and >= 2 frames', () => {
     const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
     const hexRe = /^#[0-9a-fA-F]{6}$/;
     for (const h of contentPackV1.habitats) {
       const sprite = spriteMap.get(h.spriteId);
       expect(sprite, `habitat '${h.id}' sprite '${h.spriteId}' not found`).toBeDefined();
       if (!sprite) continue;
-      expect(sprite.width, `habitat sprite '${h.spriteId}' width must be 96`).toBe(96);
-      expect(sprite.height, `habitat sprite '${h.spriteId}' height must be 48`).toBe(48);
+      expect(sprite.width, `habitat sprite '${h.spriteId}' width must be 128`).toBe(128);
+      expect(sprite.height, `habitat sprite '${h.spriteId}' height must be 96`).toBe(96);
       expect(
         sprite.frames.length,
         `habitat sprite '${h.spriteId}' should have >= 2 frames`,
@@ -483,15 +485,15 @@ describe('sprite data integrity', () => {
     }
   });
 
-  it('trinket sprites are exactly 20x20', () => {
+  it('trinket sprites are exactly 28x28', () => {
     const trinketSpriteIds = new Set(contentPackV1.trinkets.map((t) => t.spriteId));
     const spriteMap = new Map(contentPackV1.sprites.map((s) => [s.id, s]));
     for (const id of trinketSpriteIds) {
       const sprite = spriteMap.get(id);
       expect(sprite, `trinket sprite '${id}' not found`).toBeDefined();
       if (!sprite) continue;
-      expect(sprite.width, `trinket sprite '${id}' width must be 20`).toBe(20);
-      expect(sprite.height, `trinket sprite '${id}' height must be 20`).toBe(20);
+      expect(sprite.width, `trinket sprite '${id}' width must be 28`).toBe(28);
+      expect(sprite.height, `trinket sprite '${id}' height must be 28`).toBe(28);
     }
   });
 

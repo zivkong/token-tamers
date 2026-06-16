@@ -4,16 +4,23 @@ import { FrameBuffer } from '../src/render/buffer';
 import { TEST_SPRITE } from './fixtures';
 
 describe('palette beauty ladder', () => {
-  it('grows the ramp with grade', () => {
-    const c = buildPalette('#8a7cff', 'C');
-    const b = buildPalette('#8a7cff', 'B');
-    const a = buildPalette('#8a7cff', 'A');
-    const s = buildPalette('#8a7cff', 'S');
-    expect(c.length).toBeLessThan(b.length);
-    expect(b.length).toBeLessThan(a.length);
-    // S and A both offer 16 slots.
-    expect(a.length).toBe(16);
-    expect(s.length).toBe(16);
+  it('grows the body ramp with grade (more distinct tones C→S)', () => {
+    // The LUT is now a fixed 21-slot layout for every grade (1..15 body ramp,
+    // 16..18 per-species accent, 20 cream belly), so grade richness is the count
+    // of DISTINCT body tones in indices 1..15, not the array length.
+    const distinctBody = (g: 'C' | 'B' | 'A' | 'S'): number =>
+      new Set(
+        buildPalette('#8a7cff', g)
+          .slice(1, 16)
+          .map((c) => (c ? JSON.stringify(c) : null)),
+      ).size;
+    expect(distinctBody('C')).toBeLessThan(distinctBody('B'));
+    expect(distinctBody('B')).toBeLessThan(distinctBody('A'));
+    expect(distinctBody('A')).toBeGreaterThanOrEqual(12);
+    expect(distinctBody('S')).toBeGreaterThanOrEqual(12);
+    // Every grade exposes the same 21-slot LUT (so the accent/belly band always resolves).
+    expect(buildPalette('#8a7cff', 'C').length).toBe(21);
+    expect(buildPalette('#8a7cff', 'S').length).toBe(21);
   });
 
   it('reserves index 0 as transparent', () => {

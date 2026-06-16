@@ -33,55 +33,73 @@ const BLACK: Rgb = { r: 0, g: 0, b: 0 };
 const AURUM: Rgb = { r: 251, g: 191, b: 36 };
 const AMBER: Rgb = { r: 255, g: 214, b: 110 };
 
+/** Soft cream belly/underside tone (palette index 20). */
+const CREAM: Rgb = { r: 246, g: 239, b: 216 };
+
 /**
- * Build the palette LUT for a House tint + Grade. The grade determines how many
- * distinct colors the ladder offers; higher grades get a longer, richer ramp.
- * `frame` lets animated grades (S shimmer) shift the ramp over time.
+ * Build the palette LUT for a House tint + Grade + optional per-species accent.
+ * Indices 1..15 are the grade body ramp (C flat → S gold-glow). Indices 16/17/18
+ * are the species SIGNATURE ACCENT band (a SECONDARY color, dark→light); index 20
+ * is the cream belly. The body ramp is normalized to always fill 1..15 (short C/B
+ * ramps clamp to their top color) so adding the accent band never punches holes in
+ * the body. `accent` omitted ⇒ the accent band falls back to the House hue (the
+ * legacy look); golden frames that pass no accent keep indices 1..15 unchanged.
  */
-export function buildPalette(tint: string, grade: Grade, frame = 0): Palette {
+export function buildPalette(tint: string, grade: Grade, frame = 0, accent?: string): Palette {
   const base = hexToRgb(tint);
   const dark = mix(base, BLACK, 0.45);
   const darker = mix(base, BLACK, 0.7);
   const light = mix(base, WHITE, 0.35);
   const lighter = mix(base, WHITE, 0.6);
 
+  let body: Array<Rgb | null>;
   switch (grade) {
-    case 'C': {
+    case 'C':
       // Flat 4-color: transparent + 3 shades.
-      return [null, darker, base, light];
-    }
-    case 'B': {
+      body = [null, darker, base, light];
+      break;
+    case 'B':
       // 8-color: add midtones + a white accent.
-      return [null, darker, dark, base, light, lighter, WHITE, mix(base, WHITE, 0.85)];
-    }
+      body = [null, darker, dark, base, light, lighter, WHITE, mix(base, WHITE, 0.85)];
+      break;
     case 'A': {
       // 16-color: full ramp + a sparkle glint slot (index 15).
       const ramp: Array<Rgb | null> = [null];
-      for (let i = 1; i <= 13; i++) {
-        ramp.push(mix(darker, lighter, i / 13));
-      }
+      for (let i = 1; i <= 13; i++) ramp.push(mix(darker, lighter, i / 13));
       ramp.push(WHITE);
-      ramp.push(glint(base, frame)); // index 15: sparkle glint
-      return ramp;
+      ramp.push(glint(base, frame));
+      body = ramp;
+      break;
     }
     case 'S': {
-      // Aurum: a gold→amber→white highlight travels across the ramp (design
-      // §13 beauty ladder) — each index peaks at a different phase, so the
-      // shimmer visibly SWEEPS over the sprite instead of breathing uniformly,
-      // and the body stays saturated (gold-infused, never washed out).
+      // Aurum: a gold→amber→white highlight travels across the ramp (design §13
+      // beauty ladder) — the shimmer SWEEPS, the body stays saturated/gold-infused.
       const ramp: Array<Rgb | null> = [null];
       for (let i = 1; i <= 14; i++) {
         const t = i / 14;
-        // Body keeps the House hue, saturated; gold lives in the highlights.
-        const body = mix(mix(dark, lighter, t), AURUM, t * t * 0.35);
-        const sweep = (Math.sin(frame * 0.5 - i * 0.55) + 1) / 2; // traveling phase
+        const b = mix(mix(dark, lighter, t), AURUM, t * t * 0.35);
+        const sweep = (Math.sin(frame * 0.5 - i * 0.55) + 1) / 2;
         const peak = sweep > 0.72 ? (sweep - 0.72) / 0.28 : 0;
-        ramp.push(peak > 0 ? mix(body, mix(AMBER, WHITE, peak), 0.65) : body);
+        ramp.push(peak > 0 ? mix(b, mix(AMBER, WHITE, peak), 0.65) : b);
       }
       ramp.push(glint(mix(base, AURUM, 0.6), frame));
-      return ramp;
+      body = ramp;
+      break;
     }
   }
+
+  // Normalize the body ramp to fill 1..15 (clamp short C/B ramps to their top),
+  // then append the per-species accent band (16..18) + cream belly (19/20).
+  const out: Array<Rgb | null> = [null];
+  const top = body[body.length - 1] ?? WHITE;
+  for (let i = 1; i <= 15; i++) out[i] = i < body.length ? (body[i] ?? top) : top;
+  const acc = accent ? hexToRgb(accent) : base;
+  out[16] = mix(acc, BLACK, 0.32);
+  out[17] = acc;
+  out[18] = mix(acc, WHITE, 0.45);
+  out[19] = CREAM;
+  out[20] = CREAM;
+  return out;
 }
 
 function glint(base: Rgb, frame: number): Rgb {

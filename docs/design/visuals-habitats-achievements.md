@@ -7,6 +7,36 @@ Derived from the Token Tamers v1.0.3 design baseline. Covers design §13 (Visual
 
 ## Decision records
 
+### 2026-06-16 — Octant art direction v2 (cute→majestic, higher density, 4:3 habitats, per-species accent)
+
+**Owner direction (2026-06-16):** players found the half-block sprites too chunky to shrink
+without distortion, too similar within a House, under-detailed, NOT CUTE, and too big vs the
+habitat. This entry SUPERSEDES the 2026-06-15 size law below.
+
+1. **Octant rendering baseline.** The target sub-cell glyph is the **octant (2×4)** — 8
+   sub-pixels per terminal cell (4× the half-block's 1×2), square in a ~1:2 cell, 2 colors per
+   cell. Degradation ladder **octant → sextant (2×3) → half-block (1×2) → ASCII**; assets are
+   authored ONCE at octant resolution and lower rungs are strict downsamples. (Implementation
+   note: the live compositor lands on the verified **sextant** path first; **true octant** is a
+   one-line glyph-table swap pending the Unicode 16 BLOCK OCTANT table.)
+2. **New size law (octant source px — square, even, height ÷ 4):** egg 16 · sprite 20 · rookie
+   24 · evolved 28 · prime 32 · **apex 36** (the new safe ceiling). On-screen footprint =
+   `cols = px/2`, `rows = px/4` under octant — so the apex is SMALLER on screen than the old
+   32px half-block apex yet carries ~2.25× the source detail.
+3. **Habitats 128×96 (4:3)** (was 96×48, 2:1) · **trinkets 28×28** (was 20×20). The taller 4:3
+   scene gives real sky/ground so the pet reads as a creature in a world; target species ≈ ¼ of
+   the habitat width.
+4. **Cute → majestic arc:** the small stages are adorable (head ≈ body, big catch-lit eyes
+   ~45–55% of head, blush, stubby nub limbs) and sharpen monotonically to a majestic boss at
+   apex (small head on a tall body, crown/wings/plates/core). **Distinct → converge:**
+   sprite/rookie get varied per-species silhouettes (fixes "too similar"); prime/apex converge on
+   the House archetype.
+5. **Per-species signature accent color:** each species declares a SECONDARY `accent` hex
+   (cosmetic, invariant-3 safe — never touches stats/grades/speed) resolving the sprite's accent
+   band (palette indices **16/17/18**, ~10–20% of pixels) over the House-hue-dominant body
+   (~70–85%, indices 2..14); index **20** is a cream belly. House still reads at a glance; the
+   grade beauty ladder (C flat → S gold-glow) applies on top.
+
 ### 2026-06-15 — Species Identity System (Creature Kingdoms) + higher-resolution size law
 
 **Owner direction (2026-06-15):** species must read as **actual creatures with their own

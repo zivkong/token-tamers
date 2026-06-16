@@ -117,7 +117,7 @@ function drawSpriteAndMeta(
     const nativeRows = Math.max(1, Math.ceil(spr.height / 2));
     const scale = SPRITE_ROWS / nativeRows;
     const destW = Math.max(1, Math.round(spr.width * scale));
-    drawSprite(buf, spr, buildPalette(houseTint(best.house), best.grade, frame), {
+    drawSprite(buf, spr, buildPalette(houseTint(best.house), best.grade, frame, species?.accent), {
       x: canvasX + 2,
       y: bodyY,
       destW,

@@ -321,7 +321,12 @@ function drawRailIcon(
     if (sprite) {
       const scale = rows / Math.max(1, Math.ceil(sprite.height / 2));
       const destW = Math.max(1, Math.round(sprite.width * scale));
-      const pal = buildPalette(houseTint(house), node.grade ?? 'C', frame);
+      const pal = buildPalette(
+        houseTint(house),
+        node.grade ?? 'C',
+        frame,
+        findSpecies(ctx.pack, node.speciesId)?.accent,
+      );
       drawSprite(buf, sprite, pal, {
         x: cx - Math.floor(destW / 2),
         y: top,
@@ -413,7 +418,8 @@ function drawMoteRail(
   if (sprite) {
     const scale = rows / Math.max(1, Math.ceil(sprite.height / 2));
     const destW = Math.max(1, Math.round(sprite.width * scale));
-    drawSprite(buf, sprite, buildPalette(houseTint(house), 'B', frame), {
+    const accent = findSpecies(ctx.pack, node.speciesId)?.accent;
+    drawSprite(buf, sprite, buildPalette(houseTint(house), 'B', frame, accent), {
       x: cx - Math.floor(destW / 2),
       y: rect.y + 1,
       destW,

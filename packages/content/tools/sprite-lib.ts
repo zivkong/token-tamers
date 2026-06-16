@@ -16,7 +16,7 @@
  * body painted with ~indices 3..12 reads great at every grade.
  *
  * TYPICAL CREATURE RECIPE (mirror-then-shade-then-edge):
- *   const c = PixelCanvas.create(24, 24);          // even W/H, the stage size (12..32)
+ *   const c = PixelCanvas.create(24, 24);          // even W/H, the stage size (16..36)
  *   fillEllipse(c, 12, 14, 7, 8, 8);               // body mass, mid-ramp
  *   fillEllipse(c, 12, 7, 4, 4, 9);                // head
  *   bezier(c, 17, 9, 23, 3, 21, 12, 5);            // a horn / tail wisp / wing
@@ -29,13 +29,13 @@
  *   const frames = [c.grid, bobFrame(c, 1).grid];    // idle bob
  *   const def = buildSprite('sprite-foo', frames, 2);
  *
- * SIZE LAW (2026-06-15 — enforce in your design module; the content-pack test is the gate):
- *   - pets: EXACTLY square, even, by stage — egg 12, sprite 16, rookie 20, evolved 24,
- *           prime 28, apex 32 (apex 32 is the renderer's safe ceiling; height EVEN —
- *           half-block pairs). Each House = a creature Kingdom body-plan (Sky Court /
- *           Crag Beasts / Tide Runners / Iron Brood / Bloom); see the create-sprites skill.
- *   - habitats: 96x48
- *   - trinkets: 20x20 (raised 2026-06-15 from 12x12)
+ * SIZE LAW (octant art direction v2, 2026-06-16 — the content-pack test is the gate):
+ *   - pets: EXACTLY square, even (height divisible by 4 for clean octant 2x4 packing),
+ *           by stage — egg 16, sprite 20, rookie 24, evolved 28, prime 32, apex 36
+ *           (apex 36 is the renderer's safe ceiling). Each House = a creature Kingdom
+ *           body-plan (Sky Court / Crag Beasts / Tide Runners / Iron Brood / Bloom);
+ *           see the create-sprites skill.
+ *   - habitats: 128x96 (4:3) · trinkets: 28x28
  *
  * DETERMINISM: never use Math.random / Date.now in a design module. Use the
  * seeded `lcg(seed)` here for any "random" scatter so output is reproducible.
@@ -63,6 +63,19 @@ export const RIM_LO = 13;
 export const RIM_HI = 14;
 /** Animated glint slot — sparkles, rune marks that shimmer at S grade. */
 export const GLINT = 15;
+/**
+ * Per-species SIGNATURE ACCENT band (art direction v2). A SECONDARY color, NOT the
+ * House hue: indices 16/17/18 (dark→light) resolve at render time from the species'
+ * accent color (the renderer's `buildPalette` accent arg). Use for one signature
+ * feature (crest, gem, fins, vents, petals, eye-glow) at ~10–20% of colored pixels —
+ * the House hue still dominates (~70–85%, indices 2..14). Paint accent AFTER `shade`
+ * (or use `shade({ onlyBelow: RIM_HI })`) so it survives the body re-index.
+ */
+export const ACCENT_LO = 16;
+export const ACCENT_MID = 17;
+export const ACCENT_HI = 18;
+/** Soft cream belly/underside tone (use sparingly), resolved at render time. */
+export const BELLY = 20;
 
 // ---------------------------------------------------------------------------
 // Deterministic LCG (no Math.random — required for reproducible assets).

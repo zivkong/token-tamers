@@ -200,7 +200,7 @@ function drawCombatantColumn(
   const spr = findSprite(ctx.pack, species?.spriteId ?? '');
   if (spr) {
     const scale = SPRITE_ROWS / Math.max(1, Math.ceil(spr.height / 2));
-    drawSprite(buf, spr, buildPalette(houseTint(c.house), c.grade, frame), {
+    drawSprite(buf, spr, buildPalette(houseTint(c.house), c.grade, frame, species?.accent), {
       x,
       y: topY,
       destW: Math.max(1, Math.round(spr.width * scale)),

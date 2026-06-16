@@ -184,6 +184,14 @@ export interface SpeciesDef {
   evolvesTo: EvolutionBranch[];
   /** Sprite id in the pack's sprite set. */
   spriteId: string;
+  /**
+   * Per-species SIGNATURE ACCENT color (hex), a SECONDARY cosmetic hue distinct
+   * from the House tint. Resolves the sprite's accent band (palette indices
+   * 16..18) at render time. PURELY cosmetic — like House and grade it must NEVER
+   * affect stats, grades, rarity, or speed (invariant 3). Omitted ⇒ the accent
+   * band falls back to the House hue.
+   */
+  accent?: string;
   flavor?: string;
 }
 

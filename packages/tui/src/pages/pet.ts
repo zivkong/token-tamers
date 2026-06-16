@@ -74,16 +74,18 @@ type Dwell = 'idle' | 'sit' | 'look' | 'hop' | 'play';
  * this — not the canvas bottom — keeps the pet standing ON the floor instead of
  * floating mid-sky or clipping the scene's lower border.
  */
-const SCENE_FLOOR_PX = 38;
-/** Habitat backdrop pixel height (matches scenes.ts HH). */
-const HABITAT_PX_H = 48;
+// Floor line in the 96-px-tall (4:3) scene; ~79% down, matching the old 38/48
+// proportion so the pet stands on the ground band of the taller habitat art.
+const SCENE_FLOOR_PX = 76;
+/** Habitat backdrop pixel height (matches scenes.ts HH; octant v2 = 4:3 128x96). */
+const HABITAT_PX_H = 96;
 /**
- * Habitat backdrop width in cells (= the 96-px scene, 1 px per column). The
+ * Habitat backdrop width in cells (= the 128-px scene, 1 px per column). The
  * backdrop is scaled to fill `scene.cols`, so `scene.cols / HABITAT_COLS` is the
  * background's scale factor — the pet and trinkets multiply by it too so they
  * stay proportionate to the scene at any terminal width.
  */
-const HABITAT_COLS = 96;
+const HABITAT_COLS = 128;
 
 export interface WanderGeometry {
   /** Left/top cell of the canvas region. */
@@ -360,7 +362,8 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRec
   }
 
   const tint = houseTint(pet.house);
-  const pal = buildPalette(tint, pet.grade, frame);
+  const accent = findSpecies(ctx.pack, pet.speciesId)?.accent;
+  const pal = buildPalette(tint, pet.grade, frame, accent);
   const clip = { x: scene.x, y: scene.y, w: scene.cols, h: scene.rows };
   drawSprite(buf, sprite, pal, {
     x: w.px,

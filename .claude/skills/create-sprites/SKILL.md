@@ -13,17 +13,24 @@ pixel-art pets in the terminal, with grade determining visual _richness_, at <1%
 - Palette-indexed integer grids (`SpriteDef`): `frames[frame][row][col]` = palette
   index, `0` = transparent. **Assets NEVER store RGB** — House tint + grade LUT
   resolve color at render time (palette indirection: one asset, many beauty levels).
-- **Size law (owner direction 2026-06-15 — higher-resolution, SUPERSEDES the 2026-06-13
-  10–20px ramp).** Species sprites are **exactly square**, even, on a uniform +4 ramp by
-  stage:
+- **Size law (octant art direction v2, 2026-06-16 — SUPERSEDES the 2026-06-15 12–32px ramp).**
+  Authored for **octant (2×4) rendering**. Species sprites are **exactly square**, even, with
+  **height divisible by 4** (clean octant packing), on a uniform +4 ramp by stage:
 
   | Stage | egg | sprite | rookie | evolved | prime | apex |
   | ----- | --- | ------ | ------ | ------- | ----- | ---- |
-  | px    | 12  | 16     | 20     | 24      | 28    | 32   |
+  | px    | 16  | 20     | 24     | 28      | 32    | 36   |
 
-  Habitats are **96×48**, trinkets **20×20** (raised 2026-06-15 from 12×12). These are
-  exact, enforced by the content-pack test — not a range. Apex 32px is the renderer's safe ceiling (an apex sits
-  ~1/3 the habitat width at the golden 100×30 terminal); do not exceed it.
+  Habitats are **128×96 (4:3)**, trinkets **28×28**. These are exact, enforced by the
+  content-pack test — not a range. Apex 36px is the renderer's safe ceiling (under octant an
+  apex is `36/2 × 36/4` = 18×9 cells — SMALLER on screen than the old 32px half-block apex, yet
+  more detailed; target species ≈ ¼ the habitat width). Do not exceed it.
+
+- **Per-species accent (v2):** each species declares a secondary `accent` hex (cosmetic;
+  NEVER affects stats/grades/speed). Paint its signature feature with **indices 16/17/18**
+  (`ACCENT_LO/MID/HI`, dark→light) at ~10–20% of pixels; optional cream belly = **index 20**
+  (`BELLY`). The House hue still dominates (~70–85%, indices 2..14). Paint accent AFTER `shade`
+  (or `shade({ onlyBelow: RIM_HI })`) so it survives the body re-index.
 
 - **Animation banks (required for every species):** besides the idle `frames`, every
   species ships `walk`, `jump`, and `play` banks (`SpriteDef.walk/jump/play`), each with
