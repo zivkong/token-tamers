@@ -1,10 +1,11 @@
 /**
  * `tt init` — the one-time setup wizard.
  *
- * Detects installed adapters, confirms which to enable, asks plan type
- * (subscription => dynamic cycle policy, api => static), picks a week anchor
- * (default: next Monday 00:00 local), writes config.json, runs a backfill scan,
- * creates the engine, ingests history, advances to now, and saves state.json.
+ * Detects installed adapters, confirms which to enable, asks the single
+ * pet-global cycle question (subscription vs static, plus the anchor adapter when
+ * subscription runs with more than one adapter) under Preferences, picks a week
+ * anchor (default: next Monday 00:00 local), writes config.json, runs a backfill
+ * scan, creates the engine, ingests history, advances to now, and saves state.json.
  *
  * `--yes` takes all defaults non-interactively (CI / smoke tests).
  */
@@ -163,14 +164,15 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
       }
     }
 
-    // ONE cycle clock for the pet (never per adapter). Ask only when at least one
-    // adapter is enabled; the week anchor is preserved across re-inits so an
-    // existing pet's rebirth schedule never shifts.
+    out(renderStepHeader(2, 3, 'Preferences', styled));
+
+    // ONE cycle clock for the pet (never per adapter), grouped with the other
+    // preferences. Ask only when at least one adapter is enabled; the week anchor
+    // is preserved across re-inits so an existing pet's rebirth schedule never shifts.
     if (adapterConfigs.length > 0) {
       cycle = await askCycle({ enabledAdapters, ask, out, styled, now });
     }
 
-    out(renderStepHeader(2, 3, 'Preferences', styled));
     const nextColor = await askColor(settings.color, styled, ask);
     out(renderColorChoice(nextColor, nextColor !== settings.color, styled));
     if (nextColor !== settings.color) {

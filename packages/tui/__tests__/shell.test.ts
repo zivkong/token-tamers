@@ -162,6 +162,40 @@ describe('runShell loop', () => {
     expect(savedAnchor).toBe(''); // static drops the anchor
   });
 
+  it('remembers the chosen anchor across a subscription→static→subscription toggle', async () => {
+    const input = manualInput();
+    const host = makeHost();
+    const sink = new StringSink();
+    let savedPolicy: string | null = null;
+    let savedAnchor: string | null = null;
+    const done = runShell({
+      host,
+      color: 'none',
+      now: steppedClock(40),
+      out: sink,
+      input,
+      size: () => ({ cols: 100, rows: 30 }),
+      manageTerminal: false,
+      maxFrames: 6,
+      // Two adapters so the anchor field exists; start anchored to the SECOND one.
+      adapters: [{ provider: 'claude-code' }, { provider: 'codex' }],
+      cyclePolicy: 'subscription',
+      anchorAdapter: 'codex',
+      onCycleChange: (policy, anchor) => {
+        savedPolicy = policy;
+        savedAnchor = anchor;
+      },
+    });
+    input.push({ type: 'key', name: '4' }); // settings
+    input.push({ type: 'key', name: 'down' }); // to the cycle field (index 1)
+    input.push({ type: 'key', name: 'right' }); // subscription -> static (anchor dropped on persist)
+    input.push({ type: 'key', name: 'right' }); // static -> subscription (anchor restored)
+    await done;
+    // The remembered 'codex' anchor must come back — not snap to the first adapter.
+    expect(savedPolicy).toBe('subscription');
+    expect(savedAnchor).toBe('codex');
+  });
+
   it('edits the opt-in update mode with ←→ and persists to settings.json path', async () => {
     const input = manualInput();
     const host = makeHost();

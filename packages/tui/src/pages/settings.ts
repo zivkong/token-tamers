@@ -74,13 +74,13 @@ export function cycleSelectedField(state: SettingsState, delta: number): void {
   }
   if (state.selected === CYCLE_FIELD_INDEX) {
     state.cyclePolicy = nextValue(CYCLE_VALUES, state.cyclePolicy, delta);
-    // Keep the anchor coherent with the policy: subscription needs an anchor (the
-    // first adapter by default); static has none. The anchor field then appears/
-    // disappears via settingsFieldCount.
-    if (state.cyclePolicy === 'subscription') {
-      if (!state.anchorAdapter) state.anchorAdapter = state.adapters[0]?.provider ?? '';
-    } else {
-      state.anchorAdapter = '';
+    // Subscription needs an anchor; seed the first adapter only when none is
+    // remembered yet. Switching to static KEEPS the remembered anchor (the field
+    // just hides via settingsFieldCount, and persistence drops the anchor under
+    // static) so a later switch back restores the player's chosen adapter rather
+    // than silently snapping to the first one.
+    if (state.cyclePolicy === 'subscription' && !state.anchorAdapter) {
+      state.anchorAdapter = state.adapters[0]?.provider ?? '';
     }
     return;
   }

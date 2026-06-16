@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { parseColorChoice, parseUpdateChoice, visibleLen } from '../src/helpers/init-style';
+import {
+  parseAnchorChoice,
+  parseColorChoice,
+  parseCycleChoice,
+  parseUpdateChoice,
+  visibleLen,
+} from '../src/helpers/init-style';
 import {
   renderBanner,
   renderFirstInitSummary,
@@ -33,6 +39,43 @@ describe('parseUpdateChoice', () => {
     expect(parseUpdateChoice('', 'off')).toBe('off');
     expect(parseUpdateChoice('   ', 'notify')).toBe('notify');
     expect(parseUpdateChoice('zzz', 'off')).toBe('off');
+  });
+});
+
+describe('parseCycleChoice', () => {
+  it('maps the single-key shortcuts (s = subscription, a = static)', () => {
+    expect(parseCycleChoice('s', 'static')).toBe('subscription');
+    expect(parseCycleChoice('a', 'subscription')).toBe('static');
+  });
+
+  it('matches the full word so typing it never lands on the opposite policy', () => {
+    // Regression: 'static' starts with 's' but must NOT resolve to subscription.
+    expect(parseCycleChoice('static', 'subscription')).toBe('static');
+    expect(parseCycleChoice('Static', 'subscription')).toBe('static');
+    expect(parseCycleChoice('subscription', 'static')).toBe('subscription');
+  });
+
+  it('keeps the fallback on an empty or unknown answer', () => {
+    expect(parseCycleChoice('', 'subscription')).toBe('subscription');
+    expect(parseCycleChoice('   ', 'static')).toBe('static');
+    expect(parseCycleChoice('zzz', 'static')).toBe('static');
+  });
+});
+
+describe('parseAnchorChoice', () => {
+  const ids = ['claude-code', 'opencode', 'codex'];
+
+  it('maps a 1-based index to the matching adapter id', () => {
+    expect(parseAnchorChoice('1', ids)).toBe('claude-code');
+    expect(parseAnchorChoice('2', ids)).toBe('opencode');
+    expect(parseAnchorChoice('3', ids)).toBe('codex');
+  });
+
+  it('falls back to the first adapter on out-of-range / non-numeric / empty input', () => {
+    expect(parseAnchorChoice('0', ids)).toBe('claude-code');
+    expect(parseAnchorChoice('4', ids)).toBe('claude-code');
+    expect(parseAnchorChoice('x', ids)).toBe('claude-code');
+    expect(parseAnchorChoice('', ids)).toBe('claude-code');
   });
 });
 

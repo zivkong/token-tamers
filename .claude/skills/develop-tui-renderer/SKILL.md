@@ -170,8 +170,9 @@ under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, 
 `page.ts` (the standard full-screen page scaffold — `drawPageHeader`/`drawPageFooter`/
 `PAGE_HEADER_ROWS`, used by Dex/Archive/Settings); and `meter.ts` — the ONE progress bar:
 `drawMeter` (filled `█` + a clearly-visible `▒` track), `drawSegmentedMeter` (filled portion split
-into colored slices, e.g. the diet-tinted food), and `drawCompletionHeader`. Reuse these — don't
-hand-roll rules/bars/headers.
+into colored slices, e.g. the diet-tinted food), and `drawCompletionHeader`; and `marquee.ts`
+(`drawMarquee` — a frame-counter-driven scrolling ticker, golden-frame safe; used by the Pet
+page's opt-in update notice). Reuse these — don't hand-roll rules/bars/headers/tickers.
 
 ## Dex → detail navigation (single-level drill-in)
 
@@ -188,7 +189,8 @@ pages need a `frame.ts` switch case + a `freshUi()` entry; verify/regenerate gol
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
 
 The Settings page mixes **read-only facts** with the shell's **only editable surface** — the
-opt-in **update mode** and per-adapter `plan` / `cycle` toggles. Two contracts, two
+opt-in **update mode** and the **pet-global cycle clock** (policy + the subscription anchor
+adapter). Adapters themselves are read-only here (pure data sources). Two contracts, two
 responsibilities:
 
 - **`ShellInfo`** — static facts (version, runtime, fps, dataDir). The page must stay

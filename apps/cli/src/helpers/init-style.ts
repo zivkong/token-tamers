@@ -110,11 +110,17 @@ export function formatCycleQuestion(defaultPolicy: CyclePolicyKind, styled: bool
   return `  Cycle — ${sub} or ${stat}? ${dim(`[${key}]`, styled)} `;
 }
 
-/** Map a raw cycle answer to a policy; an answer starting 'a' = static, else subscription. */
+/**
+ * Map a raw cycle answer to a policy. The full word wins first ('static' /
+ * 'subscription') so typing the whole word never lands on the opposite policy
+ * (both share a leading letter with the other option's key); otherwise the
+ * single-key shortcuts apply ('a' = static, 's' = subscription). Empty/unknown
+ * keeps the fallback.
+ */
 export function parseCycleChoice(raw: string, fallback: CyclePolicyKind): CyclePolicyKind {
-  const c = raw.trim().toLowerCase()[0];
-  if (c === 'a' || c === 't') return 'static';
-  if (c === 's') return 'subscription';
+  const s = raw.trim().toLowerCase();
+  if (s.startsWith('stat') || s === 'a') return 'static';
+  if (s.startsWith('sub') || s === 's') return 'subscription';
   return fallback;
 }
 

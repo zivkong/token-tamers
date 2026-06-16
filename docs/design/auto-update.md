@@ -27,11 +27,11 @@ stays true for everyone who doesn't opt in.
 
 ## Modes (`settings.json` → `update.mode`)
 
-| mode     | behavior                                                                 |
-| -------- | ------------------------------------------------------------------------ |
-| `off`    | default — no network, ever.                                              |
-| `notify` | check GitHub ~once/day; surface a "vX available" hint. No downloads.     |
-| `auto`   | `notify` + self-replace the standalone binary (verified) on next launch. |
+| mode     | behavior                                                                                           |
+| -------- | -------------------------------------------------------------------------------------------------- |
+| `off`    | default — no network, ever.                                                                        |
+| `notify` | check GitHub ~once/day; surface the update notice (Pet-page ticker + Settings hint). No downloads. |
+| `auto`   | `notify` + self-replace the standalone binary (verified) on next launch.                           |
 
 `tt update` works on demand regardless of mode (explicit user action).
 
@@ -41,16 +41,18 @@ surfaced as an explicit opt-in control in two places, both defaulting to `off`:
 - **`tt init`** — the Preferences step asks once ("Updates — off keeps the game fully offline.
   (o)ff (n)otify (a)uto"); the empty / `--yes` answer keeps the current value, so non-interactive
   runs never silently enable it.
-- **Settings page** — an editable `Updates ‹ off ›` field (the first editable field, above the
-  adapter toggles); ←→ cycles `off ▸ notify ▸ auto`. The shell persists the change to
-  `settings.json`; like the adapter toggles it applies on the next launch. The TUI only writes the
-  mode string — it never imports the updater network surface (the isolation gate still holds).
+- **Settings page** — an editable `Updates ‹ off ›` field (the first editable field, with the
+  cycle-clock fields below it and the read-only adapter list further down); ←→ cycles
+  `off ▸ notify ▸ auto`. The shell persists the change to `settings.json`; like the cycle edit it
+  applies on the next launch. The TUI only writes the mode string — it never imports the updater
+  network surface (the isolation gate still holds).
 
 **Surfacing the hint.** Once the throttled launch check has seen a newer release
 (`updates.json` → `latestSeen`), the shell surfaces it on the **Pet page** as a scrolling amber
 ticker along the top of the scene (`components/marquee.ts`, driven by the frame counter so it stays
 golden-test-safe) — the primary, can't-miss notice. The wording adapts to the mode: `auto` says
-"restart tt to apply" (the binary self-replaced in the background), `notify` says "run `tt update`".
+"restart tt to apply" (the binary self-replaced in the background), `notify` says "run 'tt update'
+to upgrade".
 The Settings page keeps the compact `· vX available` hint beside the `Updates` field as a secondary
 cue. Both read the persisted `latestSeen` (no network), so the hint appears on the **launch after**
 a check finds an update — never mid-session. The ticker only renders when an update is pending, so

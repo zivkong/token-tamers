@@ -42,8 +42,10 @@ function migrateConfig(raw: UserConfig & { adapters: LegacyAdapter[] }): UserCon
 
 /** Derive a pet-global CycleConfig from legacy per-adapter cycle fields. */
 function synthesizeCycle(adapters: readonly LegacyAdapter[]): CycleConfig {
-  const weekAnchor = adapters[0]?.weekAnchor ?? 0;
   const sub = adapters.find((a) => a.cyclePolicy === 'dynamic' || a.plan === 'subscription');
+  // Prefer the subscription anchor's own week anchor (it drives the clock); fall
+  // back to the first adapter only when no adapter ran the subscription policy.
+  const weekAnchor = sub?.weekAnchor ?? adapters[0]?.weekAnchor ?? 0;
   if (sub) return { policy: 'subscription', anchorAdapter: sub.provider, weekAnchor };
   return { policy: 'static', weekAnchor };
 }

@@ -2,9 +2,10 @@
  * A horizontal scrolling marquee (ticker) — one full-width row that loops a
  * message leftward. The scroll offset is a pure function of the frame counter
  * (no clock, no RNG), so golden frames stay reproducible. The entire row is
- * painted with `bg` so it always reads as a solid ribbon, and the loop is padded
- * so at most one copy of the message is on screen at a time (it scrolls fully
- * off the left before re-entering from the right).
+ * painted with `bg` so it always reads as a solid ribbon. The loop period is
+ * `text.length + gap + cols`, which guarantees at most one copy of the message
+ * is on screen at any time: a copy scrolls fully off the left edge — and then
+ * clears a further `gap` cells — before the next copy enters from the right.
  */
 
 import type { Rgb } from '../terminal/ansi';
@@ -39,10 +40,12 @@ export function drawMarquee(buf: FrameBuffer, opts: MarqueeOptions): void {
   const step = Math.max(1, opts.framesPerStep ?? DEFAULT_FRAMES_PER_STEP);
   const gap = Math.max(1, opts.gap ?? DEFAULT_GAP);
 
-  // Pad the loop so the message + at least one screenful of slack fit before it
-  // repeats — that keeps a single instance scrolling cleanly across the ribbon.
+  // Pad the loop so a full screenful (`cols`) of slack follows the message+gap
+  // before it repeats. Period = text.length + gap + cols, so a copy is always
+  // fully gone (plus a `gap` margin) before the next one enters — never two at
+  // once, at any width.
   const base = [...`${text}${' '.repeat(gap)}`];
-  const minPeriod = cols + gap;
+  const minPeriod = base.length + cols;
   const loop =
     base.length < minPeriod ? base.concat(Array(minPeriod - base.length).fill(' ')) : base;
   const period = loop.length;

@@ -28,9 +28,9 @@ export interface ProviderAdapter {
   id: string;
   displayName: string;
   /**
-   * Optional hint for the cycle-policy default when this adapter is first
-   * configured. 'subscription' = dynamic (session-window) policy;
-   * 'api' = static (no inherent limits, user sets their own anchor).
+   * Optional hint for the pet-global cycle-policy default when this adapter is
+   * first configured. 'subscription' = the subscription (session-window) policy;
+   * 'api' = the static policy (no inherent limits, user sets their own anchor).
    */
   defaultPlan?: 'subscription' | 'api';
   /**

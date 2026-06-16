@@ -51,4 +51,30 @@ describe('drawMarquee', () => {
     drawMarquee(buf, { x: 0, y: 0, cols: 0, text: 'X', frame: 0, fg: FG, bg: BG });
     expect(row(buf, 0, 10)).toBe(' '.repeat(10));
   });
+
+  /** Number of separate runs of non-space (message) cells in a row. */
+  function messageRuns(s: string): number {
+    return (s.match(/\S+/g) ?? []).length;
+  }
+
+  it('never shows two message copies at once — at any width, across a full period', () => {
+    // The message text has NO spaces, so any non-space run is message text; the
+    // gap/padding are spaces. A correct marquee shows the message as a SINGLE
+    // contiguous run (possibly clipped at an edge) — never two fragments split by
+    // the gap. Regression for the `cols + gap` period that let the head re-enter
+    // before the tail left.
+    const text = 'Update-available-v1.2.3-run-tt-update'; // 37 chars, no spaces
+    const gap = 8;
+    const step = 3;
+
+    for (const cols of [20, 37, 100]) {
+      // 20 < len (long banner), 37 == len, 100 > len (the design's 56-vs-100 case).
+      const period = text.length + gap + cols;
+      for (let frame = 0; frame < period * step + step; frame++) {
+        const buf = new FrameBuffer(cols, 1);
+        drawMarquee(buf, { x: 0, y: 0, cols, text, frame, fg: FG, bg: BG });
+        expect(messageRuns(row(buf, 0, cols))).toBeLessThanOrEqual(1);
+      }
+    }
+  });
 });

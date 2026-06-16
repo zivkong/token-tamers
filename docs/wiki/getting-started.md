@@ -75,7 +75,9 @@ the updater only fetches, it tells GitHub nothing.
   page to update from. Run it whenever you like; nothing happens until you do.
 - **Update mode** (default `off`) — how the game checks on its own, if at all:
   - `off` — never touches the network (the default).
-  - `notify` — checks ~once a day and shows a "vX available" hint on the Settings page.
+  - `notify` — checks ~once a day; when a newer release is found it shows a scrolling
+    "Update available — vX" ticker along the top of the Pet page, plus a "vX available" hint on
+    the Settings page.
   - `auto` — `notify`, plus self-updating the standalone binary (verified) on next launch.
 
 You can set the mode three ways, all starting from `off`:
@@ -83,7 +85,8 @@ You can set the mode three ways, all starting from `off`:
 - **During `tt init`** — the Preferences step asks once ("Updates — off keeps the game fully
   offline"); just press Enter to stay off.
 - **On the Settings page** — press **4**, highlight the **Updates** row, and press **←/→** to
-  cycle `off ▸ notify ▸ auto` (it's the first editable row, above the adapters).
+  cycle `off ▸ notify ▸ auto` (it's the first editable row; the cycle-clock fields follow it,
+  and the adapter list below is read-only).
 - **By hand** — edit `update.mode` in `~/.tokentamers/settings.json`.
 
 Either UI just records your choice; it takes effect on the next launch, and turning it on is the

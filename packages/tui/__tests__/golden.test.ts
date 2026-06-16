@@ -166,6 +166,8 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toContain('Update available');
     expect(out).toContain('v0.6.0');
     expect(out).toContain('tt update');
+    // Golden the full frame so ticker row placement / overrun can't regress silently.
+    expect(out).toMatchSnapshot();
   });
 
   it('adapts the ticker wording for auto mode (restart to apply)', () => {
@@ -178,6 +180,7 @@ describe('golden frames (100x30, no-color)', () => {
       }),
     );
     expect(out).toContain('restart tt to apply');
+    expect(out).toMatchSnapshot();
   });
 
   it('shows no ticker on the pet page when no update is available', () => {

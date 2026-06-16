@@ -6,6 +6,7 @@ import {
   type UsageEvent,
 } from '../src/index';
 import {
+  adapter,
   adapters,
   ev,
   HOUR,
@@ -23,6 +24,14 @@ function windowEvents(wsOffset: number): UsageEvent[] {
     ev(wsOffset, { sessionKey: `w-${wsOffset}-a` }),
     ev(wsOffset + 2 * HOUR, { sessionKey: `w-${wsOffset}-b` }),
     ev(wsOffset + 4 * HOUR, { sessionKey: `w-${wsOffset}-c` }),
+  ];
+}
+
+/** Two events inside the window at `wsOffset`, attributed to a specific adapter. */
+function windowEventsFor(provider: string, wsOffset: number): UsageEvent[] {
+  return [
+    ev(wsOffset, { adapter: provider, sessionKey: `${provider}-${wsOffset}-a` }),
+    ev(wsOffset + 2 * HOUR, { adapter: provider, sessionKey: `${provider}-${wsOffset}-b` }),
   ];
 }
 
@@ -62,6 +71,37 @@ describe('seedBaselinesFromHistory — pure baseline seeding', () => {
 
     expect(seeded?.windowsObserved).toBe(replayBaseline?.windowsObserved);
     expect(seeded?.meanWindowTokens).toBeCloseTo(replayBaseline?.meanWindowTokens ?? -1, 9);
+  });
+
+  it('seeds per-adapter baselines that match the replayed engine (two-adapter pet)', () => {
+    // Both adapters log in the same two global static windows; each must get its
+    // OWN baseline, identical to what the replay path accumulates.
+    const events = [
+      ...windowEventsFor('claude-code', 0),
+      ...windowEventsFor('opencode', 0),
+      ...windowEventsFor('claude-code', 10 * HOUR),
+      ...windowEventsFor('opencode', 10 * HOUR),
+    ];
+    const now = WEEK_ANCHOR + 20 * HOUR;
+    const cfg = [adapter('claude-code'), adapter('opencode')];
+
+    const replay = createEngine(makePack(), { adapters: cfg, cycle: staticCycle() });
+    replay.ingest(events);
+    replay.advanceTo(now);
+    const replayBaselines = replay.state().baselines;
+
+    const seeded = seedBaselinesFromHistory(events, staticCycle(), cfg, now);
+
+    for (const id of ['claude-code', 'opencode']) {
+      expect(seeded[id]?.windowsObserved).toBe(replayBaselines[id]?.windowsObserved);
+      expect(seeded[id]?.meanWindowTokens).toBeCloseTo(
+        replayBaselines[id]?.meanWindowTokens ?? -1,
+        9,
+      );
+    }
+    // Sanity: each adapter genuinely observed both closed windows (not collapsed).
+    expect(seeded['claude-code']?.windowsObserved).toBe(2);
+    expect(seeded['opencode']?.windowsObserved).toBe(2);
   });
 
   it('does not advance the pet past egg (history seeds baseline only)', () => {
@@ -159,6 +199,21 @@ describe('unconsumedEvents — open-window buffer', () => {
     const other = ev(0, { adapter: 'codex' });
     const pending = unconsumedEvents([mine, other], staticCycle(), WEEK_ANCHOR + 2 * HOUR);
     expect(pending).toEqual([mine, other]);
+  });
+
+  it('subscription: keeps the full >= lastClose tail, incl. a homeless non-anchor event', () => {
+    // Anchor = claude-code. The first anchor window [0,5h) closes at 5h; a second
+    // opens at 10h and is still open at now=12h. A codex event at 7h is "homeless"
+    // (between anchor windows). Because the buffer keeps everything at/after the
+    // last close (5h), that homeless event is carried — so a LATER scan whose
+    // anchor event retroactively opens a window over it can't diverge from a
+    // from-scratch replay.
+    const cycle = subscriptionCycle(WEEK_ANCHOR, 'claude-code');
+    const a = ev(0, { adapter: 'claude-code' });
+    const homeless = ev(7 * HOUR, { adapter: 'codex' });
+    const b = ev(10 * HOUR, { adapter: 'claude-code' });
+    const pending = unconsumedEvents([a, homeless, b], cycle, WEEK_ANCHOR + 12 * HOUR);
+    expect(pending).toEqual([homeless, b]);
   });
 
   it('subscription: only the ANCHOR adapter opens windows, but all usage is buffered', () => {

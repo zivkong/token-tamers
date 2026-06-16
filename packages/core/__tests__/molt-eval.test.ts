@@ -46,6 +46,55 @@ describe('molt-eval — signals', () => {
     const s = computeWindowSignals([ev(0)], WSTART, WEND, {});
     expect(s.essenceRatio).toBe(1);
   });
+
+  it('combines essence per-adapter: Σ essence / Σ mean over baselined adapters', () => {
+    // Adapter A: 2000 essence vs 1000 baseline; adapter B: 3000 vs 1000.
+    // Combined = (2000 + 3000) / (1000 + 1000) = 2.5.
+    const events = [
+      ev(0, { adapter: 'claude-code', inputTokens: 2000, outputTokens: 0 }),
+      ev(MIN, { adapter: 'opencode', inputTokens: 3000, outputTokens: 0 }),
+    ];
+    const s = computeWindowSignals(events, WSTART, WEND, {
+      'claude-code': 1000,
+      opencode: 1000,
+    });
+    expect(s.essenceRatio).toBeCloseTo(2.5, 9);
+  });
+
+  it('treats an active adapter with no baseline as neutral (excluded, not zeroing)', () => {
+    // A is on-baseline (ratio 1); B has huge usage but NO baseline yet. B must be
+    // excluded from both sums — not drag the ratio toward 0 — so the result is 1.
+    const events = [
+      ev(0, { adapter: 'claude-code', inputTokens: 1000, outputTokens: 0 }),
+      ev(MIN, { adapter: 'opencode', inputTokens: 999_999, outputTokens: 0 }),
+    ];
+    const s = computeWindowSignals(events, WSTART, WEND, { 'claude-code': 1000 });
+    expect(s.essenceRatio).toBeCloseTo(1, 9);
+  });
+
+  it('does not inflate power when the same essence is split across two agents (§6)', () => {
+    // One adapter carrying 2000 essence over a 1000 baseline reads as ratio 2...
+    const solo = computeWindowSignals(
+      [ev(0, { adapter: 'claude-code', inputTokens: 2000, outputTokens: 0 })],
+      WSTART,
+      WEND,
+      { 'claude-code': 1000 },
+    );
+    expect(solo.essenceRatio).toBeCloseTo(2, 9);
+    // ...but the SAME total essence split 1000/1000 across two equally-baselined
+    // adapters normalizes to 1 — diversity, not inflated power.
+    const split = computeWindowSignals(
+      [
+        ev(0, { adapter: 'claude-code', inputTokens: 1000, outputTokens: 0 }),
+        ev(MIN, { adapter: 'opencode', inputTokens: 1000, outputTokens: 0 }),
+      ],
+      WSTART,
+      WEND,
+      { 'claude-code': 1000, opencode: 1000 },
+    );
+    expect(split.essenceRatio).toBeCloseTo(1, 9);
+    expect(split.essenceRatio).toBeLessThan(solo.essenceRatio);
+  });
 });
 
 describe('molt-eval — traits', () => {

@@ -34,7 +34,7 @@ implementation starts (GitHub + Claude Code)).
 1. `tt init` wizard: adapter detection, the one global cycle policy (subscription/static) +
    anchor-adapter pick, week anchor, backfill baseline, Calibration Egg
 2. **Claude Code adapter** (reference) + the adapter interface contract
-3. Cycle policies: dynamic (subscription) + static (API), molt/rebirth events
+3. Cycle policies: subscription (session-window) + static (fixed tiles), molt/rebirth events
 4. Core evolution: Houses via models.json, stage track to Apex, traits, pattern locking, mutations,
    grade roll system (monotonic, odds-transparent)
 5. Rebirth + lineage carry-over; Archive records (best-per-species)

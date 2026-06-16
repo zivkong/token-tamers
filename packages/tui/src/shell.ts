@@ -352,8 +352,14 @@ function adjustSetting(rt: ShellRuntime, delta: number): void {
   // The update-mode field persists to settings.json; the cycle fields to config.json.
   const updateField = isUpdateFieldSelected(rt.settings);
   cycleSelectedField(rt.settings, delta);
-  if (updateField) rt.onUpdateModeChange?.(rt.settings.updateMode);
-  else rt.onCycleChange?.(rt.settings.cyclePolicy, rt.settings.anchorAdapter);
+  if (updateField) {
+    rt.onUpdateModeChange?.(rt.settings.updateMode);
+  } else {
+    // The anchor is only meaningful under subscription; persist '' for static so a
+    // remembered anchor (kept in-memory for round-trips) never lands in config.json.
+    const anchor = rt.settings.cyclePolicy === 'subscription' ? rt.settings.anchorAdapter : '';
+    rt.onCycleChange?.(rt.settings.cyclePolicy, anchor);
+  }
 }
 
 function handleMouse(
@@ -421,8 +427,8 @@ function activate(rt: ShellRuntime, id: PageId | 'quit'): void {
 
 function moveSelection(rt: ShellRuntime, host: ShellHost, delta: number): void {
   if (rt.page === 'settings') {
+    // settingsFieldCount is always >= 2 (update mode + cycle policy), so max >= 1.
     const max = settingsFieldCount(rt.settings) - 1;
-    if (max < 0) return;
     rt.settings.selected = Math.max(0, Math.min(max, rt.settings.selected + delta));
     return;
   }
