@@ -129,12 +129,16 @@ export function houseNodeCount(ctx: RenderContext, houseIndex: number): number {
   return buildHouseNodes(ctx, houseIndex).length;
 }
 
+/** Blank columns between adjacent House labels (so the tabs don't run together). */
+const TAB_GAP = 3;
+
 /** Draw the centered, clickable House selector strip; returns nothing. */
 function drawHouseTabs(ctx: RenderContext, y: number, active: number): void {
   const { buf, hits, layout } = ctx;
   const labels = DEX_HOUSES.map((h) => h[0]!.toUpperCase() + h.slice(1));
-  // Width: '‹ ' + each label + a trailing space + '›'.
-  const width = 2 + labels.reduce((w, l) => w + l.length + 1, 0) + 1;
+  // Width: '‹ ' + labels joined by TAB_GAP spaces + ' ›'.
+  const labelsWidth = labels.reduce((w, l) => w + l.length, 0) + TAB_GAP * (labels.length - 1);
+  const width = 2 + labelsWidth + 2;
   let x = layout.canvasX + Math.max(1, Math.floor((layout.canvasCols - width) / 2));
   buf.text(x, y, '‹', TAB_DIM, null);
   x += 2;
@@ -142,7 +146,8 @@ function drawHouseTabs(ctx: RenderContext, y: number, active: number): void {
     if (i === active) buf.textBold(x, y, label, houseColor(DEX_HOUSES[i]!), null);
     else buf.text(x, y, label, TAB_DIM, null);
     hits.add(`dex:house:${i}`, x, y, label.length, 1);
-    x += label.length + 1;
+    // A wider gap between labels; a single space before the closing '›'.
+    x += label.length + (i < labels.length - 1 ? TAB_GAP : 1);
   });
   buf.text(x, y, '›', TAB_DIM, null);
 }
