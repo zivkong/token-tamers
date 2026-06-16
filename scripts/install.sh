@@ -136,11 +136,16 @@ Aborting — the download may be corrupt or tampered with."
     sudo chmod +x "$dest"
   fi
 
-  # macOS Gatekeeper: strip the quarantine flag from the unsigned binary.
+  # macOS Gatekeeper: strip the quarantine flag from the unsigned binary — but
+  # ONLY if it's actually present. `curl`/`wget` downloads are not quarantined
+  # (that flag is set by GUI apps, not CLI fetchers), so an unconditional
+  # `xattr -d` fails with "No such xattr" and used to cascade into a needless
+  # `sudo` password prompt on every install. Guard on existence and never
+  # escalate: this is best-effort cleanup, not a step that warrants elevation.
   if [ "${target%-*}" = "macos" ]; then
-    xattr -d com.apple.quarantine "$dest" 2>/dev/null \
-      || sudo xattr -d com.apple.quarantine "$dest" 2>/dev/null \
-      || true
+    if xattr -p com.apple.quarantine "$dest" >/dev/null 2>&1; then
+      xattr -d com.apple.quarantine "$dest" 2>/dev/null || true
+    fi
   fi
 
   ok "Installed ${BOLD}${BIN_NAME}${RESET} → ${dest}"
