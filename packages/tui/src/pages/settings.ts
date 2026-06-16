@@ -119,9 +119,10 @@ export function renderSettingsPage(ctx: RenderContext): void {
     y += 1;
   };
 
-  // Static facts.
+  // Static facts. The player-facing content era is the Season; the backend
+  // pack/schema version numbers are intentionally NOT shown here.
   row('Version', `Token Tamers v${info?.version ?? UNKNOWN}`);
-  row('Build', `pack rev ${ctx.pack.revision} · schema v${ctx.state.schemaVersion}`);
+  row('Season', `Season ${ctx.pack.season}`, LABEL);
   row('Runtime', info?.runtime ?? UNKNOWN, DIM);
   row('Display', `${colorLabel(ctx.mode)} · ${info?.fps ?? UNKNOWN} fps`);
   row('Data', info?.dataDir ?? UNKNOWN, DIM);

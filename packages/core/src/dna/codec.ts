@@ -66,7 +66,7 @@ export const DNA_SCHEMA_VERSION = 1;
 export interface DecodedDna {
   /** Payload format version (read from the decoded bytes). */
   schema: number;
-  /** Minimum content pack revision required to fully resolve species/content. */
+  /** Minimum content Season required to fully resolve species/content (hash floor). */
   contentMin: number;
   /** Content-pack species `num`; map back to a species via the local pack. */
   speciesNum: number;

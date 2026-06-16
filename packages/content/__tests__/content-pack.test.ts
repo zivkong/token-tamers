@@ -257,8 +257,14 @@ describe('model rule house resolution', () => {
 // ---------------------------------------------------------------------------
 
 describe('dexTotal', () => {
-  it('dexTotal is 112', () => {
-    expect(contentPackV1.dexTotal).toBe(112);
+  // The live Dex denominator is the current Season's obtainable roster, so 100%
+  // is reachable within the Season. Season 0 ships the 56 base species.
+  it('dexTotal is 56 (Season 0 obtainable roster)', () => {
+    expect(contentPackV1.dexTotal).toBe(56);
+  });
+
+  it('dexTotal matches the shipped species count (no unreachable slots)', () => {
+    expect(contentPackV1.dexTotal).toBe(contentPackV1.species.length);
   });
 });
 

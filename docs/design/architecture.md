@@ -158,7 +158,7 @@ lookup; zero impact on the 30fps budget.
 The Dex/Archive pages each carry their own completion bar top-right, e.g.:
 
 ```
- ☰ Dex                              ▒▒▒▒▒▒▒▒▒▒ 3/112  2.7%   <- this page's collection %
+ ☰ Dex                              ▒▒▒▒▒▒▒▒▒▒ 3/56  5.4%    <- this page's collection % (Season 0)
 ```
 
 ---

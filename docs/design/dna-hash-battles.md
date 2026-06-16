@@ -178,8 +178,8 @@ TTX<v>-XXXX-XXXX-…        e.g.  TTX1-AFAA-21QC-V22T-E5V9-GV2R-2W7S-6SG1-WBS2-N
 | `XXXX-…` | A single high-entropy body in Crockford base32, dash-grouped every 4 chars                           |
 
 The body decodes to `[ integrity-tag:4 ][ whiten(payload) ]`. The **payload** is a flat
-unsigned-varint stream in a FIXED, APPEND-ONLY field order — `formatVer`, `content_min` (the pack
-revision floor, encoded inside the payload), species `num`, grade, stage, house, PWR/SPD/WIS/GRT,
+unsigned-varint stream in a FIXED, APPEND-ONLY field order — `formatVer`, `content_min` (the
+Season floor — backend/technical, encoded inside the payload), species `num`, grade, stage, house, PWR/SPD/WIS/GRT,
 generation, pattern, rhythm, length-prefixed trait and mutation lists, then a reserved **extension
 length** (`extLen` = 0 today; future TLV data appends here). Each enum encodes as its index in the
 append-only `dna/registry.ts` tables. The **integrity tag** is a deterministic FNV-1a/32 over the

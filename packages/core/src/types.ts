@@ -169,7 +169,7 @@ export interface EvolutionBranch {
 }
 
 export interface SpeciesDef {
-  /** Content revision this entry first shipped in (omitted = 1). */
+  /** Season this entry first shipped in (omitted = 0, the launch Season). */
   since?: number;
   /** Stable id, additive-only registry, e.g. 'aurelion'. */
   id: string;
@@ -188,7 +188,7 @@ export interface SpeciesDef {
 }
 
 export interface TraitDef {
-  /** Content revision this entry first shipped in (omitted = 1). */
+  /** Season this entry first shipped in (omitted = 0, the launch Season). */
   since?: number;
   id: TraitId;
   name: string;
@@ -196,7 +196,7 @@ export interface TraitDef {
 }
 
 export interface PatternDef {
-  /** Content revision this entry first shipped in (omitted = 1). */
+  /** Season this entry first shipped in (omitted = 0, the launch Season). */
   since?: number;
   id: PatternId;
   name: string;
@@ -225,7 +225,7 @@ export type AchievementReward =
   | { kind: 'flair'; id: string };
 
 export interface AchievementDef {
-  /** Content revision this entry first shipped in (omitted = 1). */
+  /** Season this entry first shipped in (omitted = 0, the launch Season). */
   since?: number;
   id: string;
   name: string;
@@ -235,7 +235,7 @@ export interface AchievementDef {
 }
 
 export interface HabitatDef {
-  /** Content revision this entry first shipped in (omitted = 1). */
+  /** Season this entry first shipped in (omitted = 0, the launch Season). */
   since?: number;
   id: string;
   name: string;
@@ -257,7 +257,7 @@ export interface HabitatDef {
 }
 
 export interface TrinketDef {
-  /** Content revision this entry first shipped in (omitted = 1). */
+  /** Season this entry first shipped in (omitted = 0, the launch Season). */
   since?: number;
   id: string;
   name: string;
@@ -291,14 +291,18 @@ export interface SpriteDef {
 }
 
 export interface ContentPack {
-  /** JSON shape version — bumps only on a breaking schema change (loader migrates forward). */
+  /**
+   * Backend JSON shape version — bumps only on a breaking schema change (loader
+   * migrates forward). Technical only; NEVER surfaced to players (that is `season`).
+   */
   schemaVersion: number;
   /**
-   * Monotonic content revision, bumped once per content release. Hashes embed it
-   * as content_min; Archive records store it. The content tree itself is ONE
+   * The pack's Season — the player-facing content era, starting at 0 (the launch
+   * Season). Bumped once per content release (each Season). Hashes embed it as the
+   * content_min floor; Dex/Archive records store it. The content tree itself is ONE
    * additive registry (packages/content/content/) — never versioned folders.
    */
-  revision: number;
+  season: number;
   models: ModelRule[];
   species: SpeciesDef[];
   traits: TraitDef[];
@@ -307,7 +311,11 @@ export interface ContentPack {
   habitats: HabitatDef[];
   trinkets: TrinketDef[];
   sprites: SpriteDef[];
-  /** Total Dex size this pack advertises (drives '???' rows + completion %). */
+  /**
+   * Dex size for THIS Season — the live completion denominator (drives the
+   * Dex counter, any '???' rows, and completion %). Each Season ships its own
+   * obtainable roster, so 100% is reachable within the current Season.
+   */
   dexTotal: number;
 }
 
@@ -373,7 +381,10 @@ export interface DexSnapshot {
   rhythmVariant: RhythmVariant | null;
   mutations: string[];
   generation: number;
-  /** Content pack revision at capture (the DNA hash's content_min floor). */
+  /**
+   * Season at capture, stored as the DNA hash's content_min floor. Backend/
+   * technical (the hash needs a content floor to resolve) — never shown to players.
+   */
   contentVersion: number;
   /** Event-time epoch ms the snapshot was taken (never wall clock). */
   recordedAt: number;

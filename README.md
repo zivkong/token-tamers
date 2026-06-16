@@ -74,8 +74,13 @@ turns your real work patterns into a creature:
 | ---------------------- | ---------------- | ---------------------------------- | ------------------------------------------------- |
 | flat 4-color, charming | 8 colors, blinks | 16 colors, dithered shading, glint | full 24-bit ramps, shimmer sweep, particle aura ✦ |
 
-**The goal: 100% completion.** Fill the Dex (112 slots, more landing each release), earn every achievement,
+**The goal: 100% completion.** Fill the Dex (56 species this Season), earn every achievement,
 unlock every habitat and trinket. One number to drive to 100 — `tt complete`.
+
+**Seasons.** Content lands in **Seasons**. You're in **Season 0 — Genesis**: the five
+founding House lines, 56 species. Each Season ships its own obtainable roster, so 100% is
+always reachable _now_ — the bar simply rises when the next Season lands.
+**Season 1 — Crossbreed** _(coming)_ opens the first hybrid line and DNA fusion pools 🤫.
 
 And if you stop coding for a week? Your pet curls into a cocoon — **Dormant, never
 dead** — and wakes when you return. Generation 14 will be waiting.
@@ -223,7 +228,7 @@ screenshot it. That's the point.
 - [ ] **M2:** Codex CLI adapter · hybrid lines (Aether×Flux, Forge×Cipher) · DNA
       export/apply (paste codes to friends) · deterministic battles · fusion pools 🤫 ·
       Team Leagues · Drifter DNA for solo devs
-- [ ] **M3:** seasonal content packs · monthly weather events · sprite compiler pipeline
+- [ ] **M3:** the Season cadence (quarterly content packs) · monthly weather events · sprite compiler pipeline
 
 Full design reference: [`docs/design/`](docs/design/) · player wiki: [`docs/wiki/`](docs/wiki/)
 

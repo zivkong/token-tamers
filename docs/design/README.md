@@ -22,9 +22,11 @@ and CI (`scripts/check-spoilers.sh`) fails if a pool species name appears under
 
 **Decision record (2026-06-12, supersedes the baseline's `content/vN/` folders):** the
 content tree is ONE additive registry at `packages/content/content/` — no versioned
-folders. The pack manifest carries `schemaVersion` (JSON shape; loader migrates forward)
-and a monotonic `revision` (bumped per content release; what hashes embed as
-`content_min` and the Archive stores in `graded_under`). Immutable ids are enforced by
+folders. The pack manifest carries `schemaVersion` (backend JSON shape; loader migrates
+forward — never shown to players) and a monotonic `season` (the player-facing content era,
+starting at 0, bumped once per content release; the renamed/renumbered successor of the old
+`revision`). The DNA hash embeds it as the technical `content_min` floor and snapshots store
+it as `contentVersion`. Immutable ids are enforced by
 `content/registry-freeze.json` + its test. Versioned folders solved a coexistence problem
 this fully-offline game does not have: content ships compiled into each binary, and
 cross-version compatibility is handled at the protocol layer (additive ids, dormant

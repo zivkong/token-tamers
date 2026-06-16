@@ -405,7 +405,7 @@ class GameEngine implements Engine {
       grade: pet.grade,
       stats: cloneStats(pet.stats),
       generation: pet.generation,
-      contentVersion: this.pack.revision,
+      contentVersion: this.pack.season,
       recordedAt: event.at,
     };
     if (this.tryArchive(record)) {
@@ -500,7 +500,7 @@ class GameEngine implements Engine {
    */
   private capture(reason: DexSnapshot['reason'], at: number, effects: GameEffect[]): void {
     if (this.state_.pet.stage === 'egg') return;
-    const snap = petSnapshot(this.state_.pet, this.pack.revision, at, reason);
+    const snap = petSnapshot(this.state_.pet, this.pack.season, at, reason);
     if (tryCaptureSnapshot(this.state_.dexRecords, snap)) {
       effects.push({ type: 'dex_record', snapshot: snap });
     }

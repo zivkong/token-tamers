@@ -73,7 +73,7 @@ grade + final stats), drawn straight from your Dex records. Run `tt archive`, or
 Archive page in the shell.
 
 ```
- ◆ TOKEN TAMERS ARCHIVE — 12/112 unlocked ◆
+ ◆ TOKEN TAMERS ARCHIVE — 12/56 unlocked · Season 0 ◆
  #001 Wisp        [B]  PWR 40 SPD 38 WIS 61 GRT 41   gen 2
- #045 ???         [—]  dormant gene — update to awaken
+ #061 ???         [—]  a later Season's gene — update to awaken
 ```

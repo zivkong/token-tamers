@@ -136,11 +136,20 @@ Trait combos — checked at every molt, locked at the week's final molt.
 
 ---
 
-## §7 — Evolution Tree (v1 content) (design baseline §7)
+## §7 — Evolution Tree (Season 0 content) (design baseline §7)
 
-Dex target: **112 entries** — 56 base species + 8 hybrid-line species + 35 pattern variants + 12
-fusion-locked specials (hidden) + 1 reserved/Ancient slot. (Adding the Wild/Bloom line consumed
-11 of the original 12 reserved slots; `dexTotal` is unchanged at 112.)
+**Season 0 — Genesis** ships **56 obtainable species** — the five founding House lines
+(Aether · Cipher · Flux · Forge · Wild/Bloom). `dexTotal` is the _live Season denominator_
+(`56`), so 100% is reachable within the Season; it rises when the next Season lands.
+
+The long-term **content vision across all Seasons is ~112 Dex entries** — 56 base species
+
+- 8 hybrid-line species + 35 pattern variants + 12 fusion-locked specials (hidden) + 1
+  reserved/Ancient slot. These land Season by Season (Season 1 opens the first hybrid line +
+  fusion pools); the registry is additive-only, so every id reserved here stays a dormant gene
+  until its Season ships. (`season` is the player-facing content era — the renamed, renumbered
+  successor of the old `revision`, starting at **0**; the per-entry `since` tag marks the Season
+  an id first ships in.)
 
 ### Stage 0 — universal egg (design baseline §7)
 
@@ -360,7 +369,7 @@ CI spoiler rule — pool contents are internal, see
 `packages/content/content/fusion-pools.json`.
 
 ```
- ◆ TOKEN TAMERS ARCHIVE — 47/112 unlocked ◆
+ ◆ TOKEN TAMERS ARCHIVE — 47/56 unlocked · Season 0 ◆
  ─────────────────────────────────────────
  #014 Mistral      [A]  PWR 72 SPD 91 WIS 64 GRT 80   gen 6   TTX1-AFAA-21QC-…
  #022 Aurelion  ★  [S]  PWR 88 SPD 95 WIS 79 GRT 90   gen 11  TTX1-18F5-PHBE-…

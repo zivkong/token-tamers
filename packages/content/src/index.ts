@@ -42,7 +42,9 @@ const sprites = spritesRaw as SpriteDef[];
 
 export const contentPackV1: ContentPack = {
   schemaVersion: 1,
-  revision: 1,
+  // Season 0 — "Genesis": the five founding House lines (56 species). Each future
+  // Season bumps this and ships its own obtainable roster (see docs/design).
+  season: 0,
   models,
   species,
   traits,
@@ -51,7 +53,8 @@ export const contentPackV1: ContentPack = {
   habitats,
   trinkets,
   sprites,
-  dexTotal: 112,
+  // Live Dex denominator = Season 0's obtainable roster (the 56 base species).
+  dexTotal: 56,
 };
 
 export { validatePack } from './validate';

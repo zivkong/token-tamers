@@ -66,8 +66,8 @@ describe('registry freeze (additive-only invariant)', () => {
     for (const t of pack.trinkets) expect(freeze.trinkets, msg('trinket', t.id)).toContain(t.id);
   });
 
-  it('pack revision is a positive integer (monotonic content revision)', () => {
-    expect(Number.isInteger(pack.revision)).toBe(true);
-    expect(pack.revision).toBeGreaterThanOrEqual(1);
+  it('pack season is a non-negative integer (monotonic content era)', () => {
+    expect(Number.isInteger(pack.season)).toBe(true);
+    expect(pack.season).toBeGreaterThanOrEqual(0);
   });
 });

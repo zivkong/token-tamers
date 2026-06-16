@@ -100,7 +100,7 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   (index = detect/scan, parse = record→UsageEvent)
 - `packages/content/src/` — `index.ts` (pack assembly) · `validate.ts` ·
   `models.ts`; JSON under `content/` (ONE additive tree + `registry-freeze.json`,
-  never versioned folders — revision number in the pack manifest); `tools/`
+  never versioned folders — the manifest's `season` number is the content era); `tools/`
 - `apps/cli/src/` — `main.ts` (thin entry — tsup entry point, do not move) ·
   `helpers/` (args) · `stores/` (atomic, config, state, checkpoints) ·
   `services/` (catchup, shell-host) · `commands/` (one file per command)
@@ -116,6 +116,13 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   `src/`, incl. fixtures and snapshots) — never inside `src/`.
 - Renderer tests are golden frames (string-buffer snapshots); adapter tests use
   fixtures of real (anonymized) logs; engine tests assert determinism properties.
+- **Seasons vs schema (front-end vs back-end):** the player-facing content era is the
+  **Season** — the pack manifest's `season` number (starts at 0; renamed/renumbered from the
+  old `revision`). It's the ONLY content-era number shown to players (Settings shows
+  "Season N"; Dex/Archive completion is scoped to the current Season's `dexTotal`). All
+  version numbers — `SCHEMA_VERSION` (save format), the pack's `schemaVersion` (JSON shape),
+  and the DNA `content_min`/`contentVersion` hash floor — are **backend technical only and
+  must never surface in the UI**. Keep those numbers in code/skills, not in player-facing copy.
 - Game-state schema changes need a `schemaVersion` bump + migration in the cli store.
   Current `SCHEMA_VERSION` = 4. v3 added `state.dexRecords` (per-species top-3 snapshot
   store; cli back-fills from `archive`, auto-repairs corrupt saves —
@@ -147,7 +154,14 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   agnostic (hashes outlive versions) · provider agnostic · social by DNA codes ·
   fully local/zero internet (the GAME never networks; the only exception is the
   opt-in, off-by-default updater — see invariant 2) · completionist North Star (100% = Dex + achievements +
-  habitats + trinkets; meter weighting 40/40/10/10).
+  habitats + trinkets; meter weighting 40/40/10/10) — scoped to the current **Season** so 100%
+  is always reachable now.
+- **Seasons:** the player-facing content cadence (the manifest's `season`, NOT a version
+  number). **Season 0 — "Genesis"** is the launch content (five House lines, 56 species,
+  `season: 0`, `dexTotal: 56`). Each later Season is a quarterly additive pack that bumps
+  `season` and raises `dexTotal` to its obtainable roster. **Season 1 — "Crossbreed"** (future,
+  M2.7) opens the first hybrid line + DNA fusion pools. The long-term cross-Season vision is
+  ~112 Dex entries. Backend version numbers (schema/hash floor) stay out of player-facing copy.
 - **Cycle:** molt = 5-h session-window close (the evolution/trait/mutation/grade
   moment; eggs fast-hatch ~10 min after first usage); rebirth = week boundary
   (archive + new egg, never evolves). ONE pet-global clock (`UserConfig.cycle`,

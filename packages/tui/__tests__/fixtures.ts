@@ -52,7 +52,7 @@ const EMBER: SpeciesDef = {
 export function makePack(): ContentPack {
   return {
     schemaVersion: 1,
-    revision: 1,
+    season: 0,
     models: [
       { pattern: 'claude-*', house: 'aether', geneId: 'g_aether', tint: '#8a7cff' },
       { pattern: 'gpt-*', house: 'cipher', geneId: 'g_cipher', tint: '#f87171' },

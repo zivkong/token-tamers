@@ -8,8 +8,10 @@ description: Content-pack rules for Token Tamers — species/evolution tree, Hou
 Source of truth: `docs/design/evolution-grades-lineage.md` and
 `docs/design/visuals-habitats-achievements.md`. Content is DATA, never code:
 ONE additive JSON tree under `packages/content/content/` (no versioned folders —
-the pack manifest carries `schemaVersion` for shape changes and a monotonic
-`revision` bumped per content release; entries may tag `since`), assembled into the typed
+the pack manifest carries a backend `schemaVersion` for JSON-shape changes and the
+player-facing `season` number, the content era starting at 0, bumped once per content
+release / Season; renamed & renumbered from the old `revision`. Each release = one Season.
+Entries may tag `since` = the Season an id first ships in, omitted = 0), assembled into the typed
 `contentPackV1` in `src/index.ts` (statically imported so the cli bundle embeds it).
 Schemas live in `packages/core/src/types.ts`. Validate with `validatePack()` + the
 pack tests (`pnpm test`).
@@ -57,7 +59,7 @@ skill.
 Each distinct model ID consumed = a gene in the diet profile. Dominant House →
 species line; cross-House diet (≥35/35) → hybrid lines.
 
-## Evolution tree v1 (Dex target 112: 56 base + 8 hybrid + 35 pattern + 12 fusion + 1 reserved)
+## Evolution tree — Season 0 (56 obtainable; cross-Season vision ~112: 56 base + 8 hybrid + 35 pattern + 12 fusion + 1 reserved)
 
 Universal egg: **Mote** (first molt commits House). Shipped lines (MVP):
 
@@ -98,7 +100,8 @@ Every fork needs a `default` branch so evaluation never dead-ends. Pattern varia
   Unlocks: trait milestones, molt-count milestones, weather weeks (re-earnable —
   nothing is ever permanently missable).
 - Completion Meter weighting: dex 40% + achievements 40% + habitats 10% + trinkets 10%;
-  `dexTotal` (112) drives the Dex denominator and "???" rows.
+  `dexTotal` drives the Dex denominator and "???" rows. It is the CURRENT Season's obtainable
+  roster (Season 0 = `56`), so 100% is reachable within the Season; a new Season raises it.
 
 ## Sprites
 

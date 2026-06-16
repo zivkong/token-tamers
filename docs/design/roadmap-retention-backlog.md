@@ -105,7 +105,9 @@ M3 follows as art pipeline, future adapters, and polish.
 
 - Weekly weather seed evaluation (ISO week → trait rate bias, ambient habitat effects)
 - Monthly weather events (special week, re-earnable trinket/habitat, twisted trait table)
-- Season 1 content pack: +1 hybrid line, +6–10 species, +1 habitat set, +1 DNA pool, +1 achievement page
+- **Season 1 — "Crossbreed"** content pack: the first hybrid line + DNA fusion pools 🤫,
+  +6–10 species, +1 habitat set, +1 DNA pool, +1 achievement page (bumps the pack `season`
+  0 → 1 and raises the live `dexTotal` to the Season-1 obtainable roster)
 - 12-month content calendar; Legacy milestones (Gen 25/52, Four-House Master, Perfect Season)
 
 ### M3 — Art Pipeline, Future Adapters & Polish
@@ -150,16 +152,20 @@ requires the seasonal cadence below — added to plan.**
 2. **Battle shallowness:** deterministic, no-input battles are a spectator feature; without standings
    they're a one-week toy.
 3. **Solo-dev cliff:** no colleagues → no fusion third → Dex ceiling ~65%.
-4. **Content exhaustion:** 112 entries; a dedicated team Dex-completes in ~6–9 months without new
-   packs.
+4. **Content exhaustion:** Season 0 ships 56 species; the full multi-Season vision is ~112 Dex
+   entries. A dedicated team Dex-completes a Season in ~6–9 months without new packs — which is
+   exactly what the Season cadence (below) feeds.
 5. **RNG frustration:** monotonic grades prevent loss-aversion pain, but long S droughts can read as
    "the game ignores my effort" — communicate odds transparently in-UI.
 
 ### Year-One Retention Plan (now in scope)
 
-- **Quarterly content packs** (Seasons): +1 hybrid line, +6–10 species, +1 habitat set, +1 DNA pool,
-  +1 achievement page per quarter — additive-only, hash-safe, **bundled in app releases the user
-  installs** (the game never fetches content itself).
+- **Seasons** are the player-facing content cadence. **Season 0 — "Genesis"** is the launch
+  content (the M1 pack: five House lines, 56 species, `season: 0`). Each subsequent **quarterly
+  content pack** is the next Season: +1 hybrid line, +6–10 species, +1 habitat set, +1 DNA pool,
+  +1 achievement page — additive-only, hash-safe, **bundled in app releases the user installs**
+  (the game never fetches content itself). The pack `season` is the player-facing era; the
+  backend `schemaVersion`/`SCHEMA_VERSION` numbers are dev-only and never surface in the UI.
 - **Monthly weather events:** one special week per month with a unique re-earnable trinket/habitat
   and a twisted trait table.
 - **Team Leagues (opt-in):** weekly standings computed locally from hashes colleagues paste to each
