@@ -88,8 +88,15 @@ export {
 
 // Pages.
 export { renderPetPage } from './pages/pet';
-export { renderDexPage, buildDexRows, clampScroll, type DexRow } from './pages/dex';
-export { renderArchivePage } from './pages/archive';
+export {
+  renderDexPage,
+  buildHouseNodes,
+  houseNodeCount,
+  clampHouse,
+  DEX_HOUSES,
+  type HouseNode,
+} from './pages/dex';
+export { renderArchivePage, clampScroll } from './pages/archive';
 export { renderSettingsPage } from './pages/settings';
 export {
   renderBattlePage,

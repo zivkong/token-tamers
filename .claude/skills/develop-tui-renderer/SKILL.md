@@ -172,11 +172,13 @@ visual change is intended and reviewed.
 ## Module map (current)
 
 `ansi.ts` (Writer/sinks/SGR), `buffer.ts` (FrameBuffer+diff), `sprite.ts`
-(compositor+palette ladder, `destW`/`destH` scaling), `input.ts` (key/mouse decode),
+(compositor+palette ladder, `destW`/`destH` scaling), `tiles.ts` (the UI `?` tiles —
+locked + ornate-gold legend — drawn through the same sprite pipeline), `input.ts` (key/mouse decode),
 `hit.ts`, `layout.ts` (`computeLayout`/`petSections`), `menu.ts` (`packMenu` left-aligned
 flow), `frame.ts` (frame + menu draw), `shell.ts` (runShell loop) + `shell-io.ts` (default
 stdio/terminal wiring, split out to keep `shell.ts` under the line ceiling), `status.ts`
-(one-liners), `pages/` (pet, pet-vitals, dex, **dex-detail**, archive, settings, **battle**), `lookup.ts`
+(one-liners), `pages/` (pet, pet-vitals, **dex** + **dex-sky** (the constellation sky + focus rail),
+**dex-detail**, archive, settings, **battle**), `lookup.ts`
 (pack helpers). Shared UI lives
 under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after);
 `page.ts` (the standard full-screen page scaffold — `drawPageHeader`/`drawPageFooter`/
@@ -186,17 +188,29 @@ into colored slices, e.g. the diet-tinted food), and `drawCompletionHeader`; and
 (`drawMarquee` — a frame-counter-driven scrolling ticker, golden-frame safe; used by the Pet
 page's opt-in update notice). Reuse these — don't hand-roll rules/bars/headers/tickers.
 
-## Dex → detail navigation (single-level drill-in)
+## Dex constellation → detail navigation (single-level drill-in)
 
-The shell is flat tab-based (no page stack). The **Dex detail** page (`pages/dex-detail.ts`) is a
-`PageId` reached by Enter / clicking a discovered Dex row (`openDexDetail` stashes `speciesId` on
-`ui['dex-detail']`); Esc or any click on the detail body returns to `'dex'`. It renders the species
-sprite via `buildPalette(houseTint, bestGrade, frame)`, a battle/graft-readiness banner
-(`isBattleReady`), and up to 3 record cards (stats, captured date, **DNA code** via `encodeDna`,
-graft tier). Keep it deterministic for golden frames: format dates with `toISOString()` (UTC), pad
-stat columns to fixed width so gen/date columns never overlap. The Dex LIST colors each row by its
-highest recorded grade (`GRADE_BADGE`/`GRADE_ACCENT`), keeping the House-tinted identity dot. New
-pages need a `frame.ts` switch case + a `freshUi()` entry; verify/regenerate golden frames.
+The Dex is a **constellation field guide**, NOT a list (`pages/dex.ts` owns the node model + page
+scaffold; `pages/dex-sky.ts` draws the sky + focus rail). One House is a "sky" at a time: its
+evolution tree drawn as **glow-dot stars** (apex at the top down to the sprite/egg rooted in the
+shared Mote), owned species glowing in their best grade (`GRADE_BADGE`/`GRADE_ACCENT`), unseen ones
+dim `?` points, joined by faint House-tinted lineage lines (`buildHouseNodes` derives tier + in-House
+parents from `evolvesTo`; order is tier-asc then Dex num — deterministic). `ui.dex.house` selects the
+sky (`←→` pans, wrapping; clickable House tabs register `dex:house:<i>`), `ui.dex.selected` the star
+(`↑↓`; each star registers `dex:star:<idx>`). A **focus rail** (dropped below `RAIL_MIN_COLS` so the
+sky takes the full width) renders the selected star's REAL sprite + identity, or a **square `?` tile**
+when undiscovered — the plain slate tile, or the ornate gold **legend** tile for a reserved special
+slot (wired but dormant in Season 0; honors the spoiler rule). The two color maps stay disjoint:
+`GRADE_ACCENT` = the star's rarity glow, `houseColor`/`houseTint` = identity (lines + sprite palette).
+
+The **Dex detail** page (`pages/dex-detail.ts`) is the drill-in: a `PageId` reached by Enter /
+clicking an owned star (`openDexDetail` stashes `speciesId` on `ui['dex-detail']`); Esc or any click
+on the detail body returns to `'dex'`. It renders the species sprite via `buildPalette(houseTint,
+bestGrade, frame)`, a battle/graft-readiness banner (`isBattleReady`), and up to 3 record cards
+(stats, captured date, **DNA code** via `encodeDna`, graft tier). Keep both deterministic for golden
+frames: positions derive only from species data + the rect (no RNG), dates use `toISOString()` (UTC),
+stat columns are fixed-width. New pages need a `frame.ts` switch case + a `freshUi()` entry;
+verify/regenerate golden frames.
 
 ## Settings page: `ShellInfo` (static) + `SettingsState` (editable)
 

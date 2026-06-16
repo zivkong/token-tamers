@@ -13,7 +13,7 @@ import type { InputEvent } from './terminal/input';
 import { defaultSizeSafe } from './shell-io';
 import { computeLayout } from './render/layout';
 import { menuButtonY, packMenu } from './render/menu';
-import { buildDexRows, DEX_LIST_OFFSET } from './pages/dex';
+import { buildHouseNodes, houseNodeCount, DEX_HOUSES } from './pages/dex';
 import { ARCHIVE_LIST_OFFSET } from './pages/archive';
 import { cycleSelectedField, isUpdateFieldSelected, settingsFieldCount } from './pages/settings';
 import { battleBlockReason, buildBattleVsRecord, handleBattleKey } from './pages/battle';
@@ -59,10 +59,12 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
       moveSelection(rt, host, +1);
       return;
     case 'left':
-      adjustSetting(rt, -1);
+      if (rt.page === 'dex') panHouse(rt, -1);
+      else adjustSetting(rt, -1);
       return;
     case 'right':
-      adjustSetting(rt, +1);
+      if (rt.page === 'dex') panHouse(rt, +1);
+      else adjustSetting(rt, +1);
       return;
     case 'enter':
       if (rt.page === 'dex') openDexDetail(rt, host);
@@ -75,16 +77,28 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
   }
 }
 
-/** Drill into the Dex detail view for the currently selected (discovered) row. */
-function openDexDetail(rt: ShellRuntime, host: ShellHost): void {
-  const ctx = {
+/** The minimal render-context shape the Dex node builder reads (pack + state). */
+function dexCtx(host: ShellHost): Parameters<typeof buildHouseNodes>[0] {
+  return {
     pack: host.pack,
     state: host.getState(),
-  } as unknown as Parameters<typeof buildDexRows>[0];
-  const row = buildDexRows(ctx)[rt.ui.dex.selected];
-  if (!row || !row.owned || !row.speciesId) return;
+  } as unknown as Parameters<typeof buildHouseNodes>[0];
+}
+
+/** Pan to the previous/next House sky (wraps), resetting the star selection. */
+function panHouse(rt: ShellRuntime, delta: number): void {
+  const n = DEX_HOUSES.length;
+  const cur = rt.ui.dex.house ?? 0;
+  rt.ui.dex.house = (((cur + delta) % n) + n) % n;
+  rt.ui.dex.selected = 0;
+}
+
+/** Drill into the Dex detail view for the currently selected (discovered) star. */
+function openDexDetail(rt: ShellRuntime, host: ShellHost): void {
+  const node = buildHouseNodes(dexCtx(host), rt.ui.dex.house ?? 0)[rt.ui.dex.selected];
+  if (!node || !node.owned) return;
   const detail = rt.ui['dex-detail'];
-  detail.speciesId = row.speciesId;
+  detail.speciesId = node.speciesId;
   detail.selected = 0;
   detail.scroll = 0;
   rt.page = 'dex-detail';
@@ -153,13 +167,9 @@ function handleMouse(
     }
   }
 
-  // Page-registered regions (e.g. the Dex-detail DNA code → copy to clipboard).
+  // Page-registered regions: DNA copy, Dex House tab, Dex star.
   const region = deps.hits.hit(cx, cy);
-  if (region?.startsWith('copy:')) {
-    deps.copy(region.slice('copy:'.length));
-    flash(rt, 'DNA code copied ✓');
-    return;
-  }
+  if (region && handleRegionClick(rt, host, deps, region)) return;
 
   // A click anywhere on the detail page (outside the menu / a copy region) returns to the Dex.
   if (rt.page === 'dex-detail' && cy < layout.menuDividerY) {
@@ -167,26 +177,35 @@ function handleMouse(
     return;
   }
 
-  // List-row clicks (Dex/Archive): map by canvas geometry, ignoring the menu.
-  if ((rt.page === 'dex' || rt.page === 'archive') && cy < layout.menuDividerY) {
-    handleListRowClick(rt, host, cy - (layout.canvasY + listOffset(rt.page)));
+  // Archive row clicks: map by canvas geometry, ignoring the menu.
+  if (rt.page === 'archive' && cy < layout.menuDividerY) {
+    handleListRowClick(rt, host, cy - (layout.canvasY + ARCHIVE_LIST_OFFSET));
   }
 }
 
-/** First-visible-row offset for the list page, shared with the renderer. */
-function listOffset(page: PageId): number {
-  return page === 'dex' ? DEX_LIST_OFFSET : ARCHIVE_LIST_OFFSET;
-}
-
-/** Select (and on the Dex, drill into) the list row `idxOnScreen` cells below the list top. */
-function handleListRowClick(rt: ShellRuntime, host: ShellHost, idxOnScreen: number): void {
-  if (idxOnScreen < 0) return;
-  const ui = rt.ui[rt.page];
-  const target = ui.scroll + idxOnScreen;
-  if (target < 0 || target > rowCount(rt, host) - 1) return;
-  ui.selected = target;
-  // On the Dex, a click on a discovered species drills into its detail.
-  if (rt.page === 'dex') openDexDetail(rt, host);
+/** Resolve a page-registered region click (DNA copy, Dex House tab / star). */
+function handleRegionClick(
+  rt: ShellRuntime,
+  host: ShellHost,
+  deps: InputDeps,
+  region: string,
+): boolean {
+  if (region.startsWith('copy:')) {
+    deps.copy(region.slice('copy:'.length));
+    flash(rt, 'DNA code copied ✓');
+    return true;
+  }
+  if (region.startsWith('dex:house:')) {
+    rt.ui.dex.house = Number(region.slice('dex:house:'.length)) || 0;
+    rt.ui.dex.selected = 0;
+    return true;
+  }
+  if (region.startsWith('dex:star:')) {
+    rt.ui.dex.selected = Number(region.slice('dex:star:'.length)) || 0;
+    openDexDetail(rt, host);
+    return true;
+  }
+  return false;
 }
 
 function activate(rt: ShellRuntime, id: PageId | 'quit'): void {
@@ -197,6 +216,15 @@ function activate(rt: ShellRuntime, id: PageId | 'quit'): void {
   rt.page = id;
 }
 
+/** Select the Archive row `idxOnScreen` cells below the list top. */
+function handleListRowClick(rt: ShellRuntime, host: ShellHost, idxOnScreen: number): void {
+  if (idxOnScreen < 0) return;
+  const ui = rt.ui.archive;
+  const target = ui.scroll + idxOnScreen;
+  if (target < 0 || target > rowCount(rt, host) - 1) return;
+  ui.selected = target;
+}
+
 function moveSelection(rt: ShellRuntime, host: ShellHost, delta: number): void {
   if (rt.page === 'settings') {
     // settingsFieldCount is always >= 2 (update mode + cycle policy), so max >= 1.
@@ -204,22 +232,18 @@ function moveSelection(rt: ShellRuntime, host: ShellHost, delta: number): void {
     rt.settings.selected = Math.max(0, Math.min(max, rt.settings.selected + delta));
     return;
   }
-  if (rt.page !== 'dex' && rt.page !== 'archive') return;
-  const ui = rt.ui[rt.page];
+  if (rt.page === 'dex') {
+    const max = houseNodeCount(dexCtx(host), rt.ui.dex.house ?? 0) - 1;
+    rt.ui.dex.selected = Math.max(0, Math.min(max, rt.ui.dex.selected + delta));
+    return;
+  }
+  if (rt.page !== 'archive') return;
+  const ui = rt.ui.archive;
   const max = rowCount(rt, host) - 1;
   ui.selected = Math.max(0, Math.min(max, ui.selected + delta));
 }
 
 function rowCount(rt: ShellRuntime, host: ShellHost): number {
-  const state = host.getState();
-  if (rt.page === 'archive') return state.dexRecords.length;
-  if (rt.page === 'dex') {
-    // Build minimal context for counting Dex rows.
-    const ctx = {
-      pack: host.pack,
-      state,
-    } as unknown as Parameters<typeof buildDexRows>[0];
-    return buildDexRows(ctx).length;
-  }
+  if (rt.page === 'archive') return host.getState().dexRecords.length;
   return 0;
 }

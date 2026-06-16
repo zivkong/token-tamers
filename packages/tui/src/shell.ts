@@ -139,7 +139,7 @@ export interface InputDeps {
 function freshUi(): Record<PageId, PageUiState> {
   return {
     pet: { selected: 0, scroll: 0 },
-    dex: { selected: 0, scroll: 0 },
+    dex: { selected: 0, scroll: 0, house: 0 },
     'dex-detail': { selected: 0, scroll: 0, speciesId: null },
     archive: { selected: 0, scroll: 0 },
     settings: { selected: 0, scroll: 0 },

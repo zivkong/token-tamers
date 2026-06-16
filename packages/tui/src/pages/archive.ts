@@ -10,7 +10,6 @@ import type { Rgb } from '../terminal/ansi';
 import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
 import { drawPageFooter, drawPageHeader, PAGE_HEADER_ROWS } from '../components';
 import { findSpecies } from '../helpers/lookup';
-import { clampScroll } from './dex';
 import type { RenderContext } from './types';
 
 const TEXT: Rgb = { r: 214, g: 220, b: 234 };
@@ -28,6 +27,25 @@ export const ARCHIVE_LIST_OFFSET = PAGE_HEADER_ROWS + 1;
 
 function statsBrief(s: Stats): string {
   return `PWR ${String(s.pwr).padStart(2)}  SPD ${String(s.spd).padStart(2)}  WIS ${String(s.wis).padStart(2)}  GRT ${String(s.grt).padStart(2)}`;
+}
+
+/**
+ * Clamp a list's scroll offset so the selected row stays visible. Shared list
+ * helper (lives here now that the Dex is a constellation, not a scrolling list).
+ */
+export function clampScroll(
+  scroll: number,
+  selected: number,
+  visible: number,
+  total: number,
+): number {
+  let s = scroll;
+  if (selected < s) s = selected;
+  if (selected >= s + visible) s = selected - visible + 1;
+  const maxScroll = Math.max(0, total - visible);
+  if (s > maxScroll) s = maxScroll;
+  if (s < 0) s = 0;
+  return s;
 }
 
 export function renderArchivePage(ctx: RenderContext): void {

@@ -233,10 +233,13 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   near-duplicates from one life. The
   Archive view derives best-per-species from `top[0]` (`bestSpeciesRecords`); the
   legacy rebirth `archive` array is still written as a back-compat mirror (read by
-  the grade/house achievements). The Dex list colors each row by its highest
-  recorded grade (incl. the live pet's current grade); the **Dex detail page**
-  (`pages/dex-detail.ts`) shows the sprite, a battle/graft-readiness banner, and
-  each record's stats + **DNA code** + graft tier.
+  the grade/house achievements). The **Dex is a per-House constellation** (`pages/dex.ts`
+  - `pages/dex-sky.ts`): each House's evolution tree is a sky of glow-dot stars (owned
+    glow in their best grade incl. the live pet's; unseen are dim `?` points), with a focus
+    rail showing the selected star's real sprite or a square `?` tile (slate when locked, an
+    ornate gold legend tile for reserved special slots — dormant in Season 0). The **Dex detail
+    page** (`pages/dex-detail.ts`) is the drill-in: sprite, a battle/graft-readiness banner, and
+    each record's stats + **DNA code** + graft tier.
 - **DNA codes / battle-graft readiness:** `encodeDna`/`decodeDna` produce a shareable
   opaque `TTX<v>-XXXX-…` license-key token per snapshot. The codec is shipped; the code is
   display/share-only today (the Dex detail page shows it). **Battle (Season 0)** consumes a

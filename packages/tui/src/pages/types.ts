@@ -19,10 +19,12 @@ export type PageId = 'pet' | 'dex' | 'dex-detail' | 'archive' | 'settings' | 'ba
 
 /** Transient per-page UI state the shell owns (selection, scroll). */
 export interface PageUiState {
-  /** Dex/Archive selected row index. */
+  /** Dex/Archive selected row index (on the Dex: the star index within the House). */
   selected: number;
   /** Dex/Archive scroll offset (top visible row). */
   scroll: number;
+  /** Dex: which House sky is shown (index into DEX_HOUSES). */
+  house?: number;
   /** Dex-detail: the species being inspected (set when drilling in from the Dex). */
   speciesId?: string | null;
 }

@@ -1,46 +1,57 @@
 /**
- * Dex page: a scrollable list of species. Owned species show name + dex number;
- * unowned ones show a '???' silhouette. Rows are clickable and keyboard
- * selectable; the selected row is highlighted.
+ * Dex page — a constellation field guide. Each House is a "sky": its evolution
+ * tree drawn as glow-dot stars (owned species glow in their best grade; unseen
+ * ones are dim "?" points) joined by faint lineage lines, apex at the top down to
+ * the sprite/egg rooted in the shared Mote. A focus rail shows the selected
+ * star's real sprite + identity (or a square "?" tile when undiscovered).
+ *
+ * `←→` pans between Houses, `↑↓` walks the stars, `⏎`/click opens the detail.
+ * Layout/draw lives in `dex-sky.ts`; this file owns the node model + the page
+ * scaffold. Pure given (state, pack, ui, frame) so golden frames stay stable.
  */
 
-import { type Rgb } from '../terminal/ansi';
-import { drawPageFooter, drawPageHeader, PAGE_HEADER_ROWS } from '../components';
-import { GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
+import { drawPageFooter, drawPageHeader } from '../components';
 import { houseColor } from '../helpers/lookup';
-import { GRADE_ORDER, type Grade, type House } from '@token-tamers/core';
+import { GRADE_ORDER, type Grade, type House, type Stage } from '@token-tamers/core';
 import type { RenderContext } from './types';
+import { renderFocusRail, renderSky, RAIL_MIN_COLS, type Rect } from './dex-sky';
 
-const OWNED: Rgb = { r: 220, g: 226, b: 240 };
-const LOCKED: Rgb = { r: 88, g: 92, b: 112 };
-const SELECT_BG: Rgb = { r: 40, g: 48, b: 78 };
-const RULE: Rgb = { r: 52, g: 58, b: 80 };
+/** Canonical House order across the Dex skies (Wild last — it holds the Mote). */
+export const DEX_HOUSES: House[] = ['aether', 'cipher', 'flux', 'forge', 'wild'];
 
-/** First body row = the standard header height. Shared with the shell's hit-test. */
-export const DEX_LIST_OFFSET = PAGE_HEADER_ROWS;
+const TAB_DIM = { r: 110, g: 116, b: 138 };
+const STAGE_TIER: Record<Stage, number> = {
+  egg: 0,
+  sprite: 1,
+  rookie: 2,
+  evolved: 3,
+  prime: 4,
+  apex: 5,
+};
 
-export interface DexRow {
+/** One star in a House sky: a species slot, owned or not. */
+export interface HouseNode {
+  speciesId: string;
+  name: string;
   num: number;
+  stage: Stage;
+  /** 0 (egg) … 5 (apex) — drives the vertical band in the sky. */
+  tier: number;
   owned: boolean;
-  label: string;
-  speciesId: string | null;
-  house: House | 'hybrid' | null;
-  /** Highest grade ever recorded for this species (incl. the live pet), or null. */
+  /** Highest recorded grade (incl. the live pet), or null when unseen. */
   grade: Grade | null;
+  /** Reserved "special" slot → the ornate gold tile. Dormant in Season 0. */
+  legend: boolean;
+  /** In-House parent species ids (those that evolve INTO this node). */
+  parents: string[];
 }
 
-/** Higher of two grades on the C<B<A<S ladder (null-safe). */
 function maxGrade(a: Grade | null, b: Grade | null): Grade | null {
   if (a === null) return b;
   if (b === null) return a;
   return GRADE_ORDER.indexOf(a) >= GRADE_ORDER.indexOf(b) ? a : b;
 }
 
-/**
- * Highest grade on record for a species: the best of its captured Dex records and
- * — when it's the species the live pet currently IS — the pet's current grade, so
- * the Dex reflects the pet's latest grade immediately (before the next molt logs it).
- */
 function bestGradeFor(ctx: RenderContext, speciesId: string): Grade | null {
   const record = ctx.state.dexRecords.find((r) => r.speciesId === speciesId);
   let best = record?.top[0]?.grade ?? null;
@@ -48,108 +59,110 @@ function bestGradeFor(ctx: RenderContext, speciesId: string): Grade | null {
   return best;
 }
 
-/** Build the ordered Dex rows: every dex slot up to dexTotal, owned or '???'. */
-export function buildDexRows(ctx: RenderContext): DexRow[] {
-  const { pack, state } = ctx;
-  const owned = new Set(state.dexOwned);
-  const byNum = new Map<number, { id: string; name: string; house: House | 'hybrid' }>();
-  for (const sp of pack.species) {
-    if (!byNum.has(sp.num)) byNum.set(sp.num, { id: sp.id, name: sp.name, house: sp.house });
+/**
+ * Whether a species is a reserved "legend" slot (the ornate gold tile). No
+ * obtainable Season 0 species is special, so this is always false today — the
+ * gold tile is wired but dormant until a later Season surfaces such slots
+ * (kept here, not in content, to honor the spoiler rule).
+ */
+function isLegendSpecies(): boolean {
+  return false;
+}
+
+/** Clamp a House index into range (no wrap; the shell wraps when panning). */
+export function clampHouse(index: number): number {
+  if (index < 0) return 0;
+  if (index >= DEX_HOUSES.length) return DEX_HOUSES.length - 1;
+  return index;
+}
+
+/** Build one House's ordered star list (tier asc, then Dex num). Pure. */
+export function buildHouseNodes(ctx: RenderContext, houseIndex: number): HouseNode[] {
+  const house = DEX_HOUSES[clampHouse(houseIndex)]!;
+  const owned = new Set(ctx.state.dexOwned);
+  const inHouse = ctx.pack.species.filter((s) => s.house === house);
+  const parentsOf = new Map<string, string[]>();
+  for (const sp of inHouse) {
+    for (const ev of sp.evolvesTo) {
+      const list = parentsOf.get(ev.species) ?? [];
+      if (!list.includes(sp.id)) list.push(sp.id);
+      parentsOf.set(ev.species, list);
+    }
   }
-  const total = Math.max(pack.dexTotal, byNum.size);
-  const rows: DexRow[] = [];
-  for (let num = 1; num <= total; num++) {
-    const entry = byNum.get(num);
-    const isOwned = entry ? owned.has(entry.id) : false;
-    rows.push({
-      num,
+  const nodes: HouseNode[] = inHouse.map((sp) => {
+    const isOwned = owned.has(sp.id);
+    return {
+      speciesId: sp.id,
+      name: sp.name,
+      num: sp.num,
+      stage: sp.stage,
+      tier: STAGE_TIER[sp.stage],
       owned: isOwned,
-      label: isOwned && entry ? entry.name : '???',
-      speciesId: isOwned && entry ? entry.id : null,
-      house: isOwned && entry ? entry.house : null,
-      grade: isOwned && entry ? bestGradeFor(ctx, entry.id) : null,
-    });
-  }
-  return rows;
+      grade: isOwned ? bestGradeFor(ctx, sp.id) : null,
+      legend: isLegendSpecies(),
+      parents: parentsOf.get(sp.id) ?? [],
+    };
+  });
+  nodes.sort((a, b) => a.tier - b.tier || a.num - b.num);
+  return nodes;
+}
+
+/** Node count for a House — the selection range the shell clamps against. */
+export function houseNodeCount(ctx: RenderContext, houseIndex: number): number {
+  return buildHouseNodes(ctx, houseIndex).length;
+}
+
+/** Draw the clickable House selector strip; returns nothing. */
+function drawHouseTabs(ctx: RenderContext, y: number, active: number): void {
+  const { buf, hits, layout } = ctx;
+  let x = layout.canvasX + 1;
+  buf.text(x, y, '‹', TAB_DIM, null);
+  x += 2;
+  DEX_HOUSES.forEach((house, i) => {
+    const label = house[0]!.toUpperCase() + house.slice(1);
+    const on = i === active;
+    if (on) buf.textBold(x, y, label, houseColor(house), null);
+    else buf.text(x, y, label, TAB_DIM, null);
+    hits.add(`dex:house:${i}`, x, y, label.length, 1);
+    x += label.length + 1;
+  });
+  buf.text(x, y, '›', TAB_DIM, null);
 }
 
 export function renderDexPage(ctx: RenderContext): void {
-  const { buf, hits, layout, ui } = ctx;
+  const { layout, ui, pack } = ctx;
   const { canvasX, canvasCols, canvasRows } = layout;
-  const rows = buildDexRows(ctx);
+  const houseIndex = clampHouse(ui.house ?? 0);
+  ui.house = houseIndex;
+  const house = DEX_HOUSES[houseIndex]!;
+  const nodes = buildHouseNodes(ctx, houseIndex);
+  const selected = nodes.length ? Math.max(0, Math.min(nodes.length - 1, ui.selected)) : 0;
+  ui.selected = selected;
 
-  const ownedCount = rows.filter((r) => r.owned).length;
-  // Standard page header: title + a Dex-collection completion bar (this page's
-  // slice of 100%) + the divider. Returns the first body row.
-  const listTop = drawPageHeader(ctx, {
+  const ownedTotal = new Set(ctx.state.dexOwned).size;
+  const bodyY = drawPageHeader(ctx, {
     icon: '☰',
     title: 'Dex',
-    completion: { count: `${ownedCount}/${rows.length}`, pct: ctx.completion.dex },
+    completion: { count: `${ownedTotal}/${pack.dexTotal}`, pct: ctx.completion.dex },
   });
-  const visible = canvasRows - DEX_LIST_OFFSET - 1;
+  drawHouseTabs(ctx, bodyY, houseIndex);
 
-  // Clamp scroll so the selection stays on screen.
-  const scroll = clampScroll(ui.scroll, ui.selected, visible, rows.length);
-  ui.scroll = scroll;
-
-  for (let i = 0; i < visible; i++) {
-    const rowIndex = scroll + i;
-    if (rowIndex >= rows.length) break;
-    const row = rows[rowIndex];
-    if (!row) continue;
-    const y = listTop + i;
-    const selected = rowIndex === ui.selected;
-    const fg = row.owned ? OWNED : LOCKED;
-    const bg = selected ? SELECT_BG : null;
-    const numStr = String(row.num).padStart(3, '0');
-    const marker = selected ? '›' : ' ';
-    // Paint full-width selection bar.
-    for (let x = 0; x < canvasCols; x++) {
-      buf.set(canvasX + x, y, { ch: ' ', fg: null, bg });
-    }
-    buf.text(canvasX + 1, y, `${marker} #${numStr}`, selected ? OWNED : LOCKED, bg);
-    // House-tinted identity dot for discovered species.
-    const dot = row.owned ? '●' : '·';
-    const dotFg = row.owned && row.house && row.house !== 'hybrid' ? houseColor(row.house) : LOCKED;
-    buf.text(canvasX + 9, y, dot, dotFg, bg);
-    buf.text(canvasX + 11, y, row.label, fg, bg);
-    // Right-aligned grade badge (highest recorded grade) — the rarity signal the
-    // House dot can't carry. `★ S` gold · `◆ A` violet · `● B` green · `○ C` grey.
-    if (row.grade) {
-      const badge = `${GRADE_BADGE[row.grade]} ${row.grade}`;
-      buf.text(canvasX + canvasCols - badge.length - 2, y, badge, GRADE_ACCENT[row.grade], bg);
-    }
-    hits.add(`dex:row:${rowIndex}`, canvasX, y, canvasCols, 1);
+  const skyTop = bodyY + 2;
+  const footerY = canvasRows - 1;
+  const railW =
+    canvasCols >= RAIL_MIN_COLS ? Math.min(32, Math.max(24, Math.floor(canvasCols * 0.34))) : 0;
+  const skyW = canvasCols - railW;
+  const skyRect: Rect = { x: canvasX, y: skyTop, w: Math.max(1, skyW - 1), h: footerY - skyTop };
+  renderSky(ctx, skyRect, nodes, selected, house);
+  if (railW > 0) {
+    const railRect: Rect = { x: canvasX + skyW, y: skyTop, w: railW, h: footerY - skyTop };
+    renderFocusRail(ctx, railRect, nodes[selected], house);
   }
 
-  // Scrollbar track on the canvas's right edge when the list overflows.
-  if (rows.length > visible) {
-    const trackX = canvasX + canvasCols - 1;
-    const thumbLen = Math.max(1, Math.round((visible / rows.length) * visible));
-    const thumbTop =
-      listTop + Math.round((scroll / Math.max(1, rows.length - visible)) * (visible - thumbLen));
-    for (let i = 0; i < visible; i++) {
-      const yy = listTop + i;
-      const isThumb = yy >= thumbTop && yy < thumbTop + thumbLen;
-      buf.set(trackX, yy, { ch: isThumb ? '█' : '│', fg: isThumb ? LOCKED : RULE, bg: null });
-    }
-  }
-
-  // Standard footer status line.
-  drawPageFooter(ctx, `${ui.selected + 1}/${rows.length}  ↑↓ select`);
-}
-
-export function clampScroll(
-  scroll: number,
-  selected: number,
-  visible: number,
-  total: number,
-): number {
-  let s = scroll;
-  if (selected < s) s = selected;
-  if (selected >= s + visible) s = selected - visible + 1;
-  const maxScroll = Math.max(0, total - visible);
-  if (s > maxScroll) s = maxScroll;
-  if (s < 0) s = 0;
-  return s;
+  const ownedInHouse = nodes.filter((n) => n.owned).length;
+  const label = house[0]!.toUpperCase() + house.slice(1);
+  drawPageFooter(
+    ctx,
+    `${label}  ${ownedInHouse}/${nodes.length}  ·  ←→ house  ·  ↑↓ star  ·  ⏎ open`,
+  );
 }

@@ -74,6 +74,39 @@ describe('golden frames (100x30, no-color)', () => {
 
   it('renders the dex page', () => {
     const out = renderFrameToString(100, 30, input({ page: 'dex' }));
+    // The Aether sky, its House tabs, the owned Wisp star, and the Mote seed.
+    expect(out).toContain('Aether');
+    expect(out).toContain('Wisp');
+    expect(out).toContain('from the Mote');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders a locked star with the "?" focus tile', () => {
+    // Forge sky: Ember has a record but is not owned, so it reads as undiscovered.
+    const out = renderFrameToString(
+      100,
+      30,
+      input({ page: 'dex', ui: { selected: 0, scroll: 0, house: 3 } }),
+    );
+    expect(out).toContain('Forge');
+    expect(out).toContain('???');
+    expect(out).toContain('Undiscovered');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders an empty House sky', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({ page: 'dex', ui: { selected: 0, scroll: 0, house: 1 } }),
+    );
+    expect(out).toContain('No stars in this sky yet.');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the dex without a focus rail on a narrow terminal', () => {
+    const out = renderFrameToString(50, 30, input({ page: 'dex' }));
+    expect(out).toContain('Aether');
     expect(out).toMatchSnapshot();
   });
 
