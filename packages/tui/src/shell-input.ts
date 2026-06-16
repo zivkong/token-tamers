@@ -233,8 +233,11 @@ function moveSelection(rt: ShellRuntime, host: ShellHost, delta: number): void {
     return;
   }
   if (rt.page === 'dex') {
+    // The sky draws apex at the TOP but nodes are ordered tier-ascending (apex
+    // last), so the screen axis runs opposite the index axis: invert the step so
+    // ↑/wheel-up climbs toward the apex and ↓ descends toward the sprite/Mote.
     const max = houseNodeCount(dexCtx(host), rt.ui.dex.house ?? 0) - 1;
-    rt.ui.dex.selected = Math.max(0, Math.min(max, rt.ui.dex.selected + delta));
+    rt.ui.dex.selected = Math.max(0, Math.min(max, rt.ui.dex.selected - delta));
     return;
   }
   if (rt.page !== 'archive') return;

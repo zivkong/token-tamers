@@ -5,8 +5,39 @@ import { renderFocusRail } from '../src/pages/dex-sky';
 import { FrameBuffer } from '../src/render/buffer';
 import { HitRegistry } from '../src/render/hit';
 import { StringSink, Writer } from '../src/terminal/ansi';
+import { handleEvent } from '../src/shell-input';
+import type { InputDeps, ShellHost, ShellRuntime } from '../src/shell';
 import type { RenderContext } from '../src/pages/types';
 import { makePack, makeState } from './fixtures';
+
+/** A 3-tier Aether line (sprite → rookie → evolved) for navigation tests. */
+function threeTierPack(): ContentPack {
+  const base = {
+    house: 'aether' as const,
+    statWeights: { pwr: 1, spd: 1, wis: 1, grt: 1 },
+    spriteId: 'spr_wisp',
+  };
+  const species: SpeciesDef[] = [
+    {
+      ...base,
+      id: 'a1',
+      num: 1,
+      name: 'Spritelet',
+      stage: 'sprite',
+      evolvesTo: [{ species: 'a2', when: { kind: 'default' } }],
+    },
+    {
+      ...base,
+      id: 'a2',
+      num: 2,
+      name: 'Rooklet',
+      stage: 'rookie',
+      evolvesTo: [{ species: 'a3', when: { kind: 'default' } }],
+    },
+    { ...base, id: 'a3', num: 3, name: 'Volved', stage: 'evolved', evolvesTo: [] },
+  ];
+  return { ...makePack(), species };
+}
 
 function ctxOf(pack: ContentPack, state = makeState()): RenderContext {
   return { pack, state } as unknown as RenderContext;
@@ -76,5 +107,23 @@ describe('dex constellation node model', () => {
     const out = buf.flush(new Writer(sink, 'none'));
     expect(out).toContain('✦'); // gold aura / marker
     expect(out).toContain('???');
+  });
+
+  it('navigates ↑ toward the apex and ↓ toward the sprite (screen-aligned)', () => {
+    const aether = DEX_HOUSES.indexOf('aether');
+    const host = { pack: threeTierPack(), getState: () => makeState() } as unknown as ShellHost;
+    const rt = {
+      page: 'dex',
+      battle: undefined,
+      ui: { dex: { selected: 0, scroll: 0, house: aether } },
+    } as unknown as ShellRuntime;
+    const deps = { host, hits: new HitRegistry(), copy: () => {} } as unknown as InputDeps;
+    // Nodes order sprite(0) → rookie(1) → evolved(2); the sky draws apex at the top.
+    handleEvent(rt, { type: 'key', name: 'up' }, deps);
+    expect(rt.ui.dex.selected).toBe(1); // ↑ climbs the index toward the apex
+    handleEvent(rt, { type: 'key', name: 'up' }, deps);
+    expect(rt.ui.dex.selected).toBe(2);
+    handleEvent(rt, { type: 'key', name: 'down' }, deps);
+    expect(rt.ui.dex.selected).toBe(1); // ↓ descends toward the sprite/Mote
   });
 });
