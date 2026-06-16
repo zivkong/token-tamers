@@ -33,6 +33,11 @@ through the fight one blow at a time, and **Esc** backs out.
 > pet (or a code for one) shows as _sealed_ until it matures — the same gate that guards DNA
 > grafting later. It's always eventually reachable; just keep coding.
 
+> **No fighting your own kind.** You can't battle your pet against your _own_ record of the
+> **same species** — a self-mirror match is pointless. Battle a different species from your
+> Archive, or a friend's pasted code (another player), which is always allowed even if it's the
+> same species. (The same rule will govern DNA grafting.)
+
 ## How a fight is decided
 
 Each pet brings its four stats — **PWR / SPD / WIS / GRT** — and its traits. The faster pet

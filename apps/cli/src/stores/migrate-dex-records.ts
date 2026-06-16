@@ -10,7 +10,7 @@
 import {
   GRADE_ORDER,
   MAX_DEX_RECORDS,
-  snapshotRank,
+  rankBestPerLife,
   STAGE_ORDER,
   type ArchiveRecord,
   type DexRecord,
@@ -121,7 +121,9 @@ export function repairDexRecords(records: unknown): DexRecord[] {
   }
   const out: DexRecord[] = [];
   for (const [speciesId, snaps] of bySpecies) {
-    const top = snaps.sort(snapshotRank).slice(0, MAX_DEX_RECORDS);
+    // Collapse any same-life (same-generation) duplicates a pre-fix store accrued,
+    // then rank + cap — so an old save with 3 records from one life self-heals.
+    const top = rankBestPerLife(snaps, MAX_DEX_RECORDS);
     if (top.length > 0) out.push({ speciesId, top });
   }
   return out;

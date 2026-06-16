@@ -162,4 +162,37 @@ describe('tt battle --text', () => {
     );
     expect(out).toContain('No battle-ready opponent');
   });
+
+  it('refuses a self mirror match — same species in your own Archive', async () => {
+    saveConfig(config());
+    // The only record is the SAME species as the live pet (oraclet) — a self-mirror.
+    saveState({
+      ...readyState(),
+      dexRecords: [{ speciesId: 'oraclet', top: [snap({ speciesId: 'oraclet' })] }],
+    });
+    let out = '';
+    await battleCommand(
+      { text: true, noColor: true },
+      (s) => (out += s),
+      () => NOW,
+    );
+    expect(out).toContain('different species');
+  });
+
+  it('allows a same-species battle against a pasted (foreign) code', async () => {
+    saveConfig(config());
+    saveState(readyState());
+    // A foreign code of the SAME species as the live pet (oraclet, num 5) — allowed,
+    // because a pasted code is another player, not a self-mirror.
+    const code = encodeDna(snap({ speciesId: 'oraclet', grade: 'S', stage: 'prime' }), {
+      speciesNum: 5,
+    });
+    let out = '';
+    await battleCommand(
+      { text: true, noColor: true, code },
+      (s) => (out += s),
+      () => NOW,
+    );
+    expect(out).toMatch(/wins!|Draw/);
+  });
 });

@@ -226,8 +226,11 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   capped vitality bonus (+0.15 max at 200M session tokens) — the only volume input.
 - **Rebirth:** stat carry-over 30% +10%/tier (cap 70%); new egg starts at C.
 - **Dex records (unified source of truth):** `state.dexRecords` keeps each species'
-  **top-3** snapshots (ranked grade-desc, then stat-total), captured at every molt
-  close, evolution, and rebirth (`engine/snapshot.ts` + `dex-records.ts`). The
+  **top-3 DISTINCT lives** (ranked grade-desc, then stat-total), captured at every molt
+  close, evolution, and rebirth (`engine/snapshot.ts` + `dex-records.ts`). One entry PER
+  LIFE: `(speciesId, generation)` is the life-at-a-tier id, so repeated molt captures of the
+  same species in one life collapse to that life's best peak (`rankBestPerLife`) — never 3
+  near-duplicates from one life. The
   Archive view derives best-per-species from `top[0]` (`bestSpeciesRecords`); the
   legacy rebirth `archive` array is still written as a back-compat mirror (read by
   the grade/house achievements). The Dex list colors each row by its highest
@@ -240,8 +243,11 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   decoded code/snapshot read-only — you can `tt battle` your own archive records or a pasted
   foreign code, no apply needed. **DNA apply/grafting/fusion is Season 1** (the whole system).
   A snapshot is battle-eligible AND graft-eligible only once `stage` ≥ Evolved (the readiness
-  gate). Graft potency scales with the DONOR's grade (C = 0 … S = small hard cap) — a documented
-  forward spec (`dna-hash-battles.md` §9) + the pure `graftPotency` helper (Season-1 engine).
+  gate). **Self-mirror rule:** you can't battle/graft your OWN pet against your OWN record of the
+  **same species** (`sameSpecies` in `battle/`); a same-species match is allowed only vs ANOTHER
+  player (a pasted foreign code, decoded `speciesId` empty), and any DIFFERENT species (yours or
+  foreign) is always allowed. Graft potency scales with the DONOR's grade (C = 0 … S = small hard
+  cap) — a documented forward spec (`dna-hash-battles.md` §9) + the pure `graftPotency` helper (Season-1 engine).
 - **Scope (Season-mapped; M-ids = engineering milestones):**
   - **Season 0 — "Genesis":** **shipped** = Claude Code + OpenCode adapters, all five house
     lines (Aether/Cipher/Flux/Forge/Wild-Bloom, 56 species), shell with Pet/Dex/Archive/Settings,

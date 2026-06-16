@@ -10,6 +10,7 @@ import {
   combatantFromSnapshot,
   effectiveStats,
   resolveProcs,
+  sameSpecies,
   simulateBattle,
   typeMultiplier,
   type BattleRuleset,
@@ -166,5 +167,20 @@ describe('combatantFromSnapshot', () => {
     expect(c).toMatchObject({ speciesNum: 1, name: 'Aurelion', house: 'aether', grade: 'A' });
     expect(c.stats).toEqual(snap.stats);
     expect(c.stats).not.toBe(snap.stats); // cloned
+  });
+});
+
+describe('sameSpecies (the self-mirror rule)', () => {
+  it('is true for two of the same species', () => {
+    expect(sameSpecies({ speciesId: 'aurelion' }, { speciesId: 'aurelion' })).toBe(true);
+  });
+
+  it('is false for different species', () => {
+    expect(sameSpecies({ speciesId: 'aurelion' }, { speciesId: 'glyphit' })).toBe(false);
+  });
+
+  it('is false when an id is empty (a decoded foreign code is never a self-mirror)', () => {
+    expect(sameSpecies({ speciesId: '' }, { speciesId: '' })).toBe(false);
+    expect(sameSpecies({ speciesId: 'aurelion' }, { speciesId: '' })).toBe(false);
   });
 });

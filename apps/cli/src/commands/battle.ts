@@ -13,6 +13,7 @@ import {
   combatantFromDecoded,
   decodeDna,
   isBattleReady,
+  sameSpecies,
   simulateBattle,
   type BattleResult,
   type Combatant,
@@ -46,6 +47,7 @@ function resolveOpponent(
     if (!decoded.sigValid) {
       out('Note: that DNA code failed its integrity check — battling the recovered fields.\n');
     }
+    // A pasted code is ANOTHER player — a same-species mirror match is allowed here.
     const name = pack.species.find((s) => s.num === decoded.speciesNum)?.name ?? '???';
     const opp = combatantFromDecoded(decoded, name);
     if (!isBattleReady(opp)) {
@@ -54,10 +56,14 @@ function resolveOpponent(
     }
     return opp;
   }
-  const best = bestSpeciesRecords(state.dexRecords).find((s) => isBattleReady(s));
+  // No code ⇒ a SELF opponent (your own Archive). A mirror match (same species as
+  // the live pet) is forbidden — pick your best battle-ready record of a DIFFERENT species.
+  const best = bestSpeciesRecords(state.dexRecords).find(
+    (s) => isBattleReady(s) && !sameSpecies(state.pet, s),
+  );
   if (!best) {
     out(
-      'No battle-ready opponent — paste a DNA code (`tt battle <code>`) or raise an Archive record to Evolved.\n',
+      'No battle-ready opponent of a different species — paste a friend’s DNA code (`tt battle <code>`) or raise another species to Evolved.\n',
     );
     return undefined;
   }

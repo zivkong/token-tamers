@@ -17,6 +17,7 @@ import {
   BATTLE_READY_STAGE,
   combatantFromSnapshot,
   isBattleReady,
+  sameSpecies,
   simulateBattle,
   type BattleSide,
   type Combatant,
@@ -154,13 +155,13 @@ function drawPickerRow(ctx: RenderContext, snap: DexSnapshot, selected: boolean,
   buf.text(x + 5, y, name.padEnd(14), TEXT, bg);
   const s = snap.stats;
   buf.text(x + 20, y, `P${s.pwr} S${s.spd} W${s.wis} G${s.grt}`, DIM, bg);
-  buf.text(
-    x + 40,
-    y,
-    isBattleReady(snap) ? '✦ ready' : '▢ sealed',
-    isBattleReady(snap) ? READY : SEALED,
-    bg,
-  );
+  // Eligibility: a same-species record is your own kind (mirror match) — not battleable.
+  const [tag, color] = sameSpecies(ctx.state.pet, snap)
+    ? (['⊘ your kind', SEALED] as const)
+    : isBattleReady(snap)
+      ? (['✦ ready', READY] as const)
+      : (['▢ sealed', SEALED] as const);
+  buf.text(x + 40, y, tag, color, bg);
 }
 
 /** The split-pane arena: two combatants + HP + a scrolling battle log. */
@@ -272,13 +273,27 @@ export interface BattleHost {
  */
 export function buildBattleVsRecord(host: BattleHost, index: number): BattleView | undefined {
   const state = host.getState();
-  if (!isBattleReady(state.pet)) return undefined;
   const snap = bestSpeciesRecords(state.dexRecords)[index];
-  if (!snap || !isBattleReady(snap)) return undefined;
+  if (!snap || battleBlockReason(state.pet, snap)) return undefined;
   const left = playerCombatant(host.pack, state.pet);
   const right = opponentCombatant(host.pack, snap);
   const result = simulateBattle(left, right, host.pack.battle);
   return { left, right, result, cursor: 0, playing: true };
+}
+
+/**
+ * Why battling the live pet against the SELF (Archive) record `snap` is blocked,
+ * or null if it's allowed. Both sides must be Evolved, and a SELF mirror match
+ * (same species) is forbidden — battle a different species, or a friend's pasted
+ * code (a different player), instead.
+ */
+export function battleBlockReason(pet: PetState, snap: DexSnapshot): string | null {
+  if (!isBattleReady(pet)) return 'Your pet is sealed — battles unlock at Evolved.';
+  if (!isBattleReady(snap)) return 'That record is sealed — opponents must reach Evolved.';
+  if (sameSpecies(pet, snap)) {
+    return "Can't battle your own kind — pick a different species (or a friend's code).";
+  }
+  return null;
 }
 
 /** Advance auto-playback one step every {@link BATTLE_STEP_FRAMES} frames. */

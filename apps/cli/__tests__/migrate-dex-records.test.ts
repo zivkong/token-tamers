@@ -65,7 +65,7 @@ const V2_STATE = {
   lineage: [],
 };
 
-function mk(grade: string, recordedAt: number) {
+function mk(grade: string, recordedAt: number, generation = recordedAt) {
   return {
     speciesId: 'x',
     stage: 'apex',
@@ -76,7 +76,7 @@ function mk(grade: string, recordedAt: number) {
     pattern: null,
     rhythmVariant: null,
     mutations: [],
-    generation: 1,
+    generation,
     contentVersion: 1,
     recordedAt,
     reason: 'molt',
@@ -96,7 +96,7 @@ describe('v2 → v3 dex-records migration + auto-repair', () => {
     expect(rec.top[0]!.stage).toBe('apex');
   });
 
-  it('caps each species to the top-3 and orders best-first', () => {
+  it('caps each species to the top-3 (distinct lives) and orders best-first', () => {
     writeState({
       ...V2_STATE,
       schemaVersion: 3,
@@ -105,6 +105,18 @@ describe('v2 → v3 dex-records migration + auto-repair', () => {
     const st = loadState()!;
     expect(st.dexRecords[0]!.top).toHaveLength(3);
     expect(st.dexRecords[0]!.top[0]!.grade).toBe('S');
+  });
+
+  it('self-heals an old store with multiple records from ONE life (same generation)', () => {
+    writeState({
+      ...V2_STATE,
+      schemaVersion: 3,
+      // Three captures of the same life (generation 1) — the pre-fix bug.
+      dexRecords: [{ speciesId: 'x', top: [mk('C', 5, 1), mk('B', 6, 1), mk('A', 7, 1)] }],
+    });
+    const st = loadState()!;
+    expect(st.dexRecords[0]!.top).toHaveLength(1); // collapsed to one entry for the life
+    expect(st.dexRecords[0]!.top[0]!.grade).toBe('A'); // the life's best peak
   });
 
   it('clamps invalid enums and stats on a kept record', () => {

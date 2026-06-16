@@ -12,6 +12,18 @@ import type { Combatant, DexSnapshot, Stats } from '../types';
 import type { DecodedDna } from '../dna';
 import { GRADE_STAT_FLOOR } from '../engine/constants';
 
+/**
+ * Whether `a` and `b` are the same species — a "mirror match". Used to forbid
+ * battling/grafting your OWN pet against your OWN record of the same species: a
+ * mirror match is only allowed against ANOTHER player (a pasted foreign DNA code,
+ * whose `speciesId` is empty here). Different species — yours or a foreign code —
+ * is always allowed. Empty ids never match, so a foreign opponent is never a
+ * self-mirror. Pure.
+ */
+export function sameSpecies(a: { speciesId: string }, b: { speciesId: string }): boolean {
+  return a.speciesId !== '' && a.speciesId === b.speciesId;
+}
+
 /** Build a combatant from a captured snapshot (live pet / Archive record). */
 export function combatantFromSnapshot(
   snap: DexSnapshot,

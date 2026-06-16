@@ -42,19 +42,32 @@ export function bestSpeciesRecords(records: readonly DexRecord[]): DexSnapshot[]
   return records.map((r) => r.top[0]).filter((s): s is DexSnapshot => s !== undefined);
 }
 
-/** Two snapshots represent the same peak (equal on every ranked dimension). */
-function sameRank(a: DexSnapshot, b: DexSnapshot): boolean {
-  return (
-    a.grade === b.grade &&
-    statTotal(a.stats) === statTotal(b.stats) &&
-    a.recordedAt === b.recordedAt
-  );
+/**
+ * Reduce snapshots to ONE entry per life — keyed by `generation`, the life id —
+ * then rank best-first and cap to `cap`. A single life passes through a species
+ * exactly once (evolution moves it to a new species; rebirth bumps `generation`),
+ * so `(speciesId, generation)` uniquely identifies a "life at a tier": repeated
+ * molt-close captures of the same species in the same life collapse to that
+ * life's best peak, and a species' top-N becomes its best-N DISTINCT lives — not
+ * three near-duplicates from one life. Pure & deterministic.
+ */
+export function rankBestPerLife(
+  snaps: readonly DexSnapshot[],
+  cap = MAX_DEX_RECORDS,
+): DexSnapshot[] {
+  const bestByLife = new Map<number, DexSnapshot>();
+  for (const s of snaps) {
+    const cur = bestByLife.get(s.generation);
+    if (!cur || snapshotStrictlyBetter(s, cur)) bestByLife.set(s.generation, s);
+  }
+  return [...bestByLife.values()].sort(snapshotRank).slice(0, cap);
 }
 
 /**
- * Fold a candidate snapshot into the store, keeping the species' top-`cap`.
- * Returns true iff the candidate earned a slot (changed the kept set). Idempotent
- * under re-advance: an identical peak already present is never duplicated.
+ * Fold a candidate snapshot into the store, keeping each species' best-per-life
+ * top-`cap`. Returns true iff the candidate earned a slot (changed the kept set).
+ * Idempotent under re-advance: re-capturing the same life's species updates that
+ * life's single entry (keeping its best peak) rather than adding a duplicate.
  */
 export function tryCaptureSnapshot(
   records: DexRecord[],
@@ -66,10 +79,7 @@ export function tryCaptureSnapshot(
     record = { speciesId: cand.speciesId, top: [] };
     records.push(record);
   }
-  if (record.top.some((s) => sameRank(s, cand))) return false; // dedupe equal peaks
-
-  const merged = [...record.top, cand].sort(snapshotRank).slice(0, cap);
-  const earnedSlot = merged.includes(cand);
-  record.top = merged;
-  return earnedSlot;
+  const next = rankBestPerLife([...record.top, cand], cap);
+  record.top = next;
+  return next.includes(cand);
 }

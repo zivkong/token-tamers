@@ -227,6 +227,12 @@ Pillar 4):
 >   by the CLI). Battle consumes a decoded snapshot **read-only** — it never mutates the pet, its
 >   grade, or the Dex (invariants 1 & 3). The grade stat-floor lives in `engine/constants.ts`
 >   (`GRADE_STAT_FLOOR`, battle-only). DNA **apply/graft/fusion** remains Season 1.
+>
+> **Self-mirror rule.** You cannot battle (or, in Season 1, graft) your OWN pet against your OWN
+> record of the **same species** — a self-mirror is disallowed (`sameSpecies` in `battle/`). A
+> same-species match is allowed only against ANOTHER player (a pasted foreign DNA code, whose
+> decoded `speciesId` is empty, so it's never a self-mirror). Different species — yours or a
+> foreign code — is always allowed.
 
 ### Determinism Formula
 

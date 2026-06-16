@@ -6,6 +6,7 @@ import {
   isBattleReady,
   isGraftReady,
   MAX_DEX_RECORDS,
+  rankBestPerLife,
   snapshotRank,
   stageMature,
   tryCaptureSnapshot,
@@ -35,26 +36,31 @@ function snap(over: Partial<DexSnapshot> = {}): DexSnapshot {
 }
 
 describe('dex records — top-N capture', () => {
-  it('keeps only the top-3, ranked by grade then stat total', () => {
+  it('keeps the top-3 DISTINCT lives, ranked by grade then stat total', () => {
     const records: DexRecord[] = [];
-    tryCaptureSnapshot(records, snap({ grade: 'C', recordedAt: 1 }));
-    tryCaptureSnapshot(records, snap({ grade: 'A', recordedAt: 2 }));
-    tryCaptureSnapshot(records, snap({ grade: 'B', recordedAt: 3 }));
-    tryCaptureSnapshot(records, snap({ grade: 'S', recordedAt: 4 }));
+    tryCaptureSnapshot(records, snap({ generation: 1, grade: 'C', recordedAt: 1 }));
+    tryCaptureSnapshot(records, snap({ generation: 2, grade: 'A', recordedAt: 2 }));
+    tryCaptureSnapshot(records, snap({ generation: 3, grade: 'B', recordedAt: 3 }));
+    tryCaptureSnapshot(records, snap({ generation: 4, grade: 'S', recordedAt: 4 }));
     const top = records[0]!.top;
     expect(top).toHaveLength(MAX_DEX_RECORDS);
     expect(top.map((s) => s.grade)).toEqual(['S', 'A', 'B']);
   });
 
-  it('returns false for a candidate that cannot beat the kept top-3', () => {
+  it('returns false for a candidate (new life) that cannot beat the kept top-3', () => {
     const records: DexRecord[] = [];
-    tryCaptureSnapshot(records, snap({ grade: 'S', recordedAt: 1 }));
-    tryCaptureSnapshot(records, snap({ grade: 'A', recordedAt: 2 }));
+    tryCaptureSnapshot(records, snap({ generation: 1, grade: 'S', recordedAt: 1 }));
+    tryCaptureSnapshot(records, snap({ generation: 2, grade: 'A', recordedAt: 2 }));
     tryCaptureSnapshot(
       records,
-      snap({ grade: 'A', recordedAt: 3, stats: { pwr: 99, spd: 99, wis: 99, grt: 99 } }),
+      snap({
+        generation: 3,
+        grade: 'A',
+        recordedAt: 3,
+        stats: { pwr: 99, spd: 99, wis: 99, grt: 99 },
+      }),
     );
-    const earned = tryCaptureSnapshot(records, snap({ grade: 'C', recordedAt: 4 }));
+    const earned = tryCaptureSnapshot(records, snap({ generation: 4, grade: 'C', recordedAt: 4 }));
     expect(earned).toBe(false);
     expect(records[0]!.top).toHaveLength(3);
   });
@@ -65,6 +71,41 @@ describe('dex records — top-N capture', () => {
     expect(tryCaptureSnapshot(records, s)).toBe(true);
     expect(tryCaptureSnapshot(records, { ...s })).toBe(false);
     expect(records[0]!.top).toHaveLength(1);
+  });
+
+  // Bug fix: one life that molts repeatedly at the same species must NOT fill the
+  // top-3 with near-duplicates — each life keeps a single best-peak entry.
+  it('collapses repeated same-life captures to that life’s best peak', () => {
+    const records: DexRecord[] = [];
+    tryCaptureSnapshot(records, snap({ generation: 5, grade: 'C', recordedAt: 1 }));
+    tryCaptureSnapshot(records, snap({ generation: 5, grade: 'B', recordedAt: 2 }));
+    const earned = tryCaptureSnapshot(records, snap({ generation: 5, grade: 'A', recordedAt: 3 }));
+    expect(earned).toBe(true);
+    expect(records[0]!.top).toHaveLength(1); // one entry for the life, not three
+    expect(records[0]!.top[0]!.grade).toBe('A'); // kept the life's best peak
+    // A later, worse capture of the same life changes nothing.
+    expect(tryCaptureSnapshot(records, snap({ generation: 5, grade: 'C', recordedAt: 4 }))).toBe(
+      false,
+    );
+    expect(records[0]!.top).toHaveLength(1);
+    expect(records[0]!.top[0]!.grade).toBe('A');
+  });
+
+  it('rankBestPerLife keeps one entry per generation, ranked, capped', () => {
+    const snaps = [
+      snap({ generation: 1, grade: 'C', recordedAt: 1 }),
+      snap({ generation: 1, grade: 'S', recordedAt: 2 }), // same life as above → only the S survives
+      snap({ generation: 2, grade: 'B', recordedAt: 3 }),
+      snap({ generation: 3, grade: 'A', recordedAt: 4 }),
+      snap({ generation: 4, grade: 'C', recordedAt: 5 }),
+    ];
+    const top = rankBestPerLife(snaps);
+    expect(top).toHaveLength(MAX_DEX_RECORDS);
+    expect(top.map((s) => [s.generation, s.grade])).toEqual([
+      [1, 'S'],
+      [3, 'A'],
+      [2, 'B'],
+    ]);
   });
 
   it('snapshotRank orders grade desc, then stat total desc', () => {
