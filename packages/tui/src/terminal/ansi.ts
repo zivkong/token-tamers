@@ -18,6 +18,37 @@ export interface Rgb {
 const ESC = '';
 const CSI = `${ESC}[`;
 
+const OSC = `${ESC}]`;
+const BEL = '\x07';
+
+const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+/** Minimal base64 for ASCII text (DNA codes are ASCII) — no Buffer/btoa dependency. */
+function base64Ascii(text: string): string {
+  let out = '';
+  for (let i = 0; i < text.length; i += 3) {
+    const a = text.charCodeAt(i) & 0xff;
+    const has1 = i + 1 < text.length;
+    const has2 = i + 2 < text.length;
+    const b = has1 ? text.charCodeAt(i + 1) & 0xff : 0;
+    const c = has2 ? text.charCodeAt(i + 2) & 0xff : 0;
+    out += B64[a >> 2]! + B64[((a & 3) << 4) | (b >> 4)]!;
+    out += has1 ? B64[((b & 15) << 2) | (c >> 6)]! : '=';
+    out += has2 ? B64[c & 63]! : '=';
+  }
+  return out;
+}
+
+/**
+ * The OSC 52 "set clipboard" sequence for `text` (selection 'c' = system
+ * clipboard). A local terminal control sequence — works over SSH, makes ZERO
+ * network calls, and adds no dependency (invariants 1 & 2). Terminals that don't
+ * support OSC 52 simply ignore it.
+ */
+export function osc52(text: string): string {
+  return `${OSC}52;c;${base64Ascii(text)}${BEL}`;
+}
+
 /** A sink that terminal control sequences are written to. */
 export interface OutputSink {
   write(s: string): void;
@@ -55,6 +86,11 @@ export class Writer {
 
   write(s: string): void {
     this.sink.write(s);
+  }
+
+  /** Copy `text` to the terminal's system clipboard via OSC 52 (offline, no deps). */
+  copyToClipboard(text: string): void {
+    this.write(osc52(text));
   }
 
   enterAltScreen(): void {

@@ -34,6 +34,7 @@ import type {
   SettingsState,
 } from './pages/types';
 import { advanceBattlePlayback, buildBattleVsRecord, handleBattleKey } from './pages/battle';
+import { applyEffects, flash } from './shell-effects';
 import { buildDexRows, DEX_LIST_OFFSET } from './pages/dex';
 import { ARCHIVE_LIST_OFFSET } from './pages/archive';
 import { cycleSelectedField, isUpdateFieldSelected, settingsFieldCount } from './pages/settings';
@@ -139,6 +140,17 @@ interface LoopContext {
   sizeFn: () => { cols: number; rows: number };
   now: () => number;
   frameMs: number;
+  /** The hit registry, shared with the input handler so clicks resolve page regions. */
+  hits: HitRegistry;
+}
+
+/** Dependencies the input handler needs beyond the runtime. */
+interface InputDeps {
+  host: ShellHost;
+  /** Last frame's hit regions (pages register clickable ids during render). */
+  hits: HitRegistry;
+  /** Copy text to the terminal clipboard (OSC 52). */
+  copy: (text: string) => void;
 }
 
 function freshUi(): Record<PageId, PageUiState> {
@@ -197,14 +209,22 @@ export async function runShell(options: ShellOptions): Promise<void> {
     battle: options.initialBattle,
   };
 
+  // Shared with the loop's renderer so a click resolves the regions pages drew.
+  const hits = new HitRegistry();
+  const deps: InputDeps = {
+    host: options.host,
+    hits,
+    copy: (text) => writer.copyToClipboard(text),
+  };
+
   const inputSource = options.input ?? (manageTerminal ? stdinSource() : nullSource());
-  const unsubscribe = inputSource.onEvent((ev) => handleEvent(rt, ev, options.host));
+  const unsubscribe = inputSource.onEvent((ev) => handleEvent(rt, ev, deps));
 
   const cleanup = manageTerminal ? enterTerminal(writer) : () => {};
 
   try {
     inputSource.start?.();
-    const ctx: LoopContext = { options, writer, sizeFn, now, frameMs };
+    const ctx: LoopContext = { options, writer, sizeFn, now, frameMs, hits };
     await loop(rt, ctx);
   } finally {
     unsubscribe();
@@ -215,14 +235,13 @@ export async function runShell(options: ShellOptions): Promise<void> {
 }
 
 async function loop(rt: ShellRuntime, ctx: LoopContext): Promise<void> {
-  const { options, writer, sizeFn, now, frameMs } = ctx;
+  const { options, writer, sizeFn, now, frameMs, hits } = ctx;
   const host = options.host;
   let last = now();
   let renderAcc = 0;
   let advanceAcc = 0;
   let frames = 0;
 
-  const hits = new HitRegistry();
   let curSize = sizeFn();
   // Force a full first paint with a fresh buffer.
   let buf = new FrameBuffer(curSize.cols, curSize.rows);
@@ -299,12 +318,12 @@ function renderOnce(
 // Input handling
 // ---------------------------------------------------------------------------
 
-function handleEvent(rt: ShellRuntime, ev: InputEvent, host: ShellHost): void {
+function handleEvent(rt: ShellRuntime, ev: InputEvent, deps: InputDeps): void {
   if (ev.type === 'key') {
-    handleKey(rt, ev.name, host);
+    handleKey(rt, ev.name, deps.host);
     return;
   }
-  handleMouse(rt, ev, host);
+  handleMouse(rt, ev, deps);
 }
 
 function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
@@ -406,8 +425,9 @@ function adjustSetting(rt: ShellRuntime, delta: number): void {
 function handleMouse(
   rt: ShellRuntime,
   ev: Extract<InputEvent, { type: 'mouse' }>,
-  host: ShellHost,
+  deps: InputDeps,
 ): void {
+  const host = deps.host;
   if (ev.action === 'wheel-up') {
     moveSelection(rt, host, -1);
     return;
@@ -434,7 +454,15 @@ function handleMouse(
     }
   }
 
-  // A click anywhere on the detail page (outside the menu) returns to the Dex.
+  // Page-registered regions (e.g. the Dex-detail DNA code → copy to clipboard).
+  const region = deps.hits.hit(cx, cy);
+  if (region?.startsWith('copy:')) {
+    deps.copy(region.slice('copy:'.length));
+    flash(rt, 'DNA code copied ✓');
+    return;
+  }
+
+  // A click anywhere on the detail page (outside the menu / a copy region) returns to the Dex.
   if (rt.page === 'dex-detail' && cy < layout.menuDividerY) {
     rt.page = 'dex';
     return;
@@ -442,20 +470,24 @@ function handleMouse(
 
   // List-row clicks (Dex/Archive): map by canvas geometry, ignoring the menu.
   if ((rt.page === 'dex' || rt.page === 'archive') && cy < layout.menuDividerY) {
-    const offset = rt.page === 'dex' ? DEX_LIST_OFFSET : ARCHIVE_LIST_OFFSET;
-    const listTop = layout.canvasY + offset;
-    const idxOnScreen = cy - listTop;
-    if (idxOnScreen >= 0) {
-      const ui = rt.ui[rt.page];
-      const target = ui.scroll + idxOnScreen;
-      const max = rowCount(rt, host) - 1;
-      if (target >= 0 && target <= max) {
-        ui.selected = target;
-        // On the Dex, a click on a discovered species drills into its detail.
-        if (rt.page === 'dex') openDexDetail(rt, host);
-      }
-    }
+    handleListRowClick(rt, host, cy - (layout.canvasY + listOffset(rt.page)));
   }
+}
+
+/** First-visible-row offset for the list page, shared with the renderer. */
+function listOffset(page: PageId): number {
+  return page === 'dex' ? DEX_LIST_OFFSET : ARCHIVE_LIST_OFFSET;
+}
+
+/** Select (and on the Dex, drill into) the list row `idxOnScreen` cells below the list top. */
+function handleListRowClick(rt: ShellRuntime, host: ShellHost, idxOnScreen: number): void {
+  if (idxOnScreen < 0) return;
+  const ui = rt.ui[rt.page];
+  const target = ui.scroll + idxOnScreen;
+  if (target < 0 || target > rowCount(rt, host) - 1) return;
+  ui.selected = target;
+  // On the Dex, a click on a discovered species drills into its detail.
+  if (rt.page === 'dex') openDexDetail(rt, host);
 }
 
 function activate(rt: ShellRuntime, id: PageId | 'quit'): void {
@@ -491,30 +523,6 @@ function rowCount(rt: ShellRuntime, host: ShellHost): number {
     return buildDexRows(ctx).length;
   }
   return 0;
-}
-
-// ---------------------------------------------------------------------------
-// Effects -> transient UI (MVP: a gradeshift flash line)
-// ---------------------------------------------------------------------------
-
-function applyEffects(rt: ShellRuntime, effects: GameEffect[]): void {
-  for (const e of effects) {
-    if (e.type === 'gradeshift') {
-      flash(rt, `✦ Grade up! ${e.from} → ${e.to} (${Math.round(e.chance * 100)}%)`);
-    } else if (e.type === 'evolved') {
-      flash(rt, `✦ Evolved: ${e.from} → ${e.to}`);
-    } else if (e.type === 'grade_roll_failed') {
-      flash(rt, `Grade held at ${e.grade} (${Math.round(e.chance * 100)}%)`);
-    } else if (e.type === 'rebirth') {
-      flash(rt, `↻ Rebirth — legacy grade ${e.legacyGrade}, gen ${e.newGeneration}`);
-    }
-  }
-}
-
-function flash(rt: ShellRuntime, msg: string): void {
-  rt.flash = msg;
-  // Show for ~2 seconds of frames (assume 30fps cadence).
-  rt.flashUntilFrame = rt.frame + 60;
 }
 
 export { FRAME_MS, ADVANCE_MS };

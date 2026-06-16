@@ -39,6 +39,7 @@ export {
   mix,
   cursorTo,
   sgrReset,
+  osc52,
 } from './terminal/ansi';
 
 // Frame buffer.

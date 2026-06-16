@@ -85,7 +85,20 @@ export function renderDexDetailPage(ctx: RenderContext): void {
 
   const shown =
     maxCards < record.top.length ? `${maxCards}/${record.top.length}` : `${record.top.length}`;
-  drawPageFooter(ctx, `${shown} record${record.top.length === 1 ? '' : 's'}  ·  Esc back`);
+  drawPageFooter(
+    ctx,
+    `${shown} record${record.top.length === 1 ? '' : 's'}  ·  click a DNA code to copy  ·  Esc back`,
+  );
+}
+
+/**
+ * The clipboard form of a DNA code: keep the structural `TTX<v>-` prefix but drop
+ * the cosmetic in-body grouping dashes, so a shared/pasted code is shorter. Decode
+ * is dash-insensitive, so this is equivalent to the on-screen grouped form.
+ */
+function compactDna(code: string): string {
+  const dash = code.indexOf('-');
+  return dash < 0 ? code : code.slice(0, dash + 1) + code.slice(dash + 1).replace(/-/g, '');
 }
 
 /** Left: scaled sprite. Right: name + house/dex + the readiness banner. */
@@ -149,12 +162,10 @@ function drawRecordCard(ctx: RenderContext, snap: DexSnapshot, idx: number, y: n
 
   const speciesNum = findSpecies(pack, snap.speciesId)?.num ?? 0;
   const code = encodeDna(snap, { speciesNum });
-  buf.text(x + 5, y + 1, `DNA ${code}`, DNA, null);
-  buf.text(
-    x + 5 + `DNA ${code}`.length + 3,
-    y + 1,
-    `Graft ${graftPotencyTier(snap.grade)}`,
-    DIM,
-    null,
-  );
+  const label = `DNA ${code}`;
+  buf.text(x + 5, y + 1, label, DNA, null);
+  // Click-to-copy: a ⧉ affordance + a hit region over the code copy the (compact) code.
+  buf.text(x + 5 + label.length + 1, y + 1, '⧉', READY, null);
+  ctx.hits.add(`copy:${compactDna(code)}`, x + 5, y + 1, label.length + 2, 1);
+  buf.text(x + 5 + label.length + 4, y + 1, `Graft ${graftPotencyTier(snap.grade)}`, DIM, null);
 }

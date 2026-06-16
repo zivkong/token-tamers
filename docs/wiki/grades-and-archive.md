@@ -54,9 +54,10 @@ code**, and the record's graft strength. Press **Esc** to go back.
 Every record carries a **DNA code** — a copyable, license-key-style token like
 `TTX1-AFAA-21QC-V22T-E5V9-…` that captures that life (species, House, grade, stats, traits, and
 more). The same pet always produces the same code, and codes are designed to stay valid
-**forever**: a code you share today still reads on any future version. Trading battles and DNA
-grafting (fusing a friend's DNA into your pet) are coming in a later update; for now the code
-is yours to keep and share.
+**forever**: a code you share today still reads on any future version. On the detail page,
+**click a code (or the ⧉ icon) to copy it** straight to your clipboard — no fiddly selecting.
+Battles are here today (see [Battles](battles.md)); DNA grafting (fusing a friend's DNA into
+your pet) is coming in a later update.
 
 ### Battle- & graft-ready
 
