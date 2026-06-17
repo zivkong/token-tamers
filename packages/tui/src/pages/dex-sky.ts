@@ -319,9 +319,9 @@ function drawRailIcon(
   rect: Rect,
   node: HouseNode | undefined,
   house: House,
+  rows: number,
 ): void {
   const { buf, frame, mode } = ctx;
-  const rows = Math.min(6, Math.max(3, rect.h - 6));
   const top = rect.y + 1;
   const cx = rect.x + Math.floor(rect.w / 2);
   if (node?.owned) {
@@ -370,15 +370,17 @@ function drawLegendAura(ctx: RenderContext, x: number, y: number, w: number, h: 
 }
 
 /** The right-hand focus rail: icon + the selected species' identity & records. */
-/** Draw a focus-rail line ONLY when it stays within the page body — never on or
- *  below the page footer (the rail meta/lore is variable-length and would
- *  otherwise collide with the footer at short heights). `railBold` is the bold
- *  variant; both no-op for empty text or a row at/below the body bottom. */
-function railText(ctx: RenderContext, x: number, y: number, text: string, color: Rgb): void {
-  if (text && y < pageBodyBottom(ctx.layout)) ctx.buf.text(x, y, text, color, null);
+/** A focus-rail text line in priority order (drawn top-down while it fits). */
+interface RailLine {
+  text: string;
+  color: Rgb;
+  bold?: boolean;
 }
-function railBold(ctx: RenderContext, x: number, y: number, text: string, color: Rgb): void {
-  if (text && y < pageBodyBottom(ctx.layout)) ctx.buf.textBold(x, y, text, color, null);
+
+/** Sprite footprint (rows) the rail icon gets at a given rail height — shrinks,
+ *  then drops to 0, on a short rail so the text lines below it stay visible. */
+function iconRowsFor(railH: number): number {
+  return railH >= 11 ? 6 : railH >= 8 ? 3 : 0;
 }
 
 export function renderFocusRail(
@@ -390,23 +392,59 @@ export function renderFocusRail(
   const { buf } = ctx;
   for (let i = 0; i < rect.h; i++) buf.set(rect.x, rect.y + i, { ch: '│', fg: RULE, bg: null });
   const ix = rect.x + 2;
-  const metaY = rect.y + Math.min(6, Math.max(3, rect.h - 6)) + 2;
+  const iconRows = iconRowsFor(rect.h);
+  const metaY = rect.y + (iconRows > 0 ? iconRows + 1 : 1);
   if (node?.stage === 'egg') {
     drawMoteRail(ctx, { ...rect, x: ix, w: rect.w - 3 }, node, house, metaY);
     return;
   }
-  drawRailIcon(ctx, { ...rect, x: ix, w: rect.w - 3 }, node, house);
-  if (!node) {
-    railBold(ctx, ix, metaY, '???', SEALED);
-    return;
+  if (iconRows > 0) drawRailIcon(ctx, { ...rect, x: ix, w: rect.w - 3 }, node, house, iconRows);
+  // Priority order: identity → stage → battle-ready (the only eligibility cue on
+  // the Dex) → stats → secondary house/Dex#/open. Drawn top-down while rows fit,
+  // so a short rail keeps the IMPORTANT lines and sheds the secondary ones.
+  const lines = node ? railLines(ctx, node, house) : [{ text: '???', color: SEALED, bold: true }];
+  const bottom = pageBodyBottom(ctx.layout);
+  let y = metaY;
+  for (const ln of lines) {
+    if (y >= bottom) break;
+    if (ln.text) {
+      if (ln.bold) buf.textBold(ix, y, ln.text, ln.color, null);
+      else buf.text(ix, y, ln.text, ln.color, null);
+    }
+    y += 1;
   }
-  const owned = node.owned && node.grade;
-  const title = owned ? `${node.name} ${GRADE_BADGE[node.grade!]}` : node.legend ? '??? ✦' : '???';
-  const titleColor = owned ? GRADE_ACCENT[node.grade!] : node.legend ? LEGEND_GOLD : SEALED;
-  railBold(ctx, ix, metaY, title, titleColor);
-  railText(ctx, ix, metaY + 1, `${titleCase(house)} · ${HOUSE_KINGDOM[house]}`, DIM);
-  railText(ctx, ix, metaY + 2, `Dex #${String(node.num).padStart(3, '0')}`, DIM);
-  drawRailRecord(ctx, ix, metaY + 3, node);
+}
+
+/** The focus-rail lines for a non-egg star, most-important first. */
+function railLines(ctx: RenderContext, node: HouseNode, house: House): RailLine[] {
+  const houseLine = { text: `${titleCase(house)} · ${HOUSE_KINGDOM[house]}`, color: DIM };
+  const dexLine = { text: `Dex #${String(node.num).padStart(3, '0')}`, color: DIM };
+  if (!(node.owned && node.grade)) {
+    const title = node.legend ? '??? ✦' : '???';
+    const hint = node.legend ? 'A legend sleeps here.' : 'Undiscovered — raise it to a molt.';
+    return [
+      { text: title, color: node.legend ? LEGEND_GOLD : SEALED, bold: true },
+      houseLine,
+      dexLine,
+      { text: hint, color: DIM },
+    ];
+  }
+  const best = ctx.state.dexRecords.find((r) => r.speciesId === node.speciesId)?.top[0];
+  const grade = node.grade!;
+  const lines: RailLine[] = [
+    { text: `${node.name} ${GRADE_BADGE[grade]}`, color: GRADE_ACCENT[grade], bold: true },
+    { text: titleCase(node.stage), color: TEXT },
+  ];
+  if (best) {
+    const ready = isBattleReady(best);
+    const tag = ready ? '✦ Battle-ready' : `▢ Sealed → ${titleCase(BATTLE_READY_STAGE)}`;
+    lines.push(
+      { text: tag, color: ready ? READY : SEALED },
+      { text: statLine(best.stats), color: TEXT },
+    );
+  }
+  lines.push(houseLine, dexLine, { text: '⏎ open', color: DIM });
+  return lines;
 }
 
 /** The Mote focus panel: its sprite (tinted to the sky) + origin copy. */
@@ -436,27 +474,11 @@ function drawMoteRail(
   } else {
     buf.textBold(cx, rect.y + 1 + Math.floor(rows / 2), '✦', MOTE_STAR, null);
   }
-  railBold(ctx, rect.x, metaY, 'Mote ✦', MOTE_STAR);
-  railText(ctx, rect.x, metaY + 1, 'The shared origin —', DIM);
-  railText(ctx, rect.x, metaY + 2, 'every tamer begins', DIM);
-  railText(ctx, rect.x, metaY + 3, 'here, then commits', DIM);
-  railText(ctx, rect.x, metaY + 4, 'to a House.', DIM);
-}
-
-/** Stage + stats + readiness for an owned star; the locked hint otherwise. */
-function drawRailRecord(ctx: RenderContext, x: number, y: number, node: HouseNode): void {
-  if (!node.owned) {
-    railText(ctx, x, y, node.legend ? 'A legend sleeps here.' : 'Undiscovered — raise it', DIM);
-    railText(ctx, x, y + 1, node.legend ? '' : 'to a molt to reveal.', DIM);
-    return;
-  }
-  const best = ctx.state.dexRecords.find((r) => r.speciesId === node.speciesId)?.top[0];
-  railText(ctx, x, y, titleCase(node.stage), TEXT);
-  if (best) {
-    railText(ctx, x, y + 1, statLine(best.stats), TEXT);
-    const ready = isBattleReady(best);
-    const tag = ready ? '✦ Battle-ready' : `▢ Sealed → ${titleCase(BATTLE_READY_STAGE)}`;
-    railText(ctx, x, y + 2, tag, ready ? READY : SEALED);
-  }
-  railText(ctx, x, y + 3, '⏎ open', DIM);
+  // Origin copy, drawn top-down only while each line stays within the page body.
+  const bottom = pageBodyBottom(ctx.layout);
+  const lore = ['The shared origin —', 'every tamer begins', 'here, then commits', 'to a House.'];
+  if (metaY < bottom) buf.textBold(rect.x, metaY, 'Mote ✦', MOTE_STAR, null);
+  lore.forEach((t, i) => {
+    if (metaY + 1 + i < bottom) buf.text(rect.x, metaY + 1 + i, t, DIM, null);
+  });
 }

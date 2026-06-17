@@ -366,18 +366,6 @@ describe('golden frames — narrow / floor sizes (regression guards)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('dex-detail omits the empty RECORDS section on a shallow dock (200x16)', () => {
-    const out = renderFrameToString(
-      200,
-      16,
-      input({ page: 'dex-detail', ui: { selected: 0, scroll: 0, speciesId: 'ember' } }),
-    );
-    expect(out).toContain('Ember');
-    expect(out).not.toContain('RECORDS');
-    expect(out).not.toContain('click a DNA code');
-    expect(out).toMatchSnapshot();
-  });
-
   it('pet + archive render at the 72x12 horizontal floor without overflow', () => {
     const pet = renderFrameToString(72, 12, input({ page: 'pet' }));
     expect(pet).toContain('Quit');
@@ -391,6 +379,20 @@ describe('golden frames — narrow / floor sizes (regression guards)', () => {
     const out = renderFrameToString(71, 16, input({ page: 'pet' }));
     expect(out).toContain('too small');
     expect(out).toContain('72x12');
+  });
+
+  it('dex-detail shows a record + DNA code on a wide-but-short dock (200x16)', () => {
+    // The page's purpose — read/copy the DNA — must survive a common bottom dock;
+    // the sprite shrinks so at least the best record card fits.
+    const out = renderFrameToString(
+      200,
+      16,
+      input({ page: 'dex-detail', ui: { selected: 0, scroll: 0, speciesId: 'ember' } }),
+    );
+    expect(out).toContain('Ember');
+    expect(out).toContain('RECORDS');
+    expect(out).toContain('TTX'); // the shareable DNA code is visible
+    expect(out).toMatchSnapshot();
   });
 
   it('dex-detail suppresses records (no rail bleed) on a narrow-tall dock (72x17)', () => {

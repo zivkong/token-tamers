@@ -222,6 +222,16 @@ function handleRegionClick(
     openDexDetail(rt, host);
     return true;
   }
+  if (region.startsWith('battle:pick:')) {
+    // Click an opponent row to select it (Enter / b then fights) — mouse parity.
+    rt.ui.battle.selected = Number(region.slice('battle:pick:'.length)) || 0;
+    return true;
+  }
+  if (region.startsWith('settings:field:')) {
+    // Click a field to focus it (←→ then changes the value) — mouse parity.
+    rt.settings.selected = Number(region.slice('settings:field:'.length)) || 0;
+    return true;
+  }
   return false;
 }
 
@@ -255,6 +265,17 @@ function moveSelection(rt: ShellRuntime, host: ShellHost, delta: number): void {
     // ↑/wheel-up climbs toward the apex and ↓ descends toward the sprite/Mote.
     const max = houseNodeCount(dexCtx(host), rt.ui.dex.house ?? 0) - 1;
     rt.ui.dex.selected = Math.max(0, Math.min(max, rt.ui.dex.selected - delta));
+    return;
+  }
+  if (rt.page === 'battle') {
+    // Only the opponent picker scrolls (the arena uses ←→ to scrub); wheel parity.
+    if (!rt.battle) {
+      const max = bestSpeciesRecords(host.getState().dexRecords).length - 1;
+      rt.ui.battle.selected = Math.max(
+        0,
+        Math.min(Math.max(0, max), rt.ui.battle.selected + delta),
+      );
+    }
     return;
   }
   if (rt.page !== 'archive') return;

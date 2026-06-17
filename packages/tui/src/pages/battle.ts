@@ -148,9 +148,12 @@ function drawPicker(ctx: RenderContext, bodyY: number): void {
   const top = bodyY + 2;
   const maxRows = Math.max(0, Math.min(records.length, pageBodyBottom(layout) - top));
   for (let i = 0; i < maxRows; i++) {
-    drawPickerRow(ctx, records[i]!, i === ui.selected, top + i);
+    const ry = top + i;
+    drawPickerRow(ctx, records[i]!, i === ui.selected, ry);
+    // Clickable row (mouse parity with the keyboard ↑↓ selection).
+    ctx.hits.add(`battle:pick:${i}`, x, ry, Math.max(1, layout.canvasCols - 4), 1);
   }
-  drawPageFooter(ctx, '↑↓ select  ·  Enter fight  ·  Esc back');
+  drawPageFooter(ctx, '↑↓ / click select  ·  Enter fight  ·  Esc back');
 }
 
 function drawPickerRow(ctx: RenderContext, snap: DexSnapshot, selected: boolean, y: number): void {
@@ -212,7 +215,11 @@ function drawArena(ctx: RenderContext, view: BattleView, bodyY: number): void {
   drawCombatantColumn(ctx, view.left, hpA, left);
   drawCombatantColumn(ctx, view.right, hpB, right);
 
-  const logTop = bodyY + SPRITE_ROWS + 2;
+  // On a short dock, tighten the gap between the combatants and the Log so the
+  // log shows enough lines to FOLLOW the fight (vs only 1-2). Roomy terminals
+  // keep the airier spacing.
+  const logGap = layout.canvasRows <= 20 ? 0 : 2;
+  const logTop = bodyY + SPRITE_ROWS + logGap;
   drawDivider(buf, logTop, { x: layout.canvasX + 1, width: layout.canvasCols - 2, label: 'Log' });
   drawLog(ctx, view, layout.canvasX + 2, logTop + 2);
 
@@ -319,6 +326,9 @@ function logLine(
 }
 
 function drawWinner(ctx: RenderContext, view: BattleView, y: number): void {
+  // Never draw the banner on/below the footer row (a tiny dock would otherwise
+  // collide it with the footer text).
+  if (y >= pageBodyBottom(ctx.layout)) return;
   const w = view.result.winner;
   const text = w === 'draw' ? '⚖ Draw' : `★ ${(w === 'a' ? view.left : view.right).name} wins!`;
   ctx.buf.textBold(ctx.layout.canvasX + 2, y, text, WIN, null);

@@ -38,6 +38,14 @@ const DNA: Rgb = { r: 150, g: 200, b: 255 };
 const RANKS = ['Best', '2nd', '3rd'] as const;
 const SPRITE_ROWS = 6;
 /**
+ * The sprite shrinks on a shallow canvas (a short horizontal dock) so the sprite
+ * + meta leave room for at least one record card — otherwise a wide-but-short
+ * dock (e.g. 200x16) would hide the DNA code and its copy affordance entirely.
+ */
+function spriteRowsFor(layout: RenderContext['layout']): number {
+  return layout.canvasRows <= 18 ? 4 : SPRITE_ROWS;
+}
+/**
  * A record card's content (stats … gen … date on line A, DNA + graft on line B)
  * runs to ~63 cells from the canvas left. Below this width the section is
  * suppressed — otherwise the date/DNA bleed past the canvas edge into the menu
@@ -90,7 +98,7 @@ export function renderDexDetailPage(ctx: RenderContext): void {
   // Records section. On a shallow canvas (a short horizontal dock) no card row
   // fits — skip the RECORDS divider AND the "click a DNA code" hint entirely
   // rather than draw an empty, misleading section.
-  const recTop = bodyY + SPRITE_ROWS + 1;
+  const recTop = bodyY + spriteRowsFor(layout) + 1;
   const cardsTop = recTop + 2;
   const bodyBottom = pageBodyBottom(layout);
   // Gate on BOTH height (rows that fit) and width (a card fits without bleeding
@@ -138,14 +146,15 @@ function drawSpriteAndMeta(
   const species = findSpecies(pack, best.speciesId);
   const spr = findSprite(pack, species?.spriteId ?? '');
   if (spr) {
+    const rows = spriteRowsFor(layout);
     const nativeRows = Math.max(1, subcellRows(spr.height));
-    const scale = SPRITE_ROWS / nativeRows;
+    const scale = rows / nativeRows;
     const destW = Math.max(1, Math.round(subcellCols(spr.width) * scale));
     drawSprite(buf, spr, buildPalette(houseTint(best.house), best.grade, frame, species?.accent), {
       x: canvasX + 2,
       y: bodyY,
       destW,
-      destH: SPRITE_ROWS,
+      destH: rows,
       frame,
       mode,
     });

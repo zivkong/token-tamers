@@ -324,7 +324,6 @@ function growthWord(g: ReturnType<typeof growthProgress>): string {
  */
 function drawOddsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf, state } = ctx;
-  const narrow = panel.cols < NARROW;
   buf.text(panel.x + 1, y, 'Odds', LABEL, null);
   const x = panel.x + CONTENT_X;
   const avail = panel.x + panel.cols - 1 - x;
@@ -333,8 +332,10 @@ function drawOddsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const parts = oddsParts(odds);
   drawPartsClipped(buf, parts, { x, y, avail });
 
-  // A muted "rolls at next molt" hint, right-aligned when there is comfortable room.
-  if (odds && !narrow) {
+  // A muted "rolls at next molt" hint, right-aligned whenever it geometrically
+  // fits (the gap check below is the real guard — no redundant NARROW gate, which
+  // hid the hint on chrome columns where it actually fit).
+  if (odds) {
     const hint = 'rolls at next molt';
     const hintX = panel.x + panel.cols - hint.length - 1;
     if (hintX > x + partsLen(parts) + 1) buf.text(hintX, y, hint, MUTED, null);
