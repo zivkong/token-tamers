@@ -24,6 +24,7 @@ export const KNOWN_COMMANDS = new Set([
   'complete',
   'adapters',
   'update',
+  'statusline',
   'shell',
 ]);
 
@@ -42,6 +43,8 @@ Commands:
   complete    Completion meter breakdown.
   adapters    Adapter detection + paths.
   update      Check GitHub for a newer tt and update (opt-in; off by default).
+  statusline  Capture real 5h/weekly reset times from a Claude Code statusLine
+              payload on stdin (opt-in; syncs the cycle to your actual resets).
 
 Flags:
   --yes, -y       Take defaults non-interactively (for init).

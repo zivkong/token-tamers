@@ -29,6 +29,7 @@ import {
   watchCommand,
   runShellCommand,
   updateCommand,
+  statuslineCommand,
 } from './commands';
 
 export { parseArgs, type ParsedArgs } from './helpers/args';
@@ -101,6 +102,9 @@ export async function dispatch(
       return 0;
     case 'update':
       await updateCommand(out);
+      return 0;
+    case 'statusline':
+      await statuslineCommand(out);
       return 0;
     case 'watch':
       // Long-running; resolves when the process is interrupted.

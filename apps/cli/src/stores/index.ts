@@ -9,6 +9,7 @@ export {
   settingsRootsFor,
 } from './settings';
 export { STATE_FILE, loadState, saveState } from './state';
+export { USAGE_FILE, type UsageSnapshot, loadUsage, saveUsage, mergeUsage } from './usage';
 export {
   CHECKPOINTS_FILE,
   type CheckpointMap,

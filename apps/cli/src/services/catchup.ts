@@ -23,6 +23,7 @@ import {
   loadConfig,
   loadPending,
   loadState,
+  loadUsage,
   saveCheckpoints,
   savePending,
   saveState,
@@ -73,6 +74,14 @@ export async function catchUp(now: () => number = Date.now): Promise<CatchUpResu
   if (!saved) {
     throw new NotInitializedError();
   }
+
+  // Sync the weekly cycle to the player's REAL subscription reset when it has been
+  // captured (`tt statusline`). Engine.effectiveWeekAnchor slides this real phase
+  // into the past, so reconcile and every future rebirth land on the actual reset
+  // instant — not an inferred/calendar guess. In-memory only: usage.json is the
+  // durable source synced each run, config.json is never rewritten.
+  const realWeekly = loadUsage()?.sevenDayResetsAt;
+  if (realWeekly !== undefined) config.cycle = { ...config.cycle, weekAnchor: realWeekly };
 
   const checkpoints = loadCheckpoints();
   // Adapters configured but never scanned before (e.g. enabled after the pet was
