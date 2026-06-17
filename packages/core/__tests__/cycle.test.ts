@@ -51,6 +51,23 @@ describe('cycle — static policy', () => {
     });
   });
 
+  it('does not freeze rebirth when the week anchor is set in the future', () => {
+    // Regression: `tt init` anchors the week to *next* Monday, so a pet whose
+    // first usage predates the anchor would have rebirth suspended entirely
+    // (weekRebirths short-circuits while `now < weekAnchor`). The effective
+    // anchor slides the configured phase back into the past so boundaries fire.
+    const futureAnchor = WEEK_ANCHOR + 9 * 24 * HOUR; // ~9 days AFTER first usage
+    const cfg = staticCycle(futureAnchor);
+    const events = [ev(HOUR)]; // first usage well before the anchor
+    // `now` is 3 days after first usage — still BEFORE the configured anchor,
+    // but past a weekly boundary on the anchor's phase.
+    const out = deriveCycleEvents(events, cfg, 0, WEEK_ANCHOR + 3 * 24 * HOUR);
+    const rebirths = out.filter((e) => e.type === 'rebirth');
+    expect(rebirths.length).toBeGreaterThanOrEqual(1);
+    // Boundary phase is preserved (a whole-week shift of the configured anchor).
+    expect(Math.abs((rebirths[0]!.at - futureAnchor) % WEEK_MS)).toBe(0);
+  });
+
   it('keeps the last molt that closes within a week before that rebirth', () => {
     // 33 full 5h windows fit in a 168h week (last closes at 165h, before 168h).
     // Put an event in that final in-week window; its molt precedes the rebirth.

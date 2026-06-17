@@ -51,9 +51,30 @@ export function deriveCycleEvents(
       ? staticMolts(events, cycle.weekAnchor, after, now)
       : dynamicMolts(windowDrivingEvents(events, cycle), after, now);
 
-  const rebirths = weekRebirths(cycle.weekAnchor, after, now);
+  const rebirths = weekRebirths(effectiveWeekAnchor(events, cycle.weekAnchor), after, now);
 
   return mergeOrdered(molts, rebirths);
+}
+
+/**
+ * The 7-day rebirth anchor, pulled into the past so it can never sit ahead of the
+ * pet's life. We keep the CONFIGURED phase (e.g. Monday 00:00) but slide it back by
+ * whole weeks to the tile containing the first event. This neutralizes a
+ * `weekAnchor` set to a FUTURE date — e.g. `tt init` choosing next Monday, or a
+ * subscription reset that hasn't been observed yet — which would otherwise let
+ * `weekRebirths` suspend rebirth entirely (its `now < weekAnchor` short-circuit).
+ *
+ * Shifting by whole `WEEK_MS` leaves the weekly boundary PHASE identical, so the
+ * emitted rebirth instants are unchanged for any anchor already in the past. It is
+ * deliberately applied ONLY to the weekly rebirth math — static 5-h window tiling
+ * still uses the raw `cycle.weekAnchor` (a whole-week shift is NOT a whole-window
+ * shift: WEEK_MS % WINDOW_MS ≠ 0, so reusing it there would slide the 5-h grid).
+ *
+ * Pure: `events` must be sorted ascending (deriveCycleEvents' contract).
+ */
+export function effectiveWeekAnchor(events: readonly UsageEvent[], weekAnchor: number): number {
+  const first = events.length > 0 ? events[0]!.ts : weekAnchor;
+  return first < weekAnchor ? weekStartFor(first, weekAnchor) : weekAnchor;
 }
 
 /** Week boundaries strictly after `after` and at or before `now`. */
