@@ -393,21 +393,20 @@ const SPECIES_STAGE_SIZE: Record<Stage, number> = {
 
 describe('sprite data integrity', () => {
   it('all palette indices are 0–20 (0=transparent, 1=outline, 2..14=ramp, 15=glint, 16..18=accent, 20=belly)', () => {
+    // Plain scan + ONE assertion: calling expect() per pixel is millions of calls
+    // across the full octant-resolution asset set (apex 36px, habitats 128x96) and
+    // times out on CI. Collect violations, assert once.
+    const bad: string[] = [];
     for (const sprite of contentPackV1.sprites) {
       for (const frame of sprite.frames) {
         for (const row of frame) {
           for (const idx of row) {
-            expect(
-              idx,
-              `sprite '${sprite.id}' has out-of-range index ${idx}`,
-            ).toBeGreaterThanOrEqual(0);
-            expect(idx, `sprite '${sprite.id}' has out-of-range index ${idx}`).toBeLessThanOrEqual(
-              20,
-            );
+            if (idx < 0 || idx > 20) bad.push(`${sprite.id}:${idx}`);
           }
         }
       }
     }
+    expect(bad, `out-of-range palette indices: ${bad.slice(0, 12).join(', ')}`).toEqual([]);
   });
 
   it('every species sprite is EXACTLY square at its stage size (16/20/24/28/32/36)', () => {
