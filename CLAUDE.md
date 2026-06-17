@@ -143,20 +143,28 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   `cycle` from the legacy per-adapter `plan`/`cyclePolicy`/`weekAnchor` and slims each
   adapter to `{ provider, paths }`.
 - User data: `~/.tokentamers/config.json` (UserConfig) + `state.json` (GameState) +
-  `settings.json` (SettingsFile: `color` + `subcell` sprite-density + per-adapter `adapterRoots`).
-  The `subcell` knob (`auto`|`octant`|`sextant`|`half`, default `auto`) picks the sub-cell render
-  mode; `auto` resolves to the universally-safe `half` (block elements every terminal renders).
-  octant/sextant are **explicit opt-in** — a cursor-width probe CANNOT detect font glyph coverage
-  (the cursor advances by the Unicode width table, not glyph presence, so an octant measures 1
-  column whether the terminal draws it or a width-1 tofu box, e.g. macOS Terminal.app), and there's
-  no env-free capability query. **Zero env config:**
-  the project reads nothing from `process.env` — the data dir is fixed at `~/.tokentamers`
-  and all knobs live in `settings.json` (the cli reads it and threads values down; adapters
-  get scan roots via `detect(roots)`, core/adapters never touch `process.env`). Tests
-  redirect the data dir with `setDataDirForTesting`, not an env var.
+  `settings.json` (SettingsFile: `color` + `subcell` sprite-density + per-adapter `adapterRoots`)
+  - `usage.json` (UsageSnapshot: captured `five_hour`/`seven_day` `resets_at`, see cycle rule).
+    The `subcell` knob (`auto`|`octant`|`sextant`|`half`, default `auto`) picks the sub-cell render
+    mode; `auto` resolves to the universally-safe `half` (block elements every terminal renders).
+    octant/sextant are **explicit opt-in** — a cursor-width probe CANNOT detect font glyph coverage
+    (the cursor advances by the Unicode width table, not glyph presence, so an octant measures 1
+    column whether the terminal draws it or a width-1 tofu box, e.g. macOS Terminal.app), and there's
+    no env-free capability query. **Zero env config:**
+    the project reads nothing from `process.env` — the data dir is fixed at `~/.tokentamers`
+    and all knobs live in `settings.json` (the cli reads it and threads values down; adapters
+    get scan roots via `detect(roots)`, core/adapters never touch `process.env`). Tests
+    redirect the data dir with `setDataDirForTesting`, not an env var.
 - Canonical cycle rule: molts (5-h window close) are the evolution checkpoints (egg→sprite
   fast-hatches ~10 min after first usage); weekly rebirth never evolves the pet —
-  it archives and re-eggs it.
+  it archives and re-eggs it. The weekly anchor never sits in the future
+  (`effectiveWeekAnchor` slides its phase back), and its phase is the player's REAL
+  subscription reset when captured: `tt statusline` records Claude Code's
+  `rate_limits.*.resets_at` (stdin-only; persisted to no Claude file) into `usage.json`,
+  which catch-up feeds as `weekAnchor`. `Engine.reconcile(now)` fires a one-time catch-up
+  rebirth for a save that slipped past a boundary while a future anchor had rebirth frozen
+  (idempotent; outside the deterministic `advanceTo`). Capture is opt-in & zero-network;
+  with no statusline the engine falls back to inference. See `lifecycle-and-cycles.md`.
 - Releases: tag `v*` → GitHub Actions builds binaries + GitHub Release.
 - Git hooks (husky, auto-installed): pre-commit = lint-staged + fast invariant
   gates; commit-msg = Conventional Commits check — `<type>(<scope>)?: <description>`

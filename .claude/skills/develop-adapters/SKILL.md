@@ -42,9 +42,15 @@ adapter; see `develop-game-engine`.
   (legacy). No env vars (XDG / `CLAUDE_CONFIG_DIR` are no longer consulted).
   Assistant records carry `message.usage` (input_tokens, output_tokens,
   cache_creation_input_tokens → cacheWriteTokens, cache_read_input_tokens →
-  cacheReadTokens) and `message.model` (full model ID). Auxiliary local sources
-  (not yet ingested): `~/.claude/history.jsonl` (prompt index) and statusline
-  snapshots.
+  cacheReadTokens) and `message.model` (full model ID). Auxiliary local source
+  (not yet ingested): `~/.claude/history.jsonl` (prompt index).
+- **Real reset times via statusLine (the cli, NOT this adapter).** Claude Code ≥2.1.x
+  pipes `rate_limits.five_hour.resets_at` / `seven_day.resets_at` (unix sec) to the
+  configured statusLine command on stdin — the ONLY surface carrying it; it is in NO
+  JSONL/native file (the `rate_limits` strings seen in transcripts are conversation
+  text, not a native field). The cli's `tt statusline` captures it to
+  `~/.tokentamers/usage.json` and catch-up anchors the weekly cycle to it (see
+  `develop-game-engine` → week anchor). Adapters stay log-only; this is a cli surface.
 - **Dedup by `message.id` (verified June 2026).** One assistant message is logged
   as one record PER CONTENT BLOCK; every record in the group repeats the same
   `message.id` and IDENTICAL usage totals (measured: 57% of usage records are
@@ -56,8 +62,8 @@ adapter; see `develop-game-engine`.
   `isSubagent: true`.
 - Caveats: format unofficial and may change; **sessions auto-delete after ~30 days**
   (incremental ingest + own store is the defense; prune checkpoint entries for
-  deleted files); plan rate-limit % is NOT available locally — we infer windows
-  ourselves.
+  deleted files); plan rate-limit % is not in the JSONL — the cli captures the real
+  reset times from the statusLine payload (above), else the engine infers windows.
 
 ## Codex CLI — M2 (architecture-ready)
 

@@ -132,6 +132,30 @@ rhythm is the clock); every adapter's usage inside an open window still feeds th
 static policy any adapter's usage can open a fixed tile. Either way, a single molt covers the
 whole pet, and grade/trait/evolution rolls fire once per window off the combined signals.
 
+### Week anchor: real reset, self-syncing, reconcile
+
+The week anchor's PHASE (which instant the 7-day boundary lands on) is sourced, in preference order:
+
+1. **The player's real subscription reset.** Claude Code ≥2.1.x hands `rate_limits.seven_day.resets_at`
+   (unix seconds) to the configured statusLine command on stdin — the ONLY surface that carries it
+   (verified against the statusline/hooks docs; it is persisted to no Claude file). `tt statusline`
+   captures it to `~/.tokentamers/usage.json`; catch-up then anchors the weekly cycle to it each run
+   (in-memory — `config.json` is never rewritten). Opt-in, read-only, zero-network. No statusline
+   configured ⇒ this layer is simply absent and the next one applies.
+2. **The configured anchor** (`UserConfig.cycle.weekAnchor`, default next Monday 00:00 local at `tt init`).
+
+Whatever the source, the anchor is never allowed to sit in the FUTURE: `effectiveWeekAnchor` (in
+`cycle/`) keeps its phase but slides it back by whole weeks to the tile containing the pet's first
+event. That whole-week shift leaves the weekly boundary phase — and the static 5-h window tiling, which
+keeps the raw anchor — untouched. This is what makes the cycle self-syncing and stops a future anchor (a
+freshly-init'd "next Monday", or an unobserved reset) from suspending rebirth.
+
+**Reconcile.** A save whose sim clock already slipped past a weekly boundary without rebirthing — e.g.
+one created before this fix, when a future anchor had `weekRebirths` frozen — is repaired once on load by
+`Engine.reconcile(now)`: it fires the single owed catch-up rebirth (archive the pet + a fresh egg for the
+current week). Idempotent and deterministic, and kept OUT of the pure `advanceTo` path so replay==resume
+still holds; `advanceTo` can never double-fire it (it requires `simulatedTo ≥ boundary`).
+
 ### Real-world signal mapping table
 
 Mapping of real-world signals (now per-policy):

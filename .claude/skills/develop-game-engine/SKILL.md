@@ -47,7 +47,21 @@ single molt covers the whole pet (grade/trait/evolution roll once per window).
 | Abstract event  | Subscription policy                                                            | Static policy                                           |
 | --------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------- |
 | MOLT_CHECKPOINT | Inferred 5-h window close from usage gaps in the ANCHOR adapter's stream alone | Fixed 5-h windows from `weekAnchor`; molts only if used |
-| REBIRTH         | Every 7 days from `weekAnchor`                                                 | Every 7 days from `weekAnchor`                          |
+| REBIRTH         | Every 7 days from the EFFECTIVE week anchor (see below)                        | Every 7 days from the effective week anchor             |
+
+**Week anchor — effective anchor + real-reset sync + reconcile.** `weekRebirths` never
+uses the raw `weekAnchor` directly: `effectiveWeekAnchor(events, weekAnchor)` keeps its
+PHASE but slides it back by whole weeks to the tile containing the first event, so a
+FUTURE anchor (a freshly-init'd "next Monday", or an unobserved reset) can never short-
+circuit rebirth (`now < weekAnchor`). The whole-week shift leaves the weekly phase — and
+static 5-h tiling, which keeps the raw anchor (`WEEK_MS % WINDOW_MS ≠ 0`) — unchanged.
+The PHASE itself is the player's **real** subscription reset when captured: the cli's `tt
+statusline` records `rate_limits.seven_day.resets_at` to `~/.tokentamers/usage.json` and
+catch-up feeds it as `weekAnchor` (in-memory; deterministic — core still sees only a
+number). `Engine.reconcile(now)` (pure `overdueRebirthEvent` in `engine/reconcile.ts`) is a
+one-time, idempotent load-time repair: a pet whose `simulatedTo` already slipped past a
+boundary without rebirthing gets the owed catch-up rebirth. Kept OUT of `advanceTo` (so
+replay==resume holds); the cli runs it after `ingest`, before `advanceTo`.
 
 Adapters are pure data sources (`{ provider, paths }`) — no per-adapter plan/policy;
 API- and subscription-billed usage in one adapter are undifferentiated essence
