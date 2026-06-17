@@ -28,7 +28,13 @@ import {
   type SpeciesDef,
 } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
-import { drawDivider, drawMeter, drawPageFooter, drawPageHeader } from '../components';
+import {
+  drawDivider,
+  drawMeter,
+  drawPageFooter,
+  drawPageHeader,
+  pageBodyBottom,
+} from '../components';
 import {
   buildPalette,
   drawSprite,
@@ -140,8 +146,7 @@ function drawPicker(ctx: RenderContext, bodyY: number): void {
   }
 
   const top = bodyY + 2;
-  const footerY = layout.canvasRows - 1;
-  const maxRows = Math.max(0, Math.min(records.length, footerY - top - 1));
+  const maxRows = Math.max(0, Math.min(records.length, pageBodyBottom(layout) - top));
   for (let i = 0; i < maxRows; i++) {
     drawPickerRow(ctx, records[i]!, i === ui.selected, top + i);
   }
@@ -229,7 +234,7 @@ function drawLog(ctx: RenderContext, view: BattleView, x: number, y: number): vo
   const { buf, layout } = ctx;
   const tl = view.result.timeline;
   const end = Math.min(view.cursor, tl.length);
-  const rows = Math.max(1, layout.canvasRows - 1 - y);
+  const rows = Math.max(1, pageBodyBottom(layout) - y);
   const start = Math.max(0, end - rows);
   for (let i = start; i < end; i++) {
     buf.text(x, y + (i - start), logLine(view, tl[i]!), TEXT, null);

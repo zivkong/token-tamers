@@ -10,7 +10,7 @@
  * scaffold. Pure given (state, pack, ui, frame) so golden frames stay stable.
  */
 
-import { drawPageFooter, drawPageHeader } from '../components';
+import { drawPageFooter, drawPageHeader, pageBodyBottom } from '../components';
 import { houseColor } from '../helpers/lookup';
 import { GRADE_ORDER, type Grade, type House, type Stage } from '@token-tamers/core';
 import type { RenderContext } from './types';
@@ -129,12 +129,16 @@ export function houseNodeCount(ctx: RenderContext, houseIndex: number): number {
   return buildHouseNodes(ctx, houseIndex).length;
 }
 
+/** Blank columns between adjacent House labels (so the tabs don't run together). */
+const TAB_GAP = 3;
+
 /** Draw the centered, clickable House selector strip; returns nothing. */
 function drawHouseTabs(ctx: RenderContext, y: number, active: number): void {
   const { buf, hits, layout } = ctx;
   const labels = DEX_HOUSES.map((h) => h[0]!.toUpperCase() + h.slice(1));
-  // Width: '‹ ' + each label + a trailing space + '›'.
-  const width = 2 + labels.reduce((w, l) => w + l.length + 1, 0) + 1;
+  // Width: '‹ ' + labels joined by TAB_GAP spaces + ' ›'.
+  const labelsWidth = labels.reduce((w, l) => w + l.length, 0) + TAB_GAP * (labels.length - 1);
+  const width = 2 + labelsWidth + 2;
   let x = layout.canvasX + Math.max(1, Math.floor((layout.canvasCols - width) / 2));
   buf.text(x, y, '‹', TAB_DIM, null);
   x += 2;
@@ -142,14 +146,15 @@ function drawHouseTabs(ctx: RenderContext, y: number, active: number): void {
     if (i === active) buf.textBold(x, y, label, houseColor(DEX_HOUSES[i]!), null);
     else buf.text(x, y, label, TAB_DIM, null);
     hits.add(`dex:house:${i}`, x, y, label.length, 1);
-    x += label.length + 1;
+    // A wider gap between labels; a single space before the closing '›'.
+    x += label.length + (i < labels.length - 1 ? TAB_GAP : 1);
   });
   buf.text(x, y, '›', TAB_DIM, null);
 }
 
 export function renderDexPage(ctx: RenderContext): void {
   const { layout, ui, pack } = ctx;
-  const { canvasX, canvasCols, canvasRows } = layout;
+  const { canvasX, canvasCols } = layout;
   const houseIndex = clampHouse(ui.house ?? 0);
   ui.house = houseIndex;
   const house = DEX_HOUSES[houseIndex]!;
@@ -166,14 +171,14 @@ export function renderDexPage(ctx: RenderContext): void {
   drawHouseTabs(ctx, bodyY, houseIndex);
 
   const skyTop = bodyY + 2;
-  const footerY = canvasRows - 1;
+  const bodyBottom = pageBodyBottom(layout);
   const railW =
     canvasCols >= RAIL_MIN_COLS ? Math.min(32, Math.max(24, Math.floor(canvasCols * 0.34))) : 0;
   const skyW = canvasCols - railW;
-  const skyRect: Rect = { x: canvasX, y: skyTop, w: Math.max(1, skyW - 1), h: footerY - skyTop };
+  const skyRect: Rect = { x: canvasX, y: skyTop, w: Math.max(1, skyW - 1), h: bodyBottom - skyTop };
   renderSky(ctx, skyRect, nodes, selected, house);
   if (railW > 0) {
-    const railRect: Rect = { x: canvasX + skyW, y: skyTop, w: railW, h: footerY - skyTop };
+    const railRect: Rect = { x: canvasX + skyW, y: skyTop, w: railW, h: bodyBottom - skyTop };
     renderFocusRail(ctx, railRect, nodes[selected], house);
   }
 
