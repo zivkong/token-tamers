@@ -195,4 +195,18 @@ describe('computeLayout — horizontal (side-by-side dock)', () => {
     const packed = packMenu(l.menuRect.cols);
     expect(packed.rows).toBe(packed.buttons.length); // every button on its own row
   });
+
+  it('fits the chrome stack AND the menu rail within HORIZONTAL_MIN_ROWS', () => {
+    // Guard: horizontalLayout relies on the row floor being >= both the chrome
+    // bottom (header + gaps + VITALS rule + panel) and the rail bottom. If a
+    // future HEADER_ROWS/PANEL_ROWS bump breaks that, this fails at the floor
+    // instead of silently drawing off-canvas.
+    const l = computeLayout(120, HORIZONTAL_MIN_ROWS);
+    expect(l.tooSmall).toBe(false);
+    expect(l.orientation).toBe('horizontal');
+    const s = petSections(l);
+    expect(s.panel.y + s.panel.rows).toBeLessThanOrEqual(HORIZONTAL_MIN_ROWS);
+    for (const r of s.rules) expect(r.y).toBeLessThan(HORIZONTAL_MIN_ROWS);
+    expect(l.menuRect.y + l.menuRect.rows).toBeLessThanOrEqual(HORIZONTAL_MIN_ROWS);
+  });
 });

@@ -291,12 +291,14 @@ export function renderPetPage(ctx: RenderContext): void {
 
   drawHeaderBand(ctx, sec.header, species?.name ?? '???');
 
-  // Opt-in update notice: a scrolling ribbon along the top of the canvas, shown
-  // only when an update was seen (info.updateAvailable). It spans the full canvas
-  // WIDTH (not the letterboxed scene box — a narrow box would clip the message):
-  // vertical → the full content width; horizontal → the canvas column (the scene
-  // box, which is width-bound to that column). Undefined in golden tests, so
-  // existing pet frames are unchanged.
+  // Opt-in update notice: a scrolling ribbon on the top row of the scene, shown
+  // only when an update was seen (info.updateAvailable). VERTICAL: span the full
+  // content WIDTH (not the letterboxed scene box — a full-width ribbon reads
+  // better than a narrow one). HORIZONTAL: stay on the scene box — `canvasCols`
+  // there includes the chrome column, so a full-width ribbon would overwrite the
+  // header/stats; the scene box is centered and may be narrow, but the ribbon is
+  // a scrolling marquee so the whole message still reads over time. Undefined in
+  // golden tests, so existing pet frames are unchanged.
   const ticker: SceneRect =
     layout.orientation === 'horizontal'
       ? sec.scene

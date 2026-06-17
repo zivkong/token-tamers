@@ -35,7 +35,10 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
     column (header/stats/vitals) RIGHT, nav menu a vertical **rail** (`menuRail=true`,
     `menuRect`/`menuDividerX`) down the right edge. Content region is the left column
     (`canvasCols < termCols`, `canvasRows = termRows`). **Min 72×12** — docks are short, so the
-    row floor is far below vertical's.
+    row floor is far below vertical's. The pet content column splits ~38% to the chrome with
+    hard floors (`MIN_CHROME_COLS`/`MIN_CANVAS_COLS` = 24 each) so neither sub-column collapses;
+    `HORIZONTAL_MIN_COLS` is set to keep both above their floors (a layout test guards the row
+    floor against the chrome/rail stack heights too).
 - The **game canvas is a true 4:3 box** (`fit43`): cells are ~1:2, so a 4:3-pixel habitat reads
   as 4:3 only at an **8:3 cell box** (`rows = cols × 3/8`). `fit43(band)` returns the largest 8:3
   box that fits, **centered with gutters (letterboxed)** — the ONE allowed gutter; never stretch
