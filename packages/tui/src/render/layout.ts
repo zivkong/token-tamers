@@ -180,12 +180,12 @@ function railCols(): number {
   return menuButtonWidth() + 2 * MENU_X;
 }
 
-function tooSmallLayout(cols: number, rows: number): Layout {
+function tooSmallLayout(cols: number, rows: number, orientation: Orientation): Layout {
   const menuRow = Math.max(0, rows - 1);
   return {
     termCols: cols,
     termRows: rows,
-    orientation: 'vertical',
+    orientation,
     canvasX: 0,
     canvasY: 0,
     canvasCols: 0,
@@ -213,10 +213,11 @@ export function computeLayout(cols: number, rows: number, prev?: Orientation): L
   // Orientation is chosen FIRST, then checked against its own minimums — a short
   // wide dock is valid for horizontal even though it is too short for vertical.
   if (pickOrientation(cols, rows, prev) === 'horizontal') {
-    if (cols < HORIZONTAL_MIN_COLS || rows < HORIZONTAL_MIN_ROWS) return tooSmallLayout(cols, rows);
+    if (cols < HORIZONTAL_MIN_COLS || rows < HORIZONTAL_MIN_ROWS)
+      return tooSmallLayout(cols, rows, 'horizontal');
     return horizontalLayout(cols, rows);
   }
-  if (cols < MIN_COLS || rows < MIN_ROWS) return tooSmallLayout(cols, rows);
+  if (cols < MIN_COLS || rows < MIN_ROWS) return tooSmallLayout(cols, rows, 'vertical');
   return verticalLayout(cols, rows);
 }
 
@@ -412,11 +413,15 @@ function horizontalSections(l: Layout): PetSections {
   };
 }
 
-/** The too-small message lines (caller centers them). */
-export function tooSmallMessage(cols: number, rows: number): string[] {
-  return [
-    'Terminal too small',
-    `Need at least ${MIN_COLS}x${MIN_ROWS}`,
-    `Current: ${cols}x${rows}`,
-  ];
+/**
+ * The too-small message lines (caller centers them). Cites the floor for the
+ * orientation the terminal was REJECTED under — a wide-but-too-short dock is a
+ * failed horizontal layout, so quoting the 34×24 vertical floor would mislead.
+ */
+export function tooSmallMessage(cols: number, rows: number, orientation?: Orientation): string[] {
+  const [minC, minR] =
+    orientation === 'horizontal'
+      ? [HORIZONTAL_MIN_COLS, HORIZONTAL_MIN_ROWS]
+      : [MIN_COLS, MIN_ROWS];
+  return ['Terminal too small', `Need at least ${minC}x${minR}`, `Current: ${cols}x${rows}`];
 }

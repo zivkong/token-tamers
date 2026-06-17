@@ -176,14 +176,41 @@ function drawPickerRow(ctx: RenderContext, snap: DexSnapshot, selected: boolean,
   buf.text(x + 40, y, tag, color, bg);
 }
 
+/** A combatant column's bounds: left edge, top row, usable width in cells. */
+interface ColumnRect {
+  x: number;
+  topY: number;
+  w: number;
+}
+
+/** Draw `text` from (x,y) but never past `maxCols` cells (clips, never overflows). */
+function clipText(
+  buf: RenderContext['buf'],
+  opts: { x: number; y: number; text: string; color: Rgb; maxCols: number; bold?: boolean },
+): void {
+  if (opts.maxCols <= 0) return;
+  const clipped = [...opts.text].slice(0, opts.maxCols).join('');
+  if (opts.bold) buf.textBold(opts.x, opts.y, clipped, opts.color, null);
+  else buf.text(opts.x, opts.y, clipped, opts.color, null);
+}
+
 /** The split-pane arena: two combatants + HP + a scrolling battle log. */
 function drawArena(ctx: RenderContext, view: BattleView, bodyY: number): void {
   const { buf, layout } = ctx;
   const mid = Math.floor(layout.canvasCols / 2);
   const hpA = { cur: hpAt(view, 'a'), max: view.result.startHp.a };
   const hpB = { cur: hpAt(view, 'b'), max: view.result.startHp.b };
-  drawCombatantColumn(ctx, view.left, hpA, layout.canvasX + 2, bodyY);
-  drawCombatantColumn(ctx, view.right, hpB, layout.canvasX + mid + 1, bodyY);
+  // Two columns split at `mid`, each leaving a 1-col gutter (before mid, and
+  // before the canvas/rail edge) so neither half ever bleeds into the other
+  // column or the menu rail at narrow widths.
+  const left: ColumnRect = { x: layout.canvasX + 2, topY: bodyY, w: mid - 2 - 1 };
+  const right: ColumnRect = {
+    x: layout.canvasX + mid + 1,
+    topY: bodyY,
+    w: layout.canvasCols - mid - 1 - 1,
+  };
+  drawCombatantColumn(ctx, view.left, hpA, left);
+  drawCombatantColumn(ctx, view.right, hpB, right);
 
   const logTop = bodyY + SPRITE_ROWS + 2;
   drawDivider(buf, logTop, { x: layout.canvasX + 1, width: layout.canvasCols - 2, label: 'Log' });
@@ -199,35 +226,68 @@ function drawArena(ctx: RenderContext, view: BattleView, bodyY: number): void {
   );
 }
 
+/** Sprite footprint reserved at the column's left (cells) — dropped when the
+ *  column is too narrow to fit the sprite AND a legible text block beside it. */
+const COMBATANT_SPRITE_COLS = 16;
+
 function drawCombatantColumn(
   ctx: RenderContext,
   c: Combatant,
   hp: { cur: number; max: number },
-  x: number,
-  topY: number,
+  col: ColumnRect,
 ): void {
   const { buf, mode, frame } = ctx;
+  if (col.w <= 0) return;
   const species =
     ctx.pack.species.find((s) => s.id === c.speciesId) ?? speciesByNum(ctx.pack, c.speciesNum);
   const spr = findSprite(ctx.pack, species?.spriteId ?? '');
-  if (spr) {
+  // Show the sprite only when the column can also hold a readable text block
+  // beside it; otherwise drop it and run text full-width (clipped).
+  const showSprite = spr && col.w >= COMBATANT_SPRITE_COLS + 11;
+  if (spr && showSprite) {
     const scale = SPRITE_ROWS / Math.max(1, subcellRows(spr.height));
     drawSprite(buf, spr, buildPalette(houseTint(c.house), c.grade, frame, species?.accent), {
-      x,
-      y: topY,
+      x: col.x,
+      y: col.topY,
       destW: Math.max(1, Math.round(subcellCols(spr.width) * scale)),
       destH: SPRITE_ROWS,
       frame,
       mode,
+      clip: { x: col.x, y: col.topY, w: col.w, h: SPRITE_ROWS },
     });
   }
-  const tx = x + 16;
-  buf.textBold(tx, topY, `${c.name} ${GRADE_BADGE[c.grade]}`, GRADE_ACCENT[c.grade], null);
-  buf.text(tx, topY + 1, '●', houseColor(c.house), null);
-  buf.text(tx + 2, topY + 1, `${titleCase(c.house)} House`, TEXT, null);
+  const tx = col.x + (showSprite ? COMBATANT_SPRITE_COLS : 0);
+  const avail = col.x + col.w - tx; // text budget, clipped to the column
+  const namePart = `${c.name} ${GRADE_BADGE[c.grade]}`;
+  clipText(buf, {
+    x: tx,
+    y: col.topY,
+    text: namePart,
+    color: GRADE_ACCENT[c.grade],
+    maxCols: avail,
+    bold: true,
+  });
+  clipText(buf, { x: tx, y: col.topY + 1, text: '●', color: houseColor(c.house), maxCols: avail });
+  clipText(buf, {
+    x: tx + 2,
+    y: col.topY + 1,
+    text: `${titleCase(c.house)} House`,
+    color: TEXT,
+    maxCols: avail - 2,
+  });
+  // Meter + inline HP must fit `avail`; shrink the meter so the HP readout never
+  // spills past the column (into the other combatant or the menu rail).
   const frac = hp.max > 0 ? hp.cur / hp.max : 0;
-  drawMeter(buf, { x: tx, y: topY + 3, w: 14 }, frac, hpColor(frac));
-  buf.text(tx + 15, topY + 3, `HP ${hp.cur}/${hp.max}`, DIM, null);
+  const hpStr = `HP ${hp.cur}/${hp.max}`;
+  const meterW = Math.max(3, Math.min(14, avail - hpStr.length - 1));
+  drawMeter(buf, { x: tx, y: col.topY + 3, w: meterW }, frac, hpColor(frac));
+  clipText(buf, {
+    x: tx + meterW + 1,
+    y: col.topY + 3,
+    text: hpStr,
+    color: DIM,
+    maxCols: avail - meterW - 1,
+  });
 }
 
 function drawLog(ctx: RenderContext, view: BattleView, x: number, y: number): void {

@@ -342,6 +342,58 @@ describe('golden frames — horizontal dock (200x16, no-color)', () => {
   });
 });
 
+describe('golden frames — narrow / floor sizes (regression guards)', () => {
+  it('battle arena fits the 90x14 horizontal dock without bleeding into the menu rail', () => {
+    const out = renderFrameToString(90, 14, input({ page: 'battle', battle: makeBattleView() }));
+    // Both combatants + full HP readouts render, and the rail nav survives intact.
+    expect(out).toContain('Wisp');
+    expect(out).toContain('Ember');
+    expect(out).toContain('Quit');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('battle arena fits the 80x24 vertical minimum without an edge clip', () => {
+    const out = renderFrameToString(80, 24, input({ page: 'battle', battle: makeBattleView() }));
+    expect(out).toContain('Wisp');
+    expect(out).toContain('Ember');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('dex focus rail stays clear of the footer at the 90x14 horizontal dock', () => {
+    const out = renderFrameToString(90, 14, input({ page: 'dex' }));
+    expect(out).toContain('Dex');
+    expect(out).toContain('Quit');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('dex-detail omits the empty RECORDS section on a shallow dock (200x16)', () => {
+    const out = renderFrameToString(
+      200,
+      16,
+      input({ page: 'dex-detail', ui: { selected: 0, scroll: 0, speciesId: 'ember' } }),
+    );
+    expect(out).toContain('Ember');
+    expect(out).not.toContain('RECORDS');
+    expect(out).not.toContain('click a DNA code');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('pet + archive render at the 72x12 horizontal floor without overflow', () => {
+    const pet = renderFrameToString(72, 12, input({ page: 'pet' }));
+    expect(pet).toContain('Quit');
+    expect(pet).toMatchSnapshot();
+    const archive = renderFrameToString(72, 12, input({ page: 'archive' }));
+    expect(archive).toContain('Quit');
+    expect(archive).toMatchSnapshot();
+  });
+
+  it('cites the horizontal floor when a wide-but-too-short dock is rejected', () => {
+    const out = renderFrameToString(71, 16, input({ page: 'pet' }));
+    expect(out).toContain('too small');
+    expect(out).toContain('72x12');
+  });
+});
+
 describe('menu + per-page completion', () => {
   it('shows all nav items in the menu on every page', () => {
     const out = renderFrameToString(100, 30, input({ page: 'pet' }));

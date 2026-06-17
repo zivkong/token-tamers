@@ -98,8 +98,12 @@ export function renderArchivePage(ctx: RenderContext): void {
     }
     const marker = selected ? '› ' : '  ';
     const numStr = `#${String(species?.num ?? rowIndex + 1).padStart(3, '0')}`;
+    // Each column clips to its successor so a long name / stats string never
+    // leaks past the canvas edge (into the menu rail in a narrow horizontal dock).
+    const clip = (s: string, budget: number): string =>
+      [...s].slice(0, Math.max(0, budget)).join('');
     buf.text(canvasX + COL.num, y, `${marker}${numStr}`, DIM, bg);
-    buf.text(canvasX + COL.name, y, name, TEXT, bg);
+    buf.text(canvasX + COL.name, y, clip(name, COL.grade - COL.name - 1), TEXT, bg);
     buf.text(
       canvasX + COL.grade,
       y,
@@ -108,7 +112,13 @@ export function renderArchivePage(ctx: RenderContext): void {
       bg,
     );
     buf.text(canvasX + COL.gen, y, `g${rec.generation}`, DIM, bg);
-    buf.text(canvasX + COL.stats, y, statsBrief(rec.stats), TEXT, bg);
+    buf.text(
+      canvasX + COL.stats,
+      y,
+      clip(statsBrief(rec.stats), canvasCols - COL.stats - 1),
+      TEXT,
+      bg,
+    );
     hits.add(`archive:row:${rowIndex}`, canvasX, y, canvasCols, 1);
   }
 

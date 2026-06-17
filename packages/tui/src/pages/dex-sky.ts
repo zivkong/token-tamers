@@ -370,6 +370,17 @@ function drawLegendAura(ctx: RenderContext, x: number, y: number, w: number, h: 
 }
 
 /** The right-hand focus rail: icon + the selected species' identity & records. */
+/** Draw a focus-rail line ONLY when it stays within the page body — never on or
+ *  below the page footer (the rail meta/lore is variable-length and would
+ *  otherwise collide with the footer at short heights). `railBold` is the bold
+ *  variant; both no-op for empty text or a row at/below the body bottom. */
+function railText(ctx: RenderContext, x: number, y: number, text: string, color: Rgb): void {
+  if (text && y < pageBodyBottom(ctx.layout)) ctx.buf.text(x, y, text, color, null);
+}
+function railBold(ctx: RenderContext, x: number, y: number, text: string, color: Rgb): void {
+  if (text && y < pageBodyBottom(ctx.layout)) ctx.buf.textBold(x, y, text, color, null);
+}
+
 export function renderFocusRail(
   ctx: RenderContext,
   rect: Rect,
@@ -386,28 +397,15 @@ export function renderFocusRail(
   }
   drawRailIcon(ctx, { ...rect, x: ix, w: rect.w - 3 }, node, house);
   if (!node) {
-    buf.textBold(ix, metaY, '???', SEALED, null);
+    railBold(ctx, ix, metaY, '???', SEALED);
     return;
   }
-  if (node.owned && node.grade) {
-    buf.textBold(
-      ix,
-      metaY,
-      `${node.name} ${GRADE_BADGE[node.grade]}`,
-      GRADE_ACCENT[node.grade],
-      null,
-    );
-  } else {
-    buf.textBold(
-      ix,
-      metaY,
-      node.legend ? '??? ✦' : '???',
-      node.legend ? LEGEND_GOLD : SEALED,
-      null,
-    );
-  }
-  buf.text(ix, metaY + 1, `${titleCase(house)} · ${HOUSE_KINGDOM[house]}`, DIM, null);
-  buf.text(ix, metaY + 2, `Dex #${String(node.num).padStart(3, '0')}`, DIM, null);
+  const owned = node.owned && node.grade;
+  const title = owned ? `${node.name} ${GRADE_BADGE[node.grade!]}` : node.legend ? '??? ✦' : '???';
+  const titleColor = owned ? GRADE_ACCENT[node.grade!] : node.legend ? LEGEND_GOLD : SEALED;
+  railBold(ctx, ix, metaY, title, titleColor);
+  railText(ctx, ix, metaY + 1, `${titleCase(house)} · ${HOUSE_KINGDOM[house]}`, DIM);
+  railText(ctx, ix, metaY + 2, `Dex #${String(node.num).padStart(3, '0')}`, DIM);
   drawRailRecord(ctx, ix, metaY + 3, node);
 }
 
@@ -438,27 +436,27 @@ function drawMoteRail(
   } else {
     buf.textBold(cx, rect.y + 1 + Math.floor(rows / 2), '✦', MOTE_STAR, null);
   }
-  buf.textBold(rect.x, metaY, 'Mote ✦', MOTE_STAR, null);
-  buf.text(rect.x, metaY + 1, 'The shared origin —', DIM, null);
-  buf.text(rect.x, metaY + 2, 'every tamer begins', DIM, null);
-  buf.text(rect.x, metaY + 3, 'here, then commits', DIM, null);
-  buf.text(rect.x, metaY + 4, 'to a House.', DIM, null);
+  railBold(ctx, rect.x, metaY, 'Mote ✦', MOTE_STAR);
+  railText(ctx, rect.x, metaY + 1, 'The shared origin —', DIM);
+  railText(ctx, rect.x, metaY + 2, 'every tamer begins', DIM);
+  railText(ctx, rect.x, metaY + 3, 'here, then commits', DIM);
+  railText(ctx, rect.x, metaY + 4, 'to a House.', DIM);
 }
 
 /** Stage + stats + readiness for an owned star; the locked hint otherwise. */
 function drawRailRecord(ctx: RenderContext, x: number, y: number, node: HouseNode): void {
-  const { buf } = ctx;
   if (!node.owned) {
-    buf.text(x, y, node.legend ? 'A legend sleeps here.' : 'Undiscovered — raise it', DIM, null);
-    buf.text(x, y + 1, node.legend ? '' : 'to a molt to reveal.', DIM, null);
+    railText(ctx, x, y, node.legend ? 'A legend sleeps here.' : 'Undiscovered — raise it', DIM);
+    railText(ctx, x, y + 1, node.legend ? '' : 'to a molt to reveal.', DIM);
     return;
   }
   const best = ctx.state.dexRecords.find((r) => r.speciesId === node.speciesId)?.top[0];
-  buf.text(x, y, `${titleCase(node.stage)}`, TEXT, null);
+  railText(ctx, x, y, titleCase(node.stage), TEXT);
   if (best) {
-    buf.text(x, y + 1, statLine(best.stats), TEXT, null);
-    if (isBattleReady(best)) buf.text(x, y + 2, '✦ Battle-ready', READY, null);
-    else buf.text(x, y + 2, `▢ Sealed → ${titleCase(BATTLE_READY_STAGE)}`, SEALED, null);
+    railText(ctx, x, y + 1, statLine(best.stats), TEXT);
+    const ready = isBattleReady(best);
+    const tag = ready ? '✦ Battle-ready' : `▢ Sealed → ${titleCase(BATTLE_READY_STAGE)}`;
+    railText(ctx, x, y + 2, tag, ready ? READY : SEALED);
   }
-  buf.text(x, y + 3, '⏎ open', DIM, null);
+  railText(ctx, x, y + 3, '⏎ open', DIM);
 }

@@ -94,6 +94,9 @@ describe('dex constellation node model', () => {
       state: makeState(),
       mode: 'none',
       frame: 0,
+      // The focus rail bounds its text to the page body (pageBodyBottom), so a
+      // realistic layout is required — mirrors what the shell always provides.
+      layout: { canvasX: 4, canvasY: 0, canvasCols: 38, canvasRows: 22 },
     } as unknown as RenderContext;
     const legend: HouseNode = {
       speciesId: 'secret',

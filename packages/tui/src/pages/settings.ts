@@ -13,7 +13,7 @@
  */
 
 import type { ColorMode, Rgb } from '../terminal/ansi';
-import { drawPageFooter, drawPageHeader } from '../components';
+import { drawPageFooter, drawPageHeader, pageBodyBottom } from '../components';
 import type { RenderContext, SettingsState } from './types';
 
 const TEXT: Rgb = { r: 214, g: 220, b: 234 };
@@ -113,9 +113,14 @@ export function renderSettingsPage(ctx: RenderContext): void {
   // Standard page header (no completion readout — Settings tracks nothing).
   // Returns the first body row.
   let y = drawPageHeader(ctx, { icon: '⚙', title: 'Settings' });
+  // Body rows stop above the footer clearance gap so nothing collides with the
+  // footer on a short horizontal dock (excess static rows degrade gracefully).
+  const bodyBottom = pageBodyBottom(layout);
   const row = (label: string, value: string, valueFg: Rgb = TEXT): void => {
-    buf.text(labelX, y, label, LABEL, null);
-    buf.text(valueX, y, value, valueFg, null);
+    if (y < bodyBottom) {
+      buf.text(labelX, y, label, LABEL, null);
+      buf.text(valueX, y, value, valueFg, null);
+    }
     y += 1;
   };
 
@@ -179,7 +184,8 @@ function drawUpdateField(
   buf.text(canvasX + 3, y, 'Updates', LABEL, bg);
   buf.text(canvasX + 13, y, segment, selected ? VALUE_SELECTED : TEXT, bg);
   if (hint) buf.text(canvasX + 14 + [...segment].length, y, hint.trimStart(), DIM, bg);
-  hits.add(`settings:field:${UPDATE_FIELD_INDEX}`, canvasX, y, canvasCols, 1);
+  // Hit region matches the highlight fill (cols 1..canvasCols-1), not col 0.
+  hits.add(`settings:field:${UPDATE_FIELD_INDEX}`, canvasX + 1, y, canvasCols - 2, 1);
   return y + 1;
 }
 
@@ -234,7 +240,8 @@ function drawEditableField(ctx: RenderContext, y: number, f: EditableField): voi
   buf.text(canvasX + 1, y, selected ? '›' : ' ', VALUE_SELECTED, bg);
   buf.text(canvasX + 3, y, f.label, LABEL, bg);
   buf.text(canvasX + 13, y, segment, selected ? VALUE_SELECTED : TEXT, bg);
-  hits.add(`settings:field:${f.index}`, canvasX, y, canvasCols, 1);
+  // Hit region matches the highlight fill (cols 1..canvasCols-1), not col 0.
+  hits.add(`settings:field:${f.index}`, canvasX + 1, y, canvasCols - 2, 1);
 }
 
 /** Draw the read-only adapter list (data sources; managed by `tt init`). */

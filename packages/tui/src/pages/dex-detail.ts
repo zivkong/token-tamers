@@ -80,24 +80,29 @@ export function renderDexDetailPage(ctx: RenderContext): void {
 
   drawSpriteAndMeta(ctx, species.house, best, species.num, bodyY);
 
-  // Records section.
+  // Records section. On a shallow canvas (a short horizontal dock) no card row
+  // fits — skip the RECORDS divider AND the "click a DNA code" hint entirely
+  // rather than draw an empty, misleading section.
   const recTop = bodyY + SPRITE_ROWS + 1;
-  drawDivider(buf, recTop, { x: canvasX + 1, width: canvasCols - 2, label: 'Records' });
   const cardsTop = recTop + 2;
   const bodyBottom = pageBodyBottom(layout);
   const maxCards = Math.max(
     0,
     Math.min(record.top.length, Math.floor((bodyBottom - cardsTop) / 2)),
   );
-  for (let i = 0; i < maxCards; i++) {
-    drawRecordCard(ctx, record.top[i]!, i, cardsTop + i * 2);
+  if (maxCards > 0) {
+    drawDivider(buf, recTop, { x: canvasX + 1, width: canvasCols - 2, label: 'Records' });
+    for (let i = 0; i < maxCards; i++) {
+      drawRecordCard(ctx, record.top[i]!, i, cardsTop + i * 2);
+    }
   }
 
   const shown =
     maxCards < record.top.length ? `${maxCards}/${record.top.length}` : `${record.top.length}`;
+  const clickHint = maxCards > 0 ? '  ·  click a DNA code to copy' : '';
   drawPageFooter(
     ctx,
-    `${shown} record${record.top.length === 1 ? '' : 's'}  ·  click a DNA code to copy  ·  Esc back`,
+    `${shown} record${record.top.length === 1 ? '' : 's'}${clickHint}  ·  Esc back`,
   );
 }
 

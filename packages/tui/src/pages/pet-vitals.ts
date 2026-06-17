@@ -119,17 +119,25 @@ export function drawStatsRow(
   const available = rect.cols - 2;
 
   // Prefer the full `icon NAME: value` form; fall back to compact `NAME value`.
+  // Reserve a minimum 1-col gap between stats so an exact fit never merges them
+  // (e.g. `PWR: 12↯ SPD`).
+  const minGaps = stats.length - 1;
   let segs = stats.map(([nm, v]) => statParts(nm, v, accent, true));
-  if (totalLen(segs) > available) segs = stats.map(([nm, v]) => statParts(nm, v, accent, false));
+  if (totalLen(segs) + minGaps > available) {
+    segs = stats.map(([nm, v]) => statParts(nm, v, accent, false));
+  }
 
   const slack = available - totalLen(segs);
-  if (slack >= 0) {
+  if (slack >= minGaps) {
     drawJustified(buf, segs, { x0, y, slack, bg });
   } else {
-    // Below even the compact width: left-pack and let it clip.
+    // Below even the compact width: left-pack and HARD-CLIP at the band's right
+    // edge so a stat value never leaks past the chrome column / into the rail.
+    const right = x0 + available;
     let cx = x0;
     for (const seg of segs) {
-      drawParts(buf, cx, y, seg, bg);
+      if (cx >= right) break;
+      drawPartsClipped(buf, seg, { x: cx, y, avail: right - cx, bg });
       cx += partsLen(seg) + 1;
     }
   }
@@ -180,16 +188,14 @@ function drawParts(
 /** Like `drawParts` but stops once `avail` cells are used (clips, never overflows). */
 function drawPartsClipped(
   buf: FrameBuffer,
-  x: number,
-  y: number,
   parts: readonly TextPart[],
-  avail: number,
+  opts: { x: number; y: number; avail: number; bg?: Rgb | null },
 ): void {
   let used = 0;
   for (const p of parts) {
     for (const ch of [...p.text]) {
-      if (used >= avail) return;
-      buf.text(x + used, y, ch, p.color, null);
+      if (used >= opts.avail) return;
+      buf.text(opts.x + used, opts.y, ch, p.color, opts.bg ?? null);
       used += 1;
     }
   }
@@ -323,7 +329,7 @@ function drawOddsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 
   const odds = ctx.live?.nextGrade !== undefined ? ctx.live.nextGrade : gradeOdds(state);
   const parts = oddsParts(odds);
-  drawPartsClipped(buf, x, y, parts, avail);
+  drawPartsClipped(buf, parts, { x, y, avail });
 
   // A muted "rolls at next molt" hint, right-aligned when there is comfortable room.
   if (odds && !narrow) {

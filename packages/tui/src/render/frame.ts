@@ -184,7 +184,7 @@ function drawMenuButton(
 }
 
 function drawTooSmall(buf: FrameBuffer, layout: Layout): void {
-  const lines = tooSmallMessage(layout.termCols, layout.termRows);
+  const lines = tooSmallMessage(layout.termCols, layout.termRows, layout.orientation);
   const startY = Math.max(0, Math.floor(layout.termRows / 2) - 1);
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i] ?? '';
