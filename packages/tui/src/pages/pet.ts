@@ -15,6 +15,8 @@ import {
   drawSprite,
   paletteFromHexes,
   auraOverlay,
+  subcellRows,
+  subcellCols,
   GRADE_ACCENT,
   GRADE_BADGE,
   type AnimBank,
@@ -342,8 +344,8 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRec
   // Scale the pet by the same factor as the backdrop so it stays proportionate
   // to the scene as the terminal width changes.
   const scale = sceneScale(scene);
-  const spriteCols = Math.max(1, Math.round(sprite.width * scale));
-  const spriteRows = Math.max(1, Math.round(Math.ceil(sprite.height / 2) * scale));
+  const spriteCols = Math.max(1, Math.round(subcellCols(sprite.width) * scale));
+  const spriteRows = Math.max(1, Math.round(subcellRows(sprite.height) * scale));
   const geo: WanderGeometry = {
     canvasX: scene.x,
     canvasY: scene.y,
@@ -411,8 +413,8 @@ function drawPlayTrinket(
   if (!sprite) return;
 
   // Match the pet's scale so the toy stays proportionate to the scene.
-  const cols = Math.max(1, Math.round(sprite.width * scale));
-  const rows = Math.max(1, Math.round(Math.ceil(sprite.height / 2) * scale));
+  const cols = Math.max(1, Math.round(subcellCols(sprite.width) * scale));
+  const rows = Math.max(1, Math.round(subcellRows(sprite.height) * scale));
   // Bottom-align the trinket on the same floor line as the pet's feet.
   const ty = geo.floorY - (rows - 1);
   const pal = buildPalette('#9aa0b5', 'B', frame);

@@ -29,7 +29,14 @@ import {
 } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
 import { drawDivider, drawMeter, drawPageFooter, drawPageHeader } from '../components';
-import { buildPalette, drawSprite, GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
+import {
+  buildPalette,
+  drawSprite,
+  subcellRows,
+  subcellCols,
+  GRADE_ACCENT,
+  GRADE_BADGE,
+} from '../render/sprite';
 import { findSprite, houseColor, houseTint } from '../helpers/lookup';
 import type { BattleView, PageId, PageUiState, RenderContext } from './types';
 
@@ -199,11 +206,11 @@ function drawCombatantColumn(
     ctx.pack.species.find((s) => s.id === c.speciesId) ?? speciesByNum(ctx.pack, c.speciesNum);
   const spr = findSprite(ctx.pack, species?.spriteId ?? '');
   if (spr) {
-    const scale = SPRITE_ROWS / Math.max(1, Math.ceil(spr.height / 2));
+    const scale = SPRITE_ROWS / Math.max(1, subcellRows(spr.height));
     drawSprite(buf, spr, buildPalette(houseTint(c.house), c.grade, frame, species?.accent), {
       x,
       y: topY,
-      destW: Math.max(1, Math.round(spr.width * scale)),
+      destW: Math.max(1, Math.round(subcellCols(spr.width) * scale)),
       destH: SPRITE_ROWS,
       frame,
       mode,

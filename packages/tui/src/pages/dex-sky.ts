@@ -15,7 +15,14 @@ import {
   type House,
 } from '@token-tamers/core';
 import { mix, type Rgb } from '../terminal/ansi';
-import { buildPalette, drawSprite, GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
+import {
+  buildPalette,
+  drawSprite,
+  subcellRows,
+  subcellCols,
+  GRADE_ACCENT,
+  GRADE_BADGE,
+} from '../render/sprite';
 import { QMARK_TILE, LOCKED_PALETTE, legendPalette } from '../render/tiles';
 import { findSpecies, findSprite, houseColor, houseTint } from '../helpers/lookup';
 import type { HouseNode } from './dex';
@@ -319,8 +326,8 @@ function drawRailIcon(
   if (node?.owned) {
     const sprite = findSprite(ctx.pack, findSpecies(ctx.pack, node.speciesId)?.spriteId ?? '');
     if (sprite) {
-      const scale = rows / Math.max(1, Math.ceil(sprite.height / 2));
-      const destW = Math.max(1, Math.round(sprite.width * scale));
+      const scale = rows / Math.max(1, subcellRows(sprite.height));
+      const destW = Math.max(1, Math.round(subcellCols(sprite.width) * scale));
       const pal = buildPalette(
         houseTint(house),
         node.grade ?? 'C',
@@ -416,8 +423,8 @@ function drawMoteRail(
   const cx = rect.x + Math.floor(rect.w / 2);
   const sprite = findSprite(ctx.pack, findSpecies(ctx.pack, node.speciesId)?.spriteId ?? '');
   if (sprite) {
-    const scale = rows / Math.max(1, Math.ceil(sprite.height / 2));
-    const destW = Math.max(1, Math.round(sprite.width * scale));
+    const scale = rows / Math.max(1, subcellRows(sprite.height));
+    const destW = Math.max(1, Math.round(subcellCols(sprite.width) * scale));
     const accent = findSpecies(ctx.pack, node.speciesId)?.accent;
     drawSprite(buf, sprite, buildPalette(houseTint(house), 'B', frame, accent), {
       x: cx - Math.floor(destW / 2),

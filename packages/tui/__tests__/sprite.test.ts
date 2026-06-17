@@ -36,41 +36,51 @@ describe('palette beauty ladder', () => {
   });
 });
 
-describe('half-block compositor', () => {
-  it('pairs rows into upper-half-block cells', () => {
+describe('sub-cell compositor', () => {
+  it('packs opaque pixels into colored block-glyph cells', () => {
     const buf = new FrameBuffer(8, 4);
     buf.clear();
     const pal = buildPalette('#8a7cff', 'C');
     drawSprite(buf, TEST_SPRITE, pal, { x: 0, y: 0, frame: 0, mode: 'truecolor' });
-    // The sprite center pixels are opaque, so the center cell is a half block.
-    const center = buf.get(1, 0);
-    expect(center.ch.codePointAt(0)).toBe(0x2580); // '▀' upper-half block
-    expect(center.fg).not.toBeNull();
+    // Opaque pixels render as colored block glyphs — Block Elements (U+2580..2590
+    // half/quadrant/full) or the Unicode 13 sextants (U+1FB00..1FB3B).
+    let drew = false;
+    for (let y = 0; y < 4; y++) {
+      for (let x = 0; x < 8; x++) {
+        const cell = buf.get(x, y);
+        if (cell.fg === null) continue;
+        const cp = cell.ch.codePointAt(0) ?? 0;
+        const isBlock = (cp >= 0x2580 && cp <= 0x259f) || (cp >= 0x1fb00 && cp <= 0x1fb3b);
+        expect(isBlock).toBe(true);
+        drew = true;
+      }
+    }
+    expect(drew).toBe(true);
   });
 
-  it('skips cells where both stacked pixels are transparent', () => {
+  it('skips cells where every sub-pixel is transparent', () => {
     const buf = new FrameBuffer(8, 4);
-    // Pre-fill so we can detect "left untouched".
     buf.clear();
     buf.set(0, 0, { ch: '#', fg: null, bg: null });
     const pal = buildPalette('#8a7cff', 'C');
-    // A sprite whose first column is fully transparent (top+bottom both 0).
+    // 4x3 so the left 2-col cell is FULLY transparent and the right is opaque.
     const sprite = {
       id: 's',
-      width: 2,
-      height: 2,
+      width: 4,
+      height: 3,
       fps: 1,
       frames: [
         [
-          [0, 2],
-          [0, 2],
+          [0, 0, 2, 2],
+          [0, 0, 2, 2],
+          [0, 0, 2, 2],
         ],
       ],
     };
     drawSprite(buf, sprite, pal, { x: 0, y: 0, frame: 0, mode: 'truecolor' });
     // Cell (0,0) is fully transparent -> the '#' underneath survives.
     expect(buf.get(0, 0).ch).toBe('#');
-    // Cell (1,0) is opaque -> upper-half block, colored.
+    // Cell (1,0) is opaque -> a colored block glyph.
     expect(buf.get(1, 0).ch).not.toBe(' ');
     expect(buf.get(1, 0).fg).not.toBeNull();
   });
@@ -81,17 +91,19 @@ describe('animation cadence honors sprite.fps', () => {
   // opaque, so we can detect exactly which frame is being drawn.
   const blinker = {
     id: 'blinker',
-    width: 2,
-    height: 2,
+    width: 4,
+    height: 3,
     fps: 4, // advance once every 30/4 = 7.5 render frames
     frames: [
       [
-        [2, 0],
-        [2, 0],
+        [2, 2, 0, 0],
+        [2, 2, 0, 0],
+        [2, 2, 0, 0],
       ], // frame 0: left cell opaque
       [
-        [0, 2],
-        [0, 2],
+        [0, 0, 2, 2],
+        [0, 0, 2, 2],
+        [0, 0, 2, 2],
       ], // frame 1: right cell opaque
     ],
   };

@@ -1,10 +1,12 @@
 /**
- * Half-block sprite compositor.
+ * Sub-cell sprite compositor (the design degradation ladder).
  *
- * A `SpriteDef` (from the content pack) is a palette-indexed grid. We pair
- * vertical pixel rows two-at-a-time into '▀' (upper half block) cells where
- * fg = top pixel color and bg = bottom pixel color, doubling vertical
- * resolution per terminal cell.
+ * A `SpriteDef` (from the content pack) is a palette-indexed grid. We pack its
+ * pixels into terminal cells at the active sub-cell density — sextant (2x3) by
+ * default, octant (2x4) once its glyph table ships, half-block (1x2) as the
+ * legacy fallback — quantizing each cell to 2 SGR colors (fg/bg) plus the block
+ * glyph whose filled-sub-pixel mask matches. Partly-transparent cells composite
+ * their silhouette over the existing backdrop cell.
  *
  * Palette indirection: a sprite never stores RGB. A palette index is resolved
  * to RGB via a LUT built from the House tint plus the Grade "beauty ladder":
@@ -19,7 +21,7 @@
 
 import type { Grade, SpriteDef } from '@token-tamers/core';
 import { hexToRgb, mix, type ColorMode, type Rgb } from '../terminal/ansi';
-import type { Cell, FrameBuffer } from './buffer';
+import type { FrameBuffer } from './buffer';
 
 /** '▀' UPPER HALF BLOCK (U+2580). Defined by codepoint to survive encoding. */
 const UPPER_HALF = String.fromCodePoint(0x2580);
@@ -179,12 +181,75 @@ function selectGrid(sprite: SpriteDef, anim: AnimBank, frame: number): number[][
   return bank[tick % bank.length] ?? bank[0];
 }
 
+// ---------------------------------------------------------------------------
+// Sub-cell compositor (the design degradation ladder). A terminal cell holds
+// `cols x rows` sub-pixels but only 2 SGR colors (fg/bg), so per cell we pack
+// the sprite's pixels, quantize to 2 inks, and pick the block glyph whose
+// filled-sub-pixel mask matches. Modes:
+//   octant 2x4 — square sub-pixels (pending the Unicode 16 BLOCK OCTANT table)
+//   sextant 2x3 — CURRENT DEFAULT (Unicode 13 "Block Sextants", broad support)
+//   half 1x2 — legacy fallback (the original half-block look)
+// ---------------------------------------------------------------------------
+
+interface SubcellMode {
+  /** Sub-pixels per cell, left→right. */
+  cols: number;
+  /** Sub-pixels per cell, top→bottom. */
+  rows: number;
+  /** Glyph for a fg-mask (bit i set ⇒ sub-pixel i is fg), row-major top→bottom. */
+  glyph: (mask: number) => string;
+}
+
 /**
- * Composite a sprite into the frame buffer. Position is given by `opts.x` and
- * `opts.y` (0-based cell coords). Each cell consumes two pixel rows (top -> fg,
- * bottom -> bg) rendered with the upper-half block. Transparent pixels (palette
- * null) leave whatever is underneath; if both top and bottom are transparent the
- * cell is skipped entirely.
+ * Build the 2×3 sextant glyph table. Bit order is row-major (0,1 / 2,3 / 4,5).
+ * Unicode 13 added 60 "Block Sextants" at U+1FB00.. in increasing pattern value,
+ * SKIPPING the 4 patterns that already had Block-Element chars: empty→space,
+ * full→█, the left column→▌, the right column→▐.
+ */
+function buildSextantTable(): string[] {
+  const reuse: Record<number, string> = {
+    0: ' ',
+    0o77: String.fromCodePoint(0x2588), // 63 — full
+    21: String.fromCodePoint(0x258c), // bits 0,2,4 — left column → LEFT HALF BLOCK
+    42: String.fromCodePoint(0x2590), // bits 1,3,5 — right column → RIGHT HALF BLOCK
+  };
+  const table = new Array<string>(64);
+  let next = 0x1fb00;
+  for (let v = 0; v < 64; v++) table[v] = reuse[v] ?? String.fromCodePoint(next++);
+  return table;
+}
+const SEXTANT_TABLE = buildSextantTable();
+
+/** 1×2 half-block table: bit0 = top, bit1 = bottom. */
+const HALF_TABLE = [' ', UPPER_HALF, String.fromCodePoint(0x2584), String.fromCodePoint(0x2588)];
+
+const SEXTANT: SubcellMode = { cols: 2, rows: 3, glyph: (m) => SEXTANT_TABLE[m] ?? ' ' };
+const HALF: SubcellMode = { cols: 1, rows: 2, glyph: (m) => HALF_TABLE[m] ?? ' ' };
+
+/**
+ * Active sub-cell density. Sextant (2×3) is the verified default — 3× the
+ * half-block density at broad terminal support. Octant (2×4, square sub-pixels)
+ * is the target ceiling; it drops in here as a one-line swap once its 256-entry
+ * glyph table ships. `HALF` is retained as the legacy fallback.
+ */
+const SUBCELL: SubcellMode = SEXTANT;
+void HALF; // retained fallback mode (see the degradation ladder)
+
+/** Cell-rows a sprite of `pixelHeight` occupies natively at the active density. */
+export function subcellRows(pixelHeight: number): number {
+  return Math.ceil(pixelHeight / SUBCELL.rows);
+}
+/** Cell-cols a sprite of `pixelWidth` occupies natively at the active density. */
+export function subcellCols(pixelWidth: number): number {
+  return Math.ceil(pixelWidth / SUBCELL.cols);
+}
+
+/**
+ * Composite a sprite into the frame buffer at `opts.x`/`opts.y` (0-based cells).
+ * Each cell packs `SUBCELL.cols × rows` sub-pixels, quantized to 2 colors. Fully
+ * transparent cells leave the backdrop; partly-transparent cells composite their
+ * silhouette OVER the backdrop (bg read from the buffer). `destW`/`destH` scale
+ * the cell footprint (nearest-neighbor); omit for the native footprint.
  */
 export function drawSprite(
   buf: FrameBuffer,
@@ -195,61 +260,148 @@ export function drawSprite(
   const frame = opts.frame ?? 0;
   const grid = selectGrid(sprite, opts.anim ?? 'idle', frame);
   if (!grid) return;
-
-  // Source grid dimensions (rectangular palette grids; max guards ragged rows).
   let srcCols = 0;
   for (const row of grid) srcCols = Math.max(srcCols, row.length);
-  const srcPixelH = grid.length;
-
-  // Destination size in cells; defaults reproduce the native 1:1 draw exactly
-  // (floor sampling is the identity when src and dest sizes match).
-  const destW = opts.destW ?? srcCols;
-  const destH = opts.destH ?? Math.ceil(srcPixelH / 2);
-  const rd: RowDraw = {
+  const cd: CellDraw = {
     grid,
     pal,
-    opts,
     srcCols,
-    srcPixelH,
-    destW,
-    destPixelH: destH * 2,
+    srcRows: grid.length,
+    m: SUBCELL,
+    destCols: opts.destW ?? subcellCols(srcCols),
+    destRows: opts.destH ?? subcellRows(grid.length),
+    flipX: !!opts.flipX,
+    mode: opts.mode ?? 'truecolor',
   };
-
-  for (let cy = 0; cy < destH; cy++) {
-    drawSpriteRow(buf, rd, cy);
+  cd.subW = cd.destCols * cd.m.cols;
+  cd.subH = cd.destRows * cd.m.rows;
+  cd.x0 = opts.x;
+  cd.y0 = opts.y;
+  for (let cy = 0; cy < cd.destRows; cy++) {
+    for (let cx = 0; cx < cd.destCols; cx++) {
+      if (!insideClip(opts.clip, opts.x + cx, opts.y + cy)) continue;
+      composeCell(buf, cd, cx, cy);
+    }
   }
 }
 
-/** Everything a single scaled row-draw needs, grouped to honor max-params. */
-interface RowDraw {
+/** Everything the per-cell compositor needs, grouped to honor max-params. */
+interface CellDraw {
   grid: number[][];
   pal: Palette;
-  opts: DrawOptions;
   srcCols: number;
-  srcPixelH: number;
-  destW: number;
-  destPixelH: number;
+  srcRows: number;
+  m: SubcellMode;
+  destCols: number;
+  destRows: number;
+  flipX: boolean;
+  mode: ColorMode;
+  /** Total sub-pixel grid the cells cover (= destCols*cols / destRows*rows). */
+  subW?: number;
+  subH?: number;
+  /** Destination origin in cells (set by drawSprite). */
+  x0?: number;
+  y0?: number;
 }
 
-/** Composite one destination cell-row (two scaled pixel rows) of a sprite. */
-function drawSpriteRow(buf: FrameBuffer, rd: RowDraw, cy: number): void {
-  const { grid, pal, opts } = rd;
-  const mode = opts.mode ?? 'truecolor';
-  const topRow = grid[Math.floor((cy * 2 * rd.srcPixelH) / rd.destPixelH)];
-  const botRow = grid[Math.floor(((cy * 2 + 1) * rd.srcPixelH) / rd.destPixelH)];
-  for (let cx = 0; cx < rd.destW; cx++) {
-    const sampled = rd.destW === rd.srcCols ? cx : Math.floor((cx * rd.srcCols) / rd.destW);
-    const src = opts.flipX ? rd.srcCols - 1 - sampled : sampled;
-    const topIdx = topRow?.[src] ?? 0;
-    const botIdx = botRow?.[src] ?? 0;
-    const top = resolveIndex(pal, topIdx);
-    const bot = resolveIndex(pal, botIdx);
-    if (top === null && bot === null) continue;
-    const tx = opts.x + cx;
-    const ty = opts.y + cy;
-    if (!insideClip(opts.clip, tx, ty)) continue;
-    buf.set(tx, ty, composeHalfBlock(top, bot, topIdx, botIdx, mode));
+/** Gather one cell's sub-pixels (mask-bit order) + the opaque inks among them. */
+function gatherCell(
+  cd: CellDraw,
+  cx: number,
+  cy: number,
+): { cells: Array<Rgb | null>; inks: Rgb[]; maxIdx: number } {
+  const cells: Array<Rgb | null> = [];
+  const inks: Rgb[] = [];
+  let maxIdx = 0;
+  const subW = cd.subW ?? cd.destCols * cd.m.cols;
+  const subH = cd.subH ?? cd.destRows * cd.m.rows;
+  for (let sy = 0; sy < cd.m.rows; sy++) {
+    for (let sx = 0; sx < cd.m.cols; sx++) {
+      const srcX0 = Math.floor(((cx * cd.m.cols + sx) * cd.srcCols) / subW);
+      const srcY = Math.floor(((cy * cd.m.rows + sy) * cd.srcRows) / subH);
+      const srcX = cd.flipX ? cd.srcCols - 1 - srcX0 : srcX0;
+      const idx = cd.grid[srcY]?.[srcX] ?? 0;
+      const rgb = resolveIndex(cd.pal, idx);
+      cells.push(rgb);
+      if (rgb) {
+        inks.push(rgb);
+        if (idx > maxIdx) maxIdx = idx;
+      }
+    }
   }
+  return { cells, inks, maxIdx };
+}
+
+/** Quantize a cell to 2 colors + a fg mask, and write it to the buffer. */
+function composeCell(buf: FrameBuffer, cd: CellDraw, cx: number, cy: number): void {
+  const tx = (cd.x0 ?? 0) + cx;
+  const ty = (cd.y0 ?? 0) + cy;
+  const { cells, inks, maxIdx } = gatherCell(cd, cx, cy);
+  if (inks.length === 0) return; // fully transparent: keep the backdrop
+  if (cd.mode === 'none') {
+    buf.set(tx, ty, { ch: indexToChar(maxIdx, 16), fg: null, bg: null });
+    return;
+  }
+  let fg: Rgb;
+  let bg: Rgb | null;
+  const hasTransparent = inks.length < cells.length;
+  if (hasTransparent) {
+    // Silhouette over the backdrop: dominant ink on top of the existing cell.
+    fg = dominantColor(inks);
+    const under = buf.get(tx, ty);
+    bg = under.bg ?? under.fg ?? null;
+  } else {
+    // Fully opaque: 2-tone quantize so in-cell shading (outline vs body) survives.
+    const [dark, light] = lumExtremes(inks);
+    fg = light;
+    bg = dark;
+  }
+  let mask = 0;
+  for (let i = 0; i < cells.length; i++) {
+    const c = cells[i];
+    if (!c) continue; // transparent ⇒ bg bit (0)
+    if (hasTransparent || dist2(c, fg) <= dist2(c, bg as Rgb)) mask |= 1 << i;
+  }
+  buf.set(tx, ty, { ch: cd.m.glyph(mask), fg, bg });
+}
+
+function lum(c: Rgb): number {
+  return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+}
+function dist2(a: Rgb, b: Rgb): number {
+  const dr = a.r - b.r;
+  const dg = a.g - b.g;
+  const db = a.b - b.b;
+  return dr * dr + dg * dg + db * db;
+}
+/** The luminance-darkest and luminance-lightest of a non-empty ink list. */
+function lumExtremes(inks: Rgb[]): [Rgb, Rgb] {
+  let dark = inks[0]!;
+  let light = inks[0]!;
+  for (const c of inks) {
+    if (lum(c) < lum(dark)) dark = c;
+    if (lum(c) > lum(light)) light = c;
+  }
+  return [dark, light];
+}
+/** The most frequent ink (ties broken toward the brightest) — the cell's main tone. */
+function dominantColor(inks: Rgb[]): Rgb {
+  const counts = new Map<string, { c: Rgb; n: number }>();
+  for (const c of inks) {
+    const k = `${c.r},${c.g},${c.b}`;
+    const e = counts.get(k);
+    if (e) e.n++;
+    else counts.set(k, { c, n: 1 });
+  }
+  let best = inks[0]!;
+  let bestN = -1;
+  for (const { c, n } of counts.values()) {
+    if (n > bestN || (n === bestN && lum(c) > lum(best))) {
+      best = c;
+      bestN = n;
+    }
+  }
+  return best;
 }
 
 function insideClip(clip: DrawOptions['clip'], x: number, y: number): boolean {
@@ -265,22 +417,6 @@ export function indexToChar(index: number, paletteSize: number): string {
   const t = Math.min(1, index / Math.max(1, paletteSize - 1));
   const i = Math.min(ASCII_RAMP.length - 1, Math.round(t * (ASCII_RAMP.length - 1)));
   return ASCII_RAMP[i] ?? '#';
-}
-
-function composeHalfBlock(
-  top: Rgb | null,
-  bot: Rgb | null,
-  topIdx: number,
-  botIdx: number,
-  mode: ColorMode,
-): Cell {
-  if (mode === 'none') {
-    // Pick the denser of the two pixels for the glyph; no color.
-    const idx = Math.max(topIdx, botIdx);
-    return { ch: indexToChar(idx, 16), fg: null, bg: null };
-  }
-  // fg = top pixel, bg = bottom pixel, glyph = upper-half block.
-  return { ch: UPPER_HALF, fg: top, bg: bot };
 }
 
 /** Beauty-ladder accent per grade (design §13) — UI badge/highlight colors. */

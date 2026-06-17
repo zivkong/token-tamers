@@ -18,7 +18,14 @@ import {
 } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
 import { drawDivider, drawPageFooter, drawPageHeader } from '../components';
-import { buildPalette, drawSprite, GRADE_ACCENT, GRADE_BADGE } from '../render/sprite';
+import {
+  buildPalette,
+  drawSprite,
+  subcellRows,
+  subcellCols,
+  GRADE_ACCENT,
+  GRADE_BADGE,
+} from '../render/sprite';
 import { findSpecies, findSprite, houseColor, houseTint } from '../helpers/lookup';
 import type { RenderContext } from './types';
 
@@ -114,9 +121,9 @@ function drawSpriteAndMeta(
   const species = findSpecies(pack, best.speciesId);
   const spr = findSprite(pack, species?.spriteId ?? '');
   if (spr) {
-    const nativeRows = Math.max(1, Math.ceil(spr.height / 2));
+    const nativeRows = Math.max(1, subcellRows(spr.height));
     const scale = SPRITE_ROWS / nativeRows;
-    const destW = Math.max(1, Math.round(spr.width * scale));
+    const destW = Math.max(1, Math.round(subcellCols(spr.width) * scale));
     drawSprite(buf, spr, buildPalette(houseTint(best.house), best.grade, frame, species?.accent), {
       x: canvasX + 2,
       y: bodyY,
