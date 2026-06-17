@@ -158,10 +158,12 @@ function handleMouse(
   const cx = ev.x - 1;
   const cy = ev.y - 1;
 
-  // Menu clicks: hit-test the same equal-width button grid the renderer drew.
-  for (const btn of packMenu(layout.termCols).buttons) {
-    const y = layout.menuY + menuButtonY(btn.row, layout.menuBtnH);
-    if (cx >= btn.x && cx < btn.x + btn.w && cy >= y && cy < y + layout.menuBtnH) {
+  // Menu clicks: hit-test the same button grid/rail the renderer drew (offset to
+  // the menu region's origin so it works for both the bottom band and the rail).
+  for (const btn of packMenu(layout.menuRect.cols).buttons) {
+    const bx = layout.menuRect.x + btn.x;
+    const y = layout.menuRect.y + menuButtonY(btn.row, layout.menuBtnH);
+    if (cx >= bx && cx < bx + btn.w && cy >= y && cy < y + layout.menuBtnH) {
       activate(rt, btn.id);
       return;
     }
@@ -171,16 +173,31 @@ function handleMouse(
   const region = deps.hits.hit(cx, cy);
   if (region && handleRegionClick(rt, host, deps, region)) return;
 
-  // A click anywhere on the detail page (outside the menu / a copy region) returns to the Dex.
-  if (rt.page === 'dex-detail' && cy < layout.menuDividerY) {
+  // A click anywhere on the detail page body (outside the menu / a copy region)
+  // returns to the Dex.
+  if (rt.page === 'dex-detail' && inContentRegion(layout, cx, cy)) {
     rt.page = 'dex';
     return;
   }
 
   // Archive row clicks: map by canvas geometry, ignoring the menu.
-  if (rt.page === 'archive' && cy < layout.menuDividerY) {
+  if (rt.page === 'archive' && inContentRegion(layout, cx, cy)) {
     handleListRowClick(rt, host, cy - (layout.canvasY + ARCHIVE_LIST_OFFSET));
   }
+}
+
+/** True when a cell is inside the page content region (not the menu band/rail). */
+function inContentRegion(
+  layout: ReturnType<typeof computeLayout>,
+  cx: number,
+  cy: number,
+): boolean {
+  return (
+    cx >= layout.canvasX &&
+    cx < layout.canvasX + layout.canvasCols &&
+    cy >= layout.canvasY &&
+    cy < layout.canvasY + layout.canvasRows
+  );
 }
 
 /** Resolve a page-registered region click (DNA copy, Dex House tab / star). */

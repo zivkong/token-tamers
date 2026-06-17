@@ -39,7 +39,7 @@ export interface MenuButton extends MenuItem {
 }
 
 /** Left/right inset, the MINIMUM gap between buttons, and interior H padding. */
-const MENU_X = 1;
+export const MENU_X = 1;
 const MENU_MIN_GAP = 2;
 /** Interior horizontal padding (also where the right-aligned hotkey sits). */
 export const MENU_PAD_X = 2;

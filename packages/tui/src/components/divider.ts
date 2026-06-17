@@ -15,6 +15,8 @@ import type { FrameBuffer } from '../render/buffer';
 
 /** '─' light horizontal (U+2500), by codepoint to survive encoding. */
 const RULE = String.fromCodePoint(0x2500);
+/** '│' light vertical (U+2502), by codepoint to survive encoding. */
+const VRULE = String.fromCodePoint(0x2502);
 
 /** Shared rule + label colors so every divider looks identical. */
 export const DIVIDER_LINE: Rgb = { r: 54, g: 62, b: 86 };
@@ -54,5 +56,23 @@ export function drawDivider(buf: FrameBuffer, y: number, opts: DividerOptions = 
     if (startGap + label.length <= width) {
       buf.textBold(x + startGap, y, label, opts.labelColor ?? DIVIDER_LABEL, null);
     }
+  }
+}
+
+/**
+ * Draw a vertical rule down column `x` for `height` rows from `y`. The companion
+ * to `drawDivider`, used by the horizontal (side-by-side) layout to separate the
+ * game canvas from the chrome column / menu rail. Same shared line color.
+ */
+export function drawVDivider(
+  buf: FrameBuffer,
+  x: number,
+  y: number,
+  height: number,
+  color: Rgb = DIVIDER_LINE,
+): void {
+  if (height <= 0) return;
+  for (let i = 0; i < height; i++) {
+    buf.set(x, y + i, { ch: VRULE, fg: color, bg: null });
   }
 }

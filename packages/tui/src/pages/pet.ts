@@ -24,7 +24,7 @@ import {
 } from '../render/sprite';
 import { findHabitat, findSpecies, findSprite, houseColor, houseTint } from '../helpers/lookup';
 import { petSections, type SceneRect } from '../render/layout';
-import { drawDivider, drawMarquee } from '../components';
+import { drawDivider, drawVDivider, drawMarquee } from '../components';
 import { drawStatsRow, renderVitals } from './pet-vitals';
 import type { RenderContext } from './types';
 import type { SpriteDef } from '@token-tamers/core';
@@ -291,15 +291,27 @@ export function renderPetPage(ctx: RenderContext): void {
 
   drawHeaderBand(ctx, sec.header, species?.name ?? '???');
 
-  // Opt-in update notice: a scrolling ribbon along the top of the scene, shown
-  // only when an update was seen (info.updateAvailable). Undefined in golden
-  // tests, so existing pet frames are unchanged.
-  drawUpdateTicker(ctx, sec.scene);
+  // Opt-in update notice: a scrolling ribbon along the top of the canvas, shown
+  // only when an update was seen (info.updateAvailable). It spans the full canvas
+  // WIDTH (not the letterboxed scene box — a narrow box would clip the message):
+  // vertical → the full content width; horizontal → the canvas column (the scene
+  // box, which is width-bound to that column). Undefined in golden tests, so
+  // existing pet frames are unchanged.
+  const ticker: SceneRect =
+    layout.orientation === 'horizontal'
+      ? sec.scene
+      : { x: layout.canvasX, y: sec.scene.y, cols: layout.canvasCols, rows: 1 };
+  drawUpdateTicker(ctx, ticker);
 
-  // Section dividers: header | scene | VITALS. (The "Menu" divider is global
-  // chrome drawn by the frame, after the panel's bottom-padding gap.)
-  drawDivider(buf, sec.dividerYs[0]);
-  drawDivider(buf, sec.dividerYs[1], { label: 'VITALS' });
+  // Section rules + separator (orientation-aware — the layout decides whether
+  // these are stacked horizontal rules or a canvas/chrome vertical separator).
+  // The "Menu" divider/rail is global chrome drawn by the frame.
+  for (const rule of sec.rules) {
+    drawDivider(buf, rule.y, { x: rule.x, width: rule.width, label: rule.label });
+  }
+  if (sec.separator) {
+    drawVDivider(buf, sec.separator.x, sec.separator.y, sec.separator.height);
+  }
 
   renderVitals(ctx, sec.panel);
 

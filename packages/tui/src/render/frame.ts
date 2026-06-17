@@ -14,7 +14,7 @@ import { FrameBuffer } from './buffer';
 import { HitRegistry } from './hit';
 import { computeLayout, tooSmallMessage, type Layout } from './layout';
 import { MENU_PAD_X, menuButtonY, packMenu, type MenuButton } from './menu';
-import { drawDivider } from '../components';
+import { drawDivider, drawVDivider } from '../components';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
 import { renderDexDetailPage } from '../pages/dex-detail';
@@ -114,11 +114,16 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
       break;
   }
 
-  // Transient flash toast, centered just above the menu divider (e.g. gradeshift).
+  // Transient flash toast (e.g. gradeshift). Vertical: centered just above the
+  // menu divider. Horizontal: centered along the bottom of the content column
+  // (there is no menu divider row to sit above).
   if (input.flash) {
-    const row = Math.max(0, layout.menuDividerY - 1);
     const text = ` ${input.flash} `;
-    const x = Math.max(0, Math.floor((layout.termCols - text.length) / 2));
+    const row = layout.menuRail
+      ? Math.max(0, layout.canvasY + layout.canvasRows - 1)
+      : Math.max(0, layout.menuDividerY - 1);
+    const width = layout.menuRail ? layout.canvasCols : layout.termCols;
+    const x = layout.canvasX + Math.max(0, Math.floor((width - text.length) / 2));
     buf.text(x, row, text, FLASH_FG, FLASH_BG);
   }
 
@@ -127,18 +132,27 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
 }
 
 function drawMenu(buf: FrameBuffer, hits: HitRegistry, layout: Layout, page: PageId): void {
-  // The menu is its own labeled section ("── Menu ──") on every page.
-  drawDivider(buf, layout.menuDividerY, { label: 'Menu' });
-  // Paint the whole menu-button band.
-  for (let ry = 0; ry < layout.menuRows; ry++) {
-    for (let x = 0; x < buf.cols; x++) {
-      buf.set(x, layout.menuY + ry, { ch: ' ', fg: null, bg: MENU_BG });
+  const { menuRect, menuBtnH } = layout;
+  // The menu is its own labeled section on every page: a "── Menu ──" rule above
+  // a full-width band (vertical) or a vertical rule + "Menu" label beside a rail
+  // (horizontal).
+  if (layout.menuRail) {
+    drawVDivider(buf, layout.menuDividerX, 0, layout.termRows);
+    buf.textBold(menuRect.x, layout.menuDividerY, ' MENU ', MENU_ACTIVE, null);
+  } else {
+    drawDivider(buf, layout.menuDividerY, { label: 'Menu' });
+  }
+  // Paint the menu-button band/rail.
+  for (let ry = 0; ry < menuRect.rows; ry++) {
+    for (let x = 0; x < menuRect.cols; x++) {
+      buf.set(menuRect.x + x, menuRect.y + ry, { ch: ' ', fg: null, bg: MENU_BG });
     }
   }
-  for (const btn of packMenu(layout.termCols).buttons) {
-    const y = layout.menuY + menuButtonY(btn.row, layout.menuBtnH);
-    drawMenuButton(buf, btn, y, layout.menuBtnH, btn.id === page);
-    hits.add(`menu:${btn.id}`, btn.x, y, btn.w, layout.menuBtnH);
+  for (const btn of packMenu(menuRect.cols).buttons) {
+    const x = menuRect.x + btn.x;
+    const y = menuRect.y + menuButtonY(btn.row, menuBtnH);
+    drawMenuButton(buf, { ...btn, x }, y, menuBtnH, btn.id === page);
+    hits.add(`menu:${btn.id}`, x, y, btn.w, menuBtnH);
   }
 }
 

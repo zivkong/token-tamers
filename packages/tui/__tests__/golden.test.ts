@@ -289,6 +289,59 @@ describe('golden frames (100x30, no-color)', () => {
   });
 });
 
+describe('golden frames — horizontal dock (200x16, no-color)', () => {
+  it('renders the pet page side-by-side: 4:3 canvas, chrome column, menu rail', () => {
+    const out = renderFrameToString(200, 16, input({ page: 'pet' }));
+    // The chrome column carries the identity + live vitals beside the canvas.
+    expect(out).toContain('Wisp');
+    expect(out).toContain('VITALS');
+    expect(out).toContain('Food');
+    expect(out).toContain('Odds');
+    // The nav menu is present as the right-hand rail.
+    expect(out).toContain('Pet');
+    expect(out).toContain('Quit');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the pet page food/odds readout in the horizontal chrome column', () => {
+    const out = renderFrameToString(
+      200,
+      16,
+      input({
+        page: 'pet',
+        live: {
+          windowTokens: 84_200_000,
+          windowEssence: 90_000_000,
+          baselineEssence: 24_300,
+          windowsObserved: 6,
+          nextGrade: { from: 'C', to: 'B', chance: 0.33, capped: false },
+        },
+      }),
+    );
+    expect(out).toContain('/ 200M');
+    expect(out).toContain('33%');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders a full-screen page (Dex) into the dock content region with the menu rail', () => {
+    const out = renderFrameToString(200, 16, input({ page: 'dex' }));
+    expect(out).toContain('Dex');
+    expect(out).toContain('Aether');
+    expect(out).toContain('Quit'); // the rail still carries nav
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders a gradeshift flash along the bottom of the dock content', () => {
+    const out = renderFrameToString(
+      200,
+      16,
+      input({ page: 'pet', flash: '✦ Grade up! C → B (35%)' }),
+    );
+    expect(out).toContain('Grade up');
+    expect(out).toMatchSnapshot();
+  });
+});
+
 describe('menu + per-page completion', () => {
   it('shows all nav items in the menu on every page', () => {
     const out = renderFrameToString(100, 30, input({ page: 'pet' }));

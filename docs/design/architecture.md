@@ -7,19 +7,36 @@ to a pointer (CLAUDE.md and CONTRIBUTING.md now own it); the CLAUDE.md/skills/wi
 
 ---
 
-## TUI Shell: Top-Oriented Full-Width Stack, Menu-After-Canvas (design baseline §15, layout rev 1.1)
+## TUI Shell: Responsive, Orientation-Aware Layout (design baseline §15, layout rev 1.2)
 
-**Layout law:** the UI is a **top-oriented, full-width vertical stack** — sections stack from
-row 0 with **no letterbox gutters and no side padding**, separated by divider rules with blank
-padding gaps, and the menu is a **left-aligned button flow docked immediately AFTER the
-canvas** (wrapping rows as the width demands), not at the terminal bottom. Any slack falls
-below the menu. All UI is mouse-clickable — menu first and foremost — with full keyboard
-parity. Minimum terminal **34×24**; everything below degrades gracefully (compact bars,
-single-letter stat labels, a wrapping menu).
+**Layout law:** the shell adapts to the terminal's shape (`render/layout.ts` →
+`pickOrientation`). Two orientations, chosen from the cols:rows ratio:
 
-> Layout rev 1.1 supersedes the original "centered 4:3 canvas + bottom-docked menu bar". The
-> game canvas is now full-bleed (edge-to-edge); the prior centered-canvas/letterbox model is
-> retired. The pixel-art _scene aspect_ is preserved by scaling, not by letterboxing.
+- **Vertical (a tall "side pane"):** a **top-oriented, full-width vertical stack** — header →
+  game canvas → VITALS → menu band — stacking from row 0, separated by divider rules with
+  blank padding gaps. The menu is a left-aligned button flow docked immediately AFTER the
+  canvas; any slack falls below it. (This is the rev 1.1 layout, unchanged.)
+- **Horizontal (a wide, short "bottom dock"):** **two columns** — the game canvas on the
+  **left**, a chrome column (the pet's header / stats / vitals) on the **right**, and the nav
+  menu as a vertical **rail** down the right edge. This frees the vertical budget the canvas
+  needs to stay 4:3 in a short terminal.
+
+The **game canvas is a true 4:3 box** (`fit43`): a 4:3-pixel habitat reads as 4:3 on screen
+only when its cell box is **8:3** (cells are ~1:2 w:h), so the canvas is **letterboxed —
+centered with gutters inside its band — rather than stretched to fill**. This canvas-local
+gutter is the ONE permitted exception to the "no gutters" rule; the rest of the frame stays
+gutter-free and (in vertical) full-width. All UI is mouse-clickable — menu first and foremost
+— with full keyboard parity. Minimum terminal **34×24** for vertical; a short wide dock is
+valid down to **72×12** in horizontal (it is the whole reason horizontal exists). Everything
+below degrades gracefully (compact bars, single-letter stat labels, a wrapping menu/rail).
+
+> Layout rev 1.2 makes the rev 1.1 stack the **vertical** branch and adds the **horizontal**
+> dock branch. It also corrects the scene aspect: the canvas is a true 4:3 (8:3-cell) box,
+> letterboxed, replacing rev 1.1's full-bleed scaling (which targeted a pre-octant 4:1 cell
+> aspect and quietly squished the 4:3 habitat art). Orientation is a pure function of
+> (cols, rows) — golden-frame deterministic — with a dead-band so a resize across the boundary
+> doesn't flicker. The original "centered 4:3 canvas + bottom-docked menu bar" (pre-1.1)
+> stays retired.
 
 ### Section Stack & Canvas Math
 
@@ -72,15 +89,16 @@ not a progress bar. (Stage/molt still drive the engine and appear in achievement
 the calibration cue is kept, as it is about data readiness, not evolution.)
 
 Cells aren't square (~1:2 w:h); the sub-cell compositor packs each cell at the active density
-(sextant 2×3 default, octant 2×4 target, half-block 1×2 fallback). Habitat scenes are fixed
-128×96 px art (4:3). The canvas spans
-the **full terminal width** and the scene height tracks that 4:1 aspect (`sceneRows ≈
-cols/4`), capped to the rows available above the menu, so the backdrop **scales uniformly to
-fill the width with no padding and no distortion** (nearest-neighbor, via `drawSprite`'s
-`destW`/`destH`). The **pet and its trinkets scale by the same factor** (`scene.cols /
-HABITAT_COLS`) so they stay proportionate to the backdrop at any width. Minimum terminal
-34×24. Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
-(Dex, Archive, Settings) drawn in the same content region.
+(octant 2×4 default, sextant 2×3, half-block 1×2 fallback). Habitat scenes are fixed 128×96 px
+art (4:3). The canvas is a **true 4:3 box** (`fit43`): because a cell is ~1:2, a 4:3-pixel
+image reads as 4:3 only when its cell box is **8:3** (`rows = cols × 3/8`). The box is the
+largest 8:3 rectangle that fits the canvas band, **centered with gutters** (letterboxed) — so
+the backdrop **scales uniformly with no distortion** (nearest-neighbor, via `drawSprite`'s
+`destW`/`destH`), never squished. The **pet and its trinkets scale by the same factor**
+(`scene.cols / HABITAT_COLS`) so they stay proportionate at any size. The band the box is
+fitted into is the full content width (vertical) or the left canvas column (horizontal).
+Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages (Dex,
+Archive, Settings) drawn in the same content region.
 
 ### Menu Spec
 

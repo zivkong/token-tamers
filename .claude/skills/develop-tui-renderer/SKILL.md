@@ -23,21 +23,38 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 > feature needs (e.g. free-text entry for pasting a code), call that out as an unfinished TUI
 > gap — don't declare the feature complete on the CLI alone. See the TUI-first rule in CLAUDE.md.
 
-## Layout law (rev 1.1 — top-oriented, full-width)
+## Layout law (rev 1.2 — responsive, orientation-aware)
 
-- The UI is a **top-oriented, full-width vertical stack** (`render/layout.ts`): sections
-  stack from row 0 with **no letterbox gutters, no side padding**; the menu is a **left-aligned
-  button flow docked immediately AFTER the canvas** (wraps rows as needed), not at the terminal
-  bottom. Slack falls below it. **Min terminal 34×24** (`MIN_COLS=34`); layouts degrade with
-  compact bars/labels and a wrapping menu. (Supersedes the old centered-4:3 + bottom-bar model.)
-- Section order (pet page): **header** (`headerRows=3`: name / identity / stats) → _divider+gap_ →
+- The shell adapts to the terminal shape (`render/layout.ts` → `pickOrientation`, a pure
+  function of cols:rows with a dead-band so a resize across the boundary doesn't flicker;
+  golden-frame deterministic). Two orientations:
+  - **Vertical** (a tall "side pane"): the rev 1.1 stack — **top-oriented, full-width**, sections
+    from row 0 with **no gutters/side-padding**; menu a left-aligned button flow docked AFTER the
+    canvas, slack below. `canvasX=0`, `canvasCols=termCols`, `menuRail=false`. **Min 34×24**.
+  - **Horizontal** (a wide, short "bottom dock"): **two columns** — game canvas LEFT, chrome
+    column (header/stats/vitals) RIGHT, nav menu a vertical **rail** (`menuRail=true`,
+    `menuRect`/`menuDividerX`) down the right edge. Content region is the left column
+    (`canvasCols < termCols`, `canvasRows = termRows`). **Min 72×12** — docks are short, so the
+    row floor is far below vertical's.
+- The **game canvas is a true 4:3 box** (`fit43`): cells are ~1:2, so a 4:3-pixel habitat reads
+  as 4:3 only at an **8:3 cell box** (`rows = cols × 3/8`). `fit43(band)` returns the largest 8:3
+  box that fits, **centered with gutters (letterboxed)** — the ONE allowed gutter; never stretch
+  to fill. Size sprites/wander against the returned `scene` rect (not the band). Use
+  `CANVAS_CELL_W=8`/`CANVAS_CELL_H=3`, NOT the retired `cols/4` (pre-octant 4:1) target.
+- The menu is drawn from `layout.menuRect` + `packMenu(menuRect.cols)` (offset to `menuRect.x`)
+  in BOTH orientations, so `frame.ts` (draw) and `shell-input.ts` (hit-test) stay in lockstep —
+  vertical packs a full-width band, horizontal packs a one-per-row rail. Adding a page is
+  unchanged; never hand-roll menu geometry from `termCols`.
+- Section order (pet page, VERTICAL): **header** (`headerRows=3`: name / identity / stats) → _divider+gap_ →
   **game canvas** → _gap + labeled `VITALS` divider + gap_ → **vitals panel** (`panelRows=4`: food /
   diet / grow / odds on consecutive rows) → _bottom-padding gap_ → **labeled `── Menu ──` divider** → **menu**.
-  `petSections(layout)` carves the bands and the pet's TWO dividers (header, VITALS) with gaps
-  around them plus a bottom-padding gap below the panel; the **`── Menu ──` divider is GLOBAL
-  chrome** drawn by the frame at `layout.menuDividerY` on every page (so the menu is its own
-  named section everywhere). Menu buttons start at `layout.menuY` (= `menuDividerY + 1`).
-  `components/divider.ts` draws rules. `canvasX=0`, `canvasCols=termCols`.
+  `petSections(layout)` carves the bands and returns `rules` (the horizontal dividers to draw —
+  header + labeled VITALS in vertical; just VITALS in horizontal) plus an optional `separator`
+  (the vertical rule between canvas and chrome, horizontal only). In HORIZONTAL the scene takes
+  the left of the content column (4:3, letterboxed) and header+vitals stack in a chrome
+  sub-column to its right — same rects, orientation-agnostic page code. The **menu is GLOBAL
+  chrome** drawn by the frame (a band below in vertical, a rail on the right in horizontal);
+  `components/divider.ts` draws rules (`drawDivider` horizontal, `drawVDivider` vertical).
 - **Standard full-screen page scaffold** (`components/page.ts`): every non-Pet page (Dex,
   Archive, Settings) shares ONE chrome so they never drift apart — `drawPageHeader(ctx, {icon,
 title, completion?})` draws a left-aligned `icon Title` (Title-Case), an optional right-aligned
@@ -105,12 +122,12 @@ bg)` so it renders on the band background.
   setting (`auto`|`octant`|`sextant`|`half`) and, on `auto`, runs a cursor-WIDTH probe
   (`apps/cli/.../subcell.ts`) — no `process.env`. Tests never call it, so golden frames stay
   octant. Size sprites with the exported `subcellCols(width)`/`subcellRows(height)`, NOT `ceil(height/2)`.
-  Habitat scenes are 128×96 px (4:3). The canvas is full width and `sceneRows ≈ cols/4`
-  (capped to fit), so the backdrop **scales uniformly to fill the width** via `drawSprite`'s
-  `destW`/`destH` (nearest-neighbor) — no padding, no distortion. The **pet + trinkets scale
-  by the same `scene.cols / HABITAT_COLS` factor** so they stay proportionate at any width
-  (`sceneScale` in pet.ts; pass scaled dims into the wander geometry AND `drawSprite`).
-  Minimum terminal 34×24.
+  Habitat scenes are 128×96 px (4:3). The canvas is the **true 4:3 box** from `fit43` (8:3
+  cells, `rows = cols × 3/8`), letterboxed in its band — the backdrop **scales uniformly to
+  fill that box** via `drawSprite`'s `destW`/`destH` (nearest-neighbor), never stretched. The
+  **pet + trinkets scale by the same `scene.cols / HABITAT_COLS` factor** so they stay
+  proportionate at any size (`sceneScale` in pet.ts; pass scaled dims into the wander geometry
+  AND `drawSprite`). Min terminal 34×24 vertical / 72×12 horizontal.
 - Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
   (Dex, Archive, Settings, Achievements) inside the same content region.
 - Menu flow (`render/menu.ts` → `packMenu(cols)`, shared by `layout` for `menuRows`+`menuBtnH`,

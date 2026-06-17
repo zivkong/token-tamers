@@ -80,15 +80,25 @@ export { HitRegistry, type HitRegion } from './render/hit';
 export {
   computeLayout,
   petSections,
+  pickOrientation,
+  fit43,
   tooSmallMessage,
   MIN_COLS,
   MIN_ROWS,
+  HORIZONTAL_MIN_COLS,
+  HORIZONTAL_MIN_ROWS,
   HEADER_ROWS,
   PANEL_ROWS,
   GAP_ROWS,
+  HORIZONTAL_RATIO,
+  VERTICAL_RATIO,
+  CANVAS_CELL_W,
+  CANVAS_CELL_H,
   type Layout,
+  type Orientation,
   type SceneRect,
   type PetSections,
+  type PetRule,
 } from './render/layout';
 
 // Pages.

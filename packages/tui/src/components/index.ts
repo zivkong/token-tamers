@@ -5,7 +5,13 @@
  * after it; every bar fills then shows an empty track.
  */
 
-export { drawDivider, DIVIDER_LINE, DIVIDER_LABEL, type DividerOptions } from './divider';
+export {
+  drawDivider,
+  drawVDivider,
+  DIVIDER_LINE,
+  DIVIDER_LABEL,
+  type DividerOptions,
+} from './divider';
 export { drawMarquee, type MarqueeOptions } from './marquee';
 export {
   drawPageHeader,
