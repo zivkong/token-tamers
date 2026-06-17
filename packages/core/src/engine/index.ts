@@ -52,6 +52,7 @@ import {
 } from './baseline';
 import { consistencyBand, pickBranch, type BranchInputs } from './branches';
 import { computeCompletion } from './completion';
+import { overdueRebirthEvent } from './reconcile';
 import {
   INHERIT_BASE,
   INHERIT_CAP,
@@ -64,7 +65,7 @@ import { rollGrade } from './grades';
 import { cloneStats, matchModelRule, scaleInheritedStats, statsForSpecies } from './houses';
 import { tryCaptureSnapshot } from './dex-records';
 import { evolutionGateMet, requiredMaturity } from './maturity';
-import { isStrictlyBetter, scaleStats } from './rebirth';
+import { archiveRecord, scaleStats } from './rebirth';
 import { petSnapshot } from './snapshot';
 import { cloneState, freshPet, initialState } from './state';
 
@@ -123,6 +124,20 @@ class GameEngine implements Engine {
     }
     this.state_.rngState = rng.state >>> 0;
     this.state_.simulatedTo = Math.max(after, now);
+    return effects;
+  }
+
+  /**
+   * One-time catch-up repair (see {@link overdueRebirthEvent} for the rule). Run
+   * once on load, after `ingest` and before `advanceTo`: rebirths a pet whose sim
+   * clock slipped past a weekly boundary while a future `weekAnchor` had rebirth
+   * frozen. Idempotent and a no-op on healthy saves.
+   */
+  reconcile(now: number): GameEffect[] {
+    const effects: GameEffect[] = [];
+    const all = [...this.buffer].sort((a, b) => a.ts - b.ts || cmpStr(a.adapter, b.adapter));
+    const event = overdueRebirthEvent(this.state_, all, this.config.cycle, now);
+    if (event) this.replayRebirth(event, all, effects);
     return effects;
   }
 
@@ -409,7 +424,7 @@ class GameEngine implements Engine {
       contentVersion: this.pack.season,
       recordedAt: event.at,
     };
-    if (this.tryArchive(record)) {
+    if (archiveRecord(this.state_.archive, record)) {
       effects.push({ type: 'archive_record', record });
     }
     // New source of truth: the top-3 Dex record store (the Archive above is kept
@@ -434,20 +449,6 @@ class GameEngine implements Engine {
     if (dormant) effects.push({ type: 'dormant', entered: true });
 
     this.evaluateAchievements(event.at, effects);
-  }
-
-  private tryArchive(record: ArchiveRecord): boolean {
-    const idx = this.state_.archive.findIndex((r) => r.speciesId === record.speciesId);
-    if (idx < 0) {
-      this.state_.archive.push(record);
-      return true;
-    }
-    const existing = this.state_.archive[idx]!;
-    if (isStrictlyBetter(record, existing)) {
-      this.state_.archive[idx] = record;
-      return true;
-    }
-    return false;
   }
 
   // --- achievements ---------------------------------------------------------

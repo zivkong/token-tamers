@@ -476,3 +476,49 @@ describe('engine — dynamic policy parity', () => {
     expect(st.pet.stage).not.toBe('egg');
   });
 });
+
+describe('engine — reconcile catch-up rebirth', () => {
+  const cycle = subscriptionCycle(WEEK_ANCHOR);
+  const now = WEEK_ANCHOR + 10 * 24 * HOUR; // sim clock 10 days in, past the +7d boundary
+
+  /** A save that slipped past a weekly boundary without rebirthing (the bug). */
+  function stuckEngine() {
+    const saved = createEngine(makePack(), { adapters: adapters(), cycle }).state();
+    saved.pet.hatchedAt = WEEK_ANCHOR + 2 * 24 * HOUR; // born BEFORE the +7d boundary
+    saved.simulatedTo = now; // clock already advanced past it (no rebirth fired)
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle }, saved);
+    eng.ingest([ev(2 * 24 * HOUR)]); // first usage = the hatch
+    return eng;
+  }
+
+  it('rebirths a pet that lived across a missed weekly boundary', () => {
+    const eng = stuckEngine();
+    const effects = eng.reconcile(now);
+    expect(effects.some((e) => e.type === 'rebirth')).toBe(true);
+    const st = eng.state();
+    expect(st.pet.generation).toBe(2);
+    expect(st.pet.stage).toBe('egg');
+    // New egg dated to the missed boundary, not "now".
+    expect(st.pet.hatchedAt).toBe(WEEK_ANCHOR + WEEK_MS);
+  });
+
+  it('is idempotent — a second pass does nothing', () => {
+    const eng = stuckEngine();
+    eng.reconcile(now);
+    const after = eng.reconcile(now);
+    expect(after.some((e) => e.type === 'rebirth')).toBe(false);
+    expect(eng.state().pet.generation).toBe(2);
+  });
+
+  it('leaves a healthy mid-week pet untouched', () => {
+    // Born this week, clock has NOT passed a boundary => nothing to reconcile.
+    const saved = createEngine(makePack(), { adapters: adapters(), cycle }).state();
+    saved.pet.hatchedAt = WEEK_ANCHOR + 8 * 24 * HOUR;
+    saved.simulatedTo = WEEK_ANCHOR + 9 * 24 * HOUR;
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle }, saved);
+    eng.ingest([ev(8 * 24 * HOUR)]);
+    const effects = eng.reconcile(WEEK_ANCHOR + 9 * 24 * HOUR);
+    expect(effects.some((e) => e.type === 'rebirth')).toBe(false);
+    expect(eng.state().pet.generation).toBe(1);
+  });
+});

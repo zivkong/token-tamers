@@ -112,7 +112,10 @@ export async function catchUp(now: () => number = Date.now): Promise<CatchUpResu
   // events in an as-yet-unclosed window are never lost (checkpoints advanced past
   // their bytes, so the scan will not surface them again).
   engine.ingest([...loadPending(), ...liveEvents]);
-  const effects = engine.advanceTo(at);
+  // Catch-up repair BEFORE advancing: rebirth a pet whose clock slipped past a
+  // weekly boundary while an old future-anchored cycle had rebirth frozen.
+  // Idempotent and a no-op on healthy saves; advanceTo can't double-fire it.
+  const effects = [...engine.reconcile(at), ...engine.advanceTo(at)];
 
   saveState(engine.state());
   saveCheckpoints(scan.checkpoints);

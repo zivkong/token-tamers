@@ -593,6 +593,14 @@ export interface Engine {
    * Deterministic: same saved state + same events + same `now` = same result.
    */
   advanceTo(now: number): GameEffect[];
+  /**
+   * One-time catch-up repair, run once on load BEFORE `advanceTo`. If the pet's
+   * current life began before the most recent weekly boundary and the sim clock
+   * already slipped past it without rebirthing (a future `weekAnchor` had frozen
+   * rebirth), fire that rebirth now — archiving the pet and starting a fresh egg
+   * for the current week. Idempotent and side-effect-free on healthy saves.
+   */
+  reconcile(now: number): GameEffect[];
   state(): GameState;
   /**
    * The ingested events whose containing 5-h window has NOT yet closed by the
