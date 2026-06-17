@@ -122,9 +122,13 @@ bg)` so it renders on the band background.
   **sextant 2×3** (3×, Unicode 13), **half-block 1×2** (fallback) — quantizing every cell to 2 SGR
   colors + the matching block glyph (partly-transparent cells composite over the backdrop). The
   mode is chosen ONCE per session via `setSubcellMode(name)`: the cli reads the `subcell`
-  setting (`auto`|`octant`|`sextant`|`half`) and, on `auto`, runs a cursor-WIDTH probe
-  (`apps/cli/.../subcell.ts`) — no `process.env`. Tests never call it, so golden frames stay
-  octant. Size sprites with the exported `subcellCols(width)`/`subcellRows(height)`, NOT `ceil(height/2)`.
+  setting (`auto`|`octant`|`sextant`|`half`) and resolves it (`apps/cli/.../subcell.ts`) —
+  explicit modes pass through; **`auto` → the universally-safe `half`**. octant/sextant are
+  explicit opt-in because a cursor-width probe CANNOT detect font glyph coverage: the cursor
+  advances by the Unicode width table, not glyph presence, so an octant (U+1CD00, assigned +
+  narrow) measures 1 column whether the terminal draws it OR a width-1 tofu box (macOS
+  Terminal.app does the latter), and there's no env-free capability query. The tui's OWN default
+  mode stays octant, so golden frames stay octant (the cli `auto`→`half` only affects runtime). Size sprites with the exported `subcellCols(width)`/`subcellRows(height)`, NOT `ceil(height/2)`.
   Habitat scenes are 128×96 px (4:3). The canvas is the **true 4:3 box** from `fit43` (8:3
   cells, `rows = cols × 3/8`), letterboxed in its band — the backdrop **scales uniformly to
   fill that box** via `drawSprite`'s `destW`/`destH` (nearest-neighbor), never stretched. The

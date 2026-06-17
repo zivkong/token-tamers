@@ -106,9 +106,10 @@ export async function launchShell(caught: CatchUpResult, opts: LaunchShellOption
   const { host, persist } = createShellHost(config, engine);
   const settings = loadSettings();
   const color = resolveColorMode(opts.noColor, settings.color);
-  // Pick the sub-cell sprite density once, before the render loop: honor the
-  // setting, or probe the terminal for the richest supported rung when 'auto'.
-  setSubcellMode(await resolveSubcellMode(settings.subcell ?? 'auto'));
+  // Pick the sub-cell sprite density once, before the render loop: honor an
+  // explicit setting, or use the universally-safe `half` when 'auto' (richer modes
+  // can't be auto-detected without risking tofu — see services/subcell.ts).
+  setSubcellMode(resolveSubcellMode(settings.subcell ?? 'auto'));
   const info: ShellInfo = {
     ...buildShellInfo(config),
     updateMode: settings.update?.mode ?? 'off',

@@ -145,7 +145,11 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - User data: `~/.tokentamers/config.json` (UserConfig) + `state.json` (GameState) +
   `settings.json` (SettingsFile: `color` + `subcell` sprite-density + per-adapter `adapterRoots`).
   The `subcell` knob (`auto`|`octant`|`sextant`|`half`, default `auto`) picks the sub-cell render
-  mode; `auto` runs a cursor-width terminal probe at launch (no env). **Zero env config:**
+  mode; `auto` resolves to the universally-safe `half` (block elements every terminal renders).
+  octant/sextant are **explicit opt-in** — a cursor-width probe CANNOT detect font glyph coverage
+  (the cursor advances by the Unicode width table, not glyph presence, so an octant measures 1
+  column whether the terminal draws it or a width-1 tofu box, e.g. macOS Terminal.app), and there's
+  no env-free capability query. **Zero env config:**
   the project reads nothing from `process.env` — the data dir is fixed at `~/.tokentamers`
   and all knobs live in `settings.json` (the cli reads it and threads values down; adapters
   get scan roots via `detect(roots)`, core/adapters never touch `process.env`). Tests
