@@ -375,6 +375,29 @@ describe('golden frames — narrow / floor sizes (regression guards)', () => {
     expect(archive).toMatchSnapshot();
   });
 
+  it('clips the dex focus-rail hint to the rail (no bleed into the menu) at 120x20', () => {
+    const out = renderFrameToString(
+      120,
+      20,
+      input({ page: 'dex', ui: { selected: 1, scroll: 0, house: 3 } }),
+    );
+    expect(out).toContain('Undiscovered'); // hint present (clipped, not overflowing)
+    expect(out).toContain('Quit'); // the menu rail is intact, not corrupted
+    expect(out).toMatchSnapshot();
+  });
+
+  it('dex-detail suppresses cards just below the card-width floor (86x16 = 66 cols)', () => {
+    const out = renderFrameToString(
+      86,
+      16,
+      input({ page: 'dex-detail', ui: { selected: 0, scroll: 0, speciesId: 'ember' } }),
+    );
+    expect(out).toContain('Ember');
+    expect(out).not.toContain('TTX'); // no DNA card → no graft bleed into the rail
+    expect(out).toContain('Quit');
+    expect(out).toMatchSnapshot();
+  });
+
   it('cites the horizontal floor when a wide-but-too-short dock is rejected', () => {
     const out = renderFrameToString(71, 16, input({ page: 'pet' }));
     expect(out).toContain('too small');

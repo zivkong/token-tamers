@@ -16560,9 +16560,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "tests_interaction_test",
       "community": 1,
-      "norm_label": "interaction.test.ts"
+      "norm_label": "interaction.test.ts",
+      "id": "tests_interaction_test"
     },
     {
       "label": "press()",
@@ -16570,9 +16570,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L9",
       "_origin": "ast",
-      "id": "tests_interaction_test_press",
       "community": 1,
-      "norm_label": "press()"
+      "norm_label": "press()",
+      "id": "tests_interaction_test_press"
     },
     {
       "label": "deps()",
@@ -16580,9 +16580,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L13",
       "_origin": "ast",
-      "id": "tests_interaction_test_deps",
       "community": 1,
-      "norm_label": "deps()"
+      "norm_label": "deps()",
+      "id": "tests_interaction_test_deps"
     },
     {
       "label": "spriteRowsFor()",
@@ -16590,9 +16590,9 @@
       "source_file": "packages/tui/src/pages/dex-detail.ts",
       "source_location": "L45",
       "_origin": "ast",
-      "id": "pages_dex_detail_spriterowsfor",
       "community": 41,
-      "norm_label": "spriterowsfor()"
+      "norm_label": "spriterowsfor()",
+      "id": "pages_dex_detail_spriterowsfor"
     },
     {
       "label": "RailLine",
@@ -16600,9 +16600,9 @@
       "source_file": "packages/tui/src/pages/dex-sky.ts",
       "source_location": "L374",
       "_origin": "ast",
-      "id": "pages_dex_sky_railline",
       "community": 8,
-      "norm_label": "railline"
+      "norm_label": "railline",
+      "id": "pages_dex_sky_railline"
     },
     {
       "label": "iconRowsFor()",
@@ -16610,9 +16610,9 @@
       "source_file": "packages/tui/src/pages/dex-sky.ts",
       "source_location": "L382",
       "_origin": "ast",
-      "id": "pages_dex_sky_iconrowsfor",
       "community": 8,
-      "norm_label": "iconrowsfor()"
+      "norm_label": "iconrowsfor()",
+      "id": "pages_dex_sky_iconrowsfor"
     },
     {
       "label": "railLines()",
@@ -16620,9 +16620,9 @@
       "source_file": "packages/tui/src/pages/dex-sky.ts",
       "source_location": "L419",
       "_origin": "ast",
-      "id": "pages_dex_sky_raillines",
       "community": 8,
-      "norm_label": "raillines()"
+      "norm_label": "raillines()",
+      "id": "pages_dex_sky_raillines"
     },
     {
       "label": "inContentRegion()",
@@ -16630,9 +16630,9 @@
       "source_file": "packages/tui/src/shell-input.ts",
       "source_location": "L190",
       "_origin": "ast",
-      "id": "src_shell_input_incontentregion",
       "community": 1,
-      "norm_label": "incontentregion()"
+      "norm_label": "incontentregion()",
+      "id": "src_shell_input_incontentregion"
     }
   ],
   "links": [
@@ -37433,9 +37433,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_interaction_test",
-      "target": "tests_fixtures_makestate",
-      "confidence_score": 1.0
+      "target": "tests_fixtures_makestate"
     },
     {
       "relation": "imports",
@@ -43866,9 +43866,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_interaction_test",
-      "target": "render_hit_hitregistry",
-      "confidence_score": 1.0
+      "target": "render_hit_hitregistry"
     },
     {
       "relation": "re_exports",
@@ -45734,9 +45734,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_interaction_test",
-      "target": "src_shell_shellruntime",
-      "confidence_score": 1.0
+      "target": "src_shell_shellruntime"
     },
     {
       "relation": "references",
@@ -47337,9 +47337,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_interaction_test",
-      "target": "terminal_input_inputevent",
-      "confidence_score": 1.0
+      "target": "terminal_input_inputevent"
     },
     {
       "relation": "re_exports",
@@ -52761,9 +52761,9 @@
       "source_file": "packages/tui/src/pages/dex-detail.ts",
       "source_location": "L101",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_dex_detail_renderdexdetailpage",
-      "target": "pages_dex_detail_spriterowsfor",
-      "confidence_score": 1.0
+      "target": "pages_dex_detail_spriterowsfor"
     },
     {
       "relation": "calls",
@@ -53561,9 +53561,9 @@
       "source_file": "packages/tui/src/pages/dex-detail.ts",
       "source_location": "L45",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_dex_detail",
-      "target": "pages_dex_detail_spriterowsfor",
-      "confidence_score": 1.0
+      "target": "pages_dex_detail_spriterowsfor"
     },
     {
       "relation": "contains",
@@ -53668,9 +53668,9 @@
       "source_file": "packages/tui/src/pages/dex-detail.ts",
       "source_location": "L149",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_dex_detail_drawspriteandmeta",
-      "target": "pages_dex_detail_spriterowsfor",
-      "confidence_score": 1.0
+      "target": "pages_dex_detail_spriterowsfor"
     },
     {
       "relation": "calls",
@@ -53786,9 +53786,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_interaction_test",
-      "target": "src_shell_inputdeps",
-      "confidence_score": 1.0
+      "target": "src_shell_inputdeps"
     },
     {
       "relation": "calls",
@@ -54895,9 +54895,9 @@
       "source_file": "packages/tui/src/shell-input.ts",
       "source_location": "L190",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_shell_input",
-      "target": "src_shell_input_incontentregion",
-      "confidence_score": 1.0
+      "target": "src_shell_input_incontentregion"
     },
     {
       "relation": "contains",
@@ -54987,9 +54987,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_interaction_test",
-      "target": "src_shell_input",
-      "confidence_score": 1.0
+      "target": "src_shell_input"
     },
     {
       "relation": "calls",
@@ -55031,9 +55031,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_interaction_test",
-      "target": "src_shell_input_handleevent",
-      "confidence_score": 1.0
+      "target": "src_shell_input_handleevent"
     },
     {
       "relation": "calls",
@@ -55174,9 +55174,9 @@
       "source_file": "packages/tui/src/shell-input.ts",
       "source_location": "L178",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_shell_input_handlemouse",
-      "target": "src_shell_input_incontentregion",
-      "confidence_score": 1.0
+      "target": "src_shell_input_incontentregion"
     },
     {
       "relation": "calls",
@@ -55427,7 +55427,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/tui/src/pages/dex-sky.ts",
-      "source_location": "L451",
+      "source_location": "L454",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "pages_dex_sky",
@@ -55529,9 +55529,9 @@
       "source_file": "packages/tui/src/pages/dex-sky.ts",
       "source_location": "L382",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_dex_sky",
-      "target": "pages_dex_sky_iconrowsfor",
-      "confidence_score": 1.0
+      "target": "pages_dex_sky_iconrowsfor"
     },
     {
       "relation": "contains",
@@ -55599,19 +55599,19 @@
       "source_file": "packages/tui/src/pages/dex-sky.ts",
       "source_location": "L374",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_dex_sky",
-      "target": "pages_dex_sky_railline",
-      "confidence_score": 1.0
+      "target": "pages_dex_sky_railline"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/tui/src/pages/dex-sky.ts",
-      "source_location": "L419",
+      "source_location": "L422",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_dex_sky",
-      "target": "pages_dex_sky_raillines",
-      "confidence_score": 1.0
+      "target": "pages_dex_sky_raillines"
     },
     {
       "relation": "contains",
@@ -55835,11 +55835,11 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/tui/src/pages/dex-sky.ts",
-      "source_location": "L420",
+      "source_location": "L423",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_dex_sky_raillines",
-      "target": "pages_dex_sky_titlecase",
-      "confidence_score": 1.0
+      "target": "pages_dex_sky_titlecase"
     },
     {
       "relation": "calls",
@@ -56000,11 +56000,11 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/tui/src/pages/dex-sky.ts",
-      "source_location": "L443",
+      "source_location": "L446",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_dex_sky_raillines",
-      "target": "pages_dex_sky_statline",
-      "confidence_score": 1.0
+      "target": "pages_dex_sky_statline"
     },
     {
       "relation": "calls",
@@ -56090,9 +56090,9 @@
       "source_file": "packages/tui/src/pages/dex-sky.ts",
       "source_location": "L395",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_dex_sky_renderfocusrail",
-      "target": "pages_dex_sky_iconrowsfor",
-      "confidence_score": 1.0
+      "target": "pages_dex_sky_iconrowsfor"
     },
     {
       "relation": "calls",
@@ -56101,9 +56101,9 @@
       "source_file": "packages/tui/src/pages/dex-sky.ts",
       "source_location": "L405",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_dex_sky_renderfocusrail",
-      "target": "pages_dex_sky_raillines",
-      "confidence_score": 1.0
+      "target": "pages_dex_sky_raillines"
     },
     {
       "relation": "calls",
@@ -56758,9 +56758,9 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L13",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_interaction_test",
-      "target": "tests_interaction_test_deps",
-      "confidence_score": 1.0
+      "target": "tests_interaction_test_deps"
     },
     {
       "relation": "contains",
@@ -56768,11 +56768,11 @@
       "source_file": "packages/tui/__tests__/interaction.test.ts",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_interaction_test",
-      "target": "tests_interaction_test_press",
-      "confidence_score": 1.0
+      "target": "tests_interaction_test_press"
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "14b825a08ca4ab40b520ed902583852bf4e69a7c"
+  "built_at_commit": "f8b13f64eb80f0e7b4c90710287325977431037d"
 }

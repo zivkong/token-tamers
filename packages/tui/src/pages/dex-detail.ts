@@ -45,13 +45,13 @@ const SPRITE_ROWS = 6;
 function spriteRowsFor(layout: RenderContext['layout']): number {
   return layout.canvasRows <= 18 ? 4 : SPRITE_ROWS;
 }
+
 /**
- * A record card's content (stats … gen … date on line A, DNA + graft on line B)
- * runs to ~63 cells from the canvas left. Below this width the section is
- * suppressed — otherwise the date/DNA bleed past the canvas edge into the menu
- * rail on a narrow-tall horizontal dock (a width gate, paired with the height gate).
+ * Min canvas width to render a record card. A card's graft text ends at ~x+69
+ * from the canvas left, so below 70 cols it would bleed past the canvas edge
+ * into the menu rail — suppress the records section instead (width gate).
  */
-const MIN_CARD_COLS = 66;
+const MIN_CARD_COLS = 70;
 
 function titleCase(s: string): string {
   return s.length ? s[0]!.toUpperCase() + s.slice(1) : s;

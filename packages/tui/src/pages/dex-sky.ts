@@ -404,12 +404,15 @@ export function renderFocusRail(
   // so a short rail keeps the IMPORTANT lines and sheds the secondary ones.
   const lines = node ? railLines(ctx, node, house) : [{ text: '???', color: SEALED, bold: true }];
   const bottom = pageBodyBottom(ctx.layout);
+  // Clip every line to the rail's usable width so a long line (the undiscovered
+  // hint, the stats line) never bleeds past the rail edge into the menu rail.
   let y = metaY;
   for (const ln of lines) {
     if (y >= bottom) break;
-    if (ln.text) {
-      if (ln.bold) buf.textBold(ix, y, ln.text, ln.color, null);
-      else buf.text(ix, y, ln.text, ln.color, null);
+    const t = [...ln.text].slice(0, Math.max(0, rect.w - 3)).join('');
+    if (t) {
+      if (ln.bold) buf.textBold(ix, y, t, ln.color, null);
+      else buf.text(ix, y, t, ln.color, null);
     }
     y += 1;
   }
