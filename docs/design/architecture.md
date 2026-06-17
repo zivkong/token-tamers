@@ -71,8 +71,9 @@ or any "progress toward the next evolution" — evolution is a surprise the play
 not a progress bar. (Stage/molt still drive the engine and appear in achievements/Archive;
 the calibration cue is kept, as it is about data readiness, not evolution.)
 
-Cells aren't square (~1:2 w:h) and half-blocks give 2 vertical pixels per cell. Habitat
-scenes are fixed 96×48 px art (96 cols × 24 cell-rows → a 4:1 cell aspect). The canvas spans
+Cells aren't square (~1:2 w:h); the sub-cell compositor packs each cell at the active density
+(sextant 2×3 default, octant 2×4 target, half-block 1×2 fallback). Habitat scenes are fixed
+128×96 px art (4:3). The canvas spans
 the **full terminal width** and the scene height tracks that 4:1 aspect (`sceneRows ≈
 cols/4`), capped to the rows available above the menu, so the backdrop **scales uniformly to
 fill the width with no padding and no distortion** (nearest-neighbor, via `drawSprite`'s
@@ -198,7 +199,7 @@ Node LTS over any SSH.
 ```
 packages/core         engine, cycle policies, grade rolls, hash codec (pure, deterministic,
                       no I/O)
-packages/tui          shell: frame buffer, diff renderer, half-block compositor, SGR mouse
+packages/tui          shell: frame buffer, diff renderer, sub-cell (sextant/octant) compositor, SGR mouse
                       parser, hit-region registry, page router
 packages/adapters     claude-code / codex / opencode (one entry each)
 packages/content      content packs + pack validator types

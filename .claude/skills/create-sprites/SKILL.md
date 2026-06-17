@@ -1,6 +1,6 @@
 ---
 name: create-sprites
-description: Art direction and asset format for Token Tamers sprites — palette-indexed grids, half-block rendering, grade beauty ladder, density techniques, originality rules. Use when creating or editing any pet, habitat, or trinket sprite.
+description: Art direction and asset format for Token Tamers sprites — palette-indexed grids, sub-cell (sextant/octant) rendering, grade beauty ladder, per-species accent, density techniques, originality rules. Use when creating or editing any pet, habitat, or trinket sprite.
 ---
 
 # Create sprites

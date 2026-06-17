@@ -9,7 +9,7 @@ full from the v1.0.3 design baseline).
 ```
 [adapters] ──normalized UsageEvent──▶ [core engine] ──GameState/effects──▶ [tui shell]
  (claude-code, …)                      cycle policies, evolution,           diff renderer,
- read local logs only                  grades, achievements                 half-block sprites
+ read local logs only                  grades, achievements                 sub-cell sprites
                                             │
                                        ~/.tokentamers/ (config.json, state.json)
 [content] ──ContentPack JSON──▶ engine + tui (species, traits, sprites, achievements)
@@ -216,9 +216,11 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   Flux=Tide Runners (aquatic), Forge=Iron Brood (robots), Wild=The Bloom (plants, green tint).
   All five lines SHIPPED (56 base species). Body-plan + signature motif carried across a line
   (lineage continuity); never affects mechanics
-  (invariant 3). **Species size law (2026-06-15, higher-res):** square px egg 12 · sprite 16 ·
-  rookie 20 · evolved 24 · prime 28 · apex 32 (apex = renderer safe max; habitats 96×48,
-  trinkets 20×20); enforced by the content-pack test. Bible:
+  (invariant 3). **Species size law (octant art direction v2, 2026-06-16):** square px egg 16 ·
+  sprite 20 · rookie 24 · evolved 28 · prime 32 · apex 36 (even, height ÷4; apex 36 = renderer
+  safe max; habitats 128×96 (4:3), trinkets 28×28); enforced by the content-pack test. Each
+  species also declares a cosmetic per-species `accent` hex (a SECONDARY color, palette indices
+  16–18; never affects mechanics — invariant 3). Bible:
   `docs/design/visuals-habitats-achievements.md` §13 + the `create-sprites` skill.
 - **Grades:** C→B 25%, B→A 10%, A→S 3% base; activity modifier ×0.5–2.0 (model- and
   volume-blind); A→S cap ~6%; monotonic, no pity; odds always shown in UI (the pet
@@ -279,7 +281,7 @@ within it.
 
 - `develop-game-engine` — cycle policies, molts/rebirth, evolution, traits, grade
   rolls, lineage/Archive, determinism rules (packages/core)
-- `develop-tui-renderer` — 4:3 canvas law, diff renderer, half-blocks, SGR mouse,
+- `develop-tui-renderer` — 4:3 canvas law, diff renderer, sub-cell (sextant/octant) compositor, SGR mouse,
   perf budgets, golden-frame testing (packages/tui)
 - `develop-adapters` — UsageEvent contract + per-provider quirks: Claude Code
   30-day deletion, Codex cumulative deltas/format generations, OpenCode storage

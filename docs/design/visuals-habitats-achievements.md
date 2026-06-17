@@ -271,7 +271,7 @@ color baking changes** — this redesign is silhouette + motif only.
 - **Palette indirection:** sprite assets store palette _indices_, never RGB. Grade + House
   select the LUT at render time → one asset, many beauty levels.
 
-  > Now implemented as: `packages/tui` (half-block compositor, LUT hot-swap) and
+  > Now implemented as: `packages/tui` (sub-cell sextant/octant compositor, LUT hot-swap) and
   > `packages/content` (palette-indexed sprite JSON format).
 
 ### Grade beauty ladder (design baseline §13)

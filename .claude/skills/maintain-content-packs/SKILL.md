@@ -108,8 +108,10 @@ Every fork needs a `default` branch so evaluation never dead-ends. Pattern varia
 Every species/habitat/trinket id must resolve to a `SpriteDef` in sprites.json.
 Sprites are generated deterministically from `tools/gen-sprites.ts` (re-run with
 `pnpm tsx packages/content/tools/gen-sprites.ts`); species art is authored per-kingdom
-in `tools/designs/*.ts`. Species sprites are exactly square at the **2026-06-15 size law**:
-egg 12 · sprite 16 · rookie 20 · evolved 24 · prime 28 · apex 32 (habitats 96×48, trinkets
-20×20) — enforced by the content-pack test. Each House's creatures follow its **Kingdom**
+in `tools/designs/*.ts`. Species sprites are exactly square at the **octant v2 size law
+(2026-06-16)**: egg 16 · sprite 20 · rookie 24 · evolved 28 · prime 32 · apex 36 (habitats
+128×96 (4:3), trinkets 28×28) — enforced by the content-pack test. Each species also declares a
+cosmetic `accent` hex (secondary color; palette indices 16–18; never affects mechanics — invariant
+3). Each House's creatures follow its **Kingdom**
 body-plan (Sky Court / Crag Beasts / Tide Runners / Iron Brood / Bloom). For art rules, use the
 **create-sprites** skill.

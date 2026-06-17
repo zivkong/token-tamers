@@ -14,7 +14,7 @@
 - **Content packs** are versioned JSON (species, traits, models.json, sprites,
   achievements) — content is data, never code. Registries are additive-only; unknown
   ids become dormant genes ("???").
-- **TUI** renders a 4:3 canvas with half-block pixel sprites over a diff renderer
+- **TUI** renders a 4:3 canvas with sub-cell (sextant/octant) pixel sprites over a diff renderer
   (only changed cells emit ANSI), with a clickable bottom menu and full keyboard parity.
 - **Zero network code anywhere** — enforced by ESLint rules and a CI grep.
 

@@ -22,6 +22,7 @@
 import type { Grade, SpriteDef } from '@token-tamers/core';
 import { hexToRgb, mix, type ColorMode, type Rgb } from '../terminal/ansi';
 import type { FrameBuffer } from './buffer';
+import { OCTANT_TABLE } from './octant-table';
 
 /** '▀' UPPER HALF BLOCK (U+2580). Defined by codepoint to survive encoding. */
 const UPPER_HALF = String.fromCodePoint(0x2580);
@@ -223,17 +224,20 @@ const SEXTANT_TABLE = buildSextantTable();
 /** 1×2 half-block table: bit0 = top, bit1 = bottom. */
 const HALF_TABLE = [' ', UPPER_HALF, String.fromCodePoint(0x2584), String.fromCodePoint(0x2588)];
 
+const OCTANT: SubcellMode = { cols: 2, rows: 4, glyph: (m) => OCTANT_TABLE[m] ?? ' ' };
 const SEXTANT: SubcellMode = { cols: 2, rows: 3, glyph: (m) => SEXTANT_TABLE[m] ?? ' ' };
 const HALF: SubcellMode = { cols: 1, rows: 2, glyph: (m) => HALF_TABLE[m] ?? ' ' };
 
 /**
- * Active sub-cell density. Sextant (2×3) is the verified default — 3× the
- * half-block density at broad terminal support. Octant (2×4, square sub-pixels)
- * is the target ceiling; it drops in here as a one-line swap once its 256-entry
- * glyph table ships. `HALF` is retained as the legacy fallback.
+ * The sub-cell density degradation ladder, richest → most compatible:
+ *   octant 2×4 (square sub-pixels, 4× half-block) — Unicode 16 BLOCK OCTANT
+ *   sextant 2×3 (3×) — Unicode 13, broad support
+ *   half 1×2 — universal legacy fallback
+ * `SUBCELL` is the active mode (currently octant — the art direction's target).
+ * A future capability probe can step down this ladder per terminal.
  */
-const SUBCELL: SubcellMode = SEXTANT;
-void HALF; // retained fallback mode (see the degradation ladder)
+export const SUBCELL_LADDER: readonly SubcellMode[] = [OCTANT, SEXTANT, HALF];
+const SUBCELL: SubcellMode = SUBCELL_LADDER[0]!;
 
 /** Cell-rows a sprite of `pixelHeight` occupies natively at the active density. */
 export function subcellRows(pixelHeight: number): number {

@@ -164,8 +164,8 @@ Full stage track: Egg → Sprite → Rookie → Evolved → Prime → Apex.
 > a concrete creature kingdom — purely cosmetic shape, never a mechanic (invariant: no model
 > judgment). Aether = **Sky Court** (flying animals) · Cipher = **Crag Beasts** (ground predators)
 > · Flux = **Tide Runners** (aquatic/swift) · Forge = **Iron Brood** (robots/constructs) · Wild =
-> **The Bloom** (plants/feral). Full body-plan bible + the higher-resolution size law (egg 12 …
-> apex 32) live in `visuals-habitats-achievements.md` §13 → _Species identity system_.
+> **The Bloom** (plants/feral). Full body-plan bible + the octant v2 size law (egg 16 …
+> apex 36) live in `visuals-habitats-achievements.md` §13 → _Species identity system_.
 
 **AETHER — Sky Court (flying)** (`claude-*` + `minimax*` genes; WIS-lean; ethereal/mind theme)
 

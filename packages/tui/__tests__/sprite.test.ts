@@ -1,7 +1,30 @@
 import { describe, it, expect } from 'vitest';
 import { buildPalette, drawSprite, indexToChar, resolveIndex } from '../src/render/sprite';
+import { OCTANT_TABLE } from '../src/render/octant-table';
 import { FrameBuffer } from '../src/render/buffer';
 import { TEST_SPRITE } from './fixtures';
+
+describe('octant glyph table (Unicode 16 BLOCK OCTANT)', () => {
+  it('covers all 256 sub-pixel patterns with a non-empty glyph', () => {
+    expect(OCTANT_TABLE.length).toBe(256);
+    for (let m = 0; m < 256; m++) expect(OCTANT_TABLE[m]!.length).toBeGreaterThan(0);
+  });
+
+  it('maps the canonical anchors + reused Block-Element patterns', () => {
+    // OCTANT-1478 (positions 1,4,7,8 -> bits 0,3,6,7) = U+1CDB4.
+    expect(OCTANT_TABLE[(1 << 0) | (1 << 3) | (1 << 6) | (1 << 7)]!.codePointAt(0)).toBe(0x1cdb4);
+    // OCTANT-23578 (positions 2,3,5,7,8 -> bits 1,2,4,6,7) = U+1CDC1.
+    expect(OCTANT_TABLE[(1 << 1) | (1 << 2) | (1 << 4) | (1 << 6) | (1 << 7)]!.codePointAt(0)).toBe(
+      0x1cdc1,
+    );
+    expect(OCTANT_TABLE[0]).toBe(' '); // empty -> space
+    expect(OCTANT_TABLE[255]!.codePointAt(0)).toBe(0x2588); // full block
+    expect(OCTANT_TABLE[15]!.codePointAt(0)).toBe(0x2580); // top half -> upper half block
+    expect(OCTANT_TABLE[240]!.codePointAt(0)).toBe(0x2584); // bottom half -> lower half block
+    expect(OCTANT_TABLE[85]!.codePointAt(0)).toBe(0x258c); // left col -> left half block
+    expect(OCTANT_TABLE[170]!.codePointAt(0)).toBe(0x2590); // right col -> right half block
+  });
+});
 
 describe('palette beauty ladder', () => {
   it('grows the body ramp with grade (more distinct tones C→S)', () => {
@@ -50,7 +73,10 @@ describe('sub-cell compositor', () => {
         const cell = buf.get(x, y);
         if (cell.fg === null) continue;
         const cp = cell.ch.codePointAt(0) ?? 0;
-        const isBlock = (cp >= 0x2580 && cp <= 0x259f) || (cp >= 0x1fb00 && cp <= 0x1fb3b);
+        const isBlock =
+          (cp >= 0x2580 && cp <= 0x259f) || // Block Elements (half/quadrant/full)
+          (cp >= 0x1fb00 && cp <= 0x1fb3b) || // Unicode 13 sextants
+          (cp >= 0x1cd00 && cp <= 0x1cde5); // Unicode 16 block octants
         expect(isBlock).toBe(true);
         drew = true;
       }

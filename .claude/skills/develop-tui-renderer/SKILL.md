@@ -1,6 +1,6 @@
 ---
 name: develop-tui-renderer
-description: TUI shell and renderer rules for Token Tamers — 4:3 canvas layout, diff renderer, half-block compositor, SGR mouse, performance budgets, golden-frame testing. Use when working under packages/tui.
+description: TUI shell and renderer rules for Token Tamers — 4:3 canvas layout, diff renderer, sub-cell (sextant/octant) compositor, SGR mouse, performance budgets, golden-frame testing. Use when working under packages/tui.
 ---
 
 # Develop the TUI shell & renderer (packages/tui)
@@ -97,8 +97,12 @@ bg)` so it renders on the band background.
   `eventTokens`/`eventEssence` helpers, the baselines, and `gradeOdds`. Undefined in golden tests →
   Food shows an empty/awaiting state and Odds shows the base-odds fallback (frames stay
   deterministic). Completion is per-page (NOT in this panel).
-- Cells are ~1:2 w:h; half-blocks give 2 vertical px/cell. Habitat scenes are 96×48 px
-  (96 cols × 24 rows → 4:1 cell aspect). The canvas is full width and `sceneRows ≈ cols/4`
+- Cells are ~1:2 w:h. The **sub-cell compositor** (`render/sprite.ts`) packs each cell at the
+  active density — **sextant 2×3** (default, 3× half-block), **octant 2×4** (target ceiling,
+  drops in via its glyph table), **half-block 1×2** (fallback) — quantizing every cell to 2 SGR
+  colors + the matching block glyph (partly-transparent cells composite over the backdrop). Size
+  sprites with the exported `subcellCols(width)`/`subcellRows(height)`, NOT `ceil(height/2)`.
+  Habitat scenes are 128×96 px (4:3). The canvas is full width and `sceneRows ≈ cols/4`
   (capped to fit), so the backdrop **scales uniformly to fill the width** via `drawSprite`'s
   `destW`/`destH` (nearest-neighbor) — no padding, no distortion. The **pet + trinkets scale
   by the same `scene.cols / HABITAT_COLS` factor** so they stay proportionate at any width

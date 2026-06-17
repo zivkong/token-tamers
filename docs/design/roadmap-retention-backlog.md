@@ -123,7 +123,7 @@ equal).
       newest/best unlocked).
 - [ ] **B4 — Deco TUI page** (`packages/tui/src/pages/deco.ts`): browse unlocked habitats/trinkets,
       equip into slots; golden frames.
-- [ ] **B5 — Pet page integration:** render the equipped habitat (96×48) behind the pet + trinkets
+- [ ] **B5 — Pet page integration:** render the equipped habitat (128×96, 4:3) behind the pet + trinkets
       in their slots; basic idle interaction (pet plays with a trinket). (Full trait×trinket
       animation matrix is a later Season.)
 - [ ] **B6 — Completion wiring + wiki:** confirm deco unlocks feed the Completion Meter

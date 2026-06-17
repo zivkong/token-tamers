@@ -406,52 +406,8 @@ function bobInto(f: PixelCanvas, dy: number): void {
   shiftInto(f, 0, dy);
 }
 
-// ---------------------------------------------------------------------------
-// Mote (16×16) — the universal egg: a dormant glowing orb cradling a future Sky
-// Court gene (a single sleepy eye + a hatch-crack, one veil hint). Neutral/Wild.
-// ---------------------------------------------------------------------------
-
-export function buildMote(): SpriteDef {
-  const W = 16;
-  const cx = (W - 1) / 2;
-  const cy = 8;
-  const base = PixelCanvas.create(W, W);
-
-  // Egg-orb body.
-  fillEllipse(base, cx, cy, 5, 6, BODY);
-  shade(base, {
-    dir: 'upper-left',
-    bands: 5,
-    lo: SHADOW,
-    hi: LIGHT + 1,
-    dither: false,
-    onlyBelow: 14,
-  });
-  // A faint cyan belly glow.
-  fillEllipse(base, Math.round(cx), cy + 2, 2, 2, BELLY);
-  rimLight(base, 'upper-left');
-
-  // A dormant single eye (sleepy line) — the Sky Court motif, not yet awake.
-  line(base, Math.round(cx) - 1, cy - 1, Math.round(cx) + 1, cy - 1, OUTLINE);
-  // Hatch-crack zig down the lower face.
-  line(base, Math.round(cx), cy + 1, Math.round(cx) - 1, cy + 3, OUTLINE);
-  line(base, Math.round(cx) - 1, cy + 3, Math.round(cx) + 1, cy + 4, OUTLINE);
-  // Faint inner glow glint.
-  sparkle(base, Math.round(cx) + 1, cy - 3, GLINT);
-  outline(base);
-
-  const idle = framesFromDeltas(base, [(_f) => {}, (f) => bobInto(f, 1)]);
-  const walk = framesFromDeltas(base, [(_f) => {}, (f) => shiftInto(f, 1, 0)]);
-  const jump = framesFromDeltas(base, [(f) => shiftInto(f, 0, 1), (f) => shiftInto(f, 0, -2)]);
-  const play = framesFromDeltas(base, [
-    (f) => {
-      shiftInto(f, 1, -1);
-      sparkle(f, Math.round(cx) + 3, cy - 3, GLINT);
-    },
-    (f) => shiftInto(f, -1, 0),
-  ]);
-  return { ...buildSprite('sprite-mote', idle, 3), walk, jump, play };
-}
+// NOTE: the universal egg `sprite-mote` is authored in bloom.ts (the neutral Bloom
+// owns it), so it is intentionally NOT defined here.
 
 // ---------------------------------------------------------------------------
 // Sky Court line. Lower stages = DISTINCT body-plans (kills "too similar");
