@@ -37,6 +37,13 @@ const DNA: Rgb = { r: 150, g: 200, b: 255 };
 
 const RANKS = ['Best', '2nd', '3rd'] as const;
 const SPRITE_ROWS = 6;
+/**
+ * A record card's content (stats … gen … date on line A, DNA + graft on line B)
+ * runs to ~63 cells from the canvas left. Below this width the section is
+ * suppressed — otherwise the date/DNA bleed past the canvas edge into the menu
+ * rail on a narrow-tall horizontal dock (a width gate, paired with the height gate).
+ */
+const MIN_CARD_COLS = 66;
 
 function titleCase(s: string): string {
   return s.length ? s[0]!.toUpperCase() + s.slice(1) : s;
@@ -86,10 +93,12 @@ export function renderDexDetailPage(ctx: RenderContext): void {
   const recTop = bodyY + SPRITE_ROWS + 1;
   const cardsTop = recTop + 2;
   const bodyBottom = pageBodyBottom(layout);
-  const maxCards = Math.max(
-    0,
-    Math.min(record.top.length, Math.floor((bodyBottom - cardsTop) / 2)),
-  );
+  // Gate on BOTH height (rows that fit) and width (a card fits without bleeding
+  // into the rail). Too narrow → 0 cards, same graceful path as too short.
+  const fitsWidth = canvasCols >= MIN_CARD_COLS;
+  const maxCards = !fitsWidth
+    ? 0
+    : Math.max(0, Math.min(record.top.length, Math.floor((bodyBottom - cardsTop) / 2)));
   if (maxCards > 0) {
     drawDivider(buf, recTop, { x: canvasX + 1, width: canvasCols - 2, label: 'Records' });
     for (let i = 0; i < maxCards; i++) {

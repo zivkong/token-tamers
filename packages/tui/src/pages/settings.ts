@@ -160,6 +160,8 @@ function drawUpdateField(
 ): number {
   const { buf, hits, layout, settings, info } = ctx;
   const { canvasX, canvasCols } = layout;
+  // Never draw/register a hit on or below the footer clearance gap.
+  if (y >= pageBodyBottom(layout)) return y + 1;
   const hint = info?.updateAvailable ? ` · ${info.updateAvailable} available` : '';
 
   // No live state (tests passing only `info`): keep the prior read-only row.
@@ -197,8 +199,10 @@ function drawUpdateField(
 function drawCycleFields(ctx: RenderContext, y: number): number {
   const { settings } = ctx;
   if (!settings) {
-    ctx.buf.text(ctx.layout.canvasX + 1, y, 'Cycle', LABEL, null);
-    ctx.buf.text(ctx.layout.canvasX + 13, y, UNKNOWN, DIM, null);
+    if (y < pageBodyBottom(ctx.layout)) {
+      ctx.buf.text(ctx.layout.canvasX + 1, y, 'Cycle', LABEL, null);
+      ctx.buf.text(ctx.layout.canvasX + 13, y, UNKNOWN, DIM, null);
+    }
     return y + 1;
   }
   drawEditableField(ctx, y, {
@@ -228,6 +232,9 @@ interface EditableField {
 function drawEditableField(ctx: RenderContext, y: number, f: EditableField): void {
   const { buf, hits, layout, settings } = ctx;
   const { canvasX, canvasCols } = layout;
+  // Stay above the footer clearance gap — never draw OR register a hit on/below
+  // the footer row (a short dock would otherwise put a live hit under the footer).
+  if (y >= pageBodyBottom(layout)) return;
   const selected = settings?.selected === f.index;
   const segment = `‹ ${f.value} ›`;
 

@@ -243,7 +243,10 @@ function drawCombatantColumn(
   const spr = findSprite(ctx.pack, species?.spriteId ?? '');
   // Show the sprite only when the column can also hold a readable text block
   // beside it; otherwise drop it and run text full-width (clipped).
-  const showSprite = spr && col.w >= COMBATANT_SPRITE_COLS + 11;
+  // Show the sprite only when the text column ALSO fits a full HP readout
+  // (avail >= 14: a 10-char "HP ddd/ddd" + the min meter + gap); otherwise drop
+  // the sprite and run text full-width so the HP denominator never clips.
+  const showSprite = spr && col.w >= COMBATANT_SPRITE_COLS + 14;
   if (spr && showSprite) {
     const scale = SPRITE_ROWS / Math.max(1, subcellRows(spr.height));
     drawSprite(buf, spr, buildPalette(houseTint(c.house), c.grade, frame, species?.accent), {
@@ -294,7 +297,9 @@ function drawLog(ctx: RenderContext, view: BattleView, x: number, y: number): vo
   const { buf, layout } = ctx;
   const tl = view.result.timeline;
   const end = Math.min(view.cursor, tl.length);
-  const rows = Math.max(1, pageBodyBottom(layout) - y);
+  // No forced minimum: when the log start is already at/below the body bottom
+  // (a very short dock) draw nothing rather than spilling a line over the footer.
+  const rows = Math.max(0, pageBodyBottom(layout) - y);
   const start = Math.max(0, end - rows);
   for (let i = start; i < end; i++) {
     buf.text(x, y + (i - start), logLine(view, tl[i]!), TEXT, null);

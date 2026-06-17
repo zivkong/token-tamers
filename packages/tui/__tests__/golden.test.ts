@@ -392,6 +392,49 @@ describe('golden frames — narrow / floor sizes (regression guards)', () => {
     expect(out).toContain('too small');
     expect(out).toContain('72x12');
   });
+
+  it('dex-detail suppresses records (no rail bleed) on a narrow-tall dock (72x17)', () => {
+    const out = renderFrameToString(
+      72,
+      17,
+      input({ page: 'dex-detail', ui: { selected: 0, scroll: 0, speciesId: 'ember' } }),
+    );
+    expect(out).toContain('Ember');
+    expect(out).toContain('Battle-ready');
+    // Too narrow for a card → no RECORDS section and no DNA code bleeding right.
+    expect(out).not.toContain('RECORDS');
+    expect(out).not.toContain('TTX');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('settings keeps editable fields above the footer at the 72x12 floor (live state)', () => {
+    const out = renderFrameToString(
+      72,
+      12,
+      input({ page: 'settings', info: TEST_INFO, settings: TEST_SETTINGS }),
+    );
+    expect(out).toContain('Settings');
+    // The Anchor field would land on the footer row — it must be suppressed, not
+    // drawn (and not register a hit) there.
+    expect(out).not.toContain('Anchor');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('battle keeps full HP + no log past the footer at the 72x12 floor', () => {
+    const out = renderFrameToString(72, 12, input({ page: 'battle', battle: makeBattleView() }));
+    // Full HP denominators present (not clipped to "/29" / "/31").
+    expect(out).toContain('/295');
+    expect(out).toContain('/315');
+    expect(out).toContain('Quit');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('battle shows full HP at the sprite-threshold width (78x13)', () => {
+    const out = renderFrameToString(78, 13, input({ page: 'battle', battle: makeBattleView() }));
+    expect(out).toContain('/295');
+    expect(out).toContain('/315');
+    expect(out).toMatchSnapshot();
+  });
 });
 
 describe('menu + per-page completion', () => {

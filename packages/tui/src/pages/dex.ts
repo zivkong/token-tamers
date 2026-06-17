@@ -142,10 +142,13 @@ function drawHouseTabs(ctx: RenderContext, y: number, active: number): void {
   let x = layout.canvasX + Math.max(1, Math.floor((layout.canvasCols - width) / 2));
   buf.text(x, y, '‹', TAB_DIM, null);
   x += 2;
+  const tabsRight = layout.canvasX + layout.canvasCols;
   labels.forEach((label, i) => {
     if (i === active) buf.textBold(x, y, label, houseColor(DEX_HOUSES[i]!), null);
     else buf.text(x, y, label, TAB_DIM, null);
-    hits.add(`dex:house:${i}`, x, y, label.length, 1);
+    // Skip a tab that ran off the canvas (the fixed-width bar on a sub-min width)
+    // so no dead/misroutable hit lands off-screen. Keyboard ←→ still reaches every House.
+    if (x + label.length <= tabsRight) hits.add(`dex:house:${i}`, x, y, label.length, 1);
     // A wider gap between labels; a single space before the closing '›'.
     x += label.length + (i < labels.length - 1 ? TAB_GAP : 1);
   });

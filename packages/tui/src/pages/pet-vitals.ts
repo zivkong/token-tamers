@@ -131,14 +131,16 @@ export function drawStatsRow(
   if (slack >= minGaps) {
     drawJustified(buf, segs, { x0, y, slack, bg });
   } else {
-    // Below even the compact width: left-pack and HARD-CLIP at the band's right
-    // edge so a stat value never leaks past the chrome column / into the rail.
+    // Below even the compact width: left-pack but only draw a stat that fits
+    // WHOLE — stop at the first that would overflow, so the player never sees a
+    // stat label without its value (and nothing leaks past the chrome edge).
     const right = x0 + available;
     let cx = x0;
     for (const seg of segs) {
-      if (cx >= right) break;
-      drawPartsClipped(buf, seg, { x: cx, y, avail: right - cx, bg });
-      cx += partsLen(seg) + 1;
+      const segLen = partsLen(seg);
+      if (cx + segLen > right) break;
+      drawParts(buf, cx, y, seg, bg);
+      cx += segLen + 1;
     }
   }
 }

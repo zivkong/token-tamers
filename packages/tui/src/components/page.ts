@@ -107,5 +107,15 @@ export function drawPageHeader(ctx: RenderContext, opts: PageHeaderOptions): num
  */
 export function drawPageFooter(ctx: RenderContext, text: string): void {
   const { buf, layout } = ctx;
-  buf.text(layout.canvasX + 1, pageFooterY(layout), text, PAGE_DIM, null);
+  // Clip to the content width so the legend never bleeds into the vertical rule
+  // / menu rail on a narrow horizontal dock.
+  const right = layout.menuRail ? layout.menuDividerX : layout.canvasX + layout.canvasCols;
+  const maxCols = Math.max(0, right - (layout.canvasX + 1));
+  buf.text(
+    layout.canvasX + 1,
+    pageFooterY(layout),
+    [...text].slice(0, maxCols).join(''),
+    PAGE_DIM,
+    null,
+  );
 }
