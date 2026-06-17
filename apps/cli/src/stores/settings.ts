@@ -17,6 +17,8 @@ export function defaultSettings(): SettingsFile {
   return {
     schemaVersion: SETTINGS_SCHEMA_VERSION,
     color: 'auto',
+    // Auto-probe the terminal for the richest supported sub-cell density.
+    subcell: 'auto',
     adapterRoots: {},
     // Off by default — the game stays fully offline until the user opts in.
     update: { mode: 'off' },
@@ -31,6 +33,7 @@ export function loadSettings(): SettingsFile {
   return {
     schemaVersion: raw.schemaVersion ?? base.schemaVersion,
     color: raw.color ?? base.color,
+    subcell: raw.subcell ?? base.subcell,
     adapterRoots: raw.adapterRoots ?? base.adapterRoots,
     update: raw.update ?? base.update,
   };

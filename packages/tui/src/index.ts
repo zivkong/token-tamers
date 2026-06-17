@@ -52,10 +52,15 @@ export {
   resolveIndex,
   indexToChar,
   auraOverlay,
+  setSubcellMode,
+  getSubcellMode,
+  subcellRows,
+  subcellCols,
   GRADE_BADGE,
   AURA_GLYPHS,
   type Palette,
   type DrawOptions,
+  type SubcellName,
 } from './render/sprite';
 
 // Input decoding.

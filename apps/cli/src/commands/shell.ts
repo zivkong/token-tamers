@@ -5,6 +5,7 @@
 import os from 'node:os';
 import {
   runShell,
+  setSubcellMode,
   type AdapterInfo,
   type BattleView,
   type ColorMode,
@@ -13,6 +14,7 @@ import {
 } from '@token-tamers/tui';
 import type { ColorPreference, SettingsFile, UpdateMode, UserConfig } from '@token-tamers/core';
 import { catchUp, NotInitializedError, type CatchUpResult } from '../services/catchup';
+import { resolveSubcellMode } from '../services/subcell';
 import { createShellHost } from '../services/shell-host';
 import { backgroundUpdateCheck, pendingUpdate } from '../services/update-check';
 import { VERSION } from '../version';
@@ -104,6 +106,9 @@ export async function launchShell(caught: CatchUpResult, opts: LaunchShellOption
   const { host, persist } = createShellHost(config, engine);
   const settings = loadSettings();
   const color = resolveColorMode(opts.noColor, settings.color);
+  // Pick the sub-cell sprite density once, before the render loop: honor the
+  // setting, or probe the terminal for the richest supported rung when 'auto'.
+  setSubcellMode(await resolveSubcellMode(settings.subcell ?? 'auto'));
   const info: ShellInfo = {
     ...buildShellInfo(config),
     updateMode: settings.update?.mode ?? 'off',

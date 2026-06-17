@@ -28,6 +28,7 @@ describe('settings store', () => {
     expect(s).toEqual({
       schemaVersion: 1,
       color: 'auto',
+      subcell: 'auto',
       adapterRoots: {},
       update: { mode: 'off' },
     });

@@ -98,10 +98,13 @@ bg)` so it renders on the band background.
   Food shows an empty/awaiting state and Odds shows the base-odds fallback (frames stay
   deterministic). Completion is per-page (NOT in this panel).
 - Cells are ~1:2 w:h. The **sub-cell compositor** (`render/sprite.ts`) packs each cell at the
-  active density — **sextant 2×3** (default, 3× half-block), **octant 2×4** (target ceiling,
-  drops in via its glyph table), **half-block 1×2** (fallback) — quantizing every cell to 2 SGR
-  colors + the matching block glyph (partly-transparent cells composite over the backdrop). Size
-  sprites with the exported `subcellCols(width)`/`subcellRows(height)`, NOT `ceil(height/2)`.
+  active density — **octant 2×4** (default, 4× half-block, Unicode 16 `render/octant-table.ts`),
+  **sextant 2×3** (3×, Unicode 13), **half-block 1×2** (fallback) — quantizing every cell to 2 SGR
+  colors + the matching block glyph (partly-transparent cells composite over the backdrop). The
+  mode is chosen ONCE per session via `setSubcellMode(name)`: the cli reads the `subcell`
+  setting (`auto`|`octant`|`sextant`|`half`) and, on `auto`, runs a cursor-WIDTH probe
+  (`apps/cli/.../subcell.ts`) — no `process.env`. Tests never call it, so golden frames stay
+  octant. Size sprites with the exported `subcellCols(width)`/`subcellRows(height)`, NOT `ceil(height/2)`.
   Habitat scenes are 128×96 px (4:3). The canvas is full width and `sceneRows ≈ cols/4`
   (capped to fit), so the backdrop **scales uniformly to fill the width** via `drawSprite`'s
   `destW`/`destH` (nearest-neighbor) — no padding, no distortion. The **pet + trinkets scale

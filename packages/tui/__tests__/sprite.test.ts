@@ -1,6 +1,37 @@
-import { describe, it, expect } from 'vitest';
-import { buildPalette, drawSprite, indexToChar, resolveIndex } from '../src/render/sprite';
+import { describe, it, expect, afterEach } from 'vitest';
+import {
+  buildPalette,
+  drawSprite,
+  indexToChar,
+  resolveIndex,
+  setSubcellMode,
+  getSubcellMode,
+  subcellRows,
+  subcellCols,
+} from '../src/render/sprite';
 import { OCTANT_TABLE } from '../src/render/octant-table';
+
+describe('sub-cell mode (setSubcellMode)', () => {
+  // Restore the default after each case so golden-frame tests stay octant.
+  afterEach(() => setSubcellMode('octant'));
+
+  it('octant packs 2x4 — cols=ceil(w/2), rows=ceil(h/4)', () => {
+    setSubcellMode('octant');
+    expect(getSubcellMode()).toBe('octant');
+    expect(subcellCols(36)).toBe(18);
+    expect(subcellRows(36)).toBe(9);
+  });
+  it('sextant packs 2x3', () => {
+    setSubcellMode('sextant');
+    expect(subcellCols(36)).toBe(18);
+    expect(subcellRows(36)).toBe(12);
+  });
+  it('half packs 1x2 (the legacy footprint)', () => {
+    setSubcellMode('half');
+    expect(subcellCols(36)).toBe(36);
+    expect(subcellRows(36)).toBe(18);
+  });
+});
 import { FrameBuffer } from '../src/render/buffer';
 import { TEST_SPRITE } from './fixtures';
 

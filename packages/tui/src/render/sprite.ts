@@ -2,11 +2,12 @@
  * Sub-cell sprite compositor (the design degradation ladder).
  *
  * A `SpriteDef` (from the content pack) is a palette-indexed grid. We pack its
- * pixels into terminal cells at the active sub-cell density — sextant (2x3) by
- * default, octant (2x4) once its glyph table ships, half-block (1x2) as the
- * legacy fallback — quantizing each cell to 2 SGR colors (fg/bg) plus the block
- * glyph whose filled-sub-pixel mask matches. Partly-transparent cells composite
- * their silhouette over the existing backdrop cell.
+ * pixels into terminal cells at the active sub-cell density — octant (2x4, the
+ * default), sextant (2x3), or half-block (1x2) — chosen ONCE per session via
+ * `setSubcellMode` (the cli reads the `subcell` setting or probes the terminal).
+ * Each cell quantizes to 2 SGR colors (fg/bg) plus the block glyph whose
+ * filled-sub-pixel mask matches; partly-transparent cells composite their
+ * silhouette over the existing backdrop cell.
  *
  * Palette indirection: a sprite never stores RGB. A palette index is resolved
  * to RGB via a LUT built from the House tint plus the Grade "beauty ladder":
@@ -233,24 +234,43 @@ const HALF: SubcellMode = { cols: 1, rows: 2, glyph: (m) => HALF_TABLE[m] ?? ' '
  *   octant 2×4 (square sub-pixels, 4× half-block) — Unicode 16 BLOCK OCTANT
  *   sextant 2×3 (3×) — Unicode 13, broad support
  *   half 1×2 — universal legacy fallback
- * `SUBCELL` is the active mode (currently octant — the art direction's target).
- * A future capability probe can step down this ladder per terminal.
  */
-export const SUBCELL_LADDER: readonly SubcellMode[] = [OCTANT, SEXTANT, HALF];
-const SUBCELL: SubcellMode = SUBCELL_LADDER[0]!;
+export type SubcellName = 'octant' | 'sextant' | 'half';
+const SUBCELL_BY_NAME: Record<SubcellName, SubcellMode> = {
+  octant: OCTANT,
+  sextant: SEXTANT,
+  half: HALF,
+};
+
+// The active sub-cell mode for this session. Chosen ONCE at launch (settings +
+// the terminal capability probe; see apps/cli) and fixed thereafter, so per-frame
+// rendering stays pure and golden frames are deterministic. The default is octant
+// (the art-direction target); tests never call setSubcellMode, so goldens are octant.
+let activeSubcell: SubcellMode = OCTANT;
+let activeSubcellName: SubcellName = 'octant';
+
+/** Set the active sub-cell density for this session. Call once, before rendering. */
+export function setSubcellMode(name: SubcellName): void {
+  activeSubcell = SUBCELL_BY_NAME[name];
+  activeSubcellName = name;
+}
+/** The active sub-cell density name (octant/sextant/half). */
+export function getSubcellMode(): SubcellName {
+  return activeSubcellName;
+}
 
 /** Cell-rows a sprite of `pixelHeight` occupies natively at the active density. */
 export function subcellRows(pixelHeight: number): number {
-  return Math.ceil(pixelHeight / SUBCELL.rows);
+  return Math.ceil(pixelHeight / activeSubcell.rows);
 }
 /** Cell-cols a sprite of `pixelWidth` occupies natively at the active density. */
 export function subcellCols(pixelWidth: number): number {
-  return Math.ceil(pixelWidth / SUBCELL.cols);
+  return Math.ceil(pixelWidth / activeSubcell.cols);
 }
 
 /**
  * Composite a sprite into the frame buffer at `opts.x`/`opts.y` (0-based cells).
- * Each cell packs `SUBCELL.cols × rows` sub-pixels, quantized to 2 colors. Fully
+ * Each cell packs `activeSubcell.cols × rows` sub-pixels, quantized to 2 colors. Fully
  * transparent cells leave the backdrop; partly-transparent cells composite their
  * silhouette OVER the backdrop (bg read from the buffer). `destW`/`destH` scale
  * the cell footprint (nearest-neighbor); omit for the native footprint.
@@ -271,7 +291,7 @@ export function drawSprite(
     pal,
     srcCols,
     srcRows: grid.length,
-    m: SUBCELL,
+    m: activeSubcell,
     destCols: opts.destW ?? subcellCols(srcCols),
     destRows: opts.destH ?? subcellRows(grid.length),
     flipX: !!opts.flipX,

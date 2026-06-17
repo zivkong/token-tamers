@@ -16,9 +16,10 @@ habitat. This entry SUPERSEDES the 2026-06-15 size law below.
 1. **Octant rendering baseline.** The target sub-cell glyph is the **octant (2×4)** — 8
    sub-pixels per terminal cell (4× the half-block's 1×2), square in a ~1:2 cell, 2 colors per
    cell. Degradation ladder **octant → sextant (2×3) → half-block (1×2) → ASCII**; assets are
-   authored ONCE at octant resolution and lower rungs are strict downsamples. (Implementation
-   note: the live compositor lands on the verified **sextant** path first; **true octant** is a
-   one-line glyph-table swap pending the Unicode 16 BLOCK OCTANT table.)
+   authored ONCE at octant resolution and lower rungs are strict downsamples. (Implementation:
+   true octant is LIVE — `render/octant-table.ts` (the verified Unicode 16 256-glyph map) is the
+   default; the mode is chosen per session via the `subcell` setting / a cursor-width terminal
+   probe — `setSubcellMode`, `apps/cli/.../subcell.ts` — stepping down to sextant/half as needed.)
 2. **New size law (octant source px — square, even, height ÷ 4):** egg 16 · sprite 20 · rookie
    24 · evolved 28 · prime 32 · **apex 36** (the new safe ceiling). On-screen footprint =
    `cols = px/2`, `rows = px/4` under octant — so the apex is SMALLER on screen than the old

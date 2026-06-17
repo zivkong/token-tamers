@@ -143,7 +143,9 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   `cycle` from the legacy per-adapter `plan`/`cyclePolicy`/`weekAnchor` and slims each
   adapter to `{ provider, paths }`.
 - User data: `~/.tokentamers/config.json` (UserConfig) + `state.json` (GameState) +
-  `settings.json` (SettingsFile: `color` + per-adapter `adapterRoots`). **Zero env config:**
+  `settings.json` (SettingsFile: `color` + `subcell` sprite-density + per-adapter `adapterRoots`).
+  The `subcell` knob (`auto`|`octant`|`sextant`|`half`, default `auto`) picks the sub-cell render
+  mode; `auto` runs a cursor-width terminal probe at launch (no env). **Zero env config:**
   the project reads nothing from `process.env` — the data dir is fixed at `~/.tokentamers`
   and all knobs live in `settings.json` (the cli reads it and threads values down; adapters
   get scan roots via `detect(roots)`, core/adapters never touch `process.env`). Tests

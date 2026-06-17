@@ -637,6 +637,14 @@ export interface UserConfig {
 export type ColorPreference = 'auto' | 'truecolor' | '256' | '8' | 'none';
 
 /**
+ * Sub-cell sprite density preference. `auto` (default) = probe the terminal at
+ * launch and pick the richest supported rung; otherwise force a rung. octant
+ * (Unicode 16, 2×4) is the art-direction target; sextant (Unicode 13, 2×3) is the
+ * broadly-supported middle; half (1×2) is the universal fallback.
+ */
+export type SubcellPreference = 'auto' | 'octant' | 'sextant' | 'half';
+
+/**
  * User-owned preferences, separate from generated game state. This is the
  * file-based home for everything Token Tamers used to read from environment
  * variables (NO_COLOR, CLAUDE_CONFIG_DIR, OPENCODE_DATA_DIR, XDG_*): the cli
@@ -656,6 +664,8 @@ export interface SettingsFile {
   schemaVersion: number;
   /** ANSI color preference (default 'auto'). The `--no-color` flag always wins. */
   color: ColorPreference;
+  /** Sub-cell sprite density (default 'auto' — probe the terminal). See {@link SubcellPreference}. */
+  subcell?: SubcellPreference;
   /**
    * Override scan roots per adapter id, used at detection time (`tt init`).
    * Empty/absent ⇒ each adapter's built-in default locations. Replaces the
