@@ -71,70 +71,84 @@ describe('tt init --yes -> status (e2e)', () => {
   // A fixed clock well after the fixture window so molts have fired.
   const now = () => Date.parse('2024-03-20T00:00:00.000Z');
 
-  it('writes config + state and surfaces the pet in status', async () => {
-    let initOut = '';
-    const result = await runInit({ yes: true, now, out: (s) => (initOut += s) });
+  // Real e2e: init/status grind catch-up across ~16 days of 5h molt windows
+  // (~3s each in isolation). The 5s default is too tight once vitest runs these
+  // under full parallel CPU contention, so give them generous headroom. This is
+  // an execution budget only — no assertion is relaxed.
+  const E2E_TIMEOUT_MS = 30_000;
 
-    expect(result.wrote).toBe(true);
-    expect(result.enabled).toContain('claude-code');
-    expect(initOut).toContain('Calibration Egg');
+  it(
+    'writes config + state and surfaces the pet in status',
+    async () => {
+      let initOut = '';
+      const result = await runInit({ yes: true, now, out: (s) => (initOut += s) });
 
-    // Files exist on disk.
-    expect(fs.existsSync(path.join(home, 'config.json'))).toBe(true);
-    expect(fs.existsSync(path.join(home, 'state.json'))).toBe(true);
-    expect(fs.existsSync(path.join(home, 'checkpoints.json'))).toBe(true);
+      expect(result.wrote).toBe(true);
+      expect(result.enabled).toContain('claude-code');
+      expect(initOut).toContain('Calibration Egg');
 
-    const config = loadConfig();
-    expect(config?.adapters[0]?.provider).toBe('claude-code');
-    // The cycle is pet-global now; claude-code's subscription hint defaults it to
-    // the subscription policy, with the lone adapter as the implicit anchor.
-    expect(config?.cycle.policy).toBe('subscription');
-    expect(config?.cycle.anchorAdapter).toBe('claude-code');
+      // Files exist on disk.
+      expect(fs.existsSync(path.join(home, 'config.json'))).toBe(true);
+      expect(fs.existsSync(path.join(home, 'state.json'))).toBe(true);
+      expect(fs.existsSync(path.join(home, 'checkpoints.json'))).toBe(true);
 
-    const state = loadState();
-    expect(state).not.toBeNull();
-    expect(state?.pet).toBeTruthy();
-    // Fresh init writes the current schema (v4 — pet-global cycle config).
-    expect(state?.schemaVersion).toBe(4);
-    expect(Array.isArray(state?.dexRecords)).toBe(true);
+      const config = loadConfig();
+      expect(config?.adapters[0]?.provider).toBe('claude-code');
+      // The cycle is pet-global now; claude-code's subscription hint defaults it to
+      // the subscription policy, with the lone adapter as the implicit anchor.
+      expect(config?.cycle.policy).toBe('subscription');
+      expect(config?.cycle.anchorAdapter).toBe('claude-code');
 
-    // status output mentions the pet (name/stage/grade fields present).
-    let statusOut = '';
-    await statusCommand((s) => (statusOut += s), now);
-    expect(statusOut).toContain('species:');
-    expect(statusOut).toContain('grade:');
-    expect(statusOut).toContain('stage:');
-  });
+      const state = loadState();
+      expect(state).not.toBeNull();
+      expect(state?.pet).toBeTruthy();
+      // Fresh init writes the current schema (v4 — pet-global cycle config).
+      expect(state?.schemaVersion).toBe(4);
+      expect(Array.isArray(state?.dexRecords)).toBe(true);
 
-  it('upgrades an existing v2 save through the update (catch-up) path', async () => {
-    await runInit({ yes: true, now, out: () => {} });
+      // status output mentions the pet (name/stage/grade fields present).
+      let statusOut = '';
+      await statusCommand((s) => (statusOut += s), now);
+      expect(statusOut).toContain('species:');
+      expect(statusOut).toContain('grade:');
+      expect(statusOut).toContain('stage:');
+    },
+    E2E_TIMEOUT_MS,
+  );
 
-    // Downgrade the on-disk save to a synthetic pre-v3 shape: drop dexRecords and
-    // plant a rebirth Archive entry the migration should back-fill.
-    const downgraded = {
-      ...loadState()!,
-      schemaVersion: 2,
-      archive: [
-        {
-          speciesId: 'wisp',
-          grade: 'A',
-          stats: { pwr: 5, spd: 5, wis: 5, grt: 5 },
-          generation: 1,
-          contentVersion: 1,
-          recordedAt: 1,
-        },
-      ],
-    } as Record<string, unknown>;
-    delete downgraded.dexRecords;
-    fs.writeFileSync(path.join(home, 'state.json'), JSON.stringify(downgraded), 'utf8');
+  it(
+    'upgrades an existing v2 save through the update (catch-up) path',
+    async () => {
+      await runInit({ yes: true, now, out: () => {} });
 
-    // The update path (status → catchUp) loads, migrates, advances, and re-saves.
-    await statusCommand(() => {}, now);
+      // Downgrade the on-disk save to a synthetic pre-v3 shape: drop dexRecords and
+      // plant a rebirth Archive entry the migration should back-fill.
+      const downgraded = {
+        ...loadState()!,
+        schemaVersion: 2,
+        archive: [
+          {
+            speciesId: 'wisp',
+            grade: 'A',
+            stats: { pwr: 5, spd: 5, wis: 5, grt: 5 },
+            generation: 1,
+            contentVersion: 1,
+            recordedAt: 1,
+          },
+        ],
+      } as Record<string, unknown>;
+      delete downgraded.dexRecords;
+      fs.writeFileSync(path.join(home, 'state.json'), JSON.stringify(downgraded), 'utf8');
 
-    const upgraded = loadState()!;
-    expect(upgraded.schemaVersion).toBe(4);
-    expect(Array.isArray(upgraded.dexRecords)).toBe(true);
-    // The Archive entry was preserved into the new record store.
-    expect(upgraded.dexRecords.some((r) => r.speciesId === 'wisp')).toBe(true);
-  });
+      // The update path (status → catchUp) loads, migrates, advances, and re-saves.
+      await statusCommand(() => {}, now);
+
+      const upgraded = loadState()!;
+      expect(upgraded.schemaVersion).toBe(4);
+      expect(Array.isArray(upgraded.dexRecords)).toBe(true);
+      // The Archive entry was preserved into the new record store.
+      expect(upgraded.dexRecords.some((r) => r.speciesId === 'wisp')).toBe(true);
+    },
+    E2E_TIMEOUT_MS,
+  );
 });
