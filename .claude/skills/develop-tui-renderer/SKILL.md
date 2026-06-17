@@ -128,9 +128,16 @@ bg)` so it renders on the band background.
   Habitat scenes are 128×96 px (4:3). The canvas is the **true 4:3 box** from `fit43` (8:3
   cells, `rows = cols × 3/8`), letterboxed in its band — the backdrop **scales uniformly to
   fill that box** via `drawSprite`'s `destW`/`destH` (nearest-neighbor), never stretched. The
-  **pet + trinkets scale by the same `scene.cols / HABITAT_COLS` factor** so they stay
-  proportionate at any size (`sceneScale` in pet.ts; pass scaled dims into the wander geometry
-  AND `drawSprite`). Min terminal 34×24 vertical / 72×12 horizontal.
+  **pet and trinkets both scale off the `scene.cols / HABITAT_COLS` factor** (`sceneScale` in
+  pet.ts; pass scaled dims into the wander geometry AND `drawSprite`) so they stay proportionate
+  at any width. Note `sceneScale = scene.cols / 128` folds the px→cell conversion into the
+  habitat-width divisor, so an unboosted sprite is only ~`subcellRows(px)/48` of habitat height
+  (rookie ~1/8, apex ~3/16) — smaller than the art's px ratio implies. The PET sprite therefore
+  takes a flat **`PET_SCALE_BOOST` = 2** (players found the unboosted pet too small): a uniform
+  multiplier that restores px-proportionate sizing so the apex reads at ~1/3 of habitat height
+  (prime ~1/3, rookie ~1/4) while preserving the per-stage size ladder (egg 16 … apex 36 px).
+  Trinkets keep the **unboosted** `scale`, so a toy reads smaller than the creature. Min terminal
+  34×24 vertical / 72×12 horizontal.
 - Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
   (Dex, Archive, Settings, Achievements) inside the same content region.
 - Menu flow (`render/menu.ts` → `packMenu(cols)`, shared by `layout` for `menuRows`+`menuBtnH`,

@@ -88,6 +88,19 @@ const HABITAT_PX_H = 96;
  * stay proportionate to the scene at any terminal width.
  */
 const HABITAT_COLS = 128;
+/**
+ * Extra scale applied to the PET sprite (only) on top of the backdrop's
+ * `sceneScale`. `sceneScale = scene.cols / 128` folds the px→cell conversion into
+ * the habitat-width divisor, so an UNBOOSTED pet renders at only ~`subcellRows(px)
+ * /48` of habitat height — the apex (36 px) at ~3/16 and the rookie at ~1/8, far
+ * smaller than the art's px ratio (sprite-px / 96-px habitat) implies. Players
+ * found the pet too small beside the scene. A flat ×2 lifts every stage by the
+ * same factor — restoring the px-proportionate sizing — so the apex reads at ~1/3
+ * of habitat height (prime ~1/3, rookie ~1/4), while preserving the stage-to-stage
+ * growth ladder. Trinkets keep the unboosted `sceneScale` so toys stay
+ * habitat-proportionate (a toy reads smaller than the creature).
+ */
+const PET_SCALE_BOOST = 2;
 
 export interface WanderGeometry {
   /** Left/top cell of the canvas region. */
@@ -355,11 +368,14 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRec
   const { buf, state, mode, frame } = ctx;
   const pet = state.pet;
 
-  // Scale the pet by the same factor as the backdrop so it stays proportionate
-  // to the scene as the terminal width changes.
+  // Scale the pet by the same factor as the backdrop (so it stays proportionate
+  // to the scene as the terminal width changes), with a ×2 boost so the apex
+  // creature reads at ~1/3 of habitat height (see PET_SCALE_BOOST). Trinkets keep
+  // the unboosted `scale` (see drawPlayTrinket).
   const scale = sceneScale(scene);
-  const spriteCols = Math.max(1, Math.round(subcellCols(sprite.width) * scale));
-  const spriteRows = Math.max(1, Math.round(subcellRows(sprite.height) * scale));
+  const petScale = scale * PET_SCALE_BOOST;
+  const spriteCols = Math.max(1, Math.round(subcellCols(sprite.width) * petScale));
+  const spriteRows = Math.max(1, Math.round(subcellRows(sprite.height) * petScale));
   const geo: WanderGeometry = {
     canvasX: scene.x,
     canvasY: scene.y,
