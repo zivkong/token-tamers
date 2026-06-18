@@ -61,6 +61,15 @@ export function makeRebirth(weekStart: number): RebirthEvent {
  * the normal window chain — and the engine only lets one ACT while the pet is
  * an egg (hatching it early); otherwise it is a no-op.
  *
+ * Bounded only by `end <= now` — there is deliberately NO `after`/`simulatedTo`
+ * lower bound. A reborn egg is back-dated to its week boundary while the sim clock
+ * already sits at real-now, so its hatch instant (first feeding + EGG_HATCH_MS) can
+ * land BEFORE `simulatedTo`; an `after` gate would silently drop it and strand the
+ * egg (it would then only hatch at the first full 5-h window close, hours late). The
+ * engine gates the CALL on `pet.stage === 'egg'` and `replayMolt` no-ops a hatch on
+ * an already-hatched pet, so re-deriving a past hatch never double-fires — emitting
+ * it unconditionally is what lets a stuck/overrun egg self-heal on the next advance.
+ *
  * `notBefore` floors the search at the current generation's placement
  * (`pet.hatchedAt`): the egg hatches off its OWN first feeding, not off usage
  * that predates it. This matters for the very first egg, placed mid-week at
@@ -74,7 +83,6 @@ export function makeRebirth(weekStart: number): RebirthEvent {
 export function eggHatchMolts(
   events: readonly UsageEvent[],
   weekAnchor: number,
-  after: number,
   now: number,
   notBefore = -Infinity,
 ): MoltEvent[] {
@@ -88,7 +96,7 @@ export function eggHatchMolts(
   const out: MoltEvent[] = [];
   for (const first of firstByWeek.values()) {
     const end = first + EGG_HATCH_MS;
-    if (end > after && end <= now) {
+    if (end <= now) {
       out.push({ type: 'molt', at: end, windowStart: first, windowEnd: end, hatch: true });
     }
   }

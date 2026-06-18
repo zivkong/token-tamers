@@ -87,6 +87,29 @@ describe('engine — egg fast-hatch', () => {
     expect(eng.state().pet.moltCount).toBe(1);
   });
 
+  it('still hatches when the sim clock already overran the hatch instant', () => {
+    // Regression: a reborn egg is back-dated to its week boundary while the sim
+    // clock already sits at real-now. If the first feeding (and thus the +10-min
+    // hatch instant) lands BEFORE simulatedTo — e.g. the event was ingested late —
+    // the old (after, now] gate dropped the hatch and stranded the egg until the
+    // first full 5-h window close. It must now self-heal on the next advance.
+    const eng = createEngine(makePack(), { adapters: adapters(), cycle: subscriptionCycle() });
+    // Advance with no events: the clock moves to +1h while the pet is still an egg.
+    eng.advanceTo(WEEK_ANCHOR + HOUR);
+    expect(eng.state().pet.stage).toBe('egg');
+    // A late-arriving first feeding at +30m → hatch instant +40m, already behind
+    // simulatedTo (+1h).
+    eng.ingest([ev(30 * MIN)]);
+    const effects = eng.advanceTo(WEEK_ANCHOR + 2 * HOUR);
+    expect(effects.some((e) => e.type === 'hatched')).toBe(true);
+    expect(eng.state().pet.stage).toBe('sprite');
+    expect(eng.state().pet.moltCount).toBe(1);
+    // Idempotent: a re-advance does not re-fire the hatch.
+    const again = eng.advanceTo(WEEK_ANCHOR + 2 * HOUR);
+    expect(again.some((e) => e.type === 'hatched')).toBe(false);
+    expect(eng.state().pet.moltCount).toBe(1);
+  });
+
   it('a mid-week egg (init) hatches off its OWN first feeding, not old history', () => {
     // The first egg is placed mid-week via startAt; usage from earlier in the
     // same week (before the egg existed) must NOT define the hatch time.

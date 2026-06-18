@@ -190,10 +190,16 @@ class GameEngine implements Engine {
     // pending/determinism are unaffected. Floor the search at the generation's
     // placement so the egg hatches off its own first feeding, not history
     // predating it (the first egg is placed mid-week).
-    const hatchFloor = this.state_.pet.hatchedAt;
-    const weekAnchor = this.config.cycle.weekAnchor;
-    for (const event of eggHatchMolts(all, weekAnchor, after, now, hatchFloor)) {
-      cycles.push(event);
+    //
+    // Only request them while the pet is actually an egg. eggHatchMolts has no
+    // `after`/simulatedTo gate (its hatch instant can predate the sim clock for a
+    // back-dated reborn egg), so this stage check is what scopes it: an already-
+    // hatched pet derives no hatch checkpoint, and a still-egg pet whose clock has
+    // overrun the hatch instant gets it back and self-heals on this advance.
+    if (this.state_.pet.stage === 'egg') {
+      const weekAnchor = this.config.cycle.weekAnchor;
+      const hatches = eggHatchMolts(all, weekAnchor, now, this.state_.pet.hatchedAt);
+      for (const h of hatches) cycles.push(h);
     }
     cycles.sort((a, b) => {
       if (a.at !== b.at) return a.at - b.at;
