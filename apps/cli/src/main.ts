@@ -16,6 +16,7 @@
  */
 
 import { NotInitializedError } from './services/catchup';
+import { backgroundUpdateCheck } from './services/update-check';
 import { VERSION } from './version';
 import { parseArgs, KNOWN_COMMANDS, HELP, type ParsedArgs } from './helpers/args';
 import {
@@ -119,8 +120,28 @@ export async function dispatch(
   }
 }
 
+/**
+ * Commands that should NOT trigger the launch-time update check: `shell`/`battle`
+ * fire it themselves (launchShell), `update` does its own full check, `watch` is
+ * long-running, and `statusline` is a hot path Claude Code spawns every refresh.
+ * Everything else (status, dex, init, …) drives the throttled check, so auto/notify
+ * actually fires for users who live in the subcommands or the statusline rather
+ * than the bare TUI shell.
+ */
+const NO_LAUNCH_CHECK = new Set(['shell', 'battle', 'update', 'watch', 'statusline']);
+
+/** Whether this invocation should kick the throttled background update check. */
+export function shouldBackgroundCheck(parsed: ParsedArgs): boolean {
+  if (parsed.version || parsed.help) return false;
+  return !NO_LAUNCH_CHECK.has(parsed.command);
+}
+
 async function main(): Promise<void> {
   const parsed = parseArgs(process.argv.slice(2));
+  // Fire-and-forget, throttled (~once/day), no-op when update.mode is 'off'.
+  // Node waits for the pending socket before exiting, so it completes even after
+  // a short command prints; it never blocks or delays the command itself.
+  if (shouldBackgroundCheck(parsed)) void backgroundUpdateCheck();
   const code = await dispatch(parsed);
   if (code !== 0) process.exitCode = code;
 }

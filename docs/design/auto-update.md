@@ -75,6 +75,16 @@ State: `~/.tokentamers/updates.json` (`lastCheckAt`, `latestSeen`) throttles the
 check to ~once/day. `tt update` and the launch glue (`services/update-check.ts`) are the
 only callers.
 
+**Where the launch check fires.** `main.ts` kicks the throttled `backgroundUpdateCheck()`
+on every common CLI launch (`status`, `dex`, `archive`, `complete`, `adapters`, `init`),
+and `launchShell` fires it for the TUI `shell`/`battle`. It is deliberately NOT fired for
+`statusline` (Claude Code spawns it every refresh — too hot), `update` (does its own full
+check), or `watch` (long-running), nor for `--version`/`--help`. This matters because a
+statusline-centric user rarely opens the bare TUI; gating the check on the shell alone meant
+`auto`/`notify` effectively never ran for them. The check is fire-and-forget — Node waits for
+the pending socket before exiting, so it still completes after a short command prints, without
+ever blocking the command.
+
 ## Install kinds
 
 - **Standalone pkg binaries** (`tt-macos-*`, `tt-linux-*`) self-replace in place.

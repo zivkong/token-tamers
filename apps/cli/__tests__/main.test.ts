@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseArgs, dispatch, VERSION } from '../src/main';
+import { parseArgs, dispatch, shouldBackgroundCheck, VERSION } from '../src/main';
 import { setDataDirForTesting } from '../src/stores';
 
 describe('parseArgs', () => {
@@ -30,6 +30,28 @@ describe('parseArgs', () => {
     const p = parseArgs(['--no-color', 'watch']);
     expect(p.command).toBe('watch');
     expect(p.noColor).toBe(true);
+  });
+});
+
+describe('shouldBackgroundCheck', () => {
+  it('fires the throttled check for the common launch commands', () => {
+    for (const c of ['status', 'dex', 'archive', 'complete', 'adapters', 'init']) {
+      expect(shouldBackgroundCheck(parseArgs([c]))).toBe(true);
+    }
+  });
+
+  it('does not fire for hot paths, self-checking, long-running, or shell/battle', () => {
+    // statusline (Claude Code spawns it every refresh), update (does its own check),
+    // watch (long-running), shell + battle (launchShell fires it themselves).
+    for (const c of ['statusline', 'update', 'watch', 'shell', 'battle']) {
+      expect(shouldBackgroundCheck(parseArgs([c]))).toBe(false);
+    }
+    expect(shouldBackgroundCheck(parseArgs([]))).toBe(false); // bare `tt` → shell
+  });
+
+  it('does not fire for --version / --help', () => {
+    expect(shouldBackgroundCheck(parseArgs(['--version']))).toBe(false);
+    expect(shouldBackgroundCheck(parseArgs(['--help']))).toBe(false);
   });
 });
 
