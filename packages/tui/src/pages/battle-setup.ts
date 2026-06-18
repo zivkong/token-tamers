@@ -105,14 +105,15 @@ export function drawSetup(ctx: RenderContext, bodyY: number): void {
 
   // Portrait band — the hero element; height adapts so it fits short docks.
   const portraitY = bodyY + 1;
-  const reserved = 1 + 2 + 1 + 2 + 2; // labels + identity + gap + box borders + min content
+  // labels + sprite gap + identity + gap + box borders + min content
+  const reserved = 1 + 1 + 2 + 1 + 2 + 2;
   const portraitRows = Math.max(3, Math.min(9, bottom - bodyY - reserved));
   drawPortrait(ctx, fighter, { x: left.x, y: portraitY, w: left.w, rows: portraitRows }, false);
   drawPortrait(ctx, opp, { x: right.x, y: portraitY, w: right.w, rows: portraitRows }, true);
   drawVS(ctx, x0 + mid, portraitY + Math.floor(portraitRows / 2));
 
-  // Identity (name/grade + house/stats) centered under each portrait.
-  const idY = portraitY + portraitRows;
+  // Identity (name/grade + house/stats) centered under each portrait, after a gap row.
+  const idY = portraitY + portraitRows + 1;
   drawIdentity(
     ctx,
     fighter,
