@@ -115,7 +115,11 @@ export async function catchUp(now: () => number = Date.now): Promise<CatchUpResu
     }
   }
 
-  const engineConfig: EngineConfig = { adapters: config.adapters, cycle: config.cycle };
+  const engineConfig: EngineConfig = {
+    adapters: config.adapters,
+    cycle: config.cycle,
+    salt: config.salt,
+  };
   const engine = createEngine(contentPackV1, engineConfig, saved);
   // Re-feed the open-window buffer persisted last run alongside the new scan so
   // events in an as-yet-unclosed window are never lost (checkpoints advanced past

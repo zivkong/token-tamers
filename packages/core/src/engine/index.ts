@@ -62,7 +62,13 @@ import {
   MUTATION_IDS,
 } from './constants';
 import { rollGrade } from './grades';
-import { cloneStats, matchModelRule, scaleInheritedStats, statsForSpecies } from './houses';
+import {
+  biasedHouse,
+  cloneStats,
+  matchModelRule,
+  scaleInheritedStats,
+  statsForSpecies,
+} from './houses';
 import { tryCaptureSnapshot } from './dex-records';
 import { evolutionGateMet, requiredMaturity } from './maturity';
 import { archiveRecord, scaleStats } from './rebirth';
@@ -279,7 +285,9 @@ class GameEngine implements Engine {
         bestGene = gene;
       }
     }
-    pet.house = bestGene && bestEss >= wildEssence ? houseByGene.get(bestGene)! : 'wild';
+    const home = bestGene && bestEss >= wildEssence ? houseByGene.get(bestGene)! : 'wild';
+    // Cosmetic spread (inv 3/5): per-install salt picks a non-home House.
+    pet.house = biasedHouse(this.pack, home, this.config.salt);
 
     const next = this.firstSpeciesForHouse(pet.house);
     if (next) {

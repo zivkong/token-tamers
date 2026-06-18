@@ -35,6 +35,7 @@ import {
   loadPending,
   loadSettings,
   loadState,
+  randomSalt,
   saveCheckpoints,
   saveConfig,
   saveSettings,
@@ -204,7 +205,15 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     return { enabled, warnings, wrote: false };
   }
 
-  const config: UserConfig = { schemaVersion: SCHEMA_VERSION, cycle, adapters: adapterConfigs };
+  // Preserve an existing install's salt across re-init (so its House spread stays
+  // stable); only a genuine first init mints a fresh one.
+  const salt = loadConfig()?.salt ?? randomSalt();
+  const config: UserConfig = {
+    schemaVersion: SCHEMA_VERSION,
+    cycle,
+    adapters: adapterConfigs,
+    salt,
+  };
   saveConfig(config);
 
   // Re-run semantics (design §4): re-init adds/removes adapters WITHOUT touching
@@ -215,13 +224,13 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   out(renderStepHeader(3, 3, savedState ? 'Updating' : 'Hatching', styled));
   if (savedState !== null) {
     out(renderRerunMessage(styled));
-    await backfillNewAdapters({ adapterConfigs, cycle, saved: savedState, now, out, styled });
+    await backfillNewAdapters({ adapterConfigs, cycle, salt, saved: savedState, now, out, styled });
     out(renderNextStepsLine(styled));
     out(renderWarnings(warnings, styled));
     return { enabled, warnings, wrote: true };
   }
 
-  await firstInitBackfill(adapterConfigs, cycle, now, out, styled);
+  await firstInitBackfill({ adapterConfigs, cycle, salt, now, out, styled });
   out(renderWarnings(warnings, styled));
   return { enabled, warnings, wrote: true };
 }
@@ -370,12 +379,13 @@ function tildeDataDir(): string {
 async function backfillNewAdapters(input: {
   adapterConfigs: AdapterConfig[];
   cycle: CycleConfig;
+  salt: number;
   saved: GameState;
   now: () => number;
   out: (s: string) => void;
   styled: boolean;
 }): Promise<void> {
-  const { adapterConfigs, cycle, saved, now, out, styled } = input;
+  const { adapterConfigs, cycle, salt, saved, now, out, styled } = input;
   const checkpoints: CheckpointMap = loadCheckpoints();
   const fresh = adapterConfigs.filter((cfg) => checkpoints[cfg.provider] === undefined);
   if (fresh.length === 0) return;
@@ -391,7 +401,7 @@ async function backfillNewAdapters(input: {
     checkpoints[cfg.provider] = result.checkpoint;
   }
 
-  const engine = createEngine(contentPackV1, { adapters: adapterConfigs, cycle }, saved);
+  const engine = createEngine(contentPackV1, { adapters: adapterConfigs, cycle, salt }, saved);
   engine.ingest([...loadPending(), ...events]);
   engine.seedBaselines(saved.simulatedTo);
   engine.advanceTo(now());
@@ -412,13 +422,15 @@ async function backfillNewAdapters(input: {
  * seed the normalization baseline from that history, hatch the Calibration Egg
  * at `now` (so it plays from day one), and persist state/checkpoints/pending.
  */
-async function firstInitBackfill(
-  adapterConfigs: AdapterConfig[],
-  cycle: CycleConfig,
-  now: () => number,
-  out: (s: string) => void,
-  styled: boolean,
-): Promise<void> {
+async function firstInitBackfill(input: {
+  adapterConfigs: AdapterConfig[];
+  cycle: CycleConfig;
+  salt: number;
+  now: () => number;
+  out: (s: string) => void;
+  styled: boolean;
+}): Promise<void> {
+  const { adapterConfigs, cycle, salt, now, out, styled } = input;
   const startAt = now();
   const events: UsageEvent[] = [];
   // A fresh checkpoint set: each (re-)enabled adapter scans its full history.
@@ -431,7 +443,7 @@ async function firstInitBackfill(
     checkpoints[cfg.provider] = result.checkpoint;
   }
 
-  const engineConfig: EngineConfig = { adapters: adapterConfigs, cycle, startAt };
+  const engineConfig: EngineConfig = { adapters: adapterConfigs, cycle, salt, startAt };
   const engine = createEngine(contentPackV1, engineConfig);
   engine.ingest(events);
   engine.seedBaselines(startAt);

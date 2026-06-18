@@ -58,6 +58,10 @@ export const contentPackV1: ContentPack = {
   sprites,
   // Live Dex denominator = Season 0's obtainable roster (the 56 base species).
   dexTotal: 56,
+  // Home-House bias at hatch (cosmetic; invariant 3): 50% keep the model's House,
+  // 50% spread across the other species-bearing Houses via the per-install salt.
+  // Spreads single-model players (e.g. a whole org on one model) across Houses.
+  houseBias: 0.5,
   // Battle tuning (design §11) — the circular House wheel + trait counters. All
   // content-tunable data; the engine reads it, never hardcodes it (invariant 9).
   battle,

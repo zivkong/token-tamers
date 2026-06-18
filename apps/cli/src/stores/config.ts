@@ -19,7 +19,17 @@ interface LegacyAdapter {
 
 export function loadConfig(): UserConfig | null {
   const raw = readJsonOrNull<UserConfig & { adapters: LegacyAdapter[] }>(CONFIG_FILE);
-  return raw === null ? null : migrateConfig(raw);
+  if (raw === null) return null;
+  const migrated = migrateConfig(raw);
+  // Persist the back-filled salt once, so a pre-existing install gets a stable
+  // (random, org-collision-free) House spread that survives across loads.
+  if (raw.salt === undefined) saveConfig(migrated);
+  return migrated;
+}
+
+/** Random uint32 for the per-install House salt (cosmetic; CLI-side, not core). */
+export function randomSalt(): number {
+  return (Math.random() * 0x100000000) >>> 0;
 }
 
 /**
@@ -37,7 +47,8 @@ export function loadConfig(): UserConfig | null {
 function migrateConfig(raw: UserConfig & { adapters: LegacyAdapter[] }): UserConfig {
   const adapters = (raw.adapters ?? []).map((a) => ({ provider: a.provider, paths: a.paths }));
   const cycle = raw.cycle ?? synthesizeCycle(raw.adapters ?? []);
-  return { schemaVersion: SCHEMA_VERSION, cycle, adapters, render: raw.render };
+  const salt = raw.salt ?? randomSalt();
+  return { schemaVersion: SCHEMA_VERSION, cycle, adapters, render: raw.render, salt };
 }
 
 /** Derive a pet-global CycleConfig from legacy per-adapter cycle fields. */

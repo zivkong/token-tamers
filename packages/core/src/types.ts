@@ -326,6 +326,16 @@ export interface ContentPack {
    */
   dexTotal: number;
   /**
+   * Home-House bias for hatch (cosmetic only — invariant 3). At hatch the pet's
+   * essence-winning House is its "home"; with probability `houseBias` it keeps
+   * home, otherwise the per-install `UserConfig.salt` deterministically picks one
+   * of the other species-bearing Houses. This spreads players who feed a SINGLE
+   * model (e.g. a whole company on one model) across Houses instead of locking
+   * them all into one. Freely re-balanced content data; default 0.5 when absent.
+   * Never affects stats/grades/speed.
+   */
+  houseBias?: number;
+  /**
    * Battle tuning (design §11). ALL combat multipliers live here as data, never
    * hardcoded in the engine (invariant 9). The House wheel is circular and Wild
    * is neutral, so no House — and thus no model — is ever net-stronger
@@ -582,6 +592,16 @@ export interface EngineConfig {
    * (existing savefiles/tests are unaffected).
    */
   startAt?: number;
+  /**
+   * Per-install salt (uint32) that deterministically picks a non-home House when
+   * the hatch bias roll leaves home (see `ContentPack.houseBias`). Stable per
+   * install, so a player's lineage spreads consistently. Cosmetic only — feeds
+   * only `pet.house`, never stats/grades/speed (invariant 3). Omit ⇒ pure
+   * model-derived House (legacy behavior; existing saves/tests unaffected). The
+   * pick is a pure function of the salt — it does NOT consume the molt RNG, so
+   * existing pets' grade/trait/mutation streams stay byte-identical (invariant 5).
+   */
+  salt?: number;
 }
 
 export interface Engine {
@@ -635,6 +655,12 @@ export interface UserConfig {
   cycle: CycleConfig;
   adapters: AdapterConfig[];
   render?: { fps?: number; color?: 'truecolor' | '256' | '8' | 'none' };
+  /**
+   * Per-install salt (uint32) generated once at `tt init` and back-filled for
+   * pre-existing configs on load. Drives the cosmetic non-home House pick at
+   * hatch (see `EngineConfig.salt` / `ContentPack.houseBias`). Cosmetic only.
+   */
+  salt?: number;
 }
 
 // ---------------------------------------------------------------------------

@@ -130,6 +130,10 @@ function computeLiveStats(pending: readonly UsageEvent[], state: GameState): Liv
 
 /** Re-create an engine from a saved state for the shell (used after catchUp). */
 export function engineFromState(config: UserConfig, state: GameState): Engine {
-  const engineConfig: EngineConfig = { adapters: config.adapters, cycle: config.cycle };
+  const engineConfig: EngineConfig = {
+    adapters: config.adapters,
+    cycle: config.cycle,
+    salt: config.salt,
+  };
   return createEngine(contentPackV1, engineConfig, state);
 }
