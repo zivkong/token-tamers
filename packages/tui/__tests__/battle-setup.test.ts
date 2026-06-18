@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { encodeDna, type DexSnapshot } from '@token-tamers/core';
-import { confirmBattle, fighterCandidates, resolveSetupOpponent } from '../src/pages/battle-setup';
+import {
+  confirmBattle,
+  fighterCandidates,
+  opponentRecords,
+  resolveSetupOpponent,
+} from '../src/pages/battle-setup';
 import type { BattleView, PageId, PageUiState } from '../src/pages/types';
 import { makePack, makePet, makeState } from './fixtures';
 
@@ -60,9 +65,25 @@ describe('battle setup — fighter selection', () => {
     expect(names[0]).toEqual({ name: 'Wisp', live: true });
   });
 
-  it('blocks an own Dex opponent of the same species as the chosen fighter', () => {
-    const res = resolveSetupOpponent(host(), setupUi({ input: '' }), 'ember');
-    expect('error' in res && /your own kind/i.test(res.error)).toBe(true);
+  it('hides the chosen fighter’s own species from the opponent list (self-mirror)', () => {
+    const h = host();
+    // The only record is Ember; fielding Ember filters it out (can't fight your own kind)…
+    expect(opponentRecords(h, 'ember')).toEqual([]);
+    // …while a different fighter species keeps Ember as a valid opponent.
+    expect(opponentRecords(h, 'wisp').map((s) => s.speciesId)).toEqual(['ember']);
+  });
+
+  it('hides sealed (not battle-ready) records from the opponent list', () => {
+    const sealed: DexSnapshot = { ...WISP_SNAP, speciesId: 'murmur', stage: 'sprite' };
+    const state = makeState({
+      dexRecords: [
+        { speciesId: 'ember', top: [makeState().dexRecords[0]!.top[0]!] },
+        { speciesId: 'murmur', top: [sealed] },
+      ],
+    });
+    const ids = opponentRecords(host(state), 'wisp').map((s) => s.speciesId);
+    expect(ids).toContain('ember'); // battle-ready → shown
+    expect(ids).not.toContain('murmur'); // sealed → hidden
   });
 
   it('allows a pasted same-species code — it is another player, not a self-mirror', () => {

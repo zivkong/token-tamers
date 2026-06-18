@@ -26,6 +26,7 @@ import {
   sameSpecies,
   simulateBattle,
   type Combatant,
+  type DexSnapshot,
 } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
 import { drawDivider, drawPageFooter, pageBodyBottom } from '../components';
@@ -63,9 +64,13 @@ interface Fighter {
   isLive: boolean;
 }
 
-/** Sprite footprint reserved at a fighter card's left, and the card's height. */
-const CARD_SPRITE_COLS = 16;
+/** Sprite footprint reserved at a fighter card's left, and the card's height. The
+ *  reserve is small (and the show-threshold low) so the highlighted fighter and the
+ *  opponent still show a sprite in the narrow half-width columns of a small terminal. */
+const CARD_SPRITE_COLS = 11;
 const CARD_ROWS = 4;
+/** Show the card sprite once the column can also hold a few cells of identity text. */
+const CARD_SPRITE_MIN_W = CARD_SPRITE_COLS + 6;
 
 /** Setup orchestration operates on the shell runtime + the flash banner. */
 type SetupShell = BattleShell & FlashTarget;
@@ -112,6 +117,23 @@ export function fighterCandidates(host: BattleHost): Fighter[] {
 /** Clamp a (possibly undefined) selection index into `[0, len)`. */
 function clampSel(sel: number | undefined, len: number): number {
   return Math.max(0, Math.min(Math.max(0, len - 1), sel ?? 0));
+}
+
+/**
+ * The Dex records you can field as an OPPONENT against a fighter of `mirrorSpeciesId`:
+ * battle-ready only (sealed records hidden), and never the fighter's own species (a
+ * same-species own-vs-own match is a self-mirror — forbidden — so it's deduped out).
+ */
+export function opponentRecords(host: BattleHost, mirrorSpeciesId: string): DexSnapshot[] {
+  return bestSpeciesRecords(host.getState().dexRecords).filter(
+    (s) => isBattleReady(s) && !sameSpecies({ speciesId: mirrorSpeciesId }, s),
+  );
+}
+
+/** The species id of the currently-selected fighter (or '' when there is none). */
+function currentFighterSpecies(host: BattleHost, ui: PageUiState): string {
+  const fighters = fighterCandidates(host);
+  return fighters[clampSel(ui.fighterSel, fighters.length)]?.c.speciesId ?? '';
 }
 
 /** The left half: a preview of the chosen fighter + a selectable candidate list. */
@@ -231,23 +253,28 @@ function drawOpponentPreview(
   }
 }
 
-/** The player's Dex records as selectable opponent rows (own kind = blocked). */
+/**
+ * Your eligible Dex opponents as selectable rows. Only battle-ready records of a
+ * DIFFERENT species than your fighter appear (sealed records and your own kind are
+ * filtered out — see {@link opponentRecords}), so every row is a valid match.
+ */
 function drawDexList(
   ctx: RenderContext,
   box: { x: number; y: number; w: number },
   listFocused: boolean,
   mirrorSpeciesId: string,
 ): void {
-  const { buf, layout, state, ui } = ctx;
-  const records = bestSpeciesRecords(state.dexRecords);
+  const { buf, layout, ui } = ctx;
+  const records = opponentRecords(hostOf(ctx), mirrorSpeciesId);
   if (records.length === 0) {
-    buf.text(box.x, box.y, 'No Dex records yet — raise and molt a pet.', DIM, null);
+    buf.text(box.x, box.y, 'No eligible Dex opponent — paste a code.', DIM, null);
     return;
   }
+  const sel = clampSel(ui.selected, records.length);
   const maxRows = Math.max(0, Math.min(records.length, pageBodyBottom(layout) - box.y));
   for (let i = 0; i < maxRows; i++) {
     const ry = box.y + i;
-    drawPickerRow(ctx, records[i]!, listFocused && i === (ui.selected ?? 0), ry, {
+    drawPickerRow(ctx, records[i]!, listFocused && i === sel, ry, {
       x: box.x,
       w: box.w,
       mirrorSpeciesId,
@@ -268,7 +295,7 @@ function drawFighter(
     pack.species.find((s) => s.id === c.speciesId) ??
     pack.species.find((s) => s.num === c.speciesNum);
   const spr = findSprite(pack, species?.spriteId ?? '');
-  const showSprite = spr && col.w >= CARD_SPRITE_COLS + 14;
+  const showSprite = spr && col.w >= CARD_SPRITE_MIN_W;
   if (spr && showSprite) {
     const scale = CARD_ROWS / Math.max(1, subcellRows(spr.height));
     drawSprite(buf, spr, buildPalette(houseTint(c.house), c.grade, frame, species?.accent), {
@@ -317,7 +344,8 @@ function drawFighter(
  * Resolve the configured opponent against the chosen fighter's species, or an error
  * explaining why it can't fight. The opponent is the PASTED code when the field holds
  * one (a foreign player — a same-species mirror is allowed), otherwise the selected
- * Dex record (your own — a same-species pick is a self-mirror and is blocked).
+ * Dex record. The Dex options are already filtered to battle-ready, different-species
+ * records (see {@link opponentRecords}), so a self-mirror can't be selected at all.
  */
 export function resolveSetupOpponent(
   host: BattleHost,
@@ -335,13 +363,11 @@ export function resolveSetupOpponent(
       ? { opp }
       : { opp, warn: 'Integrity check failed — using recovered fields.' };
   }
-  const snap = bestSpeciesRecords(host.getState().dexRecords)[ui.selected ?? 0];
-  if (!snap) return { error: 'Paste a DNA code, or pick one of your Dex records.' };
-  if (sameSpecies({ speciesId: mirrorSpeciesId }, snap)) {
-    return { error: "Can't battle your own kind — pick a different species or paste a code." };
+  const records = opponentRecords(host, mirrorSpeciesId);
+  const snap = records[clampSel(ui.selected, records.length)];
+  if (!snap) {
+    return { error: "No eligible Dex opponent — paste a friend's code, or raise another species." };
   }
-  if (!isBattleReady(snap))
-    return { error: 'That record is sealed — opponents must reach Evolved.' };
   return { opp: opponentCombatant(host.pack, snap) };
 }
 
@@ -407,7 +433,8 @@ function moveSetupSelection(rt: SetupShell, host: BattleHost, focus: Focus, delt
     const max = fighterCandidates(host).length - 1;
     ui.fighterSel = Math.max(0, Math.min(Math.max(0, max), (ui.fighterSel ?? 0) + delta));
   } else if (focus === 'list') {
-    const max = bestSpeciesRecords(host.getState().dexRecords).length - 1;
+    // Bound to the FILTERED opponent list (battle-ready, different-species records).
+    const max = opponentRecords(host, currentFighterSpecies(host, ui)).length - 1;
     ui.selected = Math.max(0, Math.min(Math.max(0, max), (ui.selected ?? 0) + delta));
   }
 }
