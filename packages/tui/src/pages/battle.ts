@@ -13,12 +13,9 @@
  */
 
 import {
-  bestSpeciesRecords,
-  BATTLE_READY_STAGE,
   combatantFromSnapshot,
   isBattleReady,
   sameSpecies,
-  simulateBattle,
   type BattleSide,
   type Combatant,
   type ContentPack,
@@ -44,6 +41,8 @@ import {
   GRADE_BADGE,
 } from '../render/sprite';
 import { findSprite, houseColor, houseTint } from '../helpers/lookup';
+import type { FlashTarget } from '../shell-effects';
+import { drawSetup, handleSetupKey } from './battle-setup';
 import type { BattleView, PageId, PageUiState, RenderContext } from './types';
 
 const TEXT: Rgb = { r: 214, g: 220, b: 234 };
@@ -60,7 +59,7 @@ const WIN: Rgb = { r: 255, g: 224, b: 130 };
 export const BATTLE_STEP_FRAMES = 6;
 const SPRITE_ROWS = 4;
 
-function titleCase(s: string): string {
+export function titleCase(s: string): string {
   return s.length ? s[0]!.toUpperCase() + s.slice(1) : s;
 }
 
@@ -118,65 +117,37 @@ export function renderBattlePage(ctx: RenderContext): void {
   if (ctx.battle) {
     drawArena(ctx, ctx.battle, bodyY);
   } else {
-    drawPicker(ctx, bodyY);
+    drawSetup(ctx, bodyY);
   }
 }
 
-/** The opponent picker: the player's live pet vs. a chosen Archive record. */
-function drawPicker(ctx: RenderContext, bodyY: number): void {
-  const { buf, layout, state, ui } = ctx;
-  const x = layout.canvasX + 2;
-  const records = bestSpeciesRecords(state.dexRecords);
-  const petReady = isBattleReady(state.pet);
-
-  buf.text(
-    x,
-    bodyY,
-    petReady
-      ? 'Choose an Archive record to battle your pet.'
-      : `Your pet is sealed — battles unlock at ${titleCase(BATTLE_READY_STAGE)}.`,
-    petReady ? TEXT : SEALED,
-    null,
-  );
-
-  if (records.length === 0) {
-    buf.text(x, bodyY + 2, 'No Archive records yet — raise and molt a pet first.', DIM, null);
-    drawPageFooter(ctx, 'Esc back');
-    return;
-  }
-
-  const top = bodyY + 2;
-  const maxRows = Math.max(0, Math.min(records.length, pageBodyBottom(layout) - top));
-  for (let i = 0; i < maxRows; i++) {
-    const ry = top + i;
-    drawPickerRow(ctx, records[i]!, i === ui.selected, ry);
-    // Clickable row (mouse parity with the keyboard ↑↓ selection).
-    ctx.hits.add(`battle:pick:${i}`, x, ry, Math.max(1, layout.canvasCols - 4), 1);
-  }
-  drawPageFooter(ctx, '↑↓ / click select  ·  Enter fight  ·  Esc back');
-}
-
-function drawPickerRow(ctx: RenderContext, snap: DexSnapshot, selected: boolean, y: number): void {
-  const { buf, layout } = ctx;
-  const x = layout.canvasX + 2;
+/** One opponent row within the rect (x..x+w): grade, name, stats, eligibility tag. */
+export function drawPickerRow(
+  ctx: RenderContext,
+  snap: DexSnapshot,
+  selected: boolean,
+  y: number,
+  rect: { x: number; w: number },
+): void {
+  const { buf } = ctx;
+  const { x, w } = rect;
   if (selected) {
-    for (let i = 0; i < layout.canvasCols - 4; i++)
-      buf.set(x + i, y, { ch: ' ', fg: null, bg: SEL_BG });
+    for (let i = 0; i < w; i++) buf.set(x + i, y, { ch: ' ', fg: null, bg: SEL_BG });
   }
   const bg = selected ? SEL_BG : null;
   const species = ctx.pack.species.find((s) => s.id === snap.speciesId);
   const name = species?.name ?? snap.speciesId;
-  buf.text(x, y, `${GRADE_BADGE[snap.grade]} ${snap.grade}`, GRADE_ACCENT[snap.grade], bg);
-  buf.text(x + 5, y, name.padEnd(14), TEXT, bg);
-  const s = snap.stats;
-  buf.text(x + 20, y, `P${s.pwr} S${s.spd} W${s.wis} G${s.grt}`, DIM, bg);
   // Eligibility: a same-species record is your own kind (mirror match) — not battleable.
   const [tag, color] = sameSpecies(ctx.state.pet, snap)
     ? (['⊘ your kind', SEALED] as const)
     : isBattleReady(snap)
       ? (['✦ ready', READY] as const)
       : (['▢ sealed', SEALED] as const);
-  buf.text(x + 40, y, tag, color, bg);
+  // Lay the columns out so the eligibility tag is right-aligned and never clips.
+  const tagX = x + Math.max(20, w - tag.length);
+  buf.text(x, y, `${GRADE_BADGE[snap.grade]} ${snap.grade}`, GRADE_ACCENT[snap.grade], bg);
+  if (w > 6) buf.text(x + 5, y, name.slice(0, Math.max(0, tagX - (x + 5) - 1)), TEXT, bg);
+  if (tagX + tag.length <= x + w) buf.text(tagX, y, tag, color, bg);
 }
 
 /** A combatant column's bounds: left edge, top row, usable width in cells. */
@@ -187,7 +158,7 @@ interface ColumnRect {
 }
 
 /** Draw `text` from (x,y) but never past `maxCols` cells (clips, never overflows). */
-function clipText(
+export function clipText(
   buf: RenderContext['buf'],
   opts: { x: number; y: number; text: string; color: Rgb; maxCols: number; bold?: boolean },
 ): void {
@@ -352,37 +323,6 @@ export interface BattleHost {
   getState(): GameState;
 }
 
-/**
- * Build a BattleView for the player's live pet vs. the `index`-th Archive record,
- * or undefined when either side is below the Evolved readiness gate or there is
- * no such opponent. The simulation runs HERE, once. Shared by the Battle picker
- * (Enter) and the Archive page (the `b` shortcut).
- */
-export function buildBattleVsRecord(host: BattleHost, index: number): BattleView | undefined {
-  const state = host.getState();
-  const snap = bestSpeciesRecords(state.dexRecords)[index];
-  if (!snap || battleBlockReason(state.pet, snap)) return undefined;
-  const left = playerCombatant(host.pack, state.pet);
-  const right = opponentCombatant(host.pack, snap);
-  const result = simulateBattle(left, right, host.pack.battle);
-  return { left, right, result, cursor: 0, playing: true };
-}
-
-/**
- * Why battling the live pet against the SELF (Archive) record `snap` is blocked,
- * or null if it's allowed. Both sides must be Evolved, and a SELF mirror match
- * (same species) is forbidden — battle a different species, or a friend's pasted
- * code (a different player), instead.
- */
-export function battleBlockReason(pet: PetState, snap: DexSnapshot): string | null {
-  if (!isBattleReady(pet)) return 'Your pet is sealed — battles unlock at Evolved.';
-  if (!isBattleReady(snap)) return 'That record is sealed — opponents must reach Evolved.';
-  if (sameSpecies(pet, snap)) {
-    return "Can't battle your own kind — pick a different species (or a friend's code).";
-  }
-  return null;
-}
-
 /** Advance auto-playback one step every {@link BATTLE_STEP_FRAMES} frames. */
 export function advanceBattlePlayback(view: BattleView, frame: number): void {
   if (!view.playing || frame % BATTLE_STEP_FRAMES !== 0) return;
@@ -392,42 +332,37 @@ export function advanceBattlePlayback(view: BattleView, frame: number): void {
 
 /**
  * Handle a key on the Battle page. Returns true when consumed (so the shell skips
- * its generic handling). Picker: ↑↓ select, Enter fight. Arena: Enter play/pause/
- * replay, ←→ scrub, Esc back to the picker (then to the Archive page).
+ * its generic handling). When a battle is loaded this is the ARENA (Enter play/
+ * pause/replay, ←→ scrub, Esc back to setup); otherwise the SETUP screen owns the
+ * key (paste-field typing, Tab, Dex selection, Enter fight — see `battle-setup.ts`).
  */
-export function handleBattleKey(rt: BattleShell, host: BattleHost, name: string): boolean {
+export function handleBattleKey(
+  rt: BattleShell & FlashTarget,
+  host: BattleHost,
+  name: string,
+): boolean {
   if (rt.page !== 'battle') return false;
   const view = rt.battle;
+  if (!view) return handleSetupKey(rt, host, name);
   switch (name) {
     case 'escape':
-      if (view) rt.battle = undefined;
-      else rt.page = 'archive';
+      rt.battle = undefined;
       return true;
     case 'up':
-      if (!view) moveBattleSelection(rt, host, -1);
-      return true;
     case 'down':
-      if (!view) moveBattleSelection(rt, host, +1);
-      return true;
+      return true; // consumed (no selection in the arena)
     case 'left':
-      if (view) scrub(view, -1);
+      scrub(view, -1);
       return true;
     case 'right':
-      if (view) scrub(view, +1);
+      scrub(view, +1);
       return true;
     case 'enter':
-      if (view) togglePlay(view);
-      else rt.battle = buildBattleVsRecord(host, rt.ui.battle.selected);
+      togglePlay(view);
       return true;
     default:
       return false;
   }
-}
-
-function moveBattleSelection(rt: BattleShell, host: BattleHost, delta: number): void {
-  const max = bestSpeciesRecords(host.getState().dexRecords).length - 1;
-  const ui = rt.ui.battle;
-  ui.selected = Math.max(0, Math.min(Math.max(0, max), ui.selected + delta));
 }
 
 function scrub(view: BattleView, delta: number): void {

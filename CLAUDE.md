@@ -119,8 +119,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   substitute for it. When you add a feature, wire its TUI page/entry point in the SAME change
   as the engine/CLI, with golden-frame coverage; if a capability can't yet land in the TUI
   (e.g. it needs text entry the shell lacks), say so explicitly and treat the TUI gap as
-  unfinished work, not "done". (e.g. Battle is reached in-shell from the Archive via `b`, not
-  only via `tt battle`.)
+  unfinished work, not "done". (e.g. Battle is its own top-level shell page — pet vs. a pasted
+  DNA code or an own-Dex pick — not only via `tt battle`.)
 - TypeScript strict, ESM only, Node ≥ 20; moduleResolution Bundler (no `.js` import suffixes).
 - **Filenames are kebab-case** (`scripts/check-kebab-case.sh` gates commits/CI).
   Only exceptions: conventional root files (README.md, LICENSE, SECURITY.md,
@@ -191,8 +191,8 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   - **Season 0 — "Genesis" (current):** five House lines, 56 species, `season: 0`,
     `dexTotal: 56`. Shipped MVP **+ the Battle system (DONE, M2.2)** — pure `simulateBattle` in
     `packages/core/src/battle/`, the House wheel/proc ruleset as `ContentPack.battle` data,
-    `tt battle [code]`, the Battle TUI page (launched from the Archive with `b`), grade
-    stat-floor (`GRADE_STAT_FLOOR`, battle-only). STILL TO BUILD: **the basic-unlockables / deco
+    `tt battle [code]`, the top-level Battle TUI page (pet vs. a pasted DNA code or an own-Dex
+    pick — `pages/battle-setup.ts`), grade stat-floor (`GRADE_STAT_FLOOR`, battle-only). STILL TO BUILD: **the basic-unlockables / deco
     loop** (`tt deco` + Deco page + loadouts over the existing 12 habitats / 6 trinkets / 44
     achievements). NO DNA apply/graft and NO leagues in Season 0.
   - **Season 1 — "Crossbreed" (next):** the **entire DNA grafting + fusion system** —

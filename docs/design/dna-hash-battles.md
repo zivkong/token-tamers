@@ -223,16 +223,19 @@ Pillar 4):
 > (`BattleRuleset`: the House `wheel`, trait `procs`, `variance`, and the negotiated
 > `version` — `packages/content/content/battle.json`), and it is surfaced by `tt battle [code]`
 >
-> - the Battle TUI page (reached from the Archive with `b`, or launched straight into playback
->   by the CLI). Battle consumes a decoded snapshot **read-only** — it never mutates the pet, its
->   grade, or the Dex (invariants 1 & 3). The grade stat-floor lives in `engine/constants.ts`
->   (`GRADE_STAT_FLOOR`, battle-only). DNA **apply/graft/fusion** remains Season 1.
+> - the Battle TUI page, a **top-level nav page** with its own setup screen: your live pet on the
+>   left, and an OPPONENT chosen on the right either by **pasting a friend's DNA code** OR by
+>   **picking one of your own Dex records** (`pages/battle.ts` + `pages/battle-setup.ts`); the CLI
+>   `tt battle [code]` plays a code straight back, and `tt battle` opens the setup page. Battle
+>   consumes a decoded snapshot **read-only** — it never mutates the pet, its grade, or the Dex
+>   (invariants 1 & 3). The grade stat-floor lives in `engine/constants.ts` (`GRADE_STAT_FLOOR`,
+>   battle-only). DNA **apply/graft/fusion** remains Season 1.
 >
 > **Self-mirror rule.** You cannot battle (or, in Season 1, graft) your OWN pet against your OWN
-> record of the **same species** — a self-mirror is disallowed (`sameSpecies` in `battle/`). A
-> same-species match is allowed only against ANOTHER player (a pasted foreign DNA code, whose
-> decoded `speciesId` is empty, so it's never a self-mirror). Different species — yours or a
-> foreign code — is always allowed.
+> record of the **same species** — a self-mirror is disallowed (`sameSpecies` in `battle/`). This
+> guards the "pick from your own Dex" path; a **pasted code is another player** (its decoded
+> `speciesId` is empty, so it's never a self-mirror), so a same-species match against a pasted code
+> is always allowed. Different species — yours or a foreign code — is always allowed too.
 
 ### Determinism Formula
 
@@ -259,8 +262,8 @@ version-agnostic philosophy as the hash codec.
 Because battles are deterministic functions of the two hashes and a ruleset version, **replays
 are reproducible forever** — a battle result can be re-simulated by anyone who holds both codes
 and knows the ruleset version used. No replay file needs to be distributed; the codes are
-sufficient. Archive-record battles are supported (a best-record hash from the Archive can be
-used as one side of a battle).
+sufficient. Own-record battles are supported (one of your own Dex records — a best-per-species
+snapshot — can be picked as one side of a battle, subject to the self-mirror rule above).
 
 Cross-provider battles work by construction: since hashes carry House genes rather than provider
 names, and the battle formula operates on Houses/stats/traits, there is no provider-specific logic

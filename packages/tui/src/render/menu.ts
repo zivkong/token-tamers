@@ -24,7 +24,8 @@ export const MENU_ITEMS: MenuItem[] = [
   { id: 'pet', label: '♥ Pet', hotkey: '1' },
   { id: 'dex', label: '☰ Dex', hotkey: '2' },
   { id: 'archive', label: '◆ Archive', hotkey: '3' },
-  { id: 'settings', label: '⚙ Settings', hotkey: '4' },
+  { id: 'battle', label: '⚔ Battle', hotkey: '4' },
+  { id: 'settings', label: '⚙ Settings', hotkey: '5' },
   { id: 'quit', label: '⏻ Quit', hotkey: 'q' },
 ];
 
@@ -41,8 +42,12 @@ export interface MenuButton extends MenuItem {
 /** Left/right inset, the MINIMUM gap between buttons, and interior H padding. */
 export const MENU_X = 1;
 const MENU_MIN_GAP = 2;
-/** Interior horizontal padding (also where the right-aligned hotkey sits). */
-export const MENU_PAD_X = 2;
+/**
+ * Interior horizontal padding (also where the right-aligned hotkey sits). Kept at
+ * 1 so the six nav buttons pack two-per-row at the 34-col vertical minimum (a wider
+ * pad would stack them one-per-row and overflow the 24-row floor).
+ */
+export const MENU_PAD_X = 1;
 
 /**
  * Button HEIGHT in cells. One row keeps the label perfectly centered on BOTH

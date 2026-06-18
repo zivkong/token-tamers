@@ -15,13 +15,16 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
 > players use the TUI, not the CLI. Every player-facing feature must be fully usable in the
 > shell; a feature is NOT done while it's CLI-only. When a feature lands, add its page (a
 > `renderFn(ctx: RenderContext)` in `src/pages/`, dispatched in `render/frame.ts`), an in-shell
-> entry point (a hotkey/menu item, or a contextual key on a related page — e.g. Battle is
-> launched from the Archive with `b`), and golden-frame tests, in the same change as the
+> entry point (a hotkey/menu item, or a contextual key on a related page — e.g. Battle is a
+> top-level menu page whose setup screen takes a pasted DNA code or an own-Dex pick), and
+> golden-frame tests, in the same change as the
 > engine/CLI work. Keep per-frame work pure (`f(state, pack, ui, frame)` → buffer) so playback/
 > animation stays deterministic and golden-testable; pre-compute anything stochastic (e.g. a
 > battle timeline) ONCE outside the renderer and play it back. If the shell lacks a primitive a
-> feature needs (e.g. free-text entry for pasting a code), call that out as an unfinished TUI
-> gap — don't declare the feature complete on the CLI alone. See the TUI-first rule in CLAUDE.md.
+> feature needs, call that out as an unfinished TUI gap — don't declare the feature complete on
+> the CLI alone. (The shell now has a minimal free-text field — the Battle setup paste field in
+> `pages/battle-setup.ts` accumulates printable key events into `ui.battle.input`; reuse that
+> pattern rather than reaching for a framework.) See the TUI-first rule in CLAUDE.md.
 
 ## Layout law (rev 1.2 — responsive, orientation-aware)
 

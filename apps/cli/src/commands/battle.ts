@@ -101,6 +101,15 @@ export async function battleCommand(
   const caught = await catchUp(now);
   const state = caught.engine.state();
   const pack = contentPackV1;
+  const interactive = !opts.text && Boolean(process.stdout.isTTY);
+
+  // On a TTY with no code, open the Battle setup page (paste a code or pick a Dex
+  // record) rather than auto-choosing an opponent — the setup screen handles a
+  // sealed pet and a missing opponent itself.
+  if (interactive && !opts.code) {
+    await launchShell(caught, { noColor: opts.noColor, initialPage: 'battle' });
+    return;
+  }
 
   if (!isBattleReady(state.pet)) {
     out('Your pet is sealed — battles unlock once it reaches the Evolved stage.\n');
@@ -111,8 +120,6 @@ export async function battleCommand(
   if (!right) return;
 
   const result = simulateBattle(left, right, pack.battle);
-
-  const interactive = !opts.text && Boolean(process.stdout.isTTY);
   if (interactive) {
     const initialBattle: BattleView = { left, right, result, cursor: 0, playing: true };
     await launchShell(caught, { noColor: opts.noColor, initialPage: 'battle', initialBattle });

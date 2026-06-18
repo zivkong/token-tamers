@@ -143,7 +143,7 @@ function freshUi(): Record<PageId, PageUiState> {
     'dex-detail': { selected: 0, scroll: 0, speciesId: null },
     archive: { selected: 0, scroll: 0 },
     settings: { selected: 0, scroll: 0 },
-    battle: { selected: 0, scroll: 0 },
+    battle: { selected: 0, scroll: 0, input: '', focus: 'input' },
   };
 }
 

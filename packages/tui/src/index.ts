@@ -118,7 +118,6 @@ export {
   playerCombatant,
   opponentCombatant,
   hpAt,
-  battleBlockReason,
   BATTLE_STEP_FRAMES,
 } from './pages/battle';
 export type {

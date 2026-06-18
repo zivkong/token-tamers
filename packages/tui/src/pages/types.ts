@@ -27,6 +27,10 @@ export interface PageUiState {
   house?: number;
   /** Dex-detail: the species being inspected (set when drilling in from the Dex). */
   speciesId?: string | null;
+  /** Battle setup: the pasted-DNA-code buffer (the opponent code being typed). */
+  input?: string;
+  /** Battle setup: which opponent source is focused — the paste field or the Dex list. */
+  focus?: 'input' | 'list';
 }
 
 /**

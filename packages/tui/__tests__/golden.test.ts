@@ -1,9 +1,27 @@
 import { describe, it, expect } from 'vitest';
-import { simulateBattle, type Combatant } from '@token-tamers/core';
+import { encodeDna, simulateBattle, type Combatant, type DexSnapshot } from '@token-tamers/core';
 import { renderFrameToString } from '../src/render/frame';
 import type { FrameInput } from '../src/render/frame';
 import type { BattleView, ShellInfo, SettingsState } from '../src/pages/types';
-import { makePack, makeState } from './fixtures';
+import { makePack, makePet, makeState } from './fixtures';
+
+/** A deterministic foreign "wisp" snapshot + its shareable DNA code (same species as the pet). */
+const FOREIGN_WISP: DexSnapshot = {
+  speciesId: 'wisp',
+  stage: 'evolved',
+  grade: 'A',
+  stats: { pwr: 60, spd: 70, wis: 55, grt: 55 },
+  house: 'aether',
+  traits: [],
+  pattern: null,
+  rhythmVariant: null,
+  mutations: [],
+  generation: 2,
+  contentVersion: 1,
+  recordedAt: 7000,
+  reason: 'molt',
+};
+const FOREIGN_WISP_CODE = encodeDna(FOREIGN_WISP, { speciesNum: 1 });
 
 /** A deterministic, fully-played battle for the arena golden frames. */
 function makeBattleView(): BattleView {
@@ -130,9 +148,38 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('renders the battle opponent picker', () => {
+  it('renders the battle setup with a sealed pet and a pickable Dex record', () => {
     const out = renderFrameToString(100, 30, input({ page: 'battle' }));
     expect(out).toContain('Battle');
+    expect(out).toContain('Opponent');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the battle setup previewing the selected Dex record', () => {
+    const state = makeState({ pet: makePet({ stage: 'evolved' }) });
+    const out = renderFrameToString(
+      100,
+      30,
+      input({ page: 'battle', state, ui: { selected: 0, scroll: 0, focus: 'list', input: '' } }),
+    );
+    expect(out).toContain('Ember');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the battle setup previewing a pasted DNA code (same species allowed)', () => {
+    const state = makeState({ pet: makePet({ stage: 'evolved' }) });
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'battle',
+        state,
+        ui: { selected: 0, scroll: 0, focus: 'input', input: FOREIGN_WISP_CODE },
+      }),
+    );
+    // A foreign wisp code battling your own wisp — a same-species mirror is allowed
+    // for a pasted code (it's another player), unlike picking your own Dex record.
+    expect(out).toContain('Wisp');
     expect(out).toMatchSnapshot();
   });
 

@@ -176,8 +176,8 @@ No two devs raise the same creature. Your habits _are_ the gameplay.
 Every pet can be exported as a shareable **DNA code** — and battles are **deterministic**:
 same two codes, same outcome, every time, fully offline.
 
-- Battle from the **Archive** with `b`, or run `tt battle [code]`.
-- Fight your own records, or paste a **friend's code** to throw down across machines.
+- Open the **Battle** page, then paste a **friend's code** or pick one of your own Dex records — or run `tt battle [code]`.
+- Fight your own records, or paste a friend's code to throw down across machines.
 - The ruleset is a **House type-wheel** with **trait procs** — pure strategy, zero RNG-fishing.
 - A pet must be at least **Evolved** to step in the ring.
 
@@ -394,7 +394,7 @@ The full design reference lives under [`docs/design/`](docs/design/).
       (all five house lines — Aether · Cipher · Flux · Forge · Wild, egg → Apex, 56 species) ·
       traits, patterns, mutations · grade rolls · rebirth + lineage · the Archive · clickable
       TUI · 12 habitats, 6 trinkets, 44 achievements · shareable DNA codes · deterministic
-      **battles** (battle from the Archive with `b`, or `tt battle`; House type wheel, trait procs)
+      **battles** (the Battle page: paste a code or pick a Dex record, or `tt battle`; House type wheel, trait procs)
 - [ ] **Season 0 — Genesis · building:** the **collect-and-decorate** loop (`tt deco`, equip
       habitats & trinkets)
 - [ ] **Season 1 — Crossbreed:** **DNA export/apply** (paste codes to friends) · DNA

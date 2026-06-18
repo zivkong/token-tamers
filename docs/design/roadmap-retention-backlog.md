@@ -106,8 +106,10 @@ equal).
 - [x] **A7 — Battle TUI page** (`packages/tui/src/pages/battle.ts`): split-pane, HP meters,
       blow-by-blow log + winner banner, scrub/replay; renders the engine timeline; golden-frame
       tests. (Lunges/screen-shake/floating-damage flourishes left as polish.)
-- [x] **A8 — Shell entry point:** from the Archive, select a record and press **`b`** to battle the
-      live pet (kept Battle off the top menu to preserve the 34-col min-size layout).
+- [x] **A8 — Shell entry point:** Battle is a **top-level menu page** (`pages/battle.ts` +
+      `pages/battle-setup.ts`) whose setup screen fights the live pet against a **pasted DNA code**
+      or an **own-Dex pick**. (The six nav buttons fit the 34-col vertical minimum by packing
+      two-per-row — `MENU_PAD_X` is 1.) Superseded the original Archive `b` shortcut.
 - [x] **A9 — Determinism + golden tests** (engine timeline + page frames, content-ruleset
       validation, cli summary) and a **wiki page** (`docs/wiki/battles.md`) for battles (rules,
       the House wheel, the "no model is stronger" guarantee).

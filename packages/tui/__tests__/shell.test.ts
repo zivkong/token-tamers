@@ -123,7 +123,7 @@ describe('runShell loop', () => {
       manageTerminal: false,
       maxFrames: 3,
     });
-    input.push({ type: 'key', name: '4' }); // settings
+    input.push({ type: 'key', name: '5' }); // settings
     await done;
     expect(sink.toString()).toContain('⚙ Settings');
   });
@@ -153,7 +153,7 @@ describe('runShell loop', () => {
         savedAnchor = anchor;
       },
     });
-    input.push({ type: 'key', name: '4' }); // open settings (update-mode field focused)
+    input.push({ type: 'key', name: '5' }); // open settings (update-mode field focused)
     input.push({ type: 'key', name: 'down' }); // move to the global cycle field (index 1)
     input.push({ type: 'key', name: 'right' }); // cycle subscription -> static
     await done;
@@ -186,7 +186,7 @@ describe('runShell loop', () => {
         savedAnchor = anchor;
       },
     });
-    input.push({ type: 'key', name: '4' }); // settings
+    input.push({ type: 'key', name: '5' }); // settings
     input.push({ type: 'key', name: 'down' }); // to the cycle field (index 1)
     input.push({ type: 'key', name: 'right' }); // subscription -> static (anchor dropped on persist)
     input.push({ type: 'key', name: 'right' }); // static -> subscription (anchor restored)
@@ -222,7 +222,7 @@ describe('runShell loop', () => {
         savedMode = mode;
       },
     });
-    input.push({ type: 'key', name: '4' }); // open settings (update-mode field focused first)
+    input.push({ type: 'key', name: '5' }); // open settings (update-mode field focused first)
     input.push({ type: 'key', name: 'right' }); // cycle off -> notify
     await done;
     expect(savedMode).toBe('notify'); // update mode persisted via its own hook

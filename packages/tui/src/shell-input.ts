@@ -16,7 +16,7 @@ import { menuButtonY, packMenu } from './render/menu';
 import { buildHouseNodes, houseNodeCount, DEX_HOUSES } from './pages/dex';
 import { ARCHIVE_LIST_OFFSET } from './pages/archive';
 import { cycleSelectedField, isUpdateFieldSelected, settingsFieldCount } from './pages/settings';
-import { battleBlockReason, buildBattleVsRecord, handleBattleKey } from './pages/battle';
+import { handleBattleKey } from './pages/battle';
 import { flash } from './shell-effects';
 import type { PageId } from './pages/types';
 import type { InputDeps, ShellHost, ShellRuntime } from './shell';
@@ -31,7 +31,8 @@ const PAGE_HOTKEYS: Record<string, PageId> = {
   '1': 'pet',
   '2': 'dex',
   '3': 'archive',
-  '4': 'settings',
+  '4': 'battle',
+  '5': 'settings',
 };
 
 function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
@@ -47,10 +48,6 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
     case 'ctrl-c':
     case 'q':
       rt.quit = true;
-      return;
-    case 'b':
-      // From the Archive, battle the live pet against the selected record.
-      if (rt.page === 'archive') startBattleFromArchive(rt, host);
       return;
     case 'up':
       moveSelection(rt, host, -1);
@@ -102,21 +99,6 @@ function openDexDetail(rt: ShellRuntime, host: ShellHost): void {
   detail.selected = 0;
   detail.scroll = 0;
   rt.page = 'dex-detail';
-}
-
-/** Battle the live pet against the selected Archive record; open the Battle page on success. */
-function startBattleFromArchive(rt: ShellRuntime, host: ShellHost): void {
-  const idx = rt.ui.archive.selected;
-  const view = buildBattleVsRecord(host, idx);
-  if (view) {
-    rt.battle = view;
-    rt.page = 'battle';
-    return;
-  }
-  // Explain why nothing happened (sealed pet/record, or a same-species mirror match).
-  const snap = bestSpeciesRecords(host.getState().dexRecords)[idx];
-  const reason = snap ? battleBlockReason(host.getState().pet, snap) : null;
-  flash(rt, reason ?? (snap ? 'No opponent available.' : 'No record to battle.'));
 }
 
 /** Cycle the focused Settings field and persist (no-op off the Settings page). */
@@ -222,8 +204,14 @@ function handleRegionClick(
     openDexDetail(rt, host);
     return true;
   }
+  if (region === 'battle:input') {
+    // Click the paste field to focus it (then type/paste a code) — mouse parity.
+    rt.ui.battle.focus = 'input';
+    return true;
+  }
   if (region.startsWith('battle:pick:')) {
-    // Click an opponent row to select it (Enter / b then fights) — mouse parity.
+    // Click a Dex row to select it as the opponent (Enter then fights) — mouse parity.
+    rt.ui.battle.focus = 'list';
     rt.ui.battle.selected = Number(region.slice('battle:pick:'.length)) || 0;
     return true;
   }
