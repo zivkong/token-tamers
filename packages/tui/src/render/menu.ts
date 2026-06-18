@@ -41,9 +41,9 @@ export interface MenuButton extends MenuItem {
 
 /** Left/right band inset — 0 so the button row spans the terminal edge to edge. */
 export const MENU_X = 0;
-/** Extra interior inset beyond the border (0 = label/key sit just inside the frame,
- *  which lets the longest label — "⚙ Settings" — fit the narrowest tiled column). */
-export const MENU_PAD_X = 0;
+/** Interior breathing room inside the border: a blank cell before the icon and
+ *  after the hotkey, so neither hugs the frame nor a neighbouring button. */
+export const MENU_PAD_X = 1;
 /** Cells a button's border frame consumes horizontally (left + right edges). */
 const BORDER_COLS = 2;
 
@@ -59,10 +59,11 @@ export function buttonText(item: MenuItem): string {
   return `${item.label} ${item.hotkey}`;
 }
 
-/** Minimum button width: the widest `label key` text plus its border frame. */
+/** Minimum button width: the widest `label key` text plus its border frame and
+ *  the interior padding on both sides (so the longest label always fits). */
 export function menuButtonWidth(): number {
   const widest = Math.max(...MENU_ITEMS.map((it) => [...buttonText(it)].length));
-  return widest + BORDER_COLS;
+  return widest + BORDER_COLS + 2 * MENU_PAD_X;
 }
 
 /** Vertical gap between wrapped button rows — bordered rows abut (their frames
