@@ -42,26 +42,6 @@ const MENU_BG: Rgb = { r: 22, g: 26, b: 38 };
 const MENU_BTN_BG: Rgb = { r: 36, g: 42, b: 58 };
 /** Resting border for an unfocused button frame. */
 const MENU_BORDER: Rgb = { r: 84, g: 92, b: 116 };
-
-/**
- * Rainbow ramp for the special Battle button. A per-cell offset makes the colour
- * travel along the border, and `frame` animates it; at frame 0 it is a fixed hue,
- * so golden frames stay deterministic.
- */
-const RAINBOW: Rgb[] = [
-  { r: 255, g: 80, b: 80 },
-  { r: 255, g: 150, b: 48 },
-  { r: 255, g: 224, b: 64 },
-  { r: 130, g: 240, b: 90 },
-  { r: 64, g: 224, b: 168 },
-  { r: 80, g: 190, b: 255 },
-  { r: 120, g: 140, b: 255 },
-  { r: 196, g: 120, b: 255 },
-  { r: 244, g: 110, b: 220 },
-];
-function rainbowColor(frame: number, offset: number): Rgb {
-  return RAINBOW[((((frame >> 1) + offset) % RAINBOW.length) + RAINBOW.length) % RAINBOW.length]!;
-}
 const FLASH_FG: Rgb = { r: 255, g: 226, b: 140 };
 const FLASH_BG: Rgb = { r: 56, g: 46, b: 12 };
 
@@ -149,17 +129,11 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
     buf.text(x, row, text, FLASH_FG, FLASH_BG);
   }
 
-  drawMenu(buf, hits, layout, input.page, input.frame);
+  drawMenu(buf, hits, layout, input.page);
   return layout;
 }
 
-function drawMenu(
-  buf: FrameBuffer,
-  hits: HitRegistry,
-  layout: Layout,
-  page: PageId,
-  frame: number,
-): void {
+function drawMenu(buf: FrameBuffer, hits: HitRegistry, layout: Layout, page: PageId): void {
   const { menuRect, menuBtnH } = layout;
   // The menu is its own labeled section on every page: a "── Menu ──" rule above
   // a full-width band (vertical) or a vertical rule + "Menu" label beside a rail
@@ -180,7 +154,7 @@ function drawMenu(
     const x = menuRect.x + btn.x;
     const y = menuRect.y + menuButtonY(btn.row, menuBtnH);
     const place = { y, h: menuBtnH, active: btn.id === page, first: btn.x === MENU_X };
-    drawMenuButton(buf, { ...btn, x }, place, frame);
+    drawMenuButton(buf, { ...btn, x }, place);
     hits.add(`menu:${btn.id}`, x, y, btn.w, menuBtnH);
   }
 }
@@ -196,32 +170,24 @@ interface BtnPlace {
 
 /**
  * Draw one full-width nav button: a filled block with the icon+label LEFT-aligned
- * and the hotkey RIGHT-aligned. At height ≥ 3 it gets a box border; the Battle
- * button's frame and label shimmer through a travelling rainbow (animated by
- * `frame`). Shorter buttons drop the border (no room for it).
+ * and the hotkey RIGHT-aligned. At height ≥ 3 it gets a box border; shorter
+ * buttons drop the border (no room for it).
  */
-function drawMenuButton(buf: FrameBuffer, btn: MenuButton, place: BtnPlace, frame: number): void {
+function drawMenuButton(buf: FrameBuffer, btn: MenuButton, place: BtnPlace): void {
   const { y, h, active } = place;
   const bg = active ? MENU_ACTIVE_BG : MENU_BTN_BG;
   for (let ry = 0; ry < h; ry++) {
     for (let x = 0; x < btn.w; x++) buf.set(btn.x + x, y + ry, { ch: ' ', fg: null, bg });
   }
   const bordered = h >= 3;
-  if (bordered) drawButtonBorder(buf, btn, place, frame, bg);
-  drawButtonText(buf, btn, place, frame, bordered);
+  if (bordered) drawButtonBorder(buf, btn, place, bg);
+  drawButtonText(buf, btn, place, bordered);
 }
 
-/** Box border around a button; rainbow-tinted per cell for the Battle button. */
-function drawButtonBorder(
-  buf: FrameBuffer,
-  btn: MenuButton,
-  place: BtnPlace,
-  frame: number,
-  bg: Rgb,
-): void {
+/** Box border around a button (brighter when it's the active page). */
+function drawButtonBorder(buf: FrameBuffer, btn: MenuButton, place: BtnPlace, bg: Rgb): void {
   const { y, h, active, first } = place;
-  const col = (i: number): Rgb =>
-    btn.id === 'battle' ? rainbowColor(frame, i) : active ? MENU_ACTIVE : MENU_BORDER;
+  const fg = active ? MENU_ACTIVE : MENU_BORDER;
   const right = btn.x + btn.w - 1;
   const bottom = y + h - 1;
   // Non-first buttons share their LEFT border with the neighbour (a ┬/┴ junction)
@@ -231,12 +197,12 @@ function drawButtonBorder(
   for (let x = 0; x < btn.w; x++) {
     const mid = x === 0 ? lt : x === btn.w - 1 ? '┐' : '─';
     const midB = x === 0 ? lb : x === btn.w - 1 ? '┘' : '─';
-    buf.set(btn.x + x, y, { ch: mid, fg: col(x), bg });
-    buf.set(btn.x + x, bottom, { ch: midB, fg: col(x + 2), bg });
+    buf.set(btn.x + x, y, { ch: mid, fg, bg });
+    buf.set(btn.x + x, bottom, { ch: midB, fg, bg });
   }
   for (let r = 1; r < h - 1; r++) {
-    buf.set(btn.x, y + r, { ch: '│', fg: col(r + btn.w), bg });
-    buf.set(right, y + r, { ch: '│', fg: col(r + btn.w + h), bg });
+    buf.set(btn.x, y + r, { ch: '│', fg, bg });
+    buf.set(right, y + r, { ch: '│', fg, bg });
   }
 }
 
@@ -245,7 +211,6 @@ function drawButtonText(
   buf: FrameBuffer,
   btn: MenuButton,
   place: BtnPlace,
-  frame: number,
   bordered: boolean,
 ): void {
   const { y, h, active } = place;
@@ -260,8 +225,7 @@ function drawButtonText(
   const kx = btn.x + btn.w - rightInset - keyLen;
   const labelMax = Math.max(0, kx - 1 - (btn.x + leftInset));
   const label = [...btn.label].slice(0, labelMax).join('');
-  const labelColor = btn.id === 'battle' ? rainbowColor(frame, 0) : active ? MENU_ACTIVE : MENU_FG;
-  buf.text(btn.x + leftInset, ty, label, labelColor, bg);
+  buf.text(btn.x + leftInset, ty, label, active ? MENU_ACTIVE : MENU_FG, bg);
   buf.text(kx, ty, btn.hotkey, active ? MENU_ACTIVE : MENU_DIM, bg);
 }
 
