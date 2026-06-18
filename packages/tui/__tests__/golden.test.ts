@@ -157,9 +157,11 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toContain('VS'); // the VS character-select splash
     expect(out).toContain('Ember');
     expect(out).not.toContain('Sealed');
-    // Only Ember exists (the fighter's own species) → no eligible opponent, so the
-    // opponent side shows the "?" tile with this hint under it.
-    expect(out).toContain('No eligible');
+    expect(out).toContain('Paste code'); // the opponent source tabs
+    expect(out).toContain('From Dex');
+    // No opponent is selected (only Ember exists, the fighter's own species), so the
+    // opponent portrait is the "?" tile with this hint under it.
+    expect(out).toContain('? choose opponent');
     expect(out).toMatchSnapshot();
   });
 

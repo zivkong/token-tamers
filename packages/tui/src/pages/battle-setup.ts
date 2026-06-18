@@ -74,8 +74,9 @@ type SetupShell = BattleShell & FlashTarget;
  * Draw the setup as a VS character-select (Street Fighter style): two big facing
  * portraits — YOU on the left, the OPPONENT on the right (sprite flipped to face
  * you), an unselected side showing the "?" tile — with each fighter's identity
- * below, the opponent paste field beneath its portrait, and the selectable rosters
- * along the bottom.
+ * below. Along the bottom: your fighter roster (left) and the opponent's TABBED
+ * source (right) — a "Paste code" / "From Dex" tab pair whose active tab's content
+ * (the code field or the Dex list) shows beneath it, so the two never collide.
  */
 export function drawSetup(ctx: RenderContext, bodyY: number): void {
   const { buf, layout, ui } = ctx;
@@ -94,7 +95,6 @@ export function drawSetup(ctx: RenderContext, bodyY: number): void {
   const mirror = fighter?.speciesId ?? '';
   const oppRes = resolveSetupOpponent(host, ui, mirror);
   const opp = 'opp' in oppRes ? oppRes.opp : null;
-  const oppHint = 'error' in oppRes ? oppRes.error : undefined;
 
   // Side labels (the focused side glows).
   buf.textBold(left.x, bodyY, 'YOU', focus === 'fighter' ? READY : TEXT, null);
@@ -104,7 +104,7 @@ export function drawSetup(ctx: RenderContext, bodyY: number): void {
 
   // Portrait band — the hero element; height adapts so it fits short docks.
   const portraitY = bodyY + 1;
-  const reserved = 1 + 2 + 2 + 1 + 2; // labels + identity + paste + roster divider + min rows
+  const reserved = 1 + 2 + 1 + 1 + 3; // labels + identity + band header + gap + min content
   const portraitRows = Math.max(3, Math.min(9, bottom - bodyY - reserved));
   drawPortrait(ctx, fighter, { x: left.x, y: portraitY, w: left.w, rows: portraitRows }, false);
   drawPortrait(ctx, opp, { x: right.x, y: portraitY, w: right.w, rows: portraitRows }, true);
@@ -118,20 +118,43 @@ export function drawSetup(ctx: RenderContext, bodyY: number): void {
     { x: left.x, y: idY, w: left.w },
     fighters.length ? undefined : 'No ready fighter',
   );
-  drawIdentity(ctx, opp, { x: right.x, y: idY, w: right.w }, oppHint);
+  drawIdentity(ctx, opp, { x: right.x, y: idY, w: right.w }, opp ? undefined : '? choose opponent');
 
-  // Paste field beneath the opponent portrait.
-  const pasteY = idY + 2;
-  drawPasteField(ctx, { x: right.x, y: pasteY, w: right.w }, focus === 'input', ui.input ?? '');
-
-  // Rosters along the bottom: your candidates (left), eligible opponents (right).
-  const rosterDivY = pasteY + 2;
-  if (rosterDivY < bottom) {
-    drawDivider(buf, rosterDivY, { x: left.x, width: left.w, label: 'your roster' });
-    drawDivider(buf, rosterDivY, { x: right.x, width: right.w, label: 'opponents' });
-    const rosterY = rosterDivY + 2;
-    drawFighterList(ctx, { x: left.x, y: rosterY, w: left.w }, fighters, fsel, focus === 'fighter');
-    drawDexList(ctx, { x: right.x, y: rosterY, w: right.w }, focus === 'list', mirror);
+  // Bottom band: your roster (left) + the opponent's TABBED source (right). The
+  // opponent has two tabs — "Paste code" and "From Dex" — and only the ACTIVE
+  // tab's content shows beneath them, so the paste field and the Dex list never
+  // collide. The active tab follows focus (input→paste, list→dex); with neither
+  // focused it reflects whether a code is in the field.
+  const oppTab: OppTab =
+    focus === 'list'
+      ? 'dex'
+      : focus === 'input'
+        ? 'paste'
+        : (ui.input ?? '').trim()
+          ? 'paste'
+          : 'dex';
+  const bandY = idY + 2;
+  if (bandY + 2 < bottom) {
+    drawDivider(buf, bandY, { x: left.x, width: left.w, label: 'your roster' });
+    drawOpponentTabs(ctx, { x: right.x, y: bandY, w: right.w }, oppTab);
+    const contentY = bandY + 2;
+    drawFighterList(
+      ctx,
+      { x: left.x, y: contentY, w: left.w },
+      fighters,
+      fsel,
+      focus === 'fighter',
+    );
+    if (oppTab === 'paste') {
+      drawPasteField(
+        ctx,
+        { x: right.x, y: contentY, w: right.w },
+        focus === 'input',
+        ui.input ?? '',
+      );
+    } else {
+      drawDexList(ctx, { x: right.x, y: contentY, w: right.w }, focus === 'list', mirror);
+    }
   }
 
   drawPageFooter(ctx, 'Tab zone  ·  ↑↓ pick / paste a code  ·  Enter fight  ·  Esc back');
@@ -284,7 +307,33 @@ function drawFighterList(
   }
 }
 
-/** The bracketed text field showing the pasted code (tail-clipped) + a caret. */
+/** The "Paste code" / "From Dex" tab pair; the active tab is highlighted. */
+type OppTab = 'paste' | 'dex';
+function drawOpponentTabs(
+  ctx: RenderContext,
+  box: { x: number; y: number; w: number },
+  active: OppTab,
+): void {
+  const { buf } = ctx;
+  const tabs: ReadonlyArray<[OppTab, string, 'input' | 'list']> = [
+    ['paste', 'Paste code', 'input'],
+    ['dex', 'From Dex', 'list'],
+  ];
+  let x = box.x;
+  for (const [id, label, focusId] of tabs) {
+    const text = ` ${label} `;
+    const w = [...text].length;
+    if (x + w > box.x + box.w) break;
+    const on = active === id;
+    if (on) buf.textBold(x, box.y, text, READY, SEL_BG);
+    else buf.text(x, box.y, text, DIM, null);
+    // Click a tab to focus that opponent source (mouse parity with Tab).
+    ctx.hits.add(`battle:tab:${focusId}`, x, box.y, w, 1);
+    x += w + 1;
+  }
+}
+
+/** The single-row bracketed code field (tail-clipped) + a caret; sits in the Paste tab. */
 function drawPasteField(
   ctx: RenderContext,
   box: { x: number; y: number; w: number },
@@ -292,17 +341,16 @@ function drawPasteField(
   value: string,
 ): void {
   const { buf } = ctx;
-  buf.text(box.x, box.y, "Paste a friend's DNA code:", focused ? TEXT : DIM, null);
   const innerW = Math.max(4, box.w - 2);
   const border = focused ? READY : DIM;
   const caret = focused ? '_' : '';
-  const raw = value ? value + caret : focused ? caret : 'TTX…';
+  const raw = value ? value + caret : focused ? caret : 'TTX… paste a friend’s code';
   const vis = raw.length > innerW ? raw.slice(raw.length - innerW) : raw;
-  buf.text(box.x, box.y + 1, '[', border, null);
-  buf.text(box.x + 1, box.y + 1, vis.padEnd(innerW).slice(0, innerW), value ? TEXT : DIM, null);
-  buf.text(box.x + 1 + innerW, box.y + 1, ']', border, null);
+  buf.text(box.x, box.y, '[', border, null);
+  buf.text(box.x + 1, box.y, vis.padEnd(innerW).slice(0, innerW), value ? TEXT : DIM, null);
+  buf.text(box.x + 1 + innerW, box.y, ']', border, null);
   // Click the field to focus it (mouse parity with Tab).
-  ctx.hits.add('battle:input', box.x, box.y, Math.max(1, box.w), 2);
+  ctx.hits.add('battle:input', box.x, box.y, Math.max(1, box.w), 1);
 }
 
 /**

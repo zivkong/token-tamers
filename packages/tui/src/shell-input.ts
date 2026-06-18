@@ -204,9 +204,14 @@ function handleRegionClick(
     openDexDetail(rt, host);
     return true;
   }
-  if (region === 'battle:input') {
-    // Click the paste field to focus it (then type/paste a code) — mouse parity.
+  if (region === 'battle:input' || region === 'battle:tab:input') {
+    // Click the paste field or its tab to focus it (then type/paste a code).
     rt.ui.battle.focus = 'input';
+    return true;
+  }
+  if (region === 'battle:tab:list') {
+    // Click the "From Dex" tab to switch the opponent source to your Dex records.
+    rt.ui.battle.focus = 'list';
     return true;
   }
   if (region.startsWith('battle:fighter:')) {
