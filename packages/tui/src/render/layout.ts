@@ -34,7 +34,7 @@
  *   └──────────────────┘
  */
 
-import { MENU_BTN_H, MENU_X, menuBandRows, menuButtonWidth, packMenu } from './menu';
+import { MENU_BTN_H, menuBandRows, menuButtonWidth, packMenu } from './menu';
 
 /** Minimum terminal size for the VERTICAL (stacked) layout. */
 export const MIN_COLS = 34;
@@ -175,9 +175,11 @@ export function fit43(band: SceneRect): SceneRect {
   return { x, y, cols, rows };
 }
 
-/** Width of the menu rail (one column of uniform buttons plus the edge insets). */
+/** Width of the menu rail (one button column plus a 1-col inset each side). Kept
+ *  independent of MENU_X (0 for the edge-to-edge bottom bar) so the horizontal
+ *  content width is unchanged. */
 function railCols(): number {
-  return menuButtonWidth() + 2 * MENU_X;
+  return menuButtonWidth() + 2;
 }
 
 function tooSmallLayout(cols: number, rows: number, orientation: Orientation): Layout {

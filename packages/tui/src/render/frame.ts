@@ -13,7 +13,7 @@ import { StringSink, Writer, type ColorMode, type Rgb } from '../terminal/ansi';
 import { FrameBuffer } from './buffer';
 import { HitRegistry } from './hit';
 import { computeLayout, tooSmallMessage, type Layout } from './layout';
-import { MENU_PAD_X, menuButtonY, packMenu, type MenuButton } from './menu';
+import { MENU_PAD_X, MENU_X, menuButtonY, packMenu, type MenuButton } from './menu';
 import { drawDivider, drawVDivider } from '../components';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
@@ -179,7 +179,8 @@ function drawMenu(
   for (const btn of packMenu(menuRect.cols).buttons) {
     const x = menuRect.x + btn.x;
     const y = menuRect.y + menuButtonY(btn.row, menuBtnH);
-    drawMenuButton(buf, { ...btn, x }, { y, h: menuBtnH, active: btn.id === page }, frame);
+    const place = { y, h: menuBtnH, active: btn.id === page, first: btn.x === MENU_X };
+    drawMenuButton(buf, { ...btn, x }, place, frame);
     hits.add(`menu:${btn.id}`, x, y, btn.w, menuBtnH);
   }
 }
@@ -189,6 +190,8 @@ interface BtnPlace {
   y: number;
   h: number;
   active: boolean;
+  /** First button in its row → solid ┌└ left corner; otherwise a shared ┬┴ junction. */
+  first: boolean;
 }
 
 /**
@@ -205,7 +208,7 @@ function drawMenuButton(buf: FrameBuffer, btn: MenuButton, place: BtnPlace, fram
   }
   const bordered = h >= 3;
   if (bordered) drawButtonBorder(buf, btn, place, frame, bg);
-  drawButtonText(buf, btn, { y, h, active }, frame, bordered);
+  drawButtonText(buf, btn, place, frame, bordered);
 }
 
 /** Box border around a button; rainbow-tinted per cell for the Battle button. */
@@ -216,14 +219,18 @@ function drawButtonBorder(
   frame: number,
   bg: Rgb,
 ): void {
-  const { y, h, active } = place;
+  const { y, h, active, first } = place;
   const col = (i: number): Rgb =>
     btn.id === 'battle' ? rainbowColor(frame, i) : active ? MENU_ACTIVE : MENU_BORDER;
   const right = btn.x + btn.w - 1;
   const bottom = y + h - 1;
+  // Non-first buttons share their LEFT border with the neighbour (a ┬/┴ junction)
+  // since columns overlap by one cell; the first button gets the solid ┌└ corner.
+  const lt = first ? '┌' : '┬';
+  const lb = first ? '└' : '┴';
   for (let x = 0; x < btn.w; x++) {
-    const mid = x === 0 ? '┌' : x === btn.w - 1 ? '┐' : '─';
-    const midB = x === 0 ? '└' : x === btn.w - 1 ? '┘' : '─';
+    const mid = x === 0 ? lt : x === btn.w - 1 ? '┐' : '─';
+    const midB = x === 0 ? lb : x === btn.w - 1 ? '┘' : '─';
     buf.set(btn.x + x, y, { ch: mid, fg: col(x), bg });
     buf.set(btn.x + x, bottom, { ch: midB, fg: col(x + 2), bg });
   }
@@ -244,13 +251,17 @@ function drawButtonText(
   const { y, h, active } = place;
   const bg = active ? MENU_ACTIVE_BG : MENU_BTN_BG;
   const ty = y + Math.floor(h / 2);
-  const inset = (bordered ? 1 : 0) + MENU_PAD_X;
+  const leftInset = (bordered ? 1 : 0) + MENU_PAD_X;
+  // The right edge is always reserved: a border cell when bordered, or the
+  // shared-overlap column (owned by the next button) when flat — so the hotkey
+  // never lands on a cell the neighbour overwrites.
+  const rightInset = 1 + MENU_PAD_X;
   const keyLen = [...btn.hotkey].length;
-  const kx = btn.x + btn.w - inset - keyLen;
-  const labelMax = Math.max(0, kx - 1 - (btn.x + inset));
+  const kx = btn.x + btn.w - rightInset - keyLen;
+  const labelMax = Math.max(0, kx - 1 - (btn.x + leftInset));
   const label = [...btn.label].slice(0, labelMax).join('');
   const labelColor = btn.id === 'battle' ? rainbowColor(frame, 0) : active ? MENU_ACTIVE : MENU_FG;
-  buf.text(btn.x + inset, ty, label, labelColor, bg);
+  buf.text(btn.x + leftInset, ty, label, labelColor, bg);
   buf.text(kx, ty, btn.hotkey, active ? MENU_ACTIVE : MENU_DIM, bg);
 }
 

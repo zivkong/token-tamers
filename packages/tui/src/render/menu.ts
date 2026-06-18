@@ -2,8 +2,9 @@
  * Menu model + full-width column packing.
  *
  * The menu is a row of nav buttons that TILE the width end-to-end: each row's
- * columns fill the inner width (a 1-col gap between them), every button spanning
- * its whole column — no narrow centered buttons. Buttons are bordered boxes
+ * columns fill the width with no margins or gaps, adjacent buttons sharing one
+ * border column (a ┬/┴ junction), every button spanning its whole column — no
+ * narrow centered buttons. Buttons are bordered boxes
  * (HEIGHT 3) with the icon+label left and the hotkey right; when the width can't
  * hold them all the row wraps into an aligned grid (the partial last row reuses
  * the columns), and when the terminal is short the height shrinks toward 1 (a
@@ -38,9 +39,8 @@ export interface MenuButton extends MenuItem {
   w: number;
 }
 
-/** Left/right band inset, the gap between columns, and the interior key inset. */
-export const MENU_X = 1;
-const MENU_COL_GAP = 1;
+/** Left/right band inset — 0 so the button row spans the terminal edge to edge. */
+export const MENU_X = 0;
 /** Extra interior inset beyond the border (0 = label/key sit just inside the frame,
  *  which lets the longest label — "⚙ Settings" — fit the narrowest tiled column). */
 export const MENU_PAD_X = 0;
@@ -82,31 +82,31 @@ export function menuButtonY(row: number, btnH: number): number {
 }
 
 /**
- * Pack the nav buttons into a FULL-WIDTH grid within `cols`: each row's columns
- * tile the inner width end-to-end (a 1-col gap between them), every button filling
- * its whole column — so there are no narrow centered buttons. Wraps into aligned
- * rows when a row can't hold them all; the partial last row reuses the columns.
- * HEIGHT is applied by the caller (`menuButtonY`/`menuBandRows`).
+ * Pack the nav buttons so each row spans the width EDGE TO EDGE: the columns tile
+ * `cols` with no margins or gaps, and adjacent buttons SHARE one border column
+ * (`w` overlaps its neighbour by 1, drawn as a ┬/┴ junction). Every button fills
+ * its whole column — no narrow centered buttons. Wraps into aligned rows when a
+ * row can't hold them all; the partial last row reuses the columns. HEIGHT is
+ * applied by the caller (`menuButtonY`/`menuBandRows`).
  */
 export function packMenu(cols: number): { buttons: MenuButton[]; rows: number } {
   const n = MENU_ITEMS.length;
   const minW = menuButtonWidth();
   const inner = Math.max(1, cols - 2 * MENU_X);
-  const perRow = Math.max(
-    1,
-    Math.min(n, Math.floor((inner + MENU_COL_GAP) / (minW + MENU_COL_GAP))),
-  );
+  // Each extra button adds (minW - 1) cells (it shares one border with the last).
+  const perRow = Math.max(1, Math.min(n, Math.floor((inner - 1) / Math.max(1, minW - 1))));
   const rows = Math.ceil(n / perRow);
 
-  // Tile `perRow` columns across the inner width with 1-col gaps; spread any
-  // leftover cells onto the leftmost columns so the row spans exactly edge to edge.
-  const avail = inner - (perRow - 1) * MENU_COL_GAP;
-  const baseW = Math.floor(avail / perRow);
-  const extra = avail - baseW * perRow;
+  // Widths sum to inner + (perRow-1) because each shared border is counted by both
+  // neighbours; spread the remainder onto the leftmost columns. Column x advances
+  // by (w - 1) so borders overlap and the row ends flush at the inner edge.
+  const totalW = inner + (perRow - 1);
+  const baseW = Math.floor(totalW / perRow);
+  const extra = totalW - baseW * perRow;
   const colW = (col: number): number => baseW + (col < extra ? 1 : 0);
   const colX = (col: number): number => {
     let x = MENU_X;
-    for (let c = 0; c < col; c++) x += colW(c) + MENU_COL_GAP;
+    for (let c = 0; c < col; c++) x += colW(c) - 1;
     return x;
   };
 
