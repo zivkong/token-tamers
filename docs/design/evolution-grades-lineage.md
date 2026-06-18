@@ -94,7 +94,27 @@ are mapped; the rest stay **Wild** until a pack adopts them:
 - Old "Sage/Artisan/Swift by Opus/Sonnet/Haiku" framing is retired; those names may survive as
   _sub-line names within Aether_ in content packs.
 
-_Now implemented as:_ `packages/content/content/models.json` (model-ID pattern registry).
+**Per-install House spread (cosmetic; 2026-06-18).** Model id alone made every pet in a
+single-model shop (e.g. a whole company on one model) land in the same House. To restore
+House variety without re-introducing model judgment, House selection takes a **second
+deterministic, cosmetic-only input**: a per-install **salt** (a `uint32` minted at `tt init`,
+back-filled for existing installs, persisted in `UserConfig`). At hatch the essence-winning
+House is the pet's **home**; with probability **`houseBias`** (content-tunable, default `0.5`)
+it keeps home, otherwise the salt deterministically picks one of the other _species-bearing_
+Houses (the speciesless Wild/Bloom is never a forced destination). Consequences and guarantees:
+
+- A single-model cohort now spreads across Houses (~`houseBias` stay home, the rest fan out),
+  each player **stable for the life of their install**. Poly-model players still bias toward
+  their earned House. `houseBias` is freely re-balanced like `models.json` — raise it to keep
+  the model legible from the House, lower it for a flatter spread.
+- **Invariant 3 holds:** salt and `houseBias` feed _only_ `pet.house` (cosmetic identity),
+  never stats/grades/rarity/speed. **Invariant 5 holds:** the pick is a pure function of the
+  salt — it does **not** consume the molt RNG, so existing pets' grade/trait/mutation streams
+  are byte-identical. Salt absent ⇒ pure model-derived House (legacy behavior).
+
+_Now implemented as:_ `packages/content/content/models.json` (model-ID pattern registry),
+`ContentPack.houseBias` + `UserConfig.salt`, and `biasedHouse`/`housesWithSpecies` in
+`packages/core/src/engine/houses.ts`.
 
 ### Evolution axes (design baseline §6)
 

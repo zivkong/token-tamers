@@ -29,7 +29,10 @@ Key contracts live in `packages/core/src/types.ts`.
    `check-updater-isolation.sh` (that file is the ONLY one); ESLint allowlists
    `node:https` there alone. Never add network code outside that file.
 3. **No model judgment** — model IDs map to Houses (identity/cosmetics) via
-   `models.json`; they must NEVER affect stats, grades, rarity, or speed.
+   `models.json`; they must NEVER affect stats, grades, rarity, or speed. (House
+   selection also takes a per-install `UserConfig.salt` + content `houseBias` so a
+   single-model shop spreads across Houses — see the Houses entry below — but that
+   is purely cosmetic too, feeding only `pet.house`, never mechanics.)
    Grade odds normalize to the player's own per-adapter baseline (the activity
    modifier stays model- AND volume-blind). The ONE sanctioned exception is the
    **capped vitality bonus**: a separate, additive, hard-capped grade-roll bonus
@@ -225,6 +228,12 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   re-balanced content data (NOT in `registry-freeze.json` — only ids are additive-only).
   The maker→House grouping never affects stats/grades/speed (invariant 3). Full map:
   `models.json` + `docs/design/evolution-grades-lineage.md` §Houses.
+  **Per-install House spread (cosmetic):** at hatch the essence-winning House is "home";
+  with probability `ContentPack.houseBias` (default 0.5) the pet keeps home, else the
+  per-install `UserConfig.salt` deterministically picks another species-bearing House — so a
+  whole org on ONE model doesn't all share a House. Pure fn of the salt (does NOT consume the
+  molt RNG → existing pets' rolls unchanged, invariant 5); salt absent ⇒ legacy pure-model
+  House. `biasedHouse`/`housesWithSpecies` in `engine/houses.ts`; salt minted at `tt init`.
 - **Creature Kingdoms (sprite identity layer; cosmetic shape ONLY):** each House's species
   are a real creature family — Aether=Sky Court (flying), Cipher=Crag Beasts (ground predator),
   Flux=Tide Runners (aquatic), Forge=Iron Brood (robots), Wild=The Bloom (plants, green tint).

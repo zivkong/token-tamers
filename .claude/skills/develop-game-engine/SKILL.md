@@ -74,15 +74,16 @@ store migrates old configs forward).
 
 ## Signal mapping
 
-| Real-world signal                | Game meaning                                           |
-| -------------------------------- | ------------------------------------------------------ |
-| Token consumption (any provider) | Nutrition/essence (baseline-normalized)                |
-| Model-ID mix                     | Diet → House/species (identity ONLY)                   |
-| Session window close             | Molt                                                   |
-| Week boundary                    | Rebirth                                                |
-| Riding a window to its cap       | Marathoner trigger                                     |
-| Hitting weekly limit exactly     | Rare Limitbreaker evolution (subscription policy only) |
-| Week of zero usage               | Dormant (cocoon, not death)                            |
+| Real-world signal                | Game meaning                                                               |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| Token consumption (any provider) | Nutrition/essence (baseline-normalized)                                    |
+| Model-ID mix                     | Diet → House/species (identity ONLY)                                       |
+| Per-install salt + `houseBias`   | Cosmetic House spread at hatch (identity; not mechanics, not the molt RNG) |
+| Session window close             | Molt                                                                       |
+| Week boundary                    | Rebirth                                                                    |
+| Riding a window to its cap       | Marathoner trigger                                                         |
+| Hitting weekly limit exactly     | Rare Limitbreaker evolution (subscription policy only)                     |
+| Week of zero usage               | Dormant (cocoon, not death)                                                |
 
 ## Weekly arc & weather
 
