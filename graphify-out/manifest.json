@@ -380,14 +380,14 @@
     "semantic_hash": "fee2e8b075d0e94d33a40f0b4b563493"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/core/__tests__/cycle.test.ts": {
-    "mtime": 1781737579.5148118,
-    "ast_hash": "07f0d2e470e9c1a2107a74b715bdad50",
-    "semantic_hash": "07f0d2e470e9c1a2107a74b715bdad50"
+    "mtime": 1781796453.0165892,
+    "ast_hash": "1c1814342697713ca754a76c777b0ff3",
+    "semantic_hash": "1c1814342697713ca754a76c777b0ff3"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/core/__tests__/engine.test.ts": {
-    "mtime": 1781737579.5174813,
-    "ast_hash": "cec3b55a5d2b008d34258eadc1e8fd1a",
-    "semantic_hash": "cec3b55a5d2b008d34258eadc1e8fd1a"
+    "mtime": 1781796453.0170333,
+    "ast_hash": "da98d93042cebc903e3ed378c0487314",
+    "semantic_hash": "da98d93042cebc903e3ed378c0487314"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/core/__tests__/fixture.ts": {
     "mtime": 1781617444.2363029,
@@ -425,9 +425,9 @@
     "semantic_hash": "9e44e4b8fe499eef3675660ffe707d3c"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/core/src/cycle/windows.ts": {
-    "mtime": 1781538574.8794987,
-    "ast_hash": "e8a90b90055e62543c1192e14cd96be5",
-    "semantic_hash": "e8a90b90055e62543c1192e14cd96be5"
+    "mtime": 1781796453.0175607,
+    "ast_hash": "c169be74367899f12a1ef9e3780b4036",
+    "semantic_hash": "c169be74367899f12a1ef9e3780b4036"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/core/src/engine/achievements.ts": {
     "mtime": 1781274065.4350471,
@@ -465,9 +465,9 @@
     "semantic_hash": "f9b4633d3ed843461f7a4be18e2602b0"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/core/src/engine/index.ts": {
-    "mtime": 1781744905.2103848,
-    "ast_hash": "d36c71c84ef0e8f312a7420e84eb5695",
-    "semantic_hash": "d36c71c84ef0e8f312a7420e84eb5695"
+    "mtime": 1781796453.0179164,
+    "ast_hash": "d567d51fcf7ba675096b146032be1888",
+    "semantic_hash": "d567d51fcf7ba675096b146032be1888"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/core/src/engine/rebirth.ts": {
     "mtime": 1781737579.5186658,

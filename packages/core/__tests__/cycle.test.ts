@@ -125,12 +125,7 @@ describe('cycle — dynamic policy', () => {
 
 describe('eggHatchMolts — one bonus hatch checkpoint per used week', () => {
   it('fires EGG_HATCH_MS after a week’s first event, marked hatch', () => {
-    const out = eggHatchMolts(
-      [ev(2 * HOUR), ev(3 * HOUR)],
-      WEEK_ANCHOR,
-      -Infinity,
-      WEEK_ANCHOR + 6 * HOUR,
-    );
+    const out = eggHatchMolts([ev(2 * HOUR), ev(3 * HOUR)], WEEK_ANCHOR, WEEK_ANCHOR + 6 * HOUR);
     expect(out).toHaveLength(1);
     expect(out[0]).toMatchObject({
       type: 'molt',
@@ -144,23 +139,27 @@ describe('eggHatchMolts — one bonus hatch checkpoint per used week', () => {
     const out = eggHatchMolts(
       [ev(HOUR), ev(WEEK_MS + HOUR)],
       WEEK_ANCHOR,
-      -Infinity,
       WEEK_ANCHOR + WEEK_MS + 6 * HOUR,
     );
     expect(out).toHaveLength(2);
     expect(out.every((m) => m.hatch === true)).toBe(true);
   });
 
-  it('respects the (after, now] window like normal molts', () => {
+  it('does not emit a hatch whose close is still in the future', () => {
     const events = [ev(HOUR)];
     // Hatch close is HOUR + 10m; before that `now` it is not yet emitted.
-    expect(
-      eggHatchMolts(events, WEEK_ANCHOR, -Infinity, WEEK_ANCHOR + HOUR + 5 * 60 * 1000),
-    ).toHaveLength(0);
-    // After it has closed but already consumed (after past it): not re-emitted.
-    expect(
-      eggHatchMolts(events, WEEK_ANCHOR, WEEK_ANCHOR + HOUR + EGG_HATCH_MS, WEEK_ANCHOR + 6 * HOUR),
-    ).toHaveLength(0);
+    expect(eggHatchMolts(events, WEEK_ANCHOR, WEEK_ANCHOR + HOUR + 5 * 60 * 1000)).toHaveLength(0);
+  });
+
+  it('emits a past hatch regardless of how far now has advanced (no after gate)', () => {
+    // A back-dated reborn egg whose hatch instant predates the sim clock must
+    // still surface so the engine (gated on stage===egg) can hatch it. The old
+    // (after, now] gate dropped this and stranded the egg until the first 5-h
+    // window close.
+    const events = [ev(HOUR)];
+    const out = eggHatchMolts(events, WEEK_ANCHOR, WEEK_ANCHOR + 6 * HOUR);
+    expect(out).toHaveLength(1);
+    expect(out[0]).toMatchObject({ hatch: true, windowEnd: WEEK_ANCHOR + HOUR + EGG_HATCH_MS });
   });
 });
 
