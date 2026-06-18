@@ -38,10 +38,10 @@ import {
   GRADE_ACCENT,
   GRADE_BADGE,
 } from '../render/sprite';
-import { findSprite, houseColor, houseTint } from '../helpers/lookup';
+import { findSprite, houseTint } from '../helpers/lookup';
+import { QMARK_TILE, LOCKED_PALETTE } from '../render/tiles';
 import { flash, type FlashTarget } from '../shell-effects';
 import {
-  clipText,
   drawPickerRow,
   opponentCombatant,
   playerCombatant,
@@ -54,23 +54,14 @@ import type { PageUiState, RenderContext } from './types';
 const TEXT: Rgb = { r: 214, g: 220, b: 234 };
 const DIM: Rgb = { r: 96, g: 100, b: 120 };
 const READY: Rgb = { r: 74, g: 222, b: 128 };
-const SEALED: Rgb = { r: 150, g: 152, b: 160 };
-const WARN: Rgb = { r: 240, g: 200, b: 96 };
 const SEL_BG: Rgb = { r: 40, g: 46, b: 64 };
+const VS_COLOR: Rgb = { r: 255, g: 224, b: 130 };
 
 /** One battle-ready fighter the player can field: a combatant + whether it's the live pet. */
 interface Fighter {
   c: Combatant;
   isLive: boolean;
 }
-
-/** Sprite footprint reserved at a fighter card's left, and the card's height. The
- *  reserve is small (and the show-threshold low) so the highlighted fighter and the
- *  opponent still show a sprite in the narrow half-width columns of a small terminal. */
-const CARD_SPRITE_COLS = 11;
-const CARD_ROWS = 4;
-/** Show the card sprite once the column can also hold a few cells of identity text. */
-const CARD_SPRITE_MIN_W = CARD_SPRITE_COLS + 6;
 
 /** Setup orchestration operates on the shell runtime + the flash banner. */
 type SetupShell = BattleShell & FlashTarget;
@@ -79,20 +70,70 @@ type SetupShell = BattleShell & FlashTarget;
 // Renderer
 // ---------------------------------------------------------------------------
 
-/** Draw the setup screen: your chosen fighter (left) vs. a chosen opponent (right). */
+/**
+ * Draw the setup as a VS character-select (Street Fighter style): two big facing
+ * portraits — YOU on the left, the OPPONENT on the right (sprite flipped to face
+ * you), an unselected side showing the "?" tile — with each fighter's identity
+ * below, the opponent paste field beneath its portrait, and the selectable rosters
+ * along the bottom.
+ */
 export function drawSetup(ctx: RenderContext, bodyY: number): void {
-  const { layout } = ctx;
+  const { buf, layout, ui } = ctx;
+  const host = hostOf(ctx);
+  const focus = ui.focus ?? 'input';
+  const x0 = layout.canvasX;
   const mid = Math.floor(layout.canvasCols / 2);
-  const leftX = layout.canvasX + 2;
-  const leftW = mid - 2 - 1;
-  const rightX = layout.canvasX + mid + 1;
-  const rightW = layout.canvasCols - mid - 1 - 1;
+  const left = { x: x0 + 1, w: mid - 2 };
+  const right = { x: x0 + mid + 1, w: layout.canvasCols - mid - 2 };
+  const bottom = pageBodyBottom(layout);
 
-  const fighters = fighterCandidates(hostOf(ctx));
-  drawFighterPane(ctx, { x: leftX, y: bodyY, w: leftW }, fighters);
+  // Resolve both sides up front.
+  const fighters = fighterCandidates(host);
+  const fsel = clampSel(ui.fighterSel, fighters.length);
+  const fighter = fighters[fsel]?.c ?? null;
+  const mirror = fighter?.speciesId ?? '';
+  const oppRes = resolveSetupOpponent(host, ui, mirror);
+  const opp = 'opp' in oppRes ? oppRes.opp : null;
+  const oppHint = 'error' in oppRes ? oppRes.error : undefined;
 
-  const fighter = fighters[clampSel(ctx.ui.fighterSel, fighters.length)];
-  drawOpponentPane(ctx, { x: rightX, y: bodyY, w: rightW }, fighter?.c.speciesId ?? '');
+  // Side labels (the focused side glows).
+  buf.textBold(left.x, bodyY, 'YOU', focus === 'fighter' ? READY : TEXT, null);
+  const oppLbl = 'OPPONENT';
+  const oppLblX = right.x + Math.max(0, right.w - oppLbl.length);
+  buf.textBold(oppLblX, bodyY, oppLbl, focus === 'fighter' ? TEXT : READY, null);
+
+  // Portrait band — the hero element; height adapts so it fits short docks.
+  const portraitY = bodyY + 1;
+  const reserved = 1 + 2 + 2 + 1 + 2; // labels + identity + paste + roster divider + min rows
+  const portraitRows = Math.max(3, Math.min(9, bottom - bodyY - reserved));
+  drawPortrait(ctx, fighter, { x: left.x, y: portraitY, w: left.w, rows: portraitRows }, false);
+  drawPortrait(ctx, opp, { x: right.x, y: portraitY, w: right.w, rows: portraitRows }, true);
+  drawVS(ctx, x0 + mid, portraitY + Math.floor(portraitRows / 2));
+
+  // Identity (name/grade + house/stats) centered under each portrait.
+  const idY = portraitY + portraitRows;
+  drawIdentity(
+    ctx,
+    fighter,
+    { x: left.x, y: idY, w: left.w },
+    fighters.length ? undefined : 'No ready fighter',
+  );
+  drawIdentity(ctx, opp, { x: right.x, y: idY, w: right.w }, oppHint);
+
+  // Paste field beneath the opponent portrait.
+  const pasteY = idY + 2;
+  drawPasteField(ctx, { x: right.x, y: pasteY, w: right.w }, focus === 'input', ui.input ?? '');
+
+  // Rosters along the bottom: your candidates (left), eligible opponents (right).
+  const rosterDivY = pasteY + 2;
+  if (rosterDivY < bottom) {
+    drawDivider(buf, rosterDivY, { x: left.x, width: left.w, label: 'your roster' });
+    drawDivider(buf, rosterDivY, { x: right.x, width: right.w, label: 'opponents' });
+    const rosterY = rosterDivY + 2;
+    drawFighterList(ctx, { x: left.x, y: rosterY, w: left.w }, fighters, fsel, focus === 'fighter');
+    drawDexList(ctx, { x: right.x, y: rosterY, w: right.w }, focus === 'list', mirror);
+  }
+
   drawPageFooter(ctx, 'Tab zone  ·  ↑↓ pick / paste a code  ·  Enter fight  ·  Esc back');
 }
 
@@ -136,28 +177,83 @@ function currentFighterSpecies(host: BattleHost, ui: PageUiState): string {
   return fighters[clampSel(ui.fighterSel, fighters.length)]?.c.speciesId ?? '';
 }
 
-/** The left half: a preview of the chosen fighter + a selectable candidate list. */
-function drawFighterPane(
+/** Resolve a combatant's species def (by id, then content num) for sprite/accent. */
+function speciesOf(ctx: RenderContext, c: Combatant) {
+  return (
+    ctx.pack.species.find((s) => s.id === c.speciesId) ??
+    ctx.pack.species.find((s) => s.num === c.speciesNum)
+  );
+}
+
+/**
+ * Draw a big VS portrait centered in `box`. A real fighter renders its sprite
+ * (scaled up, `flip` to face the centre); a null side renders the slate "?" tile.
+ */
+function drawPortrait(
   ctx: RenderContext,
-  col: { x: number; y: number; w: number },
-  fighters: Fighter[],
+  c: Combatant | null,
+  box: { x: number; y: number; w: number; rows: number },
+  flip: boolean,
 ): void {
-  const { buf, ui } = ctx;
-  const focused = (ui.focus ?? 'input') === 'fighter';
-  buf.text(col.x, col.y, 'Your fighter', focused ? READY : TEXT, null);
-  if (fighters.length === 0) {
-    buf.text(col.x, col.y + 2, 'No battle-ready fighter yet —', SEALED, null);
-    buf.text(col.x, col.y + 3, 'raise a pet to Evolved.', SEALED, null);
+  const { buf, mode, frame } = ctx;
+  const species = c ? speciesOf(ctx, c) : undefined;
+  const spr = c ? findSprite(ctx.pack, species?.spriteId ?? '') : undefined;
+  const sprite = spr ?? QMARK_TILE;
+  const palette =
+    c && spr ? buildPalette(houseTint(c.house), c.grade, frame, species?.accent) : LOCKED_PALETTE;
+  const destH = box.rows;
+  const nativeRows = Math.max(1, subcellRows(sprite.height));
+  const nativeCols = Math.max(1, subcellCols(sprite.width));
+  const destW = Math.max(1, Math.min(box.w, Math.round((nativeCols * destH) / nativeRows)));
+  const sx = box.x + Math.max(0, Math.floor((box.w - destW) / 2));
+  drawSprite(buf, sprite, palette, {
+    x: sx,
+    y: box.y,
+    destW,
+    destH,
+    frame,
+    mode,
+    flipX: c && spr ? flip : false,
+    clip: { x: box.x, y: box.y, w: box.w, h: box.rows },
+  });
+}
+
+/** Centered identity under a portrait: name + grade, then House + raw stats. */
+function drawIdentity(
+  ctx: RenderContext,
+  c: Combatant | null,
+  box: { x: number; y: number; w: number },
+  hint: string | undefined,
+): void {
+  const { buf } = ctx;
+  if (!c) {
+    if (hint) centerText(buf, box, hint, DIM);
     return;
   }
-  const sel = clampSel(ui.fighterSel, fighters.length);
-  drawFighter(ctx, fighters[sel]!.c, { x: col.x, y: col.y + 1, w: col.w });
+  centerText(buf, box, `${c.name} ${GRADE_BADGE[c.grade]}`, GRADE_ACCENT[c.grade], true);
+  const s = c.stats;
+  const sub = `${titleCase(c.house)} · P${s.pwr} S${s.spd} W${s.wis} G${s.grt}`;
+  centerText(buf, { x: box.x, w: box.w, y: box.y + 1 }, sub, DIM);
+}
 
-  const listTop = col.y + 8;
-  if (fighters.length > 1 && listTop < pageBodyBottom(ctx.layout)) {
-    drawDivider(buf, listTop, { x: col.x, width: col.w, label: 'choose your fighter' });
-    drawFighterList(ctx, { x: col.x, y: listTop + 2, w: col.w }, fighters, sel, focused);
-  }
+/** The gold "VS" splash between the two portraits. */
+function drawVS(ctx: RenderContext, midX: number, y: number): void {
+  ctx.buf.textBold(midX - 1, y, 'VS', VS_COLOR, null);
+}
+
+/** Draw `text` horizontally centered within the box rect (at `box.y`), clipped to width. */
+function centerText(
+  buf: RenderContext['buf'],
+  box: { x: number; w: number; y: number },
+  text: string,
+  color: Rgb,
+  bold = false,
+): void {
+  const chars = [...text];
+  const t = chars.length > box.w ? chars.slice(0, box.w).join('') : text;
+  const cx = box.x + Math.max(0, Math.floor((box.w - [...t].length) / 2));
+  if (bold) buf.textBold(cx, box.y, t, color, null);
+  else buf.text(cx, box.y, t, color, null);
 }
 
 /** The fighter candidate rows: grade, name, and a "you" tag for the live pet. */
@@ -188,26 +284,6 @@ function drawFighterList(
   }
 }
 
-/** The opponent half: a paste field + live preview, then the "pick from Dex" list. */
-function drawOpponentPane(
-  ctx: RenderContext,
-  col: { x: number; y: number; w: number },
-  mirrorSpeciesId: string,
-): void {
-  const { buf, ui } = ctx;
-  const onInput = (ui.focus ?? 'input') === 'input';
-  buf.text(col.x, col.y, 'Opponent', TEXT, null);
-
-  drawPasteField(ctx, { x: col.x, y: col.y + 1, w: col.w }, onInput, ui.input ?? '');
-  drawOpponentPreview(ctx, { x: col.x, y: col.y + 4, w: col.w }, mirrorSpeciesId);
-
-  const listTop = col.y + 8;
-  if (listTop < pageBodyBottom(ctx.layout)) {
-    drawDivider(buf, listTop, { x: col.x, width: col.w, label: 'or pick from your Dex' });
-    drawDexList(ctx, { x: col.x, y: listTop + 2, w: col.w }, ui.focus === 'list', mirrorSpeciesId);
-  }
-}
-
 /** The bracketed text field showing the pasted code (tail-clipped) + a caret. */
 function drawPasteField(
   ctx: RenderContext,
@@ -227,30 +303,6 @@ function drawPasteField(
   buf.text(box.x + 1 + innerW, box.y + 1, ']', border, null);
   // Click the field to focus it (mouse parity with Tab).
   ctx.hits.add('battle:input', box.x, box.y, Math.max(1, box.w), 2);
-}
-
-/** Preview whichever opponent is active (pasted code or selected Dex record). */
-function drawOpponentPreview(
-  ctx: RenderContext,
-  box: { x: number; y: number; w: number },
-  mirrorSpeciesId: string,
-): void {
-  const { buf } = ctx;
-  const res = resolveSetupOpponent(hostOf(ctx), ctx.ui, mirrorSpeciesId);
-  if ('error' in res) {
-    clipText(buf, { x: box.x, y: box.y, text: res.error, color: DIM, maxCols: box.w });
-    return;
-  }
-  drawFighter(ctx, res.opp, box);
-  if (res.warn) {
-    clipText(buf, {
-      x: box.x,
-      y: box.y + CARD_ROWS - 1,
-      text: `! ${res.warn}`,
-      color: WARN,
-      maxCols: box.w,
-    });
-  }
 }
 
 /**
@@ -281,59 +333,6 @@ function drawDexList(
     });
     ctx.hits.add(`battle:pick:${i}`, box.x, ry, Math.max(1, box.w), 1);
   }
-}
-
-/** A compact fighter card: optional sprite + name/grade, House, and raw stats. */
-function drawFighter(
-  ctx: RenderContext,
-  c: Combatant,
-  col: { x: number; y: number; w: number },
-): void {
-  const { buf, mode, frame, pack } = ctx;
-  if (col.w <= 0) return;
-  const species =
-    pack.species.find((s) => s.id === c.speciesId) ??
-    pack.species.find((s) => s.num === c.speciesNum);
-  const spr = findSprite(pack, species?.spriteId ?? '');
-  const showSprite = spr && col.w >= CARD_SPRITE_MIN_W;
-  if (spr && showSprite) {
-    const scale = CARD_ROWS / Math.max(1, subcellRows(spr.height));
-    drawSprite(buf, spr, buildPalette(houseTint(c.house), c.grade, frame, species?.accent), {
-      x: col.x,
-      y: col.y,
-      destW: Math.max(1, Math.round(subcellCols(spr.width) * scale)),
-      destH: CARD_ROWS,
-      frame,
-      mode,
-      clip: { x: col.x, y: col.y, w: col.w, h: CARD_ROWS },
-    });
-  }
-  const tx = col.x + (showSprite ? CARD_SPRITE_COLS : 0);
-  const avail = col.x + col.w - tx;
-  clipText(buf, {
-    x: tx,
-    y: col.y,
-    text: `${c.name} ${GRADE_BADGE[c.grade]}`,
-    color: GRADE_ACCENT[c.grade],
-    maxCols: avail,
-    bold: true,
-  });
-  clipText(buf, { x: tx, y: col.y + 1, text: '●', color: houseColor(c.house), maxCols: avail });
-  clipText(buf, {
-    x: tx + 2,
-    y: col.y + 1,
-    text: `${titleCase(c.house)} House`,
-    color: TEXT,
-    maxCols: avail - 2,
-  });
-  const s = c.stats;
-  clipText(buf, {
-    x: tx,
-    y: col.y + 2,
-    text: `P${s.pwr} S${s.spd} W${s.wis} G${s.grt}`,
-    color: DIM,
-    maxCols: avail,
-  });
 }
 
 // ---------------------------------------------------------------------------
