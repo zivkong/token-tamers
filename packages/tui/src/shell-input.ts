@@ -14,7 +14,7 @@ import { defaultSizeSafe } from './shell-io';
 import { computeLayout } from './render/layout';
 import { menuButtonY, packMenu } from './render/menu';
 import { buildHouseNodes, houseNodeCount, DEX_HOUSES } from './pages/dex';
-import { ARCHIVE_LIST_OFFSET } from './pages/archive';
+import { buildUnlockItems } from './pages/unlockables';
 import { cycleSelectedField, isUpdateFieldSelected, settingsFieldCount } from './pages/settings';
 import { handleBattleKey } from './pages/battle';
 import { flash } from './shell-effects';
@@ -30,9 +30,10 @@ export function handleEvent(rt: ShellRuntime, ev: InputEvent, deps: InputDeps): 
 const PAGE_HOTKEYS: Record<string, PageId> = {
   '1': 'pet',
   '2': 'dex',
-  '3': 'archive',
-  '4': 'battle',
-  '5': 'settings',
+  '3': 'unlockables',
+  '4': 'achievements',
+  '5': 'battle',
+  '6': 'settings',
 };
 
 function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
@@ -65,6 +66,7 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
       return;
     case 'enter':
       if (rt.page === 'dex') openDexDetail(rt, host);
+      else if (rt.page === 'unlockables') toggleUnlock(rt, host);
       return;
     case 'escape':
       if (rt.page === 'dex-detail') rt.page = 'dex';
@@ -99,6 +101,20 @@ function openDexDetail(rt: ShellRuntime, host: ShellHost): void {
   detail.selected = 0;
   detail.scroll = 0;
   rt.page = 'dex-detail';
+}
+
+/**
+ * Equip/unequip the selected collectible (Unlockables page). Selecting an
+ * unlocked item equips it via the host; selecting the already-active one again
+ * clears that slot. Locked items are ignored. The host persists the change.
+ */
+function toggleUnlock(rt: ShellRuntime, host: ShellHost): void {
+  const items = buildUnlockItems(host.pack, host.getState());
+  const item = items[rt.ui.unlockables.selected];
+  if (!item || !item.unlocked) return;
+  const next = item.active ? '' : item.id;
+  if (item.kind === 'habitat') host.setHabitat?.(next);
+  else host.setTrinket?.(next);
 }
 
 /** Cycle the focused Settings field and persist (no-op off the Settings page). */
@@ -161,11 +177,6 @@ function handleMouse(
     rt.page = 'dex';
     return;
   }
-
-  // Archive row clicks: map by canvas geometry, ignoring the menu.
-  if (rt.page === 'archive' && inContentRegion(layout, cx, cy)) {
-    handleListRowClick(rt, host, cy - (layout.canvasY + ARCHIVE_LIST_OFFSET));
-  }
 }
 
 /** True when a cell is inside the page content region (not the menu band/rail). */
@@ -226,6 +237,12 @@ function handleRegionClick(
     rt.ui.battle.selected = Number(region.slice('battle:pick:'.length)) || 0;
     return true;
   }
+  if (region.startsWith('unlock:item:')) {
+    // Select the clicked collectible, then equip/unequip it (mouse parity).
+    rt.ui.unlockables.selected = Number(region.slice('unlock:item:'.length)) || 0;
+    toggleUnlock(rt, host);
+    return true;
+  }
   if (region.startsWith('settings:field:')) {
     // Click a field to focus it (←→ then changes the value) — mouse parity.
     rt.settings.selected = Number(region.slice('settings:field:'.length)) || 0;
@@ -240,15 +257,6 @@ function activate(rt: ShellRuntime, id: PageId | 'quit'): void {
     return;
   }
   rt.page = id;
-}
-
-/** Select the Archive row `idxOnScreen` cells below the list top. */
-function handleListRowClick(rt: ShellRuntime, host: ShellHost, idxOnScreen: number): void {
-  if (idxOnScreen < 0) return;
-  const ui = rt.ui.archive;
-  const target = ui.scroll + idxOnScreen;
-  if (target < 0 || target > rowCount(rt, host) - 1) return;
-  ui.selected = target;
 }
 
 function moveSelection(rt: ShellRuntime, host: ShellHost, delta: number): void {
@@ -277,13 +285,13 @@ function moveSelection(rt: ShellRuntime, host: ShellHost, delta: number): void {
     }
     return;
   }
-  if (rt.page !== 'archive') return;
-  const ui = rt.ui.archive;
-  const max = rowCount(rt, host) - 1;
-  ui.selected = Math.max(0, Math.min(max, ui.selected + delta));
-}
-
-function rowCount(rt: ShellRuntime, host: ShellHost): number {
-  if (rt.page === 'archive') return host.getState().dexRecords.length;
-  return 0;
+  if (rt.page === 'unlockables') {
+    const max = buildUnlockItems(host.pack, host.getState()).length - 1;
+    rt.ui.unlockables.selected = Math.max(0, Math.min(max, rt.ui.unlockables.selected + delta));
+    return;
+  }
+  if (rt.page === 'achievements') {
+    const max = host.pack.achievements.length - 1;
+    rt.ui.achievements.selected = Math.max(0, Math.min(max, rt.ui.achievements.selected + delta));
+  }
 }

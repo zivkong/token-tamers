@@ -27,9 +27,10 @@ export interface MenuItem {
 export const MENU_ITEMS: MenuItem[] = [
   { id: 'pet', label: 'Pet', hotkey: '1' },
   { id: 'dex', label: 'Dex', hotkey: '2' },
-  { id: 'archive', label: 'Archive', hotkey: '3' },
-  { id: 'battle', label: 'Battle', hotkey: '4' },
-  { id: 'settings', label: 'Settings', hotkey: '5' },
+  { id: 'unlockables', label: 'Loot', hotkey: '3' },
+  { id: 'achievements', label: 'Feats', hotkey: '4' },
+  { id: 'battle', label: 'Battle', hotkey: '5' },
+  { id: 'settings', label: 'Settings', hotkey: '6' },
   { id: 'quit', label: 'Quit', hotkey: 'q' },
 ];
 

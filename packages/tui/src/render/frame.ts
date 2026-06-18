@@ -18,7 +18,8 @@ import { drawDivider, drawVDivider } from '../components';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
 import { renderDexDetailPage } from '../pages/dex-detail';
-import { renderArchivePage } from '../pages/archive';
+import { renderUnlockablesPage } from '../pages/unlockables';
+import { renderAchievementsPage } from '../pages/achievements';
 import { renderSettingsPage } from '../pages/settings';
 import { renderBattlePage } from '../pages/battle';
 import type {
@@ -105,8 +106,11 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
     case 'dex-detail':
       renderDexDetailPage(ctx);
       break;
-    case 'archive':
-      renderArchivePage(ctx);
+    case 'unlockables':
+      renderUnlockablesPage(ctx);
+      break;
+    case 'achievements':
+      renderAchievementsPage(ctx);
       break;
     case 'settings':
       renderSettingsPage(ctx);

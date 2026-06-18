@@ -16,6 +16,7 @@ export { drawMarquee, type MarqueeOptions } from './marquee';
 export {
   drawPageHeader,
   drawPageFooter,
+  clampScroll,
   pageFooterY,
   pageBodyBottom,
   PAGE_HEADER_ROWS,

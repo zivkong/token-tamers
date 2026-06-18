@@ -1,7 +1,6 @@
 export { runInit, type InitOptions, type InitResult, nextMondayLocal } from './init';
 export { statusCommand } from './status';
 export { dexCommand } from './dex';
-export { archiveCommand } from './archive';
 export { battleCommand, type BattleOptions } from './battle';
 export { completeCommand } from './complete';
 export { adaptersCommand } from './adapters';

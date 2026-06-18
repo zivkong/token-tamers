@@ -1,5 +1,5 @@
 /**
- * `tt` (no command) — the interactive 4:3 shell (Pet / Dex / Archive / Settings).
+ * `tt` (no command) — the interactive 4:3 shell (Pet / Dex / Loot / Feats / Settings).
  */
 
 import os from 'node:os';

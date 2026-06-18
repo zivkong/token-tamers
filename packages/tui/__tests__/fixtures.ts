@@ -60,9 +60,34 @@ export function makePack(): ContentPack {
     species: [WISP, EMBER],
     traits: [],
     patterns: [],
-    achievements: [],
-    habitats: [],
-    trinkets: [],
+    achievements: [
+      {
+        id: 'first-molt',
+        name: 'First Molt',
+        description: 'Completed your first molt.',
+        condition: { type: 'stage_reached', stage: 'sprite' },
+      },
+      {
+        id: 'grade-b',
+        name: 'Showing Promise',
+        description: 'Reach grade B.',
+        condition: { type: 'grade_reached', grade: 'B' },
+        reward: { kind: 'trinket', id: 'bouncy-ball' },
+      },
+    ],
+    habitats: [
+      {
+        id: 'terminal-den',
+        name: 'Terminal Den',
+        spriteId: 'habitat-terminal-den',
+        trinketSlots: [],
+      },
+      { id: 'meadow', name: 'Meadow', spriteId: 'habitat-meadow', trinketSlots: [] },
+    ],
+    trinkets: [
+      { id: 'bouncy-ball', name: 'Bouncy Ball', spriteId: 'trinket-bouncy-ball' },
+      { id: 'cushion', name: 'Cushion', spriteId: 'trinket-cushion' },
+    ],
     sprites: [TEST_SPRITE],
     dexTotal: 6,
     battle: {

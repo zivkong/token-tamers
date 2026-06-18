@@ -129,8 +129,28 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('renders the archive page', () => {
-    const out = renderFrameToString(100, 30, input({ page: 'archive' }));
+  it('renders the unlockables page (equipped, unlocked, and locked rows)', () => {
+    const state = makeState({
+      habitatsUnlocked: ['terminal-den'],
+      selectedHabitat: 'terminal-den',
+      trinketsUnlocked: ['bouncy-ball'],
+      selectedTrinkets: ['bouncy-ball'],
+    });
+    const out = renderFrameToString(100, 30, input({ page: 'unlockables', state }));
+    expect(out).toContain('Loot');
+    expect(out).toContain('Terminal Den');
+    expect(out).toContain('equipped');
+    expect(out).toContain('???'); // locked rows hide their name, no hint
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the achievements page (earned shows, locked hidden with hint)', () => {
+    const state = makeState({ achievementsEarned: { 'first-molt': 5000 } });
+    const out = renderFrameToString(100, 30, input({ page: 'achievements', state }));
+    expect(out).toContain('Feats');
+    expect(out).toContain('First Molt'); // earned: name revealed
+    expect(out).toContain('Reach grade B.'); // locked: description serves as the hint
+    expect(out).toContain('???'); // locked: name hidden
     expect(out).toMatchSnapshot();
   });
 
@@ -441,13 +461,13 @@ describe('golden frames — narrow / floor sizes (regression guards)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('pet + archive render at the 72x12 horizontal floor without overflow', () => {
+  it('pet + unlockables render at the 72x12 horizontal floor without overflow', () => {
     const pet = renderFrameToString(72, 12, input({ page: 'pet' }));
     expect(pet).toContain('Quit');
     expect(pet).toMatchSnapshot();
-    const archive = renderFrameToString(72, 12, input({ page: 'archive' }));
-    expect(archive).toContain('Quit');
-    expect(archive).toMatchSnapshot();
+    const unlockables = renderFrameToString(72, 12, input({ page: 'unlockables' }));
+    expect(unlockables).toContain('Quit');
+    expect(unlockables).toMatchSnapshot();
   });
 
   it('clips the dex focus-rail hint to the rail (no bleed into the menu) at 120x20', () => {
@@ -542,7 +562,8 @@ describe('menu + per-page completion', () => {
     const out = renderFrameToString(100, 30, input({ page: 'pet' }));
     expect(out).toContain('Pet');
     expect(out).toContain('Dex');
-    expect(out).toContain('Archive');
+    expect(out).toContain('Loot');
+    expect(out).toContain('Feats');
     expect(out).toContain('Settings');
     expect(out).toContain('Quit');
   });

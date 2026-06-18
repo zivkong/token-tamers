@@ -1,11 +1,10 @@
 /**
  * Entry point for the `tt` binary. Commands (MVP):
  *   tt init      one-time wizard: detect adapters, plan type, week anchor, backfill
- *   tt           the clickable 4:3 shell (Pet / Dex / Archive / Settings pages)
+ *   tt           the clickable 4:3 shell (Pet / Dex / Loot / Feats / Settings pages)
  *   tt watch     slim live view (statusline-friendly)
  *   tt status    one-shot text status
  *   tt dex       text Dex listing
- *   tt archive   text Archive (best-record) listing
  *   tt battle    battle the pet vs an Archive record or a pasted DNA code
  *   tt complete  completion meter breakdown
  *   tt adapters  adapter health/paths
@@ -23,7 +22,6 @@ import {
   runInit,
   statusCommand,
   dexCommand,
-  archiveCommand,
   battleCommand,
   completeCommand,
   adaptersCommand,
@@ -90,8 +88,6 @@ export async function dispatch(
       return guarded(() => statusCommand(out));
     case 'dex':
       return guarded(() => dexCommand(out));
-    case 'archive':
-      return guarded(() => archiveCommand(out));
     case 'battle':
       return guarded(() =>
         battleCommand({ code: parsed.rest[0], text: parsed.text, noColor: parsed.noColor }, out),

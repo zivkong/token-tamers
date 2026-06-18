@@ -635,6 +635,17 @@ export interface Engine {
    * a full week of windows exists.
    */
   seedBaselines(now: number): void;
+  /**
+   * Equip a habitat as the pet's active backdrop (a player action, not a cycle
+   * event — deterministic, no RNG). Pass '' to clear. An id the player hasn't
+   * unlocked is ignored.
+   */
+  setSelectedHabitat(id: string): void;
+  /**
+   * Set the pet's active trinkets (a player action). Ids the player hasn't
+   * unlocked are dropped; pass [] to clear.
+   */
+  setSelectedTrinkets(ids: string[]): void;
   /** Completion meter, 0..100 with per-page breakdown. */
   completion(): {
     overall: number;

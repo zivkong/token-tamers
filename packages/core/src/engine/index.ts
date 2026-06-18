@@ -26,7 +26,6 @@ import {
 import { chance, createRng, nextInt, type Rng } from '../helpers/rng';
 import {
   STAGE_ORDER,
-  type AchievementDef,
   type ArchiveRecord,
   type ContentPack,
   type CycleEvent,
@@ -43,7 +42,7 @@ import {
   type SpeciesDef,
   type UsageEvent,
 } from '../types';
-import { achievementConditionMet, patternSatisfied } from './achievements';
+import { evaluateAchievements, patternSatisfied } from './achievements';
 import {
   baselineMeans,
   foldWindowBaselines,
@@ -149,6 +148,15 @@ class GameEngine implements Engine {
 
   completion() {
     return computeCompletion(this.state_, this.pack);
+  }
+
+  setSelectedHabitat(id: string): void {
+    if (id !== '' && !this.state_.habitatsUnlocked.includes(id)) return;
+    this.state_.selectedHabitat = id;
+  }
+
+  setSelectedTrinkets(ids: string[]): void {
+    this.state_.selectedTrinkets = ids.filter((id) => this.state_.trinketsUnlocked.includes(id));
   }
 
   pendingEvents(): UsageEvent[] {
@@ -263,7 +271,7 @@ class GameEngine implements Engine {
     // Normalize per adapter against its OWN baseline (design §6): fold each
     // adapter's window essence into that adapter's running mean.
     if (!isHatch) foldWindowBaselines(this.state_, evs);
-    this.evaluateAchievements(event.at, effects);
+    evaluateAchievements(this.state_, this.pack, event.at, effects);
     this.capture('molt', event.at, effects);
   }
 
@@ -462,40 +470,7 @@ class GameEngine implements Engine {
     effects.push({ type: 'rebirth', legacyGrade, newGeneration: newGen });
     if (dormant) effects.push({ type: 'dormant', entered: true });
 
-    this.evaluateAchievements(event.at, effects);
-  }
-
-  // --- achievements ---------------------------------------------------------
-
-  private evaluateAchievements(at: number, effects: GameEffect[]): void {
-    for (const def of this.pack.achievements) {
-      if (this.state_.achievementsEarned[def.id] !== undefined) continue;
-      if (this.achievementMet(def)) {
-        this.state_.achievementsEarned[def.id] = at;
-        effects.push({ type: 'achievement', id: def.id });
-        this.grantReward(def, effects);
-      }
-    }
-  }
-
-  private grantReward(def: AchievementDef, effects: GameEffect[]): void {
-    const reward = def.reward;
-    if (!reward) return;
-    if (reward.kind === 'habitat' && !this.state_.habitatsUnlocked.includes(reward.id)) {
-      this.state_.habitatsUnlocked.push(reward.id);
-      if (this.state_.selectedHabitat === '') this.state_.selectedHabitat = reward.id;
-      effects.push({ type: 'habitat_unlocked', id: reward.id });
-    } else if (reward.kind === 'trinket' && !this.state_.trinketsUnlocked.includes(reward.id)) {
-      this.state_.trinketsUnlocked.push(reward.id);
-      effects.push({ type: 'trinket_unlocked', id: reward.id });
-    }
-  }
-
-  private achievementMet(def: AchievementDef): boolean {
-    return achievementConditionMet(def, this.state_, {
-      dexTotal: this.pack.dexTotal,
-      lookupSpecies: (id) => this.speciesById(id),
-    });
+    evaluateAchievements(this.state_, this.pack, event.at, effects);
   }
 
   // --- helpers --------------------------------------------------------------

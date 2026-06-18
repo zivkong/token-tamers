@@ -15,13 +15,20 @@ import type { FrameBuffer } from '../render/buffer';
 import type { HitRegistry } from '../render/hit';
 import type { Layout } from '../render/layout';
 
-export type PageId = 'pet' | 'dex' | 'dex-detail' | 'archive' | 'settings' | 'battle';
+export type PageId =
+  | 'pet'
+  | 'dex'
+  | 'dex-detail'
+  | 'unlockables'
+  | 'achievements'
+  | 'settings'
+  | 'battle';
 
 /** Transient per-page UI state the shell owns (selection, scroll). */
 export interface PageUiState {
-  /** Dex/Archive selected row index (on the Dex: the star index within the House). */
+  /** List selected row index (on the Dex: the star index within the House). */
   selected: number;
-  /** Dex/Archive scroll offset (top visible row). */
+  /** List scroll offset (top visible row). */
   scroll: number;
   /** Dex: which House sky is shown (index into DEX_HOUSES). */
   house?: number;

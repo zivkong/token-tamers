@@ -62,19 +62,18 @@ LTS over any SSH. tui imports `@token-tamers/core` only — never adapters or co
   chrome** drawn by the frame (a band below in vertical, a rail on the right in horizontal);
   `components/divider.ts` draws rules (`drawDivider` horizontal, `drawVDivider` vertical).
 - **Standard full-screen page scaffold** (`components/page.ts`): every non-Pet page (Dex,
-  Archive, Settings) shares ONE chrome so they never drift apart — `drawPageHeader(ctx, {icon,
+  Loot, Feats, Settings) shares ONE chrome so they never drift apart — `drawPageHeader(ctx, {icon,
 title, completion?})` draws a left-aligned `icon Title` (Title-Case), an optional right-aligned
   completion bar, and the standard `drawDivider` beneath, returning the first body row
   (`canvasY + PAGE_HEADER_ROWS`, = 3); `drawPageFooter(ctx, text)` draws a left status line on the
   bottom canvas row. Pages render only their BODY between. Do NOT hand-roll page headers/titles, and
   NEVER draw a nav legend on a page — the global `── Menu ──` buttons are the only navigation (a
   per-page key legend is a duplicate). The Pet page is the sole exception (it's the game canvas; see
-  `petSections`). The shell's list hit-test reads `DEX_LIST_OFFSET = PAGE_HEADER_ROWS` and
-  `ARCHIVE_LIST_OFFSET = PAGE_HEADER_ROWS + 1` (Archive's column header is the first body row), so
-  changing the header height updates all three in lockstep.
+  `petSections`). List pages (Loot, Feats) register a hit region per body row themselves
+  (`unlock:item:<i>`); list scroll is clamped via the shared `clampScroll` (`components/page.ts`).
 - **Completion is per-page, not global** (`components/meter.ts` → `drawCompletionHeader`, surfaced
-  via `drawPageHeader`'s `completion`): Dex shows `completion.dex`, Archive shows
-  `records/dexTotal`, top-right. The full `CompletionBreakdown` flows `ShellHost.completion()` →
+  via `drawPageHeader`'s `completion`): Dex shows `completion.dex`, Loot shows
+  unlocked/total, Feats shows earned/total, top-right. The full `CompletionBreakdown` flows `ShellHost.completion()` →
   `RenderContext.completion`. Settings has no completion (nothing to track); the pet page has NO
   completion meter.
 - **Evolution-mystery rule (amended):** the pet screen must NOT show the stage word, molt count,
@@ -146,10 +145,10 @@ bg)` so it renders on the band background.
   Trinkets keep the **unboosted** `scale`, so a toy reads smaller than the creature. Min terminal
   34×24 vertical / 72×12 horizontal.
 - Canvas hosts: pet + habitat + trinkets, cutscenes, battle view, and full-screen pages
-  (Dex, Archive, Settings, Achievements) inside the same content region.
+  (Dex, Loot, Feats, Settings) inside the same content region.
 - Menu flow (`render/menu.ts` → `packMenu(cols)`, shared by `layout` for `menuRows`+`menuBtnH`,
   `frame` to draw, and `shell` to hit-test): a labeled `── Menu ──` divider (frame, `menuDividerY`)
-  then the 5 nav buttons (Pet/Dex/Archive/Settings/Quit) as real BUTTONS — one uniform width
+  then the 7 nav buttons (Pet/Dex/Loot/Feats/Battle/Settings/Quit) as real BUTTONS — one uniform width
   (`menuButtonWidth()` = widest text + interior padding) and one uniform HEIGHT (`MENU_BTN_H`=1 — a
   single row keeps the label CENTERED on both axes; even heights bottom-bias the text, so the button
   shape comes from the filled `MENU_BTN_BG` block + interior padding, active = `MENU_ACTIVE_BG`, not
@@ -161,7 +160,7 @@ bg)` so it renders on the band background.
   terminal, never below 1. On narrow widths the grid wraps with
   columns aligned across rows (partial last row fills the leftmost columns). All three consumers
   read `packMenu` + `layout.menuBtnH`, so sizing/draw/hit-test stay in lockstep. The completion
-  meter is NOT in the menu (it's shown per-page — Dex/Archive). Adding a page = extend the `PageId`
+  meter is NOT in the menu (it's shown per-page — Dex/Loot/Feats). Adding a page = extend the `PageId`
   union, push a `MENU_ITEMS` entry (icon + hotkey), add a `freshUi` slot, a `handleKey` case, and a
   `renderFrame` switch arm — keep all five in lockstep.
 - **Keyboard parity is mandatory:** every click has a hotkey; with no mouse
@@ -219,11 +218,11 @@ locked + ornate-gold legend — drawn through the same sprite pipeline), `input.
 flow), `frame.ts` (frame + menu draw), `shell.ts` (runShell loop) + `shell-io.ts` (default
 stdio/terminal wiring, split out to keep `shell.ts` under the line ceiling), `status.ts`
 (one-liners), `pages/` (pet, pet-vitals, **dex** + **dex-sky** (the constellation sky + focus rail),
-**dex-detail**, archive, settings, **battle**), `lookup.ts`
+**dex-detail**, **unlockables** (the Loot page), **achievements** (the Feats page), settings, **battle**), `lookup.ts`
 (pack helpers). Shared UI lives
 under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after);
 `page.ts` (the standard full-screen page scaffold — `drawPageHeader`/`drawPageFooter`/
-`PAGE_HEADER_ROWS`, used by Dex/Archive/Settings); and `meter.ts` — the ONE progress bar:
+`PAGE_HEADER_ROWS`, `clampScroll`, used by Dex/Loot/Feats/Settings); and `meter.ts` — the ONE progress bar:
 `drawMeter` (filled `█` + a clearly-visible `▒` track), `drawSegmentedMeter` (filled portion split
 into colored slices, e.g. the diet-tinted food), and `drawCompletionHeader`; and `marquee.ts`
 (`drawMarquee` — a frame-counter-driven scrolling ticker, golden-frame safe; used by the Pet

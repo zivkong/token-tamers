@@ -194,9 +194,13 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
     `packages/core/src/battle/`, the House wheel/proc ruleset as `ContentPack.battle` data,
     `tt battle [code]`, the top-level Battle TUI page (pick a fighter — live pet or a battle-ready
     Dex record — vs. a pasted DNA code or an own-Dex pick — `pages/battle-setup.ts`), grade
-    stat-floor (`GRADE_STAT_FLOOR`, battle-only). STILL TO BUILD: **the basic-unlockables / deco
-    loop** (`tt deco` + Deco page + loadouts over the existing 12 habitats / 6 trinkets / 44
-    achievements). NO DNA apply/graft and NO leagues in Season 0.
+    stat-floor (`GRADE_STAT_FLOOR`, battle-only). Also DONE: **the unlockables/equip loop** — the
+    **Loot** page (`pages/unlockables.ts`, habitats + trinkets, equip/unequip via
+    `Engine.setSelectedHabitat`/`setSelectedTrinkets`) and the **Feats** page
+    (`pages/achievements.ts`, earned shown, locked masked `???` + the description as a how-to hint),
+    which **replaced the removed Archive page** end-to-end (no `tt archive`, no Archive TUI page —
+    the engine `state.archive` mirror stays for back-compat). NO DNA apply/graft and NO leagues in
+    Season 0.
   - **Season 1 — "Crossbreed" (next):** the **entire DNA grafting + fusion system** —
     `tt dna export`/`apply`, the graft engine (`GRAFT_POTENCY`, trait-splice, grade carry,
     S-spliced marker, one-per-life) AND the fusion content it produces (hybrid sub-lines, fusion
@@ -257,10 +261,11 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   close, evolution, and rebirth (`engine/snapshot.ts` + `dex-records.ts`). One entry PER
   LIFE: `(speciesId, generation)` is the life-at-a-tier id, so repeated molt captures of the
   same species in one life collapse to that life's best peak (`rankBestPerLife`) — never 3
-  near-duplicates from one life. The
-  Archive view derives best-per-species from `top[0]` (`bestSpeciesRecords`); the
-  legacy rebirth `archive` array is still written as a back-compat mirror (read by
-  the grade/house achievements). The **Dex is a per-House constellation** (`pages/dex.ts`
+  near-duplicates from one life.
+  `bestSpeciesRecords` derives best-per-species from `top[0]` (used by the Battle opponent
+  picker); the legacy rebirth `archive` array is still written as a back-compat mirror (read by
+  the grade/house achievements). The Archive page/`tt archive` were removed — its hall-of-fame
+  role is covered by the Dex detail records. The **Dex is a per-House constellation** (`pages/dex.ts`
   - `pages/dex-sky.ts`): each House's evolution tree is a sky of glow-dot stars (owned
     glow in their best grade incl. the live pet's; unseen are dim `?` points), with a focus
     rail showing the selected star's real sprite or a square `?` tile (slate when locked, an
@@ -280,11 +285,12 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   cap) — a documented forward spec (`dna-hash-battles.md` §9) + the pure `graftPotency` helper (Season-1 engine).
 - **Scope (Season-mapped; M-ids = engineering milestones):**
   - **Season 0 — "Genesis":** **shipped** = Claude Code + OpenCode adapters, all five house
-    lines (Aether/Cipher/Flux/Forge/Wild-Bloom, 56 species), shell with Pet/Dex/Archive/Settings,
-    the per-species Dex record store + detail view, the DNA **encoder** (M2.1, codec only), and
-    the **Battle** system (M2.2 — `core/src/battle/`, `ContentPack.battle`, `tt battle`, Battle
-    page). **Still to build for Season 0** = the **deco/basic-unlockables** loop (the content-free
-    subset of M2.5).
+    lines (Aether/Cipher/Flux/Forge/Wild-Bloom, 56 species), shell with Pet/Dex/Loot/Feats/Settings
+    (the **Loot** + **Feats** pages replaced the removed Archive page), the per-species Dex record
+    store + detail view, the DNA **encoder** (M2.1, codec only), the **Battle** system (M2.2 —
+    `core/src/battle/`, `ContentPack.battle`, `tt battle`, Battle page), and the
+    **unlockables/equip loop** (Loot/Feats pages, the content-free subset of M2.5). Season 0 is now
+    feature-complete.
   - **Season 1 — "Crossbreed":** the entire **DNA apply + grafting + fusion** system (M2.3) +
     the hybrid/fusion **content** (the "Crossbreed" pack).
   - **Season 2 — "Coliseum":** Leagues/standings + Drifter (M2.6) + Codex adapter (M2.4).

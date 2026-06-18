@@ -35,7 +35,7 @@ describe('parseArgs', () => {
 
 describe('shouldBackgroundCheck', () => {
   it('fires the throttled check for the common launch commands', () => {
-    for (const c of ['status', 'dex', 'archive', 'complete', 'adapters', 'init']) {
+    for (const c of ['status', 'dex', 'complete', 'adapters', 'init']) {
       expect(shouldBackgroundCheck(parseArgs([c]))).toBe(true);
     }
   });

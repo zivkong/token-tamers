@@ -85,6 +85,14 @@ export function createShellHost(config: UserConfig, engine: Engine): ShellHostHa
     liveStats(): LiveStats {
       return computeLiveStats(engine.pendingEvents(), engine.state());
     },
+    setHabitat(id: string): void {
+      engine.setSelectedHabitat(id);
+      saveState(engine.state());
+    },
+    setTrinket(id: string): void {
+      engine.setSelectedTrinkets(id ? [id] : []);
+      saveState(engine.state());
+    },
   };
 
   return {

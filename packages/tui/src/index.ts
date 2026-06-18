@@ -111,7 +111,9 @@ export {
   DEX_HOUSES,
   type HouseNode,
 } from './pages/dex';
-export { renderArchivePage, clampScroll } from './pages/archive';
+export { renderUnlockablesPage, buildUnlockItems, type UnlockItem } from './pages/unlockables';
+export { renderAchievementsPage } from './pages/achievements';
+export { clampScroll } from './components';
 export { renderSettingsPage } from './pages/settings';
 export {
   renderBattlePage,

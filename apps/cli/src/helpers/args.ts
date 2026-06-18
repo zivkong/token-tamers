@@ -19,7 +19,6 @@ export const KNOWN_COMMANDS = new Set([
   'watch',
   'status',
   'dex',
-  'archive',
   'battle',
   'complete',
   'adapters',
@@ -34,11 +33,10 @@ Usage: tt [command] [flags]
 
 Commands:
   init        Set up Token Tamers (detect agents, plan, week anchor).
-  (none)      Open the interactive shell (Pet / Dex / Archive / Settings).
+  (none)      Open the interactive shell (Pet / Dex / Loot / Feats / Settings).
   watch       Slim live status line (statusline-friendly).
   status      One-shot text status.
   dex         List discovered species.
-  archive     List past lives.
   battle      Battle your pet vs an Archive record or a DNA code (tt battle [code]).
   complete    Completion meter breakdown.
   adapters    Adapter detection + paths.

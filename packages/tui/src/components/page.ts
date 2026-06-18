@@ -64,6 +64,25 @@ export function pageBodyBottom(layout: RenderContext['layout']): number {
   return pageFooterY(layout) - 1;
 }
 
+/**
+ * Clamp a scrollable list's top offset so the selected row stays visible.
+ * Shared by the full-screen list pages (Achievements, Unlockables).
+ */
+export function clampScroll(
+  scroll: number,
+  selected: number,
+  visible: number,
+  total: number,
+): number {
+  let s = scroll;
+  if (selected < s) s = selected;
+  if (selected >= s + visible) s = selected - visible + 1;
+  const maxScroll = Math.max(0, total - visible);
+  if (s > maxScroll) s = maxScroll;
+  if (s < 0) s = 0;
+  return s;
+}
+
 export interface PageHeaderOptions {
   /** Leading glyph, e.g. '☰' / '◆' / '⚙'. */
   icon: string;

@@ -39,6 +39,13 @@ export interface ShellHost {
    * derived from the engine's open window. Called once per rendered frame.
    */
   liveStats?(): LiveStats;
+  /**
+   * Equip a habitat as the pet's active backdrop ('' clears it) and persist.
+   * Driven by the Unlockables page; a no-op for an unlocked-elsewhere id.
+   */
+  setHabitat?(id: string): void;
+  /** Equip a trinket as the pet's active toy ('' clears it) and persist. */
+  setTrinket?(id: string): void;
 }
 
 export interface ShellOptions {
@@ -141,7 +148,8 @@ function freshUi(): Record<PageId, PageUiState> {
     pet: { selected: 0, scroll: 0 },
     dex: { selected: 0, scroll: 0, house: 0 },
     'dex-detail': { selected: 0, scroll: 0, speciesId: null },
-    archive: { selected: 0, scroll: 0 },
+    unlockables: { selected: 0, scroll: 0 },
+    achievements: { selected: 0, scroll: 0 },
     settings: { selected: 0, scroll: 0 },
     battle: { selected: 0, scroll: 0, input: '', focus: 'input', fighterSel: 0 },
   };

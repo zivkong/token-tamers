@@ -6,6 +6,8 @@ import {
   STAGE_ORDER,
   type AchievementCondition,
   type AchievementDef,
+  type ContentPack,
+  type GameEffect,
   type GameState,
   type PatternDef,
   type SpeciesDef,
@@ -31,6 +33,44 @@ export function patternSatisfied(def: PatternDef, traits: readonly TraitId[]): b
 export interface AchievementContext {
   dexTotal: number;
   lookupSpecies: (id: string) => SpeciesDef | undefined;
+}
+
+/**
+ * Award every newly-met achievement: stamp `achievementsEarned`, push an effect,
+ * and grant any habitat/trinket reward. Idempotent — an already-earned id is
+ * skipped. Deterministic (no clock/RNG): all timestamps come from `at`.
+ */
+export function evaluateAchievements(
+  state: GameState,
+  pack: ContentPack,
+  at: number,
+  effects: GameEffect[],
+): void {
+  const ctx: AchievementContext = {
+    dexTotal: pack.dexTotal,
+    lookupSpecies: (id) => pack.species.find((sp) => sp.id === id),
+  };
+  for (const def of pack.achievements) {
+    if (state.achievementsEarned[def.id] !== undefined) continue;
+    if (!achievementConditionMet(def, state, ctx)) continue;
+    state.achievementsEarned[def.id] = at;
+    effects.push({ type: 'achievement', id: def.id });
+    grantReward(state, def, effects);
+  }
+}
+
+/** Unlock an earned achievement's habitat/trinket reward (auto-equips first habitat). */
+function grantReward(state: GameState, def: AchievementDef, effects: GameEffect[]): void {
+  const reward = def.reward;
+  if (!reward) return;
+  if (reward.kind === 'habitat' && !state.habitatsUnlocked.includes(reward.id)) {
+    state.habitatsUnlocked.push(reward.id);
+    if (state.selectedHabitat === '') state.selectedHabitat = reward.id;
+    effects.push({ type: 'habitat_unlocked', id: reward.id });
+  } else if (reward.kind === 'trinket' && !state.trinketsUnlocked.includes(reward.id)) {
+    state.trinketsUnlocked.push(reward.id);
+    effects.push({ type: 'trinket_unlocked', id: reward.id });
+  }
 }
 
 /** Evaluate whether an achievement condition is met, given current state. */
