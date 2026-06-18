@@ -252,10 +252,10 @@ function drawButtonText(
   const bg = active ? MENU_ACTIVE_BG : MENU_BTN_BG;
   const ty = y + Math.floor(h / 2);
   const leftInset = (bordered ? 1 : 0) + MENU_PAD_X;
-  // The right edge is always reserved: a border cell when bordered, or the
-  // shared-overlap column (owned by the next button) when flat — so the hotkey
-  // never lands on a cell the neighbour overwrites.
-  const rightInset = 1 + MENU_PAD_X;
+  // Reserve the border/shared-overlap column PLUS two clearance cells after the
+  // hotkey, so a wide (2-column) icon shifting the row right still leaves a gap
+  // between the key and the border instead of jamming it (see menuButtonWidth).
+  const rightInset = 1 + 2 * MENU_PAD_X;
   const keyLen = [...btn.hotkey].length;
   const kx = btn.x + btn.w - rightInset - keyLen;
   const labelMax = Math.max(0, kx - 1 - (btn.x + leftInset));
