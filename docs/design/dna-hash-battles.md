@@ -223,19 +223,21 @@ Pillar 4):
 > (`BattleRuleset`: the House `wheel`, trait `procs`, `variance`, and the negotiated
 > `version` — `packages/content/content/battle.json`), and it is surfaced by `tt battle [code]`
 >
-> - the Battle TUI page, a **top-level nav page** with its own setup screen: your live pet on the
->   left, and an OPPONENT chosen on the right either by **pasting a friend's DNA code** OR by
+> - the Battle TUI page, a **top-level nav page** with its own setup screen: you pick a FIGHTER on
+>   the left (your live pet if Evolved, or **any battle-ready Dex record** — so a sealed live pet
+>   never blocks you), and an OPPONENT on the right either by **pasting a friend's DNA code** OR by
 >   **picking one of your own Dex records** (`pages/battle.ts` + `pages/battle-setup.ts`); the CLI
 >   `tt battle [code]` plays a code straight back, and `tt battle` opens the setup page. Battle
 >   consumes a decoded snapshot **read-only** — it never mutates the pet, its grade, or the Dex
 >   (invariants 1 & 3). The grade stat-floor lives in `engine/constants.ts` (`GRADE_STAT_FLOOR`,
 >   battle-only). DNA **apply/graft/fusion** remains Season 1.
 >
-> **Self-mirror rule.** You cannot battle (or, in Season 1, graft) your OWN pet against your OWN
-> record of the **same species** — a self-mirror is disallowed (`sameSpecies` in `battle/`). This
-> guards the "pick from your own Dex" path; a **pasted code is another player** (its decoded
-> `speciesId` is empty, so it's never a self-mirror), so a same-species match against a pasted code
-> is always allowed. Different species — yours or a foreign code — is always allowed too.
+> **Self-mirror rule.** You cannot battle (or, in Season 1, graft) your CHOSEN fighter against your
+> OWN record of the **same species** — a self-mirror is disallowed (`sameSpecies` in `battle/`,
+> judged against the chosen fighter's species). This guards the "pick from your own Dex" opponent
+> path; a **pasted code is another player** (its decoded `speciesId` is empty, so it's never a
+> self-mirror), so a same-species match against a pasted code is always allowed. Different species —
+> yours or a foreign code — is always allowed too.
 
 ### Determinism Formula
 

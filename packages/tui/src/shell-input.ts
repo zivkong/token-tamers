@@ -209,6 +209,12 @@ function handleRegionClick(
     rt.ui.battle.focus = 'input';
     return true;
   }
+  if (region.startsWith('battle:fighter:')) {
+    // Click a candidate row to field it as YOUR fighter (left side) — mouse parity.
+    rt.ui.battle.focus = 'fighter';
+    rt.ui.battle.fighterSel = Number(region.slice('battle:fighter:'.length)) || 0;
+    return true;
+  }
   if (region.startsWith('battle:pick:')) {
     // Click a Dex row to select it as the opponent (Enter then fights) — mouse parity.
     rt.ui.battle.focus = 'list';

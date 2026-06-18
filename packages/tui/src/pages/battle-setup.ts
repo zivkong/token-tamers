@@ -1,10 +1,12 @@
 /**
  * Battle SETUP (the pre-fight screen). The Battle page shows this whenever no
- * battle is loaded: the player's live pet on the left, and an OPPONENT chosen on
- * the right either by pasting a friend's DNA code OR by picking one of the
- * player's own Dex records.
+ * battle is loaded. The player picks a FIGHTER on the left — the live pet (if
+ * Evolved) or any battle-ready Dex record — and an OPPONENT on the right, either
+ * by pasting a friend's DNA code OR by picking one of their own Dex records. So a
+ * sealed live pet never blocks battling when a retired pet is battle-ready.
  *
- * Two opponent sources, two self-mirror rules (design §11):
+ * Two opponent sources, two self-mirror rules (design §11), judged against the
+ * CHOSEN fighter's species:
  *  - A pasted code is ANOTHER player: it decodes to a foreign combatant
  *    (`speciesId: ''`), so a same-species match is allowed.
  *  - A Dex record is the player's OWN: a same-species pick is a self-mirror and
@@ -53,6 +55,13 @@ const DIM: Rgb = { r: 96, g: 100, b: 120 };
 const READY: Rgb = { r: 74, g: 222, b: 128 };
 const SEALED: Rgb = { r: 150, g: 152, b: 160 };
 const WARN: Rgb = { r: 240, g: 200, b: 96 };
+const SEL_BG: Rgb = { r: 40, g: 46, b: 64 };
+
+/** One battle-ready fighter the player can field: a combatant + whether it's the live pet. */
+interface Fighter {
+  c: Combatant;
+  isLive: boolean;
+}
 
 /** Sprite footprint reserved at a fighter card's left, and the card's height. */
 const CARD_SPRITE_COLS = 16;
@@ -65,41 +74,115 @@ type SetupShell = BattleShell & FlashTarget;
 // Renderer
 // ---------------------------------------------------------------------------
 
-/** Draw the setup screen: live pet (left) vs. a chosen opponent (right). */
+/** Draw the setup screen: your chosen fighter (left) vs. a chosen opponent (right). */
 export function drawSetup(ctx: RenderContext, bodyY: number): void {
-  const { buf, layout, state } = ctx;
+  const { layout } = ctx;
   const mid = Math.floor(layout.canvasCols / 2);
   const leftX = layout.canvasX + 2;
   const leftW = mid - 2 - 1;
   const rightX = layout.canvasX + mid + 1;
   const rightW = layout.canvasCols - mid - 1 - 1;
 
-  const petReady = isBattleReady(state.pet);
-  buf.text(leftX, bodyY, 'Your fighter', petReady ? READY : SEALED, null);
-  if (petReady) {
-    drawFighter(ctx, playerCombatant(ctx.pack, state.pet), { x: leftX, y: bodyY + 1, w: leftW });
-  } else {
-    buf.text(leftX, bodyY + 2, 'Sealed — battles unlock', SEALED, null);
-    buf.text(leftX, bodyY + 3, 'once your pet is Evolved.', SEALED, null);
-  }
+  const fighters = fighterCandidates(hostOf(ctx));
+  drawFighterPane(ctx, { x: leftX, y: bodyY, w: leftW }, fighters);
 
-  drawOpponentPane(ctx, { x: rightX, y: bodyY, w: rightW });
-  drawPageFooter(ctx, 'Tab switch  ·  paste a code / ↑↓ pick  ·  Enter fight  ·  Esc back');
+  const fighter = fighters[clampSel(ctx.ui.fighterSel, fighters.length)];
+  drawOpponentPane(ctx, { x: rightX, y: bodyY, w: rightW }, fighter?.c.speciesId ?? '');
+  drawPageFooter(ctx, 'Tab zone  ·  ↑↓ pick / paste a code  ·  Enter fight  ·  Esc back');
+}
+
+/** A BattleHost view over the render context (pack + a snapshot of state). */
+function hostOf(ctx: RenderContext): BattleHost {
+  return { pack: ctx.pack, getState: () => ctx.state };
+}
+
+/** Your battle-ready fighters: the live pet (if Evolved) then each battle-ready Dex record. */
+export function fighterCandidates(host: BattleHost): Fighter[] {
+  const state = host.getState();
+  const out: Fighter[] = [];
+  if (isBattleReady(state.pet)) {
+    out.push({ c: playerCombatant(host.pack, state.pet), isLive: true });
+  }
+  for (const snap of bestSpeciesRecords(state.dexRecords)) {
+    if (isBattleReady(snap)) out.push({ c: opponentCombatant(host.pack, snap), isLive: false });
+  }
+  return out;
+}
+
+/** Clamp a (possibly undefined) selection index into `[0, len)`. */
+function clampSel(sel: number | undefined, len: number): number {
+  return Math.max(0, Math.min(Math.max(0, len - 1), sel ?? 0));
+}
+
+/** The left half: a preview of the chosen fighter + a selectable candidate list. */
+function drawFighterPane(
+  ctx: RenderContext,
+  col: { x: number; y: number; w: number },
+  fighters: Fighter[],
+): void {
+  const { buf, ui } = ctx;
+  const focused = (ui.focus ?? 'input') === 'fighter';
+  buf.text(col.x, col.y, 'Your fighter', focused ? READY : TEXT, null);
+  if (fighters.length === 0) {
+    buf.text(col.x, col.y + 2, 'No battle-ready fighter yet —', SEALED, null);
+    buf.text(col.x, col.y + 3, 'raise a pet to Evolved.', SEALED, null);
+    return;
+  }
+  const sel = clampSel(ui.fighterSel, fighters.length);
+  drawFighter(ctx, fighters[sel]!.c, { x: col.x, y: col.y + 1, w: col.w });
+
+  const listTop = col.y + 8;
+  if (fighters.length > 1 && listTop < pageBodyBottom(ctx.layout)) {
+    drawDivider(buf, listTop, { x: col.x, width: col.w, label: 'choose your fighter' });
+    drawFighterList(ctx, { x: col.x, y: listTop + 2, w: col.w }, fighters, sel, focused);
+  }
+}
+
+/** The fighter candidate rows: grade, name, and a "you" tag for the live pet. */
+function drawFighterList(
+  ctx: RenderContext,
+  box: { x: number; y: number; w: number },
+  fighters: Fighter[],
+  sel: number,
+  focused: boolean,
+): void {
+  const { buf, layout } = ctx;
+  const maxRows = Math.max(0, Math.min(fighters.length, pageBodyBottom(layout) - box.y));
+  for (let i = 0; i < maxRows; i++) {
+    const ry = box.y + i;
+    const { c, isLive } = fighters[i]!;
+    const on = focused && i === sel;
+    if (on)
+      for (let k = 0; k < box.w; k++) buf.set(box.x + k, ry, { ch: ' ', fg: null, bg: SEL_BG });
+    const bg = on ? SEL_BG : null;
+    const tag = isLive ? '· you' : '';
+    const tagX = box.x + Math.max(18, box.w - tag.length);
+    buf.text(box.x, ry, `${GRADE_BADGE[c.grade]} ${c.grade}`, GRADE_ACCENT[c.grade], bg);
+    if (box.w > 6) {
+      buf.text(box.x + 5, ry, c.name.slice(0, Math.max(0, tagX - (box.x + 5) - 1)), TEXT, bg);
+    }
+    if (tag && tagX + tag.length <= box.x + box.w) buf.text(tagX, ry, tag, DIM, bg);
+    ctx.hits.add(`battle:fighter:${i}`, box.x, ry, Math.max(1, box.w), 1);
+  }
 }
 
 /** The opponent half: a paste field + live preview, then the "pick from Dex" list. */
-function drawOpponentPane(ctx: RenderContext, col: { x: number; y: number; w: number }): void {
+function drawOpponentPane(
+  ctx: RenderContext,
+  col: { x: number; y: number; w: number },
+  mirrorSpeciesId: string,
+): void {
   const { buf, ui } = ctx;
   const onInput = (ui.focus ?? 'input') === 'input';
   buf.text(col.x, col.y, 'Opponent', TEXT, null);
 
   drawPasteField(ctx, { x: col.x, y: col.y + 1, w: col.w }, onInput, ui.input ?? '');
-  drawOpponentPreview(ctx, { x: col.x, y: col.y + 4, w: col.w });
+  drawOpponentPreview(ctx, { x: col.x, y: col.y + 4, w: col.w }, mirrorSpeciesId);
 
   const listTop = col.y + 8;
   if (listTop < pageBodyBottom(ctx.layout)) {
     drawDivider(buf, listTop, { x: col.x, width: col.w, label: 'or pick from your Dex' });
-    drawDexList(ctx, { x: col.x, y: listTop + 2, w: col.w }, !onInput);
+    drawDexList(ctx, { x: col.x, y: listTop + 2, w: col.w }, ui.focus === 'list', mirrorSpeciesId);
   }
 }
 
@@ -125,9 +208,13 @@ function drawPasteField(
 }
 
 /** Preview whichever opponent is active (pasted code or selected Dex record). */
-function drawOpponentPreview(ctx: RenderContext, box: { x: number; y: number; w: number }): void {
+function drawOpponentPreview(
+  ctx: RenderContext,
+  box: { x: number; y: number; w: number },
+  mirrorSpeciesId: string,
+): void {
   const { buf } = ctx;
-  const res = resolveSetupOpponent({ pack: ctx.pack, getState: () => ctx.state }, ctx.ui);
+  const res = resolveSetupOpponent(hostOf(ctx), ctx.ui, mirrorSpeciesId);
   if ('error' in res) {
     clipText(buf, { x: box.x, y: box.y, text: res.error, color: DIM, maxCols: box.w });
     return;
@@ -149,6 +236,7 @@ function drawDexList(
   ctx: RenderContext,
   box: { x: number; y: number; w: number },
   listFocused: boolean,
+  mirrorSpeciesId: string,
 ): void {
   const { buf, layout, state, ui } = ctx;
   const records = bestSpeciesRecords(state.dexRecords);
@@ -162,6 +250,7 @@ function drawDexList(
     drawPickerRow(ctx, records[i]!, listFocused && i === (ui.selected ?? 0), ry, {
       x: box.x,
       w: box.w,
+      mirrorSpeciesId,
     });
     ctx.hits.add(`battle:pick:${i}`, box.x, ry, Math.max(1, box.w), 1);
   }
@@ -224,77 +313,86 @@ function drawFighter(
 // Orchestration (shared by the keyboard handler and mouse clicks)
 // ---------------------------------------------------------------------------
 
-/** Resolve the configured opponent, or an error message explaining why it can't fight. */
+/**
+ * Resolve the configured opponent against the chosen fighter's species, or an error
+ * explaining why it can't fight. The opponent is the PASTED code when the field holds
+ * one (a foreign player — a same-species mirror is allowed), otherwise the selected
+ * Dex record (your own — a same-species pick is a self-mirror and is blocked).
+ */
 export function resolveSetupOpponent(
   host: BattleHost,
   ui: PageUiState,
+  mirrorSpeciesId: string,
 ): { opp: Combatant; warn?: string } | { error: string } {
-  const state = host.getState();
-  if ((ui.focus ?? 'input') === 'list') {
-    const snap = bestSpeciesRecords(state.dexRecords)[ui.selected ?? 0];
-    if (!snap) return { error: 'No Dex record to battle yet.' };
-    if (sameSpecies(state.pet, snap)) {
-      return { error: "Can't battle your own kind — pick a different species or paste a code." };
-    }
-    if (!isBattleReady(snap))
-      return { error: 'That record is sealed — opponents must reach Evolved.' };
-    return { opp: opponentCombatant(host.pack, snap) };
-  }
   const code = (ui.input ?? '').trim();
-  if (!code) return { error: 'Paste a DNA code, or press Tab to pick from your Dex.' };
-  const decoded = decodeDna(code);
-  if (!isBattleReady(decoded))
-    return { error: 'That code is sealed — its pet is not yet Evolved.' };
-  const name = host.pack.species.find((s) => s.num === decoded.speciesNum)?.name ?? '???';
-  const opp = combatantFromDecoded(decoded, name);
-  return decoded.sigValid
-    ? { opp }
-    : { opp, warn: 'Integrity check failed — using recovered fields.' };
+  if (code) {
+    const decoded = decodeDna(code);
+    if (!isBattleReady(decoded))
+      return { error: 'That code is sealed — its pet is not yet Evolved.' };
+    const name = host.pack.species.find((s) => s.num === decoded.speciesNum)?.name ?? '???';
+    const opp = combatantFromDecoded(decoded, name);
+    return decoded.sigValid
+      ? { opp }
+      : { opp, warn: 'Integrity check failed — using recovered fields.' };
+  }
+  const snap = bestSpeciesRecords(host.getState().dexRecords)[ui.selected ?? 0];
+  if (!snap) return { error: 'Paste a DNA code, or pick one of your Dex records.' };
+  if (sameSpecies({ speciesId: mirrorSpeciesId }, snap)) {
+    return { error: "Can't battle your own kind — pick a different species or paste a code." };
+  }
+  if (!isBattleReady(snap))
+    return { error: 'That record is sealed — opponents must reach Evolved.' };
+  return { opp: opponentCombatant(host.pack, snap) };
 }
 
 /** Confirm the matchup: simulate ONCE and load it for playback, or flash the reason. */
 export function confirmBattle(rt: SetupShell, host: BattleHost): void {
-  const pet = host.getState().pet;
-  if (!isBattleReady(pet)) {
-    flash(rt, 'Your pet is sealed — battles unlock once it reaches Evolved.');
+  const fighters = fighterCandidates(host);
+  const fighter = fighters[clampSel(rt.ui.battle.fighterSel, fighters.length)]?.c;
+  if (!fighter) {
+    flash(rt, 'No battle-ready fighter — raise your pet (or a Dex pet) to Evolved.');
     return;
   }
-  const res = resolveSetupOpponent(host, rt.ui.battle);
+  const res = resolveSetupOpponent(host, rt.ui.battle, fighter.speciesId);
   if ('error' in res) {
     flash(rt, res.error);
     return;
   }
   if (res.warn) flash(rt, res.warn);
-  const left = playerCombatant(host.pack, pet);
-  const result = simulateBattle(left, res.opp, host.pack.battle);
-  rt.battle = { left, right: res.opp, result, cursor: 0, playing: true };
+  const result = simulateBattle(fighter, res.opp, host.pack.battle);
+  rt.battle = { left: fighter, right: res.opp, result, cursor: 0, playing: true };
 }
+
+/** Tab order across the three setup zones. */
+const FOCUS_ORDER = ['fighter', 'input', 'list'] as const;
+type Focus = (typeof FOCUS_ORDER)[number];
 
 /** Handle a key while the setup screen is showing (no battle loaded). */
 export function handleSetupKey(rt: SetupShell, host: BattleHost, name: string): boolean {
   const ui = rt.ui.battle;
+  const focus = (ui.focus ?? 'input') as Focus;
   switch (name) {
     case 'escape':
       rt.page = 'pet';
       return true;
     case 'tab':
-      ui.focus = (ui.focus ?? 'input') === 'input' ? 'list' : 'input';
+      ui.focus = FOCUS_ORDER[(FOCUS_ORDER.indexOf(focus) + 1) % FOCUS_ORDER.length];
       return true;
     case 'enter':
       confirmBattle(rt, host);
       return true;
     case 'up':
-      if (ui.focus === 'list') moveListSelection(rt, host, -1);
+      moveSetupSelection(rt, host, focus, -1);
       return true;
     case 'down':
-      if (ui.focus === 'list') moveListSelection(rt, host, +1);
+      moveSetupSelection(rt, host, focus, +1);
       return true;
     case 'backspace':
-      if ((ui.focus ?? 'input') === 'input') ui.input = (ui.input ?? '').slice(0, -1);
+      if (focus === 'input') ui.input = (ui.input ?? '').slice(0, -1);
       return true;
     default:
       // A single printable char extends the paste field (a paste is a run of these).
-      if ((ui.focus ?? 'input') === 'input' && isPrintable(name)) {
+      if (focus === 'input' && isPrintable(name)) {
         ui.input = (ui.input ?? '') + name;
         return true;
       }
@@ -302,11 +400,16 @@ export function handleSetupKey(rt: SetupShell, host: BattleHost, name: string): 
   }
 }
 
-/** Move the Dex-list selection, clamped to the record count. */
-export function moveListSelection(rt: SetupShell, host: BattleHost, delta: number): void {
-  const max = bestSpeciesRecords(host.getState().dexRecords).length - 1;
+/** ↑↓ within the focused list (fighter candidates or Dex opponents); no-op on the field. */
+function moveSetupSelection(rt: SetupShell, host: BattleHost, focus: Focus, delta: number): void {
   const ui = rt.ui.battle;
-  ui.selected = Math.max(0, Math.min(Math.max(0, max), (ui.selected ?? 0) + delta));
+  if (focus === 'fighter') {
+    const max = fighterCandidates(host).length - 1;
+    ui.fighterSel = Math.max(0, Math.min(Math.max(0, max), (ui.fighterSel ?? 0) + delta));
+  } else if (focus === 'list') {
+    const max = bestSpeciesRecords(host.getState().dexRecords).length - 1;
+    ui.selected = Math.max(0, Math.min(Math.max(0, max), (ui.selected ?? 0) + delta));
+  }
 }
 
 /** True for a single non-control printable character (the key name IS the char). */

@@ -29,8 +29,10 @@ export interface PageUiState {
   speciesId?: string | null;
   /** Battle setup: the pasted-DNA-code buffer (the opponent code being typed). */
   input?: string;
-  /** Battle setup: which opponent source is focused — the paste field or the Dex list. */
-  focus?: 'input' | 'list';
+  /** Battle setup: which zone is focused — your-fighter list, the paste field, or the Dex list. */
+  focus?: 'fighter' | 'input' | 'list';
+  /** Battle setup: selected index into your battle-ready fighter candidates (left side). */
+  fighterSel?: number;
 }
 
 /**

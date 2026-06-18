@@ -148,10 +148,32 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('renders the battle setup with a sealed pet and a pickable Dex record', () => {
+  it('auto-selects a battle-ready Dex fighter when the live pet is sealed', () => {
+    // Default fixture: a sealed (sprite-stage) live pet, but a battle-ready Ember
+    // record — so "Your fighter" fields Ember instead of showing the sealed block.
     const out = renderFrameToString(100, 30, input({ page: 'battle' }));
-    expect(out).toContain('Battle');
+    expect(out).toContain('Your fighter');
+    expect(out).toContain('Ember');
     expect(out).toContain('Opponent');
+    expect(out).not.toContain('Sealed — battles unlock');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the fighter selector when more than one fighter is battle-ready', () => {
+    // An Evolved live Wisp + the battle-ready Ember record → two candidates, so the
+    // "choose your fighter" list appears with the live pet tagged.
+    const state = makeState({ pet: makePet({ stage: 'evolved' }) });
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'battle',
+        state,
+        ui: { selected: 0, scroll: 0, focus: 'fighter', input: '', fighterSel: 0 },
+      }),
+    );
+    expect(out).toContain('CHOOSE YOUR FIGHTER'); // the divider label renders ALL-CAPS
+    expect(out).toContain('· you'); // the live pet is tagged
     expect(out).toMatchSnapshot();
   });
 

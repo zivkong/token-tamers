@@ -127,7 +127,7 @@ export function drawPickerRow(
   snap: DexSnapshot,
   selected: boolean,
   y: number,
-  rect: { x: number; w: number },
+  rect: { x: number; w: number; mirrorSpeciesId: string },
 ): void {
   const { buf } = ctx;
   const { x, w } = rect;
@@ -137,8 +137,9 @@ export function drawPickerRow(
   const bg = selected ? SEL_BG : null;
   const species = ctx.pack.species.find((s) => s.id === snap.speciesId);
   const name = species?.name ?? snap.speciesId;
-  // Eligibility: a same-species record is your own kind (mirror match) — not battleable.
-  const [tag, color] = sameSpecies(ctx.state.pet, snap)
+  // Eligibility relative to YOUR chosen fighter: a same-species own record is a
+  // self-mirror (not battleable); a foreign code never matches (its id is empty).
+  const [tag, color] = sameSpecies({ speciesId: rect.mirrorSpeciesId }, snap)
     ? (['⊘ your kind', SEALED] as const)
     : isBattleReady(snap)
       ? (['✦ ready', READY] as const)
