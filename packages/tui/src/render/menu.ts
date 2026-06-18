@@ -1,15 +1,14 @@
 /**
- * Menu model + equal-width, evenly-distributed packing.
+ * Menu model + full-width column packing.
  *
- * The menu is a row of nav buttons that ALL share one uniform width (the widest
- * button's text + interior padding) and a uniform HEIGHT (top pad / label /
- * bottom pad), distributed space-between across the full width — first
- * flush-left, last flush-right — so they read as a balanced nav bar of real
- * buttons. When the width can't hold them all, it wraps into a grid whose
- * columns stay aligned across rows (the last, partial row fills the leftmost
- * columns); when the terminal is short the button height shrinks to fit. Shared
- * by `layout` (to size `menuRows` + pick the height), `frame` (to draw), and
- * `shell` (to hit-test), so all three agree.
+ * The menu is a row of nav buttons that TILE the width end-to-end: each row's
+ * columns fill the inner width (a 1-col gap between them), every button spanning
+ * its whole column — no narrow centered buttons. Buttons are bordered boxes
+ * (HEIGHT 3) with the icon+label left and the hotkey right; when the width can't
+ * hold them all the row wraps into an aligned grid (the partial last row reuses
+ * the columns), and when the terminal is short the height shrinks toward 1 (a
+ * borderless filled block). Shared by `layout` (to size `menuRows` + pick the
+ * height), `frame` (to draw), and `shell` (to hit-test), so all three agree.
  */
 
 import type { PageId } from '../pages/types';
@@ -39,39 +38,37 @@ export interface MenuButton extends MenuItem {
   w: number;
 }
 
-/** Left/right inset, the MINIMUM gap between buttons, and interior H padding. */
+/** Left/right band inset, the gap between columns, and the interior key inset. */
 export const MENU_X = 1;
-const MENU_MIN_GAP = 2;
-/**
- * Interior horizontal padding (also where the right-aligned hotkey sits). Kept at
- * 1 so the six nav buttons pack two-per-row at the 34-col vertical minimum (a wider
- * pad would stack them one-per-row and overflow the 24-row floor).
- */
-export const MENU_PAD_X = 1;
+const MENU_COL_GAP = 1;
+/** Extra interior inset beyond the border (0 = label/key sit just inside the frame,
+ *  which lets the longest label — "⚙ Settings" — fit the narrowest tiled column). */
+export const MENU_PAD_X = 0;
+/** Cells a button's border frame consumes horizontally (left + right edges). */
+const BORDER_COLS = 2;
 
 /**
- * Button HEIGHT in cells. One row keeps the label perfectly centered on BOTH
- * axes (a single row is its own vertical center; even heights bottom-bias the
- * text); the button shape comes from the filled block + interior padding, not
- * extra rows. `computeLayout` may shrink this further only if a terminal is too
- * short — never below 1.
+ * Button HEIGHT in cells. 3 is a full bordered box (top rule / label / bottom
+ * rule); `computeLayout` shrinks it toward 1 on short terminals, where the button
+ * renders as a borderless filled block instead (the border needs ≥3 rows).
  */
-export const MENU_BTN_H = 1;
+export const MENU_BTN_H = 3;
 
 /** Rendered text of a button: `label key` (e.g. '♥ Pet 1'). */
 export function buttonText(item: MenuItem): string {
   return `${item.label} ${item.hotkey}`;
 }
 
-/** The uniform button width: the widest button's text plus interior padding. */
+/** Minimum button width: the widest `label key` text plus its border frame. */
 export function menuButtonWidth(): number {
   const widest = Math.max(...MENU_ITEMS.map((it) => [...buttonText(it)].length));
-  return widest + 2 * MENU_PAD_X;
+  return widest + BORDER_COLS;
 }
 
-/** Vertical gap between wrapped button rows — only when buttons are tall. */
+/** Vertical gap between wrapped button rows — bordered rows abut (their frames
+ *  separate them); a 2-row degraded button keeps a 1-row gap. */
 export function menuRowGap(btnH: number): number {
-  return btnH > 1 ? 1 : 0;
+  return btnH >= 3 ? 0 : btnH > 1 ? 1 : 0;
 }
 
 /** Band height (cells) for `wrapRows` rows of `btnH`-tall buttons. */
@@ -85,36 +82,37 @@ export function menuButtonY(row: number, btnH: number): number {
 }
 
 /**
- * Pack the nav buttons into an equal-width, space-between grid within `cols`.
- * Every button gets the same (padded) width; full rows span edge to edge and
- * columns stay aligned across wrapped rows; a lone column is centered. Returns
- * each button's x + wrap-row and the total wrap-row count (HEIGHT is applied by
- * the caller via `menuButtonY`/`menuBandRows`, since it depends on the terminal
- * height — see `computeLayout`).
+ * Pack the nav buttons into a FULL-WIDTH grid within `cols`: each row's columns
+ * tile the inner width end-to-end (a 1-col gap between them), every button filling
+ * its whole column — so there are no narrow centered buttons. Wraps into aligned
+ * rows when a row can't hold them all; the partial last row reuses the columns.
+ * HEIGHT is applied by the caller (`menuButtonY`/`menuBandRows`).
  */
 export function packMenu(cols: number): { buttons: MenuButton[]; rows: number } {
   const n = MENU_ITEMS.length;
-  const bw = menuButtonWidth();
+  const minW = menuButtonWidth();
   const inner = Math.max(1, cols - 2 * MENU_X);
-  // How many uniform buttons (each plus the minimum gap) fit on one row.
-  const perRow = Math.max(1, Math.min(n, Math.floor((inner + MENU_MIN_GAP) / (bw + MENU_MIN_GAP))));
+  const perRow = Math.max(
+    1,
+    Math.min(n, Math.floor((inner + MENU_COL_GAP) / (minW + MENU_COL_GAP))),
+  );
   const rows = Math.ceil(n / perRow);
 
-  // Column x-positions: space-between across the inner width so a full row spans
-  // flush-left to flush-right; a single column is centered; partial rows reuse
-  // the same columns.
-  const slack = Math.max(0, inner - perRow * bw);
-  const gaps = perRow - 1;
-  const colX = (col: number): number =>
-    gaps > 0
-      ? MENU_X + col * bw + Math.round((slack * col) / gaps)
-      : MENU_X + Math.floor(slack / 2);
+  // Tile `perRow` columns across the inner width with 1-col gaps; spread any
+  // leftover cells onto the leftmost columns so the row spans exactly edge to edge.
+  const avail = inner - (perRow - 1) * MENU_COL_GAP;
+  const baseW = Math.floor(avail / perRow);
+  const extra = avail - baseW * perRow;
+  const colW = (col: number): number => baseW + (col < extra ? 1 : 0);
+  const colX = (col: number): number => {
+    let x = MENU_X;
+    for (let c = 0; c < col; c++) x += colW(c) + MENU_COL_GAP;
+    return x;
+  };
 
-  const buttons = MENU_ITEMS.map((item, i) => ({
-    ...item,
-    x: colX(i % perRow),
-    row: Math.floor(i / perRow),
-    w: bw,
-  }));
+  const buttons = MENU_ITEMS.map((item, i) => {
+    const col = i % perRow;
+    return { ...item, x: colX(col), row: Math.floor(i / perRow), w: colW(col) };
+  });
   return { buttons, rows };
 }

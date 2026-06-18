@@ -291,7 +291,15 @@ function horizontalLayout(cols: number, rows: number): Layout {
 
   // The rail stacks the buttons one per row (its width fits a single column).
   const wrapRows = packMenu(rail).rows;
-  const menuBtnH = MENU_BTN_H;
+  // Shrink the button height (3 → 1) until the whole rail fits the dock's rows;
+  // a 1-tall button drops its border (drawn only at h ≥ 3).
+  let menuBtnH = 1;
+  for (let h = MENU_BTN_H; h >= 1; h--) {
+    if (RAIL_LABEL_ROWS + menuBandRows(wrapRows, h) <= rows) {
+      menuBtnH = h;
+      break;
+    }
+  }
   const menuRows = menuBandRows(wrapRows, menuBtnH);
 
   return {

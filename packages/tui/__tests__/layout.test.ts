@@ -98,20 +98,24 @@ describe('computeLayout — vertical (stacked)', () => {
     expect(l.menuY + l.menuRows).toBeLessThanOrEqual(l.termRows);
   });
 
-  it('distributes equal-width menu buttons across the width, wrapping when narrow', () => {
+  it('tiles full-width menu buttons across the width, wrapping when narrow', () => {
     const wide = packMenu(120);
     expect(wide.rows).toBe(1);
-    expect(wide.buttons[0]?.x).toBe(1);
-    expect(new Set(wide.buttons.map((b) => b.w)).size).toBe(1);
+    expect(wide.buttons[0]?.x).toBe(1); // flush left at MENU_X
+    // Full-width tiling: every button fills its column; widths differ by at most 1
+    // (the leftover cells are spread onto the leftmost columns).
+    const widths = wide.buttons.map((b) => b.w);
+    expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
     const last = wide.buttons[wide.buttons.length - 1]!;
-    expect(last.x + last.w).toBe(120 - 1);
+    expect(last.x + last.w).toBe(120 - 1); // the row spans edge to edge
     const lwide = computeLayout(120, 40);
     expect(lwide.menuBtnH).toBe(MENU_BTN_H);
     expect(lwide.menuRows).toBe(menuBandRows(wide.rows, lwide.menuBtnH));
 
     const narrow = packMenu(34);
     expect(narrow.rows).toBeGreaterThan(1);
-    expect(new Set(narrow.buttons.map((b) => b.w)).size).toBe(1);
+    const nw = narrow.buttons.map((b) => b.w);
+    expect(Math.max(...nw) - Math.min(...nw)).toBeLessThanOrEqual(1);
     const lnar = computeLayout(34, 24);
     expect(lnar.menuRows).toBe(menuBandRows(narrow.rows, lnar.menuBtnH));
   });
