@@ -20,13 +20,17 @@ export interface MenuItem {
   hotkey: string;
 }
 
+// Labels are intentionally icon-free: the buffer models one column per code point,
+// but terminals render emoji-presentation glyphs (♥ ⚔ ⚙ …) two columns wide, and
+// that extra column accumulates across the row and pushes every later button's
+// hotkey/border off. Plain text keeps the tiled, shared-border row exactly aligned.
 export const MENU_ITEMS: MenuItem[] = [
-  { id: 'pet', label: '♥ Pet', hotkey: '1' },
-  { id: 'dex', label: '☰ Dex', hotkey: '2' },
-  { id: 'archive', label: '◆ Archive', hotkey: '3' },
-  { id: 'battle', label: '⚔ Battle', hotkey: '4' },
-  { id: 'settings', label: '⚙ Settings', hotkey: '5' },
-  { id: 'quit', label: '⏻ Quit', hotkey: 'q' },
+  { id: 'pet', label: 'Pet', hotkey: '1' },
+  { id: 'dex', label: 'Dex', hotkey: '2' },
+  { id: 'archive', label: 'Archive', hotkey: '3' },
+  { id: 'battle', label: 'Battle', hotkey: '4' },
+  { id: 'settings', label: 'Settings', hotkey: '5' },
+  { id: 'quit', label: 'Quit', hotkey: 'q' },
 ];
 
 /** A laid-out button: its row (0-based within the menu band) and column. */
@@ -59,14 +63,11 @@ export function buttonText(item: MenuItem): string {
   return `${item.label} ${item.hotkey}`;
 }
 
-/** Minimum button width: the widest `label key` text, its border frame, one pad
- *  before the icon, and TWO cells of clearance after the hotkey. The extra right
- *  cell absorbs a wide (emoji-presentation) icon that some terminals render as two
- *  columns — the buffer is one-cell-per-codepoint, so without slack such an icon
- *  shifts the row right and the hotkey would jam against the border. */
+/** Minimum button width: the widest `label key` text, its border frame, and the
+ *  interior padding on both sides (so the longest label always fits). */
 export function menuButtonWidth(): number {
   const widest = Math.max(...MENU_ITEMS.map((it) => [...buttonText(it)].length));
-  return widest + BORDER_COLS + 3 * MENU_PAD_X;
+  return widest + BORDER_COLS + 2 * MENU_PAD_X;
 }
 
 /** Vertical gap between wrapped button rows — bordered rows abut (their frames
