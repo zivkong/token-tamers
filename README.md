@@ -358,6 +358,22 @@ it. That's the point.
 </details>
 
 <details>
+<summary><strong>How does my pet stay in sync with my usage?</strong></summary>
+
+<br>
+
+Automatically — just run <code>tt</code>. Every launch rescans the agents you enabled, folds in
+your new usage, and advances your pet to now. Your molt windows and weekly rebirth follow your
+real activity on their own. Want the weekly cycle pinned to the <em>exact</em> minute your
+subscription resets? That instant only appears on Claude Code's statusline, so make <code>tt</code>
+your statusline — add <code>"statusLine": { "type": "command", "command": "tt statusline" }</code> to
+<code>~/.claude/settings.json</code>. It's optional and read-only; the default inferred cycle is
+perfectly playable. Full guide (including how to keep another statusline alongside it):
+<a href="docs/wiki/getting-started.md#syncing-your-cycle">Syncing your cycle</a>.
+
+</details>
+
+<details>
 <summary><strong>I want to know everything. Where are the deep docs?</strong></summary>
 
 <br>

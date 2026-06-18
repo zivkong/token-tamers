@@ -29,6 +29,57 @@ See the [README](../../README.md#install) for per-OS install instructions
 
 Re-running `tt init` adds/removes adapters without touching pet state.
 
+## Syncing your cycle
+
+**Short version: you don't have to do anything — just run `tt`.** Every time you open the
+shell or run any command, Token Tamers rescans every agent you've enabled (from where it
+last left off), folds in your new usage, and advances your pet to _now_. That's the whole
+sync. It's the idle pillar at work: your work raises the monster, and looking at it is all
+the "syncing" there is. (As always, this only ever **reads your local logs** — never a token
+spent, never a network call.)
+
+Underneath, two things stay in step:
+
+- **Molts** (your 5-hour evolution windows) follow your real usage automatically — inferred
+  from your usage gaps on a _subscription_ cycle, or tiled from the week anchor on a _static_
+  cycle. Nothing to configure beyond the one choice you made at `tt init`.
+- **The weekly rebirth** lands on a 7-day boundary. By default the game keeps that boundary
+  sensibly placed on its own (inferring it from your usage, or from the week anchor you chose
+  at `tt init`), and it self-corrects so the boundary never drifts into the future. This works
+  out of the box — it's just not pinned to the exact minute your subscription resets.
+
+### Pinning the weekly cycle to your real reset (optional)
+
+Want your pet's week to turn over at the _exact_ moment your subscription limit resets? Claude
+Code hands that instant (`rate_limits` resets) to its **statusline** on every refresh — and
+that's the only place it appears, so `tt` has to be your statusline to catch it. Point Claude
+Code's statusLine at `tt statusline` by adding this to `~/.claude/settings.json`:
+
+```json
+"statusLine": { "type": "command", "command": "tt statusline" }
+```
+
+Now every refresh, `tt statusline` quietly records your real reset and prints a compact pet
+line (`🐾 sprite · 5h 31% · 7d 83%`). Catch-up then anchors your weekly cycle to that exact
+reset. It's **read-only and offline** — it only reads what Claude Code already computed.
+
+**Already using another statusline (e.g. yet-another-statusline)?** Claude Code allows only one
+statusLine command, so pick one:
+
+- **Switch to `tt statusline`** — simplest, if you're happy with its line.
+- **Run both** — point `statusLine.command` at a tiny wrapper script that feeds the same input
+  to your existing statusline _and_ to `tt statusline`, e.g.:
+
+  ```sh
+  #!/bin/sh
+  input=$(cat)
+  printf '%s' "$input" | tt statusline >/dev/null   # capture the reset, hide tt's line
+  printf '%s' "$input" | your-existing-statusline    # your line stays the display
+  ```
+
+- **Skip it** — the default inferred anchor is perfectly playable; the precise reset is a
+  power-user nicety, not a requirement.
+
 ## Settings & version
 
 Open `tt` and press **4** (or click **⚙ Settings**) to see what's in effect: the version
