@@ -29,7 +29,7 @@ import {
   type DexSnapshot,
 } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
-import { drawDivider, drawPageFooter, pageBodyBottom } from '../components';
+import { drawPageFooter, pageBodyBottom } from '../components';
 import {
   buildPalette,
   drawSprite,
@@ -56,6 +56,7 @@ const DIM: Rgb = { r: 96, g: 100, b: 120 };
 const READY: Rgb = { r: 74, g: 222, b: 128 };
 const SEL_BG: Rgb = { r: 40, g: 46, b: 64 };
 const VS_COLOR: Rgb = { r: 255, g: 224, b: 130 };
+const BORDER: Rgb = { r: 70, g: 76, b: 96 };
 
 /** One battle-ready fighter the player can field: a combatant + whether it's the live pet. */
 interface Fighter {
@@ -104,7 +105,7 @@ export function drawSetup(ctx: RenderContext, bodyY: number): void {
 
   // Portrait band — the hero element; height adapts so it fits short docks.
   const portraitY = bodyY + 1;
-  const reserved = 1 + 2 + 1 + 1 + 3; // labels + identity + band header + gap + min content
+  const reserved = 1 + 2 + 1 + 2 + 2; // labels + identity + gap + box borders + min content
   const portraitRows = Math.max(3, Math.min(9, bottom - bodyY - reserved));
   drawPortrait(ctx, fighter, { x: left.x, y: portraitY, w: left.w, rows: portraitRows }, false);
   drawPortrait(ctx, opp, { x: right.x, y: portraitY, w: right.w, rows: portraitRows }, true);
@@ -133,28 +134,22 @@ export function drawSetup(ctx: RenderContext, bodyY: number): void {
         : (ui.input ?? '').trim()
           ? 'paste'
           : 'dex';
-  const bandY = idY + 2;
-  if (bandY + 2 < bottom) {
-    drawDivider(buf, bandY, { x: left.x, width: left.w, label: 'your roster' });
-    drawOpponentTabs(ctx, { x: right.x, y: bandY, w: right.w }, oppTab);
-    const contentY = bandY + 2;
-    drawFighterList(
-      ctx,
-      { x: left.x, y: contentY, w: left.w },
-      fighters,
-      fsel,
-      focus === 'fighter',
-    );
-    if (oppTab === 'paste') {
-      drawPasteField(
-        ctx,
-        { x: right.x, y: contentY, w: right.w },
-        focus === 'input',
-        ui.input ?? '',
-      );
-    } else {
-      drawDexList(ctx, { x: right.x, y: contentY, w: right.w }, focus === 'list', mirror);
-    }
+  // A blank gap row (idY + 2) separates the identity from the bottom containers.
+  const boxTop = idY + 3;
+  const boxBottom = bottom - 1; // last drawable row (content must stay < pageBodyBottom)
+  if (boxBottom - boxTop >= 2) {
+    const boxH = boxBottom - boxTop + 1;
+    const inner = (b: { x: number; w: number }) => ({ x: b.x + 2, w: b.w - 4, bottom: boxBottom });
+    // Left container — your fighter roster.
+    drawBox(ctx, { x: left.x, y: boxTop, w: left.w, h: boxH }, focus === 'fighter');
+    boxTitle(ctx, { x: left.x, w: left.w, y: boxTop }, 'Your Roster', focus === 'fighter');
+    drawFighterList(ctx, { ...inner(left), y: boxTop + 1 }, fighters, fsel, focus === 'fighter');
+    // Right container — the opponent's tabbed source.
+    drawBox(ctx, { x: right.x, y: boxTop, w: right.w, h: boxH }, focus !== 'fighter');
+    drawOpponentTabs(ctx, { x: right.x, y: boxTop, w: right.w }, oppTab);
+    const oppInner = { ...inner(right), y: boxTop + 1 };
+    if (oppTab === 'paste') drawPasteField(ctx, oppInner, focus === 'input', ui.input ?? '');
+    else drawDexList(ctx, oppInner, focus === 'list', mirror);
   }
 
   drawPageFooter(ctx, 'Tab zone  ·  ↑↓ pick / paste a code  ·  Enter fight  ·  Esc back');
@@ -282,13 +277,14 @@ function centerText(
 /** The fighter candidate rows: grade, name, and a "you" tag for the live pet. */
 function drawFighterList(
   ctx: RenderContext,
-  box: { x: number; y: number; w: number },
+  box: { x: number; y: number; w: number; bottom?: number },
   fighters: Fighter[],
   sel: number,
   focused: boolean,
 ): void {
   const { buf, layout } = ctx;
-  const maxRows = Math.max(0, Math.min(fighters.length, pageBodyBottom(layout) - box.y));
+  const limit = box.bottom ?? pageBodyBottom(layout);
+  const maxRows = Math.max(0, Math.min(fighters.length, limit - box.y));
   for (let i = 0; i < maxRows; i++) {
     const ry = box.y + i;
     const { c, isLive } = fighters[i]!;
@@ -307,7 +303,41 @@ function drawFighterList(
   }
 }
 
-/** The "Paste code" / "From Dex" tab pair; the active tab is highlighted. */
+/** Draw a single-line box border (the bottom-band container); `focused` brightens it. */
+function drawBox(
+  ctx: RenderContext,
+  box: { x: number; y: number; w: number; h: number },
+  focused: boolean,
+): void {
+  const { buf } = ctx;
+  const { x, y, w, h } = box;
+  if (w < 2 || h < 2) return;
+  const color = focused ? READY : BORDER;
+  const horiz = '─'.repeat(w - 2);
+  buf.text(x, y, `┌${horiz}┐`, color, null);
+  buf.text(x, y + h - 1, `└${horiz}┘`, color, null);
+  for (let r = 1; r < h - 1; r++) {
+    buf.set(x, y + r, { ch: '│', fg: color, bg: null });
+    buf.set(x + w - 1, y + r, { ch: '│', fg: color, bg: null });
+  }
+}
+
+/** Overlay a centered title (padded) onto a box's top border row. */
+function boxTitle(
+  ctx: RenderContext,
+  box: { x: number; w: number; y: number },
+  label: string,
+  focused: boolean,
+): void {
+  centerText(ctx.buf, box, ` ${label} `, focused ? READY : DIM, true);
+}
+
+/**
+ * The "Paste code" / "From Dex" tab pair, centered on the opponent box's top
+ * border and flanked by ‹ › carets; the active tab is highlighted. Each tab is a
+ * click target (mouse parity with the Tab key). Falls back to short labels when
+ * the column is too narrow for the full ones.
+ */
 type OppTab = 'paste' | 'dex';
 function drawOpponentTabs(
   ctx: RenderContext,
@@ -315,22 +345,27 @@ function drawOpponentTabs(
   active: OppTab,
 ): void {
   const { buf } = ctx;
+  const sep = '  ';
+  const wide = box.w >= [...`‹ Paste code${sep}From Dex ›`].length + 2;
   const tabs: ReadonlyArray<[OppTab, string, 'input' | 'list']> = [
-    ['paste', 'Paste code', 'input'],
-    ['dex', 'From Dex', 'list'],
+    ['paste', wide ? 'Paste code' : 'Paste', 'input'],
+    ['dex', wide ? 'From Dex' : 'Dex', 'list'],
   ];
-  let x = box.x;
-  for (const [id, label, focusId] of tabs) {
-    const text = ` ${label} `;
-    const w = [...text].length;
-    if (x + w > box.x + box.w) break;
-    const on = active === id;
-    if (on) buf.textBold(x, box.y, text, READY, SEL_BG);
-    else buf.text(x, box.y, text, DIM, null);
-    // Click a tab to focus that opponent source (mouse parity with Tab).
-    ctx.hits.add(`battle:tab:${focusId}`, x, box.y, w, 1);
-    x += w + 1;
-  }
+  const fullW = [...`‹ ${tabs[0]![1]}${sep}${tabs[1]![1]} ›`].length;
+  let x = box.x + Math.max(1, Math.floor((box.w - fullW) / 2));
+  buf.text(x, box.y, '‹ ', DIM, null);
+  x += 2;
+  tabs.forEach(([id, label, focusId], i) => {
+    if (i) {
+      buf.text(x, box.y, sep, DIM, null);
+      x += sep.length;
+    }
+    if (active === id) buf.textBold(x, box.y, label, READY, null);
+    else buf.text(x, box.y, label, DIM, null);
+    ctx.hits.add(`battle:tab:${focusId}`, x, box.y, label.length, 1);
+    x += label.length;
+  });
+  buf.text(x, box.y, ' ›', DIM, null);
 }
 
 /** The single-row bracketed code field (tail-clipped) + a caret; sits in the Paste tab. */
@@ -360,18 +395,19 @@ function drawPasteField(
  */
 function drawDexList(
   ctx: RenderContext,
-  box: { x: number; y: number; w: number },
+  box: { x: number; y: number; w: number; bottom?: number },
   listFocused: boolean,
   mirrorSpeciesId: string,
 ): void {
   const { buf, layout, ui } = ctx;
   const records = opponentRecords(hostOf(ctx), mirrorSpeciesId);
   if (records.length === 0) {
-    buf.text(box.x, box.y, 'No eligible Dex opponent — paste a code.', DIM, null);
+    buf.text(box.x, box.y, 'No eligible opponent — paste a code.', DIM, null);
     return;
   }
   const sel = clampSel(ui.selected, records.length);
-  const maxRows = Math.max(0, Math.min(records.length, pageBodyBottom(layout) - box.y));
+  const limit = box.bottom ?? pageBodyBottom(layout);
+  const maxRows = Math.max(0, Math.min(records.length, limit - box.y));
   for (let i = 0; i < maxRows; i++) {
     const ry = box.y + i;
     drawPickerRow(ctx, records[i]!, listFocused && i === sel, ry, {

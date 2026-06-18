@@ -178,7 +178,7 @@ describe('golden frames (100x30, no-color)', () => {
         ui: { selected: 0, scroll: 0, focus: 'fighter', input: '', fighterSel: 0 },
       }),
     );
-    expect(out).toContain('YOUR ROSTER'); // the roster divider label renders ALL-CAPS
+    expect(out).toContain('Your Roster'); // the left container's title
     expect(out).toContain('· you'); // the live pet is tagged
     expect(out).toMatchSnapshot();
   });
