@@ -74,7 +74,9 @@ export class StringSink implements OutputSink {
  */
 export class Writer {
   readonly sink: OutputSink;
-  readonly color: ColorMode;
+  /** Active color depth. Mutable so the Settings page can recolor live (the render
+   *  loop reads this every frame); `--no-color` still sets the initial value. */
+  color: ColorMode;
   private altScreen = false;
   private cursorHidden = false;
   private mouseOn = false;

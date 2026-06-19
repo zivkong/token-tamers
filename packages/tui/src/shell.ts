@@ -68,6 +68,10 @@ export interface ShellOptions {
   tamerTitle?: string;
   /** Titles the player has earned and may wear (cycled in Settings). */
   earnedTitles?: string[];
+  /** Initial ANSI color preference ('auto'|'truecolor'|'256'|'8'|'none'). */
+  colorPref?: string;
+  /** Initial sub-cell sprite density ('auto'|'octant'|'sextant'|'half'). */
+  subcell?: string;
   /** Initial page to open on; defaults to 'pet'. `tt battle` opens on 'battle'. */
   initialPage?: PageId;
   /** A battle to play back immediately (set by `tt battle <code>`); undefined ⇒ picker. */
@@ -88,6 +92,12 @@ export interface ShellOptions {
    * the host writes config.json (the new handle stamps codes bred next launch).
    */
   onTamerChange?: (name: string, title: string) => void;
+  /**
+   * Persist the edited display preferences (color + sub-cell density). Called on
+   * each change; the host writes settings.json. Applied LIVE in-session (see
+   * shell-input), so this is purely for persistence across launches.
+   */
+  onDisplayChange?: (color: string, subcell: string) => void;
   // --- additive testing/IO hooks (all optional; defaults wire real stdio) ---
   /** Injected clock; defaults to Date.now. Single time source for the loop. */
   now?: () => number;
@@ -132,6 +142,10 @@ export interface ShellRuntime {
   onUpdateModeChange?: (mode: string) => void;
   /** Persist hook for the Tamer identity edit (from options). */
   onTamerChange?: (name: string, title: string) => void;
+  /** Persist hook for the display-preference edit (from options). */
+  onDisplayChange?: (color: string, subcell: string) => void;
+  /** Apply a color mode to the live render (mutates the writer; set by runShell). */
+  setColor?: (mode: ColorMode) => void;
   /** The loaded battle to play back on the Battle page (undefined ⇒ opponent picker). */
   battle?: BattleView;
 }
@@ -183,6 +197,8 @@ function initialSettings(options: ShellOptions): SettingsState {
     tamerName: options.tamerName ?? '',
     tamerTitle: options.tamerTitle ?? '',
     earnedTitles: options.earnedTitles ?? [],
+    color: options.colorPref ?? 'auto',
+    subcell: options.subcell ?? 'auto',
     editingName: false,
     selected: 0,
   };
@@ -215,6 +231,11 @@ export async function runShell(options: ShellOptions): Promise<void> {
     onCycleChange: options.onCycleChange,
     onUpdateModeChange: options.onUpdateModeChange,
     onTamerChange: options.onTamerChange,
+    onDisplayChange: options.onDisplayChange,
+    // Live recolor: mutate the writer's mode; the render loop reads it each frame.
+    setColor: (mode) => {
+      writer.color = mode;
+    },
     battle: options.initialBattle,
   };
 

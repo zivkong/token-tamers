@@ -19,11 +19,12 @@ import {
   appendNameChar,
   backspaceName,
   cycleSelectedField,
+  fieldAt,
   isNameFieldSelected,
-  isUpdateFieldSelected,
   settingsFieldCount,
-  titleFieldIndex,
 } from './pages/settings';
+import { setSubcellMode, type SubcellName } from './render/sprite';
+import type { ColorMode } from './terminal/ansi';
 import { handleBattleKey } from './pages/battle';
 import { flash } from './shell-effects';
 import type { PageId } from './pages/types';
@@ -188,26 +189,48 @@ function handleNameEntryKey(rt: ShellRuntime, name: string): boolean {
   return true; // swallow all other keys while editing
 }
 
-/** Cycle the focused Settings field and persist (no-op off the Settings page). */
+/** Map a color preference to a live render mode ('auto' → 'truecolor'). */
+function prefToColor(v: string): ColorMode {
+  return v === '256' || v === '8' || v === 'none' ? v : 'truecolor';
+}
+
+/** Map a sub-cell preference to a render mode ('auto' → the safe 'half'). */
+function prefToSubcell(v: string): SubcellName {
+  return v === 'octant' || v === 'sextant' || v === 'half' ? v : 'half';
+}
+
+/**
+ * Cycle the focused Settings field and persist by its group (no-op off the page).
+ * Display changes (color, sprite density) apply LIVE in addition to persisting.
+ */
 function adjustSetting(rt: ShellRuntime, delta: number): void {
   if (rt.page !== 'settings') return;
   const s = rt.settings;
+  const field = fieldAt(s);
   // The name field is text-edited (Enter + typing), not cycled — ←→ is a no-op.
-  if (isNameFieldSelected(s)) return;
-  const updateField = isUpdateFieldSelected(s);
-  const titleField = s.selected === titleFieldIndex(s);
+  if (!field || field.kind !== 'choice') return;
   cycleSelectedField(s, delta);
-  // Persist to the right store: update mode → settings.json; tamer → config.json
-  // (identity); cycle/anchor → config.json.
-  if (updateField) {
-    rt.onUpdateModeChange?.(s.updateMode);
-  } else if (titleField) {
-    rt.onTamerChange?.(s.tamerName, s.tamerTitle);
-  } else {
-    // The anchor is only meaningful under subscription; persist '' for static so a
-    // remembered anchor (kept in-memory for round-trips) never lands in config.json.
-    const anchor = s.cyclePolicy === 'subscription' ? s.anchorAdapter : '';
-    rt.onCycleChange?.(s.cyclePolicy, anchor);
+  switch (field.group) {
+    case 'update':
+      rt.onUpdateModeChange?.(s.updateMode);
+      return;
+    case 'tamer':
+      rt.onTamerChange?.(s.tamerName, s.tamerTitle);
+      return;
+    case 'display':
+      // Apply instantly, then persist the preference for next launch.
+      setSubcellMode(prefToSubcell(s.subcell));
+      rt.setColor?.(prefToColor(s.color));
+      rt.onDisplayChange?.(s.color, s.subcell);
+      return;
+    case 'cycle':
+    default: {
+      // The anchor is only meaningful under subscription; persist '' for static so a
+      // remembered anchor (kept in-memory for round-trips) never lands in config.json.
+      const anchor = s.cyclePolicy === 'subscription' ? s.anchorAdapter : '';
+      rt.onCycleChange?.(s.cyclePolicy, anchor);
+      return;
+    }
   }
 }
 

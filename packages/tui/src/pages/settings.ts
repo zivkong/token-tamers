@@ -1,27 +1,21 @@
 /**
- * Settings page: a board of build/config facts plus the shell's only editable
- * surface — the opt-in update mode and the pet-global cycle clock (policy + the
- * subscription anchor adapter). Everything else (version, runtime, display, data
- * dir, the adapter list) is read-only; Token Tamers is fully idle, so adding/
- * removing adapters and editing scan paths stays in `tt init`.
+ * Settings page — a compact board of read-only facts plus the shell's editable
+ * surface, grouped into labelled sections (Identity · Display · Cycle · Updates).
  *
- * Editing is keyboard/mouse driven by the shell: ↑↓ move `selected` across the
- * flat field list (0 = update mode, 1 = cycle policy, 2 = anchor when shown), ←→
- * cycle the focused field's value. The page stays a pure render of `info` (static)
- * + `settings` (live) and registers a hit region per field; the shell owns
- * mutation + persistence (update mode → settings.json, cycle → config.json).
+ * Fields are declared once in {@link SECTIONS}; the renderer and the cycle/edit
+ * helpers are generic over that list, so adding a setting is one array entry. The
+ * flat `selected` index walks the VISIBLE fields top-to-bottom (the subscription
+ * anchor is hidden under static / a single adapter). The page stays a pure render
+ * of `info` (static) + `settings` (live) and registers a hit region per field row;
+ * the shell owns mutation + persistence, routed by each field's `group`:
+ *   identity → config.json · display → settings.json (LIVE) · cycle → config.json ·
+ *   update → settings.json.
  */
 
 import { sanitizeTamerName, TAMER_NAME_MAX } from '@token-tamers/core';
-import type { ColorMode, Rgb } from '../terminal/ansi';
-import { drawPageFooter, drawPageHeader, pageBodyBottom } from '../components';
+import type { Rgb } from '../terminal/ansi';
+import { drawDivider, drawPageFooter, drawPageHeader, pageBodyBottom } from '../components';
 import type { RenderContext, SettingsState } from './types';
-
-/** The title options the player can wear: "none" first, then each earned title. */
-const NO_TITLE = '— none';
-function titleOptions(state: SettingsState): string[] {
-  return [NO_TITLE, ...state.earnedTitles];
-}
 
 const TEXT: Rgb = { r: 214, g: 220, b: 234 };
 const DIM: Rgb = { r: 96, g: 100, b: 120 };
@@ -30,47 +24,161 @@ const SELECT_BG: Rgb = { r: 40, g: 48, b: 78 };
 const VALUE_SELECTED: Rgb = { r: 255, g: 224, b: 130 };
 
 const UNKNOWN = '—';
+const NO_TITLE = '— none';
 
-/** The cyclable values for each editable field, in toggle order. */
+/** Option lists for the choice fields, in toggle order. */
 export const UPDATE_VALUES: readonly string[] = ['off', 'notify', 'auto'];
 export const CYCLE_VALUES: readonly string[] = ['subscription', 'static'];
+export const COLOR_VALUES: readonly string[] = ['auto', 'truecolor', '256', '8', 'none'];
+export const SUBCELL_VALUES: readonly string[] = ['auto', 'octant', 'sextant', 'half'];
 
-/** Flat-list selection indices of the global editable fields. */
-export const UPDATE_FIELD_INDEX = 0;
-export const CYCLE_FIELD_INDEX = 1;
-export const ANCHOR_FIELD_INDEX = 2;
+// ---------------------------------------------------------------------------
+// Declarative field model
+// ---------------------------------------------------------------------------
+
+/** Where an edited field is persisted (the shell routes to the matching hook). */
+export type FieldGroup = 'tamer' | 'display' | 'cycle' | 'update';
+
+export interface FieldSpec {
+  /** Stable key (also the SettingsState property for choice fields). */
+  key: string;
+  /** Row label. */
+  label: string;
+  /** 'text' = the handle (Enter+typing); 'choice' = a ‹ value › cycler. */
+  kind: 'text' | 'choice';
+  /** Persistence group. */
+  group: FieldGroup;
+  /** Choice cycle order (choice fields only). */
+  options?: (s: SettingsState) => readonly string[];
+  /** Current display value (choice fields only). */
+  value?: (s: SettingsState) => string;
+  /** Write a cycled value back into state (choice fields only). */
+  set?: (s: SettingsState, v: string) => void;
+  /** Visibility predicate (e.g. the anchor only shows under subscription + >1 adapter). */
+  visible?: (s: SettingsState) => boolean;
+}
 
 /** Whether the subscription anchor field is shown (subscription + >1 adapter). */
 export function anchorFieldShown(state: SettingsState): boolean {
   return state.cyclePolicy === 'subscription' && state.adapters.length > 1;
 }
 
-/**
- * Selection index of the Tamer-name field. The identity fields (name, then title)
- * sit AFTER the cycle block, so the name index slides by one when the optional
- * subscription anchor field is showing.
- */
-export function nameFieldIndex(state: SettingsState): number {
-  return anchorFieldShown(state) ? 3 : 2;
+const SECTIONS: ReadonlyArray<{ title: string; fields: FieldSpec[] }> = [
+  {
+    title: 'Identity',
+    fields: [
+      { key: 'tamerName', label: 'Tamer', kind: 'text', group: 'tamer' },
+      {
+        key: 'tamerTitle',
+        label: 'Title',
+        kind: 'choice',
+        group: 'tamer',
+        options: (s) => [NO_TITLE, ...s.earnedTitles],
+        value: (s) => s.tamerTitle || NO_TITLE,
+        set: (s, v) => {
+          s.tamerTitle = v === NO_TITLE ? '' : v;
+        },
+      },
+    ],
+  },
+  {
+    title: 'Display',
+    fields: [
+      {
+        key: 'color',
+        label: 'Color',
+        kind: 'choice',
+        group: 'display',
+        options: () => COLOR_VALUES,
+        value: (s) => s.color,
+        set: (s, v) => {
+          s.color = v;
+        },
+      },
+      {
+        key: 'subcell',
+        label: 'Sprites',
+        kind: 'choice',
+        group: 'display',
+        options: () => SUBCELL_VALUES,
+        value: (s) => s.subcell,
+        set: (s, v) => {
+          s.subcell = v;
+        },
+      },
+    ],
+  },
+  {
+    title: 'Cycle',
+    fields: [
+      {
+        key: 'cyclePolicy',
+        label: 'Clock',
+        kind: 'choice',
+        group: 'cycle',
+        options: () => CYCLE_VALUES,
+        value: (s) => s.cyclePolicy,
+        set: (s, v) => {
+          s.cyclePolicy = v;
+          // Subscription needs an anchor; seed the first adapter only when none is
+          // remembered yet (a later switch back restores the player's choice).
+          if (v === 'subscription' && !s.anchorAdapter) {
+            s.anchorAdapter = s.adapters[0]?.provider ?? '';
+          }
+        },
+      },
+      {
+        key: 'anchorAdapter',
+        label: 'Anchor',
+        kind: 'choice',
+        group: 'cycle',
+        visible: anchorFieldShown,
+        options: (s) => s.adapters.map((a) => a.provider),
+        value: (s) => s.anchorAdapter,
+        set: (s, v) => {
+          s.anchorAdapter = v;
+        },
+      },
+    ],
+  },
+  {
+    title: 'Updates',
+    fields: [
+      {
+        key: 'updateMode',
+        label: 'Mode',
+        kind: 'choice',
+        group: 'update',
+        options: () => UPDATE_VALUES,
+        value: (s) => s.updateMode,
+        set: (s, v) => {
+          s.updateMode = v;
+        },
+      },
+    ],
+  },
+];
+
+const ALL_FIELDS: readonly FieldSpec[] = SECTIONS.flatMap((sec) => sec.fields);
+
+/** The visible fields, flat, in render order (skips a hidden anchor). */
+function visibleFields(state: SettingsState): FieldSpec[] {
+  return ALL_FIELDS.filter((f) => !f.visible || f.visible(state));
 }
 
-/** Selection index of the Tamer-title field (immediately after the name). */
-export function titleFieldIndex(state: SettingsState): number {
-  return nameFieldIndex(state) + 1;
-}
-
-/**
- * Number of editable fields: update mode (0) + cycle policy (1) are always present;
- * the subscription anchor (2) appears only under subscription with >1 adapter; the
- * Tamer name + title always follow.
- */
+/** Number of selectable fields (drives ↑↓ bounds). */
 export function settingsFieldCount(state: SettingsState): number {
-  return (anchorFieldShown(state) ? 3 : 2) + 2;
+  return visibleFields(state).length;
 }
 
-/** True when the Tamer-name field is the one currently focused. */
+/** The field the flat `selected` index points at (or undefined if out of range). */
+export function fieldAt(state: SettingsState): FieldSpec | undefined {
+  return visibleFields(state)[state.selected];
+}
+
+/** True when the Tamer-name text field is the one currently focused. */
 export function isNameFieldSelected(state: SettingsState): boolean {
-  return state.selected === nameFieldIndex(state);
+  return fieldAt(state)?.key === 'tamerName';
 }
 
 /** Append a printable char to the handle (capped); used while editing the name. */
@@ -86,261 +194,103 @@ export function backspaceName(state: SettingsState): void {
 /** Wrap a value to the next/previous entry in its option list. */
 function nextValue(values: readonly string[], current: string, delta: number): string {
   const n = values.length;
+  if (n === 0) return current;
   const at = values.indexOf(current);
   const base = at < 0 ? 0 : at;
   return values[(((base + delta) % n) + n) % n] ?? current;
 }
 
-/** True when the update-mode field is the one currently focused. */
-export function isUpdateFieldSelected(state: SettingsState): boolean {
-  return state.selected === UPDATE_FIELD_INDEX;
-}
-
 /**
- * Cycle the currently-focused field by `delta` (+1 / -1), mutating the working
- * copy in place. Index 0 = update mode, 1 = cycle policy, 2 = subscription anchor.
- * No-op when nothing is focused. The shell calls this, then persists (update mode
- * → settings.json, cycle → config.json).
+ * Cycle the currently-focused CHOICE field by `delta` (+1 / -1), mutating the
+ * working copy in place. A text field (the handle) is a no-op here — it is edited
+ * by typing. The shell calls this, then persists by the field's `group`.
  */
 export function cycleSelectedField(state: SettingsState, delta: number): void {
-  if (state.selected < 0 || state.selected >= settingsFieldCount(state)) return;
-  if (state.selected === UPDATE_FIELD_INDEX) {
-    state.updateMode = nextValue(UPDATE_VALUES, state.updateMode, delta);
-    return;
-  }
-  if (state.selected === CYCLE_FIELD_INDEX) {
-    state.cyclePolicy = nextValue(CYCLE_VALUES, state.cyclePolicy, delta);
-    // Subscription needs an anchor; seed the first adapter only when none is
-    // remembered yet. Switching to static KEEPS the remembered anchor (the field
-    // just hides via settingsFieldCount, and persistence drops the anchor under
-    // static) so a later switch back restores the player's chosen adapter rather
-    // than silently snapping to the first one.
-    if (state.cyclePolicy === 'subscription' && !state.anchorAdapter) {
-      state.anchorAdapter = state.adapters[0]?.provider ?? '';
-    }
-    return;
-  }
-  // Anchor field: cycle through the configured adapter ids.
-  if (state.selected === ANCHOR_FIELD_INDEX && anchorFieldShown(state)) {
-    const ids = state.adapters.map((a) => a.provider);
-    state.anchorAdapter = nextValue(ids, state.anchorAdapter, delta);
-    return;
-  }
-  // Title field: cycle through "none" + the earned titles. (The name field is
-  // text-edited by typing, not cycled, so ←→ is a no-op there.)
-  if (state.selected === titleFieldIndex(state)) {
-    const opts = titleOptions(state);
-    const current = state.tamerTitle || NO_TITLE;
-    const next = nextValue(opts, current, delta);
-    state.tamerTitle = next === NO_TITLE ? '' : next;
-  }
+  const f = fieldAt(state);
+  if (!f || f.kind !== 'choice' || !f.options || !f.value || !f.set) return;
+  f.set(state, nextValue(f.options(state), f.value(state), delta));
 }
 
-/** Human label for the active color mode (drawn from the live writer mode). */
-function colorLabel(mode: ColorMode): string {
-  switch (mode) {
-    case 'truecolor':
-      return 'truecolor';
-    case '256':
-      return '256-color';
-    case '8':
-      return '8-color';
-    case 'none':
-      return 'monochrome';
-  }
-}
+// ---------------------------------------------------------------------------
+// Renderer
+// ---------------------------------------------------------------------------
 
 export function renderSettingsPage(ctx: RenderContext): void {
   const { buf, layout, info } = ctx;
   const labelX = layout.canvasX + 1;
   const valueX = layout.canvasX + 13;
-
-  // Standard page header (no completion readout — Settings tracks nothing).
-  // Returns the first body row.
   let y = drawPageHeader(ctx, { icon: '⚙', title: 'Settings' });
-  // Body rows stop above the footer clearance gap so nothing collides with the
-  // footer on a short horizontal dock (excess static rows degrade gracefully).
-  const bodyBottom = pageBodyBottom(layout);
+  const bottom = pageBodyBottom(layout);
   const row = (label: string, value: string, valueFg: Rgb = TEXT): void => {
-    if (y < bodyBottom) {
+    if (y < bottom) {
       buf.text(labelX, y, label, LABEL, null);
       buf.text(valueX, y, value, valueFg, null);
     }
     y += 1;
   };
 
-  // Static facts. The player-facing content era is the Season; the backend
-  // pack/schema version numbers are intentionally NOT shown here.
+  // Read-only facts (Runtime removed). The player-facing era is the Season; the
+  // backend pack/schema version numbers stay hidden.
   row('Version', `Token Tamers v${info?.version ?? UNKNOWN}`);
   row('Season', `Season ${ctx.pack.season}`, LABEL);
-  row('Runtime', info?.runtime ?? UNKNOWN, DIM);
-  row('Display', `${colorLabel(ctx.mode)} · ${info?.fps ?? UNKNOWN} fps`);
   row('Data', info?.dataDir ?? UNKNOWN, DIM);
 
-  // Opt-in update mode — the first EDITABLE field (off ▸ notify ▸ auto).
-  y = drawUpdateField(ctx, y, row);
+  const s = ctx.settings;
+  if (s) {
+    // drawSections owns its own spacing (a blank line before AND after each section
+    // title), so it starts right after the static block.
+    y = drawSections(ctx, y, s);
+    y += 1;
+    drawAdapters(ctx, row);
+  }
 
-  // Pet-global cycle clock — editable: policy (▸ anchor when subscription).
-  y = drawCycleFields(ctx, y);
-
-  // Tamer identity — your handle (text-edit) + the title you wear (cycle earned).
-  y = drawTamerFields(ctx, y, row);
-
-  // Read-only adapter list (data sources only; managed by `tt init`).
-  y += 1;
-  drawAdapters(ctx, row);
-
-  // Standard footer: the editing-controls hint (the name field has its own typing
-  // mode). The nav legend is intentionally gone — the global "── Menu ──" buttons
-  // below already provide page navigation.
   drawPageFooter(
     ctx,
-    ctx.settings?.editingName
+    s?.editingName
       ? 'type your handle   ·   Enter done   ·   Esc cancel'
-      : '↑↓ select   ←→ change   ·   Enter edit name   ·   changes apply on restart',
+      : '↑↓ select   ←→ change   ·   Enter edit name   ·   color/sprites apply live',
   );
 }
 
-/**
- * Draw the Tamer identity fields: the handle (a text-edit field — Enter toggles
- * typing, see shell-input) and the worn title (cycle through earned titles).
- * Read-only fallback to static `info` when there is no live settings state.
- */
-function drawTamerFields(
+/** Draw each section header + its visible fields; returns the next free row. */
+function drawSections(ctx: RenderContext, startY: number, s: SettingsState): number {
+  const { buf, layout } = ctx;
+  const bottom = pageBodyBottom(layout);
+  let y = startY;
+  let index = 0;
+  for (const section of SECTIONS) {
+    const fields = section.fields.filter((f) => !f.visible || f.visible(s));
+    if (fields.length === 0) continue;
+    y += 1; // gap BEFORE the section title (separates it from the section above)
+    if (y < bottom) {
+      drawDivider(buf, y, {
+        x: layout.canvasX + 1,
+        width: layout.canvasCols - 2,
+        label: section.title,
+      });
+    }
+    y += 2; // advance past the title row + a blank gap AFTER it (divider standard)
+    for (const f of fields) {
+      drawField(ctx, y, f, index, s);
+      index += 1;
+      y += 1;
+    }
+  }
+  return y;
+}
+
+/** Draw one field row (label + value/handle) and its hit region, bounds-guarded. */
+function drawField(
   ctx: RenderContext,
   y: number,
-  row: (label: string, value: string, valueFg?: Rgb) => void,
-): number {
-  const { settings, info } = ctx;
-  if (!settings) {
-    row('Tamer', info?.tamer || 'Anonymous Tamer', info?.tamer ? TEXT : DIM);
-    row('Title', info?.tamerTitle || UNKNOWN, DIM);
-    return y + 2;
-  }
-  drawNameField(ctx, y, settings);
-  const titleY = y + 1;
-  drawEditableField(ctx, titleY, {
-    index: titleFieldIndex(settings),
-    label: 'Title',
-    value: settings.tamerTitle || NO_TITLE,
-  });
-  return titleY + 1;
-}
-
-/** Draw the editable Tamer-name field: the handle text + a caret while editing. */
-function drawNameField(ctx: RenderContext, y: number, settings: SettingsState): void {
-  const { buf, hits, layout } = ctx;
+  f: FieldSpec,
+  index: number,
+  s: SettingsState,
+): void {
+  const { buf, hits, layout, info } = ctx;
   const { canvasX, canvasCols } = layout;
   if (y >= pageBodyBottom(layout)) return;
-  const idx = nameFieldIndex(settings);
-  const selected = settings.selected === idx;
-  const editing = selected && settings.editingName;
-  if (selected) {
-    for (let x = 1; x < canvasCols - 1; x++) {
-      buf.set(canvasX + x, y, { ch: ' ', fg: null, bg: SELECT_BG });
-    }
-  }
-  const bg = selected ? SELECT_BG : null;
-  const name = settings.tamerName;
-  const shown = editing ? `${name}_` : name || '— anonymous';
-  const fg = editing ? VALUE_SELECTED : name ? TEXT : DIM;
-  buf.text(canvasX + 1, y, selected ? '›' : ' ', VALUE_SELECTED, bg);
-  buf.text(canvasX + 3, y, 'Tamer', LABEL, bg);
-  buf.text(canvasX + 13, y, shown, fg, bg);
-  hits.add(`settings:field:${idx}`, canvasX + 1, y, canvasCols - 2, 1);
-}
-
-/**
- * Draw the editable update-mode field (selection index 0) + its hit region, and
- * return the next free row. Falls back to a read-only row when there is no live
- * settings state (golden frames that pass only `info`). The `‹ value ›` cycles
- * off ▸ notify ▸ auto; an opt-in check may append a `· vX available` hint.
- */
-function drawUpdateField(
-  ctx: RenderContext,
-  y: number,
-  row: (label: string, value: string, valueFg?: Rgb) => void,
-): number {
-  const { buf, hits, layout, settings, info } = ctx;
-  const { canvasX, canvasCols } = layout;
-  // Never draw/register a hit on or below the footer clearance gap.
-  if (y >= pageBodyBottom(layout)) return y + 1;
-  const hint = info?.updateAvailable ? ` · ${info.updateAvailable} available` : '';
-
-  // No live state (tests passing only `info`): keep the prior read-only row.
-  if (!settings) {
-    row(
-      'Updates',
-      `${info?.updateMode ?? UNKNOWN}${hint}`,
-      info?.updateAvailable ? VALUE_SELECTED : DIM,
-    );
-    return y + 1;
-  }
-
-  const selected = settings.selected === UPDATE_FIELD_INDEX;
-  if (selected) {
-    for (let x = 1; x < canvasCols - 1; x++) {
-      buf.set(canvasX + x, y, { ch: ' ', fg: null, bg: SELECT_BG });
-    }
-  }
-  const bg = selected ? SELECT_BG : null;
-  const segment = `‹ ${settings.updateMode} ›`;
-  buf.text(canvasX + 1, y, selected ? '›' : ' ', VALUE_SELECTED, bg);
-  buf.text(canvasX + 3, y, 'Updates', LABEL, bg);
-  buf.text(canvasX + 13, y, segment, selected ? VALUE_SELECTED : TEXT, bg);
-  if (hint) buf.text(canvasX + 14 + [...segment].length, y, hint.trimStart(), DIM, bg);
-  // Hit region matches the highlight fill (cols 1..canvasCols-1), not col 0.
-  hits.add(`settings:field:${UPDATE_FIELD_INDEX}`, canvasX + 1, y, canvasCols - 2, 1);
-  return y + 1;
-}
-
-/**
- * Draw the editable cycle fields: the policy (index 1) and, when subscription is
- * active with more than one adapter, the anchor adapter (index 2). Returns the
- * next free canvas row. Read-only fallback when there is no live settings state.
- */
-function drawCycleFields(ctx: RenderContext, y: number): number {
-  const { settings } = ctx;
-  if (!settings) {
-    if (y < pageBodyBottom(ctx.layout)) {
-      ctx.buf.text(ctx.layout.canvasX + 1, y, 'Cycle', LABEL, null);
-      ctx.buf.text(ctx.layout.canvasX + 13, y, UNKNOWN, DIM, null);
-    }
-    return y + 1;
-  }
-  drawEditableField(ctx, y, {
-    index: CYCLE_FIELD_INDEX,
-    label: 'Cycle',
-    value: settings.cyclePolicy,
-  });
-  let next = y + 1;
-  if (anchorFieldShown(settings)) {
-    drawEditableField(ctx, next, {
-      index: ANCHOR_FIELD_INDEX,
-      label: 'Anchor',
-      value: settings.anchorAdapter,
-    });
-    next += 1;
-  }
-  return next;
-}
-
-interface EditableField {
-  index: number;
-  label: string;
-  value: string;
-}
-
-/** Draw one global editable field row (label + ‹ value ›) and its hit region. */
-function drawEditableField(ctx: RenderContext, y: number, f: EditableField): void {
-  const { buf, hits, layout, settings } = ctx;
-  const { canvasX, canvasCols } = layout;
-  // Stay above the footer clearance gap — never draw OR register a hit on/below
-  // the footer row (a short dock would otherwise put a live hit under the footer).
-  if (y >= pageBodyBottom(layout)) return;
-  const selected = settings?.selected === f.index;
-  const segment = `‹ ${f.value} ›`;
-
+  const selected = s.selected === index;
   if (selected) {
     for (let x = 1; x < canvasCols - 1; x++) {
       buf.set(canvasX + x, y, { ch: ' ', fg: null, bg: SELECT_BG });
@@ -349,9 +299,28 @@ function drawEditableField(ctx: RenderContext, y: number, f: EditableField): voi
   const bg = selected ? SELECT_BG : null;
   buf.text(canvasX + 1, y, selected ? '›' : ' ', VALUE_SELECTED, bg);
   buf.text(canvasX + 3, y, f.label, LABEL, bg);
-  buf.text(canvasX + 13, y, segment, selected ? VALUE_SELECTED : TEXT, bg);
-  // Hit region matches the highlight fill (cols 1..canvasCols-1), not col 0.
-  hits.add(`settings:field:${f.index}`, canvasX + 1, y, canvasCols - 2, 1);
+
+  if (f.kind === 'text') {
+    const editing = selected && s.editingName;
+    const name = s.tamerName;
+    const shown = editing ? `${name}_` : name || '— anonymous';
+    const fg = editing ? VALUE_SELECTED : name ? TEXT : DIM;
+    buf.text(canvasX + 13, y, shown, fg, bg);
+  } else {
+    const segment = `‹ ${f.value!(s)} ›`;
+    buf.text(canvasX + 13, y, segment, selected ? VALUE_SELECTED : TEXT, bg);
+    // The update-mode field appends a "· vX available" hint when a check found one.
+    if (f.key === 'updateMode' && info?.updateAvailable) {
+      buf.text(
+        canvasX + 14 + [...segment].length,
+        y,
+        `· ${info.updateAvailable} available`,
+        DIM,
+        bg,
+      );
+    }
+  }
+  hits.add(`settings:field:${index}`, canvasX + 1, y, canvasCols - 2, 1);
 }
 
 /** Draw the read-only adapter list (data sources; managed by `tt init`). */
@@ -361,5 +330,5 @@ function drawAdapters(ctx: RenderContext, row: (l: string, v: string, fg?: Rgb) 
     row('Adapters', 'none configured — run `tt init`', DIM);
     return;
   }
-  row('Adapters', adapters.map((a) => a.provider).join(', '), DIM);
+  row('Adapters', `${adapters.map((a) => a.provider).join(', ')}   (manage via \`tt init\`)`, DIM);
 }

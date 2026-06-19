@@ -153,8 +153,9 @@ describe('runShell loop', () => {
         savedAnchor = anchor;
       },
     });
-    input.push({ type: 'key', name: '6' }); // open settings (update-mode field focused)
-    input.push({ type: 'key', name: 'down' }); // move to the global cycle field (index 1)
+    input.push({ type: 'key', name: '6' }); // open settings (Tamer field focused)
+    // Order: Tamer 0, Title 1, Color 2, Sprites 3, Clock 4 → 4 downs to the cycle field.
+    for (let i = 0; i < 4; i++) input.push({ type: 'key', name: 'down' });
     input.push({ type: 'key', name: 'right' }); // cycle subscription -> static
     await done;
     expect(saveCount).toBe(1);
@@ -187,7 +188,8 @@ describe('runShell loop', () => {
       },
     });
     input.push({ type: 'key', name: '6' }); // settings
-    input.push({ type: 'key', name: 'down' }); // to the cycle field (index 1)
+    // Tamer 0, Title 1, Color 2, Sprites 3, Clock 4 → 4 downs to the cycle field.
+    for (let i = 0; i < 4; i++) input.push({ type: 'key', name: 'down' });
     input.push({ type: 'key', name: 'right' }); // subscription -> static (anchor dropped on persist)
     input.push({ type: 'key', name: 'right' }); // static -> subscription (anchor restored)
     await done;
@@ -222,10 +224,50 @@ describe('runShell loop', () => {
         savedMode = mode;
       },
     });
-    input.push({ type: 'key', name: '6' }); // open settings (update-mode field focused first)
+    input.push({ type: 'key', name: '6' }); // open settings (Tamer field focused)
+    // 1 adapter ⇒ no Anchor. Order: Tamer 0, Title 1, Color 2, Sprites 3, Clock 4,
+    // Mode 5 → 5 downs to the update-mode field.
+    for (let i = 0; i < 5; i++) input.push({ type: 'key', name: 'down' });
     input.push({ type: 'key', name: 'right' }); // cycle off -> notify
     await done;
     expect(savedMode).toBe('notify'); // update mode persisted via its own hook
     expect(adapterSaves).toBe(0); // cycle persistence untouched
+  });
+
+  it('edits the Color display pref with ←→ and persists via the display hook', async () => {
+    const input = manualInput();
+    const host = makeHost();
+    const sink = new StringSink();
+    let savedColor: string | null = null;
+    let savedSubcell: string | null = null;
+    let cycleSaves = 0;
+    const done = runShell({
+      host,
+      color: 'none',
+      now: steppedClock(40),
+      out: sink,
+      input,
+      size: () => ({ cols: 100, rows: 30 }),
+      manageTerminal: false,
+      maxFrames: 4,
+      adapters: [{ provider: 'claude-code' }],
+      colorPref: 'auto',
+      subcell: 'octant',
+      onCycleChange: () => {
+        cycleSaves += 1;
+      },
+      onDisplayChange: (color, subcell) => {
+        savedColor = color;
+        savedSubcell = subcell;
+      },
+    });
+    input.push({ type: 'key', name: '6' }); // open settings (Tamer field focused)
+    // Order: Tamer 0, Title 1, Color 2 → 2 downs to the Color field.
+    for (let i = 0; i < 2; i++) input.push({ type: 'key', name: 'down' });
+    input.push({ type: 'key', name: 'right' }); // cycle auto -> truecolor
+    await done;
+    expect(savedColor).toBe('truecolor'); // display pref persisted via its own hook
+    expect(savedSubcell).toBe('octant'); // unchanged subcell carried along
+    expect(cycleSaves).toBe(0); // cycle persistence untouched
   });
 });

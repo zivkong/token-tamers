@@ -17,6 +17,7 @@ import {
   sanitizeTamerName,
   type ColorPreference,
   type SettingsFile,
+  type SubcellPreference,
   type UpdateMode,
   type UserConfig,
 } from '@token-tamers/core';
@@ -31,7 +32,6 @@ import { dataDir, loadSettings, saveConfig, saveSettings } from '../stores';
 type Out = (s: string) => void;
 
 const NOT_INIT_MSG = 'Token Tamers is not set up yet. Run `tt init` first.\n';
-const DEFAULT_FPS = 30;
 
 /**
  * Resolve the shell's color mode. The `--no-color` flag always wins; otherwise
@@ -54,8 +54,6 @@ function tildePath(abs: string): string {
 function buildShellInfo(config: UserConfig): ShellInfo {
   return {
     version: VERSION,
-    runtime: `node ${process.version}`,
-    fps: config.render?.fps ?? DEFAULT_FPS,
     dataDir: tildePath(dataDir()),
     tamer: config.tamer ?? '',
     tamerTitle: config.tamerTitle ?? '',
@@ -106,6 +104,18 @@ function persistTamer(config: UserConfig, name: string, title: string): void {
   saveConfig({ ...config, tamer: sanitizeTamerName(name), tamerTitle: title || undefined });
 }
 
+/**
+ * Persist the edited display preferences (color + sub-cell density) to settings.json.
+ * Applied LIVE in-session by the shell; this only carries the choice to next launch.
+ */
+function persistDisplay(settings: SettingsFile, color: string, subcell: string): void {
+  saveSettings({
+    ...settings,
+    color: color as ColorPreference,
+    subcell: subcell as SubcellPreference,
+  });
+}
+
 /** Options for launching the interactive shell from an already-caught-up engine. */
 export interface LaunchShellOptions {
   noColor: boolean;
@@ -149,9 +159,12 @@ export async function launchShell(caught: CatchUpResult, opts: LaunchShellOption
       tamerName: config.tamer ?? '',
       tamerTitle: config.tamerTitle ?? '',
       earnedTitles: earnedTitles(engine.state(), contentPackV1),
+      colorPref: settings.color,
+      subcell: settings.subcell ?? 'auto',
       onCycleChange: (policy, anchorAdapter) => persistCycle(config, policy, anchorAdapter),
       onUpdateModeChange: (mode) => persistUpdateMode(settings, mode),
       onTamerChange: (name, title) => persistTamer(config, name, title),
+      onDisplayChange: (color, subcell) => persistDisplay(settings, color, subcell),
       initialPage: opts.initialPage,
       initialBattle: opts.initialBattle,
     });

@@ -58,20 +58,20 @@ function makeBattleView(): BattleView {
 /** A deterministic ShellInfo for the Settings golden frame. */
 const TEST_INFO: ShellInfo = {
   version: '0.1.0',
-  runtime: 'node v22.11.0',
-  fps: 30,
   dataDir: '~/.tokentamers',
 };
 
 /**
- * A deterministic editable Settings state: update mode 'notify', the pet-global
- * subscription cycle anchored to claude-code, with the Anchor field focused
- * (index 2 — shown because the policy is subscription and >1 adapter is configured).
+ * A deterministic editable Settings state: subscription cycle anchored to
+ * claude-code (so the Anchor field is visible), Display prefs set, with the Color
+ * field focused (index 2 in the visible order: Tamer 0, Title 1, Color 2, …).
  */
 const TEST_SETTINGS: SettingsState = {
   updateMode: 'notify',
   cyclePolicy: 'subscription',
   anchorAdapter: 'claude-code',
+  color: 'truecolor',
+  subcell: 'octant',
   adapters: [{ provider: 'claude-code' }, { provider: 'codex' }],
   tamerName: 'Vela',
   tamerTitle: 'Apex Tamer',
@@ -292,18 +292,29 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('renders the settings page with the editable global cycle + anchor', () => {
+  it('renders the redesigned settings page (sections + Display knobs, no Runtime)', () => {
+    // Taller frame so the full sectioned page (with gaps around each header) fits;
+    // shorter terminals clip the lower sections gracefully (bounds-guarded).
     const out = renderFrameToString(
       100,
-      30,
+      36,
       input({ page: 'settings', info: TEST_INFO, settings: TEST_SETTINGS }),
     );
     expect(out).toContain('⚙ Settings');
     expect(out).toContain('v0.1.0');
+    // Section headers are present (declarative redesign).
+    expect(out).toContain('IDENTITY');
+    expect(out).toContain('DISPLAY');
+    expect(out).toContain('CYCLE');
+    // New live display knobs are surfaced.
+    expect(out).toContain('Color');
+    expect(out).toContain('truecolor');
+    expect(out).toContain('Sprites');
+    expect(out).toContain('octant');
     expect(out).toContain('claude-code');
-    expect(out).toContain('codex');
     expect(out).toContain('subscription');
-    expect(out).toContain('change');
+    // Dev noise is gone.
+    expect(out).not.toContain('Runtime');
     expect(out).not.toContain('zero network');
     expect(out).toMatchSnapshot();
   });
@@ -311,11 +322,12 @@ describe('golden frames (100x30, no-color)', () => {
   it('renders the settings page editing the Tamer name (caret + typing footer)', () => {
     const out = renderFrameToString(
       100,
-      30,
+      36,
       input({
+        // The Tamer field is the first selectable field (index 0) in the new order.
         page: 'settings',
         info: TEST_INFO,
-        settings: { ...TEST_SETTINGS, selected: 3, editingName: true },
+        settings: { ...TEST_SETTINGS, selected: 0, editingName: true },
       }),
     );
     expect(out).toContain('Vela_'); // the caret shown while editing the handle

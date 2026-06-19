@@ -77,10 +77,6 @@ export interface AdapterInfo {
 export interface ShellInfo {
   /** App version, e.g. '0.1.0'. */
   version: string;
-  /** Runtime banner, e.g. 'node v22.11.0'. */
-  runtime: string;
-  /** Configured render fps. */
-  fps: number;
   /** Display path of the data dir, e.g. '~/.tokentamers'. */
   dataDir: string;
   /** Opt-in update mode ('off' | 'notify' | 'auto'); undefined in tests. */
@@ -94,15 +90,12 @@ export interface ShellInfo {
 }
 
 /**
- * Live, editable Settings state the shell owns: the opt-in update mode plus the
- * pet-global cycle clock (policy + subscription anchor), and which editable field
- * is focused. The flat field list is `[updateMode, cyclePolicy, anchor?]`: index 0
- * is the update mode, index 1 the cycle policy, and index 2 the subscription
- * anchor adapter — present ONLY when the policy is subscription and more than one
- * adapter is configured. Edits mutate this copy and persist via the shell's hooks
- * (`onUpdateModeChange` → settings.json, `onCycleChange` → config.json); both take
- * effect on the next launch, never mid-session (the cycle reshapes molt windows,
- * which must not shift under a running pet).
+ * Live, editable Settings state the shell owns. The page renders a declarative
+ * list of fields grouped into sections (Identity · Display · Cycle · Updates); the
+ * flat `selected` index walks the VISIBLE fields top-to-bottom (the subscription
+ * anchor is hidden under static / a single adapter). Edits mutate this copy and
+ * persist via the shell's hooks routed by field group: identity → config.json,
+ * display → settings.json (applied LIVE), cycle → config.json, update → settings.json.
  */
 export interface SettingsState {
   /** Opt-in update mode: 'off' | 'notify' | 'auto'. */
@@ -111,6 +104,10 @@ export interface SettingsState {
   cyclePolicy: string;
   /** Subscription anchor adapter id (the molt-clock driver); '' when static. */
   anchorAdapter: string;
+  /** ANSI color preference: 'auto' | 'truecolor' | '256' | '8' | 'none' (applied live). */
+  color: string;
+  /** Sub-cell sprite density: 'auto' | 'octant' | 'sextant' | 'half' (applied live). */
+  subcell: string;
   /** Configured adapters (read-only display). */
   adapters: AdapterInfo[];
   /** The player's Tamer handle (text-editable in place; '' = anonymous). */
