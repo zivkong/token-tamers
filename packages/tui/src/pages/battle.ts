@@ -16,6 +16,7 @@ import {
   combatantFromSnapshot,
   isBattleReady,
   sameSpecies,
+  simulateBattle,
   type BattleSide,
   type Combatant,
   type ContentPack,
@@ -201,7 +202,7 @@ function drawArena(ctx: RenderContext, view: BattleView, bodyY: number): void {
   const ctrl = done ? 'Enter replay' : view.playing ? 'Enter pause' : 'Enter play';
   drawPageFooter(
     ctx,
-    `${ctrl}  ·  ←→ step  ·  Esc back  ·  [${Math.min(view.cursor, total)}/${total}]`,
+    `${ctrl}  ·  r rematch  ·  ←→ step  ·  Esc back  ·  [${Math.min(view.cursor, total)}/${total}]`,
   );
 }
 
@@ -292,6 +293,9 @@ function logLine(
   const atk = e.actor === 'a' ? view.left.name : view.right.name;
   const def = e.actor === 'a' ? view.right.name : view.left.name;
   if (e.kind === 'faint') return `✖ ${def} faints`;
+  if (e.kind === 'dodge') return `↯ ${def} dodges ${atk}'s strike`;
+  if (e.kind === 'crit') return `✸ ${atk} CRITS ${def} for ${e.damage}`;
+  if (e.kind === 'parry') return `⛊ ${def} parries — ${atk} hits for ${e.damage}`;
   if (e.kind === 'proc')
     return `⚔ ${atk} — ${titleCase(e.proc ?? '')}! hits ${def} for ${e.damage}`;
   return `⚔ ${atk} hits ${def} for ${e.damage}`;
@@ -361,9 +365,24 @@ export function handleBattleKey(
     case 'enter':
       togglePlay(view);
       return true;
+    case 'r':
+      rt.battle = rematch(view, host);
+      return true;
     default:
       return false;
   }
+}
+
+/**
+ * Re-simulate the SAME two fighters with a bumped seed nonce — a fresh, still
+ * deterministic fight (different dodge/crit/parry rolls), so the player can battle
+ * the same matchup over and over with variety. The canonical (nonce 0) battle is
+ * unaffected, so shared-code replays stay reproducible.
+ */
+export function rematch(view: BattleView, host: BattleHost): BattleView {
+  const nonce = (view.nonce ?? 0) + 1;
+  const result = simulateBattle(view.left, view.right, host.pack.battle, nonce);
+  return { left: view.left, right: view.right, result, cursor: 0, playing: true, nonce };
 }
 
 function scrub(view: BattleView, delta: number): void {

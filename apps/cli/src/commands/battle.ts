@@ -79,7 +79,7 @@ function finalHp(view: BattleView, side: 'a' | 'b'): number {
 function renderSummary(left: Combatant, right: Combatant, result: BattleResult): string {
   const view: BattleView = { left, right, result, cursor: result.timeline.length, playing: false };
   const turns = result.timeline.length ? result.timeline[result.timeline.length - 1]!.turn + 1 : 0;
-  const blows = result.timeline.filter((e) => e.kind !== 'faint').length;
+  const blows = result.timeline.filter((e) => e.kind !== 'faint' && e.kind !== 'dodge').length;
   const banner =
     result.winner === 'draw'
       ? '⚖  Draw'

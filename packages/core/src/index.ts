@@ -80,6 +80,7 @@ export {
   combatantFromDecoded,
   combatantFromSnapshot,
   effectiveStats,
+  mechanicChance,
   resolveProcs,
   sameSpecies,
   simulateBattle,

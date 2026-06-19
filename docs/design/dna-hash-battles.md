@@ -244,13 +244,44 @@ Pillar 4):
 Battles are fully deterministic:
 
 ```
-outcome = f(hashA, hashB, ruleset_version)
+outcome = f(hashA, hashB, ruleset_version, nonce)
 ```
 
-The same two hashes replayed against the same ruleset version always produce the identical
-outcome, frame by frame. There is no RNG seeded from wall-clock time, no network call, and no
-per-session state. This is enforced by the determinism property tests in CI (same inputs = same
-battle; cross-version replay).
+The same two hashes replayed against the same ruleset version **and nonce** always produce the
+identical outcome, frame by frame. There is no RNG seeded from wall-clock time, no network call,
+and no per-session state. This is enforced by the determinism property tests in CI (same inputs =
+same battle; cross-version replay).
+
+**The rematch nonce (added 2026-06-20).** The seed folds in a `nonce` (default `0`) so the SAME
+matchup can be re-fought with variety. The canonical/shared battle — the one any holder of both
+codes reproduces — is always `nonce = 0`, so replays stay reproducible forever. The Battle page's
+**Rematch** control (`r`) bumps the nonce locally (`1, 2, 3…`), reseeding a fresh-but-still-
+deterministic fight each press; nothing is persisted and the shared replay is untouched. This is
+the ONLY source of per-rematch variety — there is still no ambient randomness (invariant 5).
+
+### Stat-Derived Combat Mechanics (added 2026-06-20)
+
+Beyond the base trade-blows math, the ruleset MAY carry an optional `mechanics` block
+(`BattleRuleset.mechanics`; a ruleset without it runs the classic fight, so older
+rulesets/replays are byte-identical). Each mechanic rolls per hit against the SAME seeded battle
+RNG (so a fixed matchup + nonce procs identically), and each chance is a pure function of a
+governing **effective** stat — meaning **grade flows in for free** via the grade stat-floor
+(higher grade → higher effective stats → a gentle lift on every proc). Which stat governs which
+mechanic is fixed game design (encoded in the engine); only the tuning numbers are content data
+(invariant 9), and every chance is hard-capped so grade stays an edge, never a runaway. Never
+model- or volume-derived (invariant 3).
+
+| Mechanic          | Governing stat              | Effect                                       | Draw order             |
+| ----------------- | --------------------------- | -------------------------------------------- | ---------------------- |
+| **Dodge**         | defender SPD − attacker SPD | hit deals 0 (short-circuits the damage draw) | 1st                    |
+| **Crit**          | attacker WIS                | damage × `crit.multiplier`                   | after damage           |
+| **Parry**         | defender GRT                | damage × (1 − `parry.reduction`)             | after crit             |
+| **Double-strike** | attacker SPD                | a second strike the same turn                | after the hit resolves |
+
+Chance per mechanic is `clamp(base + (max(0, stat) / scale) * perPoint, 0, cap)`. The rolls are
+drawn in a fixed order (dodge → variance → crit → parry → double-strike) so the RNG stream stays
+reproducible. New battle-log event kinds: `dodge`, `crit`, `parry` (rendered in the replay log;
+a double-strike simply appends a second hit event the same turn).
 
 ### Ruleset Negotiation
 

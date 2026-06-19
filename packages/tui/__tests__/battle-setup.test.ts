@@ -6,6 +6,7 @@ import {
   opponentRecords,
   resolveSetupOpponent,
 } from '../src/pages/battle-setup';
+import { handleBattleKey } from '../src/pages/battle';
 import type { BattleView, PageId, PageUiState } from '../src/pages/types';
 import { makePack, makePet, makeState } from './fixtures';
 
@@ -89,5 +90,27 @@ describe('battle setup — fighter selection', () => {
   it('allows a pasted same-species code — it is another player, not a self-mirror', () => {
     const res = resolveSetupOpponent(host(), setupUi({ input: WISP_CODE }), 'wisp');
     expect('opp' in res).toBe(true);
+  });
+});
+
+describe('battle arena — rematch (r)', () => {
+  it('re-simulates the same fighters with a bumped nonce, resetting playback', () => {
+    const h = host();
+    const rt = shell(setupUi({ input: WISP_CODE }));
+    confirmBattle(rt, h);
+    const first = rt.battle!;
+    expect(first.nonce ?? 0).toBe(0); // the canonical, shared-replay fight
+    const fighters = { left: first.left, right: first.right };
+
+    expect(handleBattleKey(rt, h, 'r')).toBe(true);
+    const second = rt.battle!;
+    expect(second.nonce).toBe(1);
+    expect(second.cursor).toBe(0);
+    expect(second.playing).toBe(true);
+    expect(second.left).toBe(fighters.left); // same matchup, just reseeded
+    expect(second.right).toBe(fighters.right);
+
+    expect(handleBattleKey(rt, h, 'r')).toBe(true);
+    expect(rt.battle!.nonce).toBe(2); // each press fights again
   });
 });

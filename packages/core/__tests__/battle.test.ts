@@ -9,10 +9,12 @@ import { describe, expect, it } from 'vitest';
 import {
   combatantFromSnapshot,
   effectiveStats,
+  mechanicChance,
   resolveProcs,
   sameSpecies,
   simulateBattle,
   typeMultiplier,
+  type BattleEvent,
   type BattleRuleset,
   type Combatant,
   type DexSnapshot,
@@ -23,6 +25,8 @@ import {
 import { makePack } from './fixture';
 
 const RULESET: BattleRuleset = makePack().battle;
+/** The same ruleset with the stat-derived mechanics stripped — the classic fight. */
+const CLASSIC: BattleRuleset = { ...RULESET, mechanics: undefined };
 
 function combatant(over: Partial<Combatant> = {}): Combatant {
   return {
@@ -68,6 +72,85 @@ describe('simulateBattle determinism', () => {
     const r = simulateBattle(a, b, RULESET);
     expect(r.winner).toBe('a');
     expect(r.timeline[r.timeline.length - 1]!.kind).toBe('faint');
+  });
+});
+
+describe('the battle nonce (rematch variety)', () => {
+  const a = combatant({
+    name: 'A',
+    house: 'aether',
+    stats: { pwr: 64, spd: 60, wis: 62, grt: 54 },
+  });
+  const b = combatant({ name: 'B', house: 'flux', stats: { pwr: 58, spd: 66, wis: 50, grt: 66 } });
+
+  it('defaults to nonce 0 — the canonical, shared-replay battle', () => {
+    expect(simulateBattle(a, b, RULESET)).toEqual(simulateBattle(a, b, RULESET, 0));
+  });
+
+  it('a different nonce reseeds the same matchup into a different fight', () => {
+    const base = simulateBattle(a, b, RULESET, 0);
+    const re = simulateBattle(a, b, RULESET, 1);
+    expect(re).not.toEqual(base);
+    // ...but each nonce is itself fully deterministic (replayable forever).
+    expect(simulateBattle(a, b, RULESET, 1)).toEqual(re);
+  });
+});
+
+describe('stat-derived combat mechanics', () => {
+  const kindsOf = (tl: BattleEvent[]) => new Set(tl.map((e) => e.kind));
+
+  it('a ruleset without mechanics never emits dodge/crit/parry (classic fight)', () => {
+    const a = combatant({ stats: { pwr: 70, spd: 70, wis: 70, grt: 70 } });
+    const b = combatant({ house: 'flux', stats: { pwr: 60, spd: 60, wis: 60, grt: 60 } });
+    for (let n = 0; n < 20; n++) {
+      const kinds = kindsOf(simulateBattle(a, b, CLASSIC, n).timeline);
+      for (const k of ['dodge', 'crit', 'parry'])
+        expect(kinds.has(k as BattleEvent['kind'])).toBe(false);
+    }
+  });
+
+  it('with mechanics on, dodge, crit and parry all fire across rematches', () => {
+    const a = combatant({
+      name: 'A',
+      house: 'aether',
+      stats: { pwr: 60, spd: 70, wis: 70, grt: 55 },
+    });
+    const b = combatant({
+      name: 'B',
+      house: 'flux',
+      stats: { pwr: 60, spd: 70, wis: 60, grt: 70 },
+    });
+    const seen = new Set<string>();
+    for (let n = 0; n < 50; n++)
+      for (const k of kindsOf(simulateBattle(a, b, RULESET, n).timeline)) seen.add(k);
+    expect(seen.has('dodge')).toBe(true);
+    expect(seen.has('crit')).toBe(true);
+    expect(seen.has('parry')).toBe(true);
+  });
+
+  it('a dodge deals no damage; a crit/parry hit deals at least 1', () => {
+    const a = combatant({ house: 'aether', stats: { pwr: 60, spd: 70, wis: 70, grt: 55 } });
+    const b = combatant({ house: 'flux', stats: { pwr: 60, spd: 70, wis: 60, grt: 70 } });
+    for (let n = 0; n < 50; n++) {
+      for (const e of simulateBattle(a, b, RULESET, n).timeline) {
+        if (e.kind === 'dodge') expect(e.damage).toBe(0);
+        if (e.kind === 'crit' || e.kind === 'parry') expect(e.damage).toBeGreaterThanOrEqual(1);
+      }
+    }
+  });
+});
+
+describe('mechanicChance', () => {
+  const t = { base: 0.03, perPoint: 0.5, scale: 100, cap: 0.25 };
+
+  it('returns the base chance at a zero (or negative) governing stat', () => {
+    expect(mechanicChance(t, 0)).toBeCloseTo(0.03, 6);
+    expect(mechanicChance(t, -40)).toBeCloseTo(0.03, 6); // a disadvantage never goes below base
+  });
+
+  it('scales linearly with the stat, then hard-caps', () => {
+    expect(mechanicChance(t, 20)).toBeCloseTo(0.13, 6); // 0.03 + (20/100)*0.5
+    expect(mechanicChance(t, 1000)).toBe(0.25); // clamped to cap
   });
 });
 
