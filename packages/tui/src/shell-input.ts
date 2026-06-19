@@ -42,6 +42,7 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
   if (handleBattleKey(rt, host, name)) return;
   const navTarget = PAGE_HOTKEYS[name];
   if (navTarget) {
+    if (navTarget === 'dex') focusDexOnPet(rt, host);
     rt.page = navTarget;
     return;
   }
@@ -82,6 +83,30 @@ function dexCtx(host: ShellHost): Parameters<typeof buildHouseNodes>[0] {
     pack: host.pack,
     state: host.getState(),
   } as unknown as Parameters<typeof buildHouseNodes>[0];
+}
+
+/**
+ * Point the Dex at the live pet's species: open its House sky and select its
+ * star. Called whenever the player navigates TO the Dex (menu/hotkey) — not on
+ * the escape-back from a detail view, so drilling into a star keeps your place.
+ * A sprite-and-up species lives in its own House sky; the egg Mote sits in every
+ * sky, so fall back to the pet's own House for it.
+ */
+function focusDexOnPet(rt: ShellRuntime, host: ShellHost): void {
+  const state = host.getState();
+  const speciesId = state.pet.speciesId;
+  const species = host.pack.species.find((s) => s.id === speciesId);
+  // The egg Mote and (Season-1) 'hybrid' species have no single House sky → use
+  // the pet's own House; otherwise the species lives in its declared House sky.
+  const house =
+    species && species.stage !== 'egg' && species.house !== 'hybrid'
+      ? species.house
+      : state.pet.house;
+  const houseIndex = Math.max(0, DEX_HOUSES.indexOf(house));
+  rt.ui.dex.house = houseIndex;
+  const nodes = buildHouseNodes(dexCtx(host), houseIndex);
+  const idx = nodes.findIndex((n) => n.speciesId === speciesId);
+  rt.ui.dex.selected = idx >= 0 ? idx : 0;
 }
 
 /** Pan to the previous/next House sky (wraps), resetting the star selection. */
@@ -162,7 +187,7 @@ function handleMouse(
     const bx = layout.menuRect.x + btn.x;
     const y = layout.menuRect.y + menuButtonY(btn.row, layout.menuBtnH);
     if (cx >= bx && cx < bx + btn.w && cy >= y && cy < y + layout.menuBtnH) {
-      activate(rt, btn.id);
+      activate(rt, host, btn.id);
       return;
     }
   }
@@ -251,11 +276,12 @@ function handleRegionClick(
   return false;
 }
 
-function activate(rt: ShellRuntime, id: PageId | 'quit'): void {
+function activate(rt: ShellRuntime, host: ShellHost, id: PageId | 'quit'): void {
   if (id === 'quit') {
     rt.quit = true;
     return;
   }
+  if (id === 'dex') focusDexOnPet(rt, host);
   rt.page = id;
 }
 
