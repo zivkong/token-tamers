@@ -3,8 +3,7 @@
  * ones show their name (with an `equipped` marker on the active one); locked ones
  * show `???` with no hint. Selecting an unlocked row equips it; selecting the
  * already-active one again unequips it (clears the slot). Habitats list first,
- * then trinkets — distinguished by a leading kind glyph rather than section rules
- * so the list stays a single, simple scroll.
+ * then trinkets, each under its own section title.
  */
 
 import type { ContentPack, GameState } from '@token-tamers/core';
@@ -16,6 +15,24 @@ const TEXT: Rgb = { r: 214, g: 220, b: 234 };
 const DIM: Rgb = { r: 96, g: 100, b: 120 };
 const ACTIVE: Rgb = { r: 120, g: 210, b: 140 };
 const SELECT_BG: Rgb = { r: 40, g: 48, b: 78 };
+const SECTION: Rgb = { r: 150, g: 162, b: 196 };
+
+/** A visual row: either a section title or one selectable item (by its item index). */
+type Row = { kind: 'title'; label: string } | { kind: 'item'; idx: number };
+
+/** Interleave the flat item list with Habitats/Trinkets section titles for display. */
+function buildRows(items: UnlockItem[]): Row[] {
+  const rows: Row[] = [];
+  let last: UnlockItem['kind'] | null = null;
+  items.forEach((it, idx) => {
+    if (it.kind !== last) {
+      rows.push({ kind: 'title', label: it.kind === 'habitat' ? 'Habitats' : 'Trinkets' });
+      last = it.kind;
+    }
+    rows.push({ kind: 'item', idx });
+  });
+  return rows;
+}
 
 /** One equippable collectible row. The selectable list is habitats then trinkets. */
 export interface UnlockItem {
@@ -68,32 +85,35 @@ export function renderUnlockablesPage(ctx: RenderContext): void {
     return;
   }
 
+  const rows = buildRows(items);
   const visible = pageBodyBottom(layout) - top;
-  const scroll = clampScroll(ui.scroll, ui.selected, visible, items.length);
+  const selectedRow = rows.findIndex((r) => r.kind === 'item' && r.idx === ui.selected);
+  const scroll = clampScroll(ui.scroll, Math.max(0, selectedRow), visible, rows.length);
   ui.scroll = scroll;
 
   const clip = (s: string, budget: number): string => [...s].slice(0, Math.max(0, budget)).join('');
 
   for (let i = 0; i < visible; i++) {
-    const idx = scroll + i;
-    if (idx >= items.length) break;
-    const it = items[idx];
-    if (!it) continue;
+    const row = rows[scroll + i];
+    if (!row) break;
     const y = top + i;
-    const selected = idx === ui.selected;
+    if (row.kind === 'title') {
+      buf.text(canvasX + 1, y, row.label, SECTION, null);
+      continue;
+    }
+    const it = items[row.idx];
+    if (!it) continue;
+    const selected = row.idx === ui.selected;
     const bg = selected ? SELECT_BG : null;
     if (selected) {
       for (let x = 0; x < canvasCols; x++) buf.set(canvasX + x, y, { ch: ' ', fg: null, bg });
     }
 
     buf.text(canvasX + 1, y, selected ? '›' : ' ', TEXT, bg);
-    // A kind glyph keeps habitats and trinkets distinguishable in one flat list.
-    const glyph = it.kind === 'habitat' ? '⌂' : '◈';
-    buf.text(canvasX + 3, y, glyph, DIM, bg);
     const label = it.unlocked ? it.name : '???';
-    buf.text(canvasX + 5, y, clip(label, canvasCols - 22), it.unlocked ? TEXT : DIM, bg);
+    buf.text(canvasX + 3, y, clip(label, canvasCols - 20), it.unlocked ? TEXT : DIM, bg);
     if (it.active) buf.text(canvasX + canvasCols - 12, y, '● equipped', ACTIVE, bg);
-    hits.add(`unlock:item:${idx}`, canvasX, y, canvasCols, 1);
+    hits.add(`unlock:item:${row.idx}`, canvasX, y, canvasCols, 1);
   }
 
   drawPageFooter(ctx, `${unlocked}/${items.length} unlocked  ·  ↑↓ select  ·  enter equip/unequip`);
