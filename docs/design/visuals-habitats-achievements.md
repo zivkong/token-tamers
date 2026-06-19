@@ -563,18 +563,22 @@ Pages NEVER draw their own navigation legend — the global `── Menu ──`
 a per-page key legend would just duplicate them. The **Pet page is deliberately exempt** — it is the
 game canvas (identity header + scene + VITALS panel), not a standard page.
 
-#### Evolution-mystery rule (amended — abstract Growth cue permitted)
+#### Evolution-mystery rule (amended — Growth row names the stage + counts down; the NEXT form stays hidden)
 
-The pet screen still must NOT reveal **the stage word, the molt count, the next form, or "N molts
-to evolve"** — _what_ the pet becomes, and exactly _when_, stays a surprise. The one permitted
-exception is the **"Grow" vitals row**: an _abstract_ maturation meter that fills toward the next
-evolution's eligibility (resetting when the pet evolves) plus a single state word — `maturing`,
-`cresting` (matured, held at the crest by the grade gate), `fully grown` (Apex), or `incubating`
-(egg). It signals _that_ the pet is progressing without leaking _which_ form or the exact timing.
-The cue reads only `core.growthProgress(state)`, which is deliberately spoiler-free (it exposes a
-fill fraction and coarse flags, never the stage name or counts). Stage/molt details still appear
-only in achievements and the Archive, never on the pet page; keep the `calibrating` cue (data
-readiness, not evolution).
+The "Grow" vitals row now NAMES the current stage (`Mote` · `Sprite` · `Rookie` · `Evolved` ·
+`Prime` · `Apex`) and counts down to the next molt — e.g. `Evolved · 4h 59m` — beside its
+maturation bar (the bar fill still reads the spoiler-free `core.growthProgress(state)`). The
+countdown is the live `ctx.live.secsToMolt` (the host's `nextMoltCloseAt`); golden frames
+(no `live`) show the stage name alone. The mystery now covers only **the NEXT form and which branch
+it takes** — what the pet _becomes_ is still never shown (the row names the CURRENT stage, never the
+target species or the branch). At **Apex** the row becomes the clickable **"Reborn Now" button**
+(`Reborn Now · 2d 4h`, `ctx.live.secsToRebirth` → `nextRebirthAt`): pressing it forces an
+early rebirth, with a warn-then-confirm guard when the grade isn't yet S (a non-S Apex still rolls
+toward S at each molt — the button flips to a caution `Confirm Rebirth?` and the **Odds** row's
+`Next roll N` countdown shows when that roll fires; a second press confirms; an S-grade Apex
+rebirths on the first press). The **Odds** row replaces the old static `rolls at next molt` hint
+with the live `Next roll <countdown>` to the same molt (omitted at the S cap / when idle / in golden
+frames). Keep the `calibrating` cue (data readiness, not evolution).
 
 > Weighting formula: backlog item — see `docs/design/` and GitHub issues.
 

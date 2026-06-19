@@ -19,7 +19,14 @@
 import type { CycleConfig, CycleEvent, MoltEvent, RebirthEvent, UsageEvent } from '../types';
 import { dynamicMolts } from './dynamic';
 import { staticMolts } from './static';
-import { makeRebirth, WEEK_MS, weekStartFor, windowDrivingEvents } from './windows';
+import {
+  makeRebirth,
+  WEEK_MS,
+  weekStartFor,
+  WINDOW_MS,
+  windowDrivingEvents,
+  windowStartFor,
+} from './windows';
 
 export {
   EGG_HATCH_MS,
@@ -54,6 +61,52 @@ export function deriveCycleEvents(
   const rebirths = weekRebirths(effectiveWeekAnchor(events, cycle.weekAnchor), after, now);
 
   return mergeOrdered(molts, rebirths);
+}
+
+/**
+ * Forecast the next molt-window close strictly after `now` — the instant the
+ * current 5-h window shuts and a molt (stage progress + grade roll) can fire. The
+ * UI's "next roll" / growth countdown reads this; it mirrors the same window math
+ * `deriveCycleEvents` / `unconsumedEvents` use, so the countdown lands on the real
+ * molt instant.
+ *
+ * - **static**: always the close of the fixed tile containing `now` (a molt only
+ *   fires there if the tile is used, but the tile boundary is the next opportunity).
+ * - **subscription**: the close of the OPEN inferred window (its first anchor event
+ *   + WINDOW_MS), or `null` when the pet is idle — every anchor window has already
+ *   closed, so no molt is scheduled until fresh usage opens a new one.
+ *
+ * Pure forecast: no state change, time enters only as `now` + event timestamps.
+ */
+export function nextMoltCloseAt(
+  events: readonly UsageEvent[],
+  cycle: CycleConfig,
+  now: number,
+): number | null {
+  if (cycle.policy === 'static') {
+    return windowStartFor(now, cycle.weekAnchor) + WINDOW_MS;
+  }
+  const driving = [...windowDrivingEvents(events, cycle)].sort((a, b) => a.ts - b.ts);
+  let windowEnd = -1;
+  for (const ev of driving) {
+    if (windowEnd < 0 || ev.ts >= windowEnd) windowEnd = ev.ts + WINDOW_MS;
+  }
+  return windowEnd > now ? windowEnd : null;
+}
+
+/**
+ * Forecast the next weekly rebirth instant strictly after `now` — the fixed week
+ * boundary the pet auto-re-eggs at. Uses the effective (past-pulled) anchor so a
+ * future raw `weekAnchor` never pushes it out. The Apex "Reborn Now" countdown
+ * reads this. Pure forecast (no state change).
+ */
+export function nextRebirthAt(
+  events: readonly UsageEvent[],
+  cycle: CycleConfig,
+  now: number,
+): number {
+  const anchor = effectiveWeekAnchor(events, cycle.weekAnchor);
+  return weekStartFor(Math.max(now, anchor), anchor) + WEEK_MS;
 }
 
 /**

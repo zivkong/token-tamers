@@ -156,6 +156,20 @@ one created before this fix, when a future anchor had `weekRebirths` frozen — 
 current week). Idempotent and deterministic, and kept OUT of the pure `advanceTo` path so replay==resume
 still holds; `advanceTo` can never double-fire it (it requires `simulatedTo ≥ boundary`).
 
+**Manual rebirth ("Reborn Now").** At **Apex** the Pet page surfaces a **"Reborn Now"** button (the
+Grow vitals row, counting down to the automatic weekly rebirth) that lets the player force an early
+rebirth instead of waiting out the week — `Engine.rebornNow(now)` runs the same archive + fresh-egg
+flow as a weekly rebirth, at `now`. Like `reconcile` it is a **player action** (alongside
+habitat/trinket equips): kept OUT of `advanceTo`, not derived from events/clock, and consumes **no
+RNG** (rebirth is RNG-free), so other pets' molt streams stay byte-identical (invariant 5). It does
+**NOT move the weekly clock** — the fixed weekly boundary still fires on schedule (it stays synced to
+the player's real subscription reset), so the new egg simply gets the **remainder of the current
+week** before the next auto-rebirth. A no-op on a pre-hatch egg. Idle purity is preserved: it is an
+optional convenience, never required. Because a forced early rebirth is not reproducible from the
+event stream, a full replay-from-scratch would not re-derive it — the same caveat as equips; the cli
+always resumes from the persisted snapshot, never replays from zero. The grade guard (a non-S Apex
+warns and requires a confirm press, since it can still grade up) lives in the TUI, not the engine.
+
 ### Real-world signal mapping table
 
 Mapping of real-world signals (now per-policy):

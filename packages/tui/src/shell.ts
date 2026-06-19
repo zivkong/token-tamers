@@ -46,6 +46,12 @@ export interface ShellHost {
   setHabitat?(id: string): void;
   /** Equip a trinket as the pet's active toy ('' clears it) and persist. */
   setTrinket?(id: string): void;
+  /**
+   * Force an early rebirth NOW (the Apex "Reborn Now" action): archive the pet,
+   * start a fresh egg, persist, and return the rebirth effects (for the flash
+   * banner). Driven by the Pet page; the weekly clock is unchanged.
+   */
+  rebornNow?(): GameEffect[];
 }
 
 export interface ShellOptions {

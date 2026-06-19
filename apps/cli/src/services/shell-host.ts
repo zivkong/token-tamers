@@ -12,6 +12,8 @@ import {
   createEngine,
   eventEssence,
   gradeOdds,
+  nextMoltCloseAt,
+  nextRebirthAt,
   type Engine,
   type EngineConfig,
   type GameEffect,
@@ -83,7 +85,18 @@ export function createShellHost(config: UserConfig, engine: Engine): ShellHostHa
       return engine.completion();
     },
     liveStats(): LiveStats {
-      return computeLiveStats(engine.pendingEvents(), engine.state());
+      // Wall clock lives in the cli (core stays deterministic). Turn the pure
+      // molt/rebirth forecasts into live second countdowns for the pet panel. The
+      // open-window buffer is all the forecasts need: it carries the open window
+      // (next molt close) and the weekly anchor comes from the cycle config.
+      const now = Date.now();
+      const pending = engine.pendingEvents();
+      const moltAt = nextMoltCloseAt(pending, config.cycle, now);
+      return {
+        ...computeLiveStats(pending, engine.state()),
+        secsToMolt: moltAt === null ? null : secsBetween(now, moltAt),
+        secsToRebirth: secsBetween(now, nextRebirthAt(pending, config.cycle, now)),
+      };
     },
     setHabitat(id: string): void {
       engine.setSelectedHabitat(id);
@@ -92,6 +105,12 @@ export function createShellHost(config: UserConfig, engine: Engine): ShellHostHa
     setTrinket(id: string): void {
       engine.setSelectedTrinkets(id ? [id] : []);
       saveState(engine.state());
+    },
+    rebornNow(): GameEffect[] {
+      const effects = engine.rebornNow(Date.now());
+      saveState(engine.state());
+      savePending(engine.pendingEvents());
+      return effects;
     },
   };
 
@@ -103,6 +122,11 @@ export function createShellHost(config: UserConfig, engine: Engine): ShellHostHa
       savePending(engine.pendingEvents());
     },
   };
+}
+
+/** Whole seconds from `now` to a future `target` ms instant, floored at 0. */
+function secsBetween(now: number, target: number): number {
+  return Math.max(0, Math.round((target - now) / 1000));
 }
 
 /**

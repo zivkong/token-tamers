@@ -7,7 +7,15 @@ export * from './types';
 export { chance, createRng, nextFloat, nextInt, pickWeighted, type Rng } from './helpers/rng';
 
 // Cycle — re-exported via cycle/index barrel.
-export { deriveCycleEvents, unconsumedEvents, WEEK_MS, weekStartFor, WINDOW_MS } from './cycle';
+export {
+  deriveCycleEvents,
+  nextMoltCloseAt,
+  nextRebirthAt,
+  unconsumedEvents,
+  WEEK_MS,
+  weekStartFor,
+  WINDOW_MS,
+} from './cycle';
 
 // Molt evaluation — re-exported via evaluation/index barrel.
 export {

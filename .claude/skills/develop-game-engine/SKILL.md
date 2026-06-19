@@ -63,6 +63,15 @@ one-time, idempotent load-time repair: a pet whose `simulatedTo` already slipped
 boundary without rebirthing gets the owed catch-up rebirth. Kept OUT of `advanceTo` (so
 replay==resume holds); the cli runs it after `ingest`, before `advanceTo`.
 
+**Manual rebirth + UI forecasts.** `Engine.rebornNow(now)` is the Apex "Reborn Now" player action:
+the same archive + fresh-egg flow as a weekly rebirth, forced at `now`. Like `reconcile`/equips it is
+NOT derived from events/clock and is kept OUT of `advanceTo`; it consumes **no RNG** (rebirth is
+RNG-free) and does NOT move the weekly clock — the fixed boundary still fires on schedule, so the new
+egg gets the week's remainder. A no-op on a pre-hatch egg; the grade-≠-S confirm guard lives in the
+TUI. `nextMoltCloseAt(now)` / `nextRebirthAt(now)` are pure forecasts (in `cycle/index.ts`,
+mirroring the window/week math) the cli turns into the pet page's live `secsToMolt`/`secsToRebirth`
+countdowns — read-only, no state change.
+
 Adapters are pure data sources (`{ provider, paths }`) — no per-adapter plan/policy;
 API- and subscription-billed usage in one adapter are undifferentiated essence
 (invariant 3). Under the subscription policy only the anchor adapter opens/closes

@@ -403,6 +403,78 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
+  it('shows the stage name + next-roll countdown on the Grow/Odds rows', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'pet',
+        live: {
+          windowTokens: 84_200_000,
+          windowEssence: 90_000_000,
+          baselineEssence: 24_300,
+          windowsObserved: 6,
+          nextGrade: { from: 'C', to: 'B', chance: 0.33, capped: false },
+          secsToMolt: 17_940, // 4h 59m
+          secsToRebirth: 187_200,
+        },
+      }),
+    );
+    // The Grow row now names the live stage (default pet is a sprite) + counts down.
+    expect(out).toContain('Sprite');
+    expect(out).toContain('4h 59m');
+    // The Odds row's "Next roll" countdown replaces the old "rolls at next molt".
+    expect(out).toContain('Next roll');
+    expect(out).not.toContain('rolls at next molt');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('shows the Apex "Reborn Now" button counting down to the weekly rebirth', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'pet',
+        state: makeState({ pet: makePet({ stage: 'apex', grade: 'A' }) }),
+        live: {
+          windowTokens: 0,
+          windowEssence: 0,
+          baselineEssence: 24_300,
+          windowsObserved: 12,
+          nextGrade: { from: 'A', to: 'S', chance: 0.06, capped: true },
+          secsToMolt: 13_080, // 3h 38m — still rolls toward S at Apex
+          secsToRebirth: 187_200, // 2d 4h
+        },
+      }),
+    );
+    expect(out).toContain('Reborn Now');
+    expect(out).toContain('2d 4h');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('shows the armed "Confirm Rebirth?" prompt for a non-S Apex', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'pet',
+        state: makeState({ pet: makePet({ stage: 'apex', grade: 'A' }) }),
+        ui: { selected: 0, scroll: 0, rebornArmed: true },
+        live: {
+          windowTokens: 0,
+          windowEssence: 0,
+          baselineEssence: 24_300,
+          windowsObserved: 12,
+          nextGrade: { from: 'A', to: 'S', chance: 0.06, capped: true },
+          secsToMolt: 13_080,
+          secsToRebirth: 187_200,
+        },
+      }),
+    );
+    expect(out).toContain('Confirm Rebirth?');
+    expect(out).toMatchSnapshot();
+  });
+
   it('renders the pet page update ticker when an update is available', () => {
     const out = renderFrameToString(
       100,

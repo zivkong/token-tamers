@@ -694,6 +694,14 @@ export interface Engine {
    * unlocked are dropped; pass [] to clear.
    */
   setSelectedTrinkets(ids: string[]): void;
+  /**
+   * Force an early rebirth NOW (the Apex "Reborn Now" player action): archive the
+   * current pet and start a fresh egg. Like {@link reconcile} it is kept OUT of
+   * `advanceTo` (not event/clock-derived), consumes no RNG, and does NOT move the
+   * weekly clock — the fixed weekly boundary still fires on schedule, so the new
+   * egg gets the remainder of the current week. A no-op on a pre-hatch egg.
+   */
+  rebornNow(now: number): GameEffect[];
   /** Completion meter, 0..100 with per-page breakdown. */
   completion(): {
     overall: number;

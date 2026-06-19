@@ -3,7 +3,7 @@ import { HitRegistry } from '../src/render/hit';
 import { handleEvent } from '../src/shell-input';
 import type { InputEvent } from '../src/terminal/input';
 import type { InputDeps, ShellHost, ShellRuntime } from '../src/shell';
-import { makeState, makePack } from './fixtures';
+import { makeState, makePack, makePet } from './fixtures';
 
 /** A mouse press at 1-based (col,row) — the SGR convention the decoder emits. */
 function press(x: number, y: number): InputEvent {
@@ -50,6 +50,56 @@ describe('mouse interaction parity', () => {
     } as unknown as ShellRuntime;
     handleEvent(rt, press(3, 7), deps(hits)); // cx=2, cy=6
     expect((rt as unknown as { ui: { battle: { selected: number } } }).ui.battle.selected).toBe(1);
+  });
+});
+
+describe('Apex "Reborn Now" flow', () => {
+  function apexHost(grade: 'A' | 'S', calls: { n: number }): Partial<ShellHost> {
+    return {
+      getState: () => makeState({ pet: makePet({ stage: 'apex', grade }) }),
+      rebornNow: () => {
+        calls.n += 1;
+        return [];
+      },
+    };
+  }
+  function petRt(): ShellRuntime {
+    return {
+      page: 'pet',
+      frame: 0,
+      flash: null,
+      flashUntilFrame: 0,
+      ui: { pet: { selected: 0, scroll: 0 } },
+    } as unknown as ShellRuntime;
+  }
+  const armed = (rt: ShellRuntime): boolean | undefined =>
+    (rt.ui as Record<string, { rebornArmed?: boolean }>).pet?.rebornArmed;
+
+  it('warns then confirms for a non-S Apex (two Enter presses)', () => {
+    const calls = { n: 0 };
+    const rt = petRt();
+    const d = deps(new HitRegistry(), apexHost('A', calls));
+    handleEvent(rt, key('enter'), d);
+    expect(calls.n).toBe(0); // first press only warns + arms
+    expect(armed(rt)).toBe(true);
+    expect(rt.flash).toContain('improve');
+    handleEvent(rt, key('enter'), d);
+    expect(calls.n).toBe(1); // second press fires the rebirth
+    expect(armed(rt)).toBe(false);
+  });
+
+  it('rebirths immediately for an S-grade Apex (one Enter press)', () => {
+    const calls = { n: 0 };
+    handleEvent(petRt(), key('enter'), deps(new HitRegistry(), apexHost('S', calls)));
+    expect(calls.n).toBe(1);
+  });
+
+  it('fires the same flow from a click on the button (mouse parity)', () => {
+    const calls = { n: 0 };
+    const hits = new HitRegistry();
+    hits.add('pet:reborn-now', 0, 6, 20, 1);
+    handleEvent(petRt(), press(3, 7), deps(hits, apexHost('S', calls))); // cx=2, cy=6
+    expect(calls.n).toBe(1);
   });
 });
 

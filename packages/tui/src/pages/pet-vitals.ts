@@ -6,20 +6,21 @@
  *
  *   Food   ▕████▒▒▒▒▒▒▒▒▏ 84.2M / 200M  +6% molt ↑
  *   Diet   ▕██████▒▒▒▒▒▒▏ Aether 72% · Cipher 28%
- *   Grow   ▕████▒▒▒▒▒▒▒▒▏ maturing
- *   Odds   B → A 38%                          rolls at next molt
+ *   Grow   ▕████▒▒▒▒▒▒▒▒▏ Evolved · 4h 59m
+ *   Odds   B → A 38%                       Next roll 4h 59m
  *
  * The three bars share ONE geometry (`barGeom`) so Food, Diet and Growth line up
  * at every width. They read as distinct motions: Food GROWS toward the 200M
  * vitality cap and resets each window (single tint, owns the `+N% molt` preview);
  * Diet is ALWAYS FULL and only its House-tinted proportions drift over the pet's
  * life; Growth fills toward the next evolution's eligibility and resets each time
- * the pet evolves. Growth is DELIBERATELY ABSTRACT — a bar plus a one-word state,
- * never the stage name, molt counts, or the next form (the evolution-mystery
- * rule, amended to allow this "it IS progressing" cue). The Odds row shows just
- * the live current→next grade forecast (`ctx.live.nextGrade`, computed by the
- * host; see core's `gradeOdds`), grade-tinted, with the published base odds as
- * the deterministic fallback when there is no live readout (golden tests).
+ * the pet evolves. The Growth row names the current STAGE and counts down to the
+ * next molt (`ctx.live.secsToMolt`); at Apex it becomes the clickable "Reborn Now"
+ * button (counting down to the weekly rebirth). The Odds row shows the live
+ * current→next grade forecast (`ctx.live.nextGrade`, computed by the host; see
+ * core's `gradeOdds`), grade-tinted, with the published base odds as the
+ * deterministic fallback, plus the same molt countdown as "Next roll N". The stage
+ * name + timing are only present live (golden frames omit the countdown).
  */
 
 import { mix, type Rgb } from '../terminal/ansi';
@@ -30,6 +31,7 @@ import {
   vitalityBonus,
   type Grade,
   type House,
+  type Stage,
 } from '@token-tamers/core';
 import { drawMeter, drawSegmentedMeter } from '../components';
 import { houseColor } from '../helpers/lookup';
@@ -50,6 +52,35 @@ const FOOD_FILL: Rgb = { r: 240, g: 196, b: 80 };
  * meter. (The `Growth` label disambiguates it from the gold Food bar.)
  */
 const GROWTH_FILL: Rgb = { r: 96, g: 200, b: 178 };
+/** Apex "Reborn Now" button accent (warm amber UI chrome — off the grade/House ladders). */
+const REBORN: Rgb = { r: 240, g: 176, b: 96 };
+/** Armed-confirm / warning accent for the Reborn button (a caution red, UI chrome only). */
+const WARN: Rgb = { r: 232, g: 116, b: 116 };
+
+/** Stage → player-facing name shown on the Growth row (egg = the design's "Mote"). */
+const STAGE_LABEL: Record<Stage, string> = {
+  egg: 'Mote',
+  sprite: 'Sprite',
+  rookie: 'Rookie',
+  evolved: 'Evolved',
+  prime: 'Prime',
+  apex: 'Apex',
+};
+
+/** Mid dot between a stage/button label and its countdown (by codepoint to survive encoding). */
+const DOT = String.fromCodePoint(0x00b7);
+
+/** Compact two-unit countdown: 187200→'2d 4h', 17940→'4h 59m', 158→'2m 38s', 9→'9s'. */
+function fmtCountdown(secs: number): string {
+  const s = Math.max(0, Math.floor(secs));
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s % 60}s`;
+  return `${s % 60}s`;
+}
 
 /** → between grades on the Odds row (by codepoint to survive encoding). */
 const ARROW = String.fromCodePoint(0x2192);
@@ -284,11 +315,13 @@ function drawDietRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 }
 
 /**
- * Row 4 — the GROWTH cue: an abstract maturation meter that fills toward the next
- * evolution's eligibility (same geometry as Food/Diet) and resets when the pet
- * evolves. Deliberately spoiler-free — a bar plus ONE state word, never the stage
- * name, molt counts, or the next form (the evolution-mystery rule). Reads only
- * `core.growthProgress(state)`, so it is fully deterministic in golden frames.
+ * Row 4 — the GROWTH row: a maturation meter (fills toward the next evolution's
+ * eligibility, same geometry as Food/Diet) labelled with the current STAGE and a
+ * countdown to the next molt (`Evolved · 4h 59m`). At Apex the row becomes the
+ * clickable "Reborn Now" button counting down to the weekly rebirth. The bar fill
+ * reads `core.growthProgress(state)` (deterministic); the countdown comes from
+ * `ctx.live.secsToMolt`/`secsToRebirth`, so golden frames (no live) show the stage
+ * name / button label alone.
  */
 function drawGrowthRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf, state } = ctx;
@@ -302,17 +335,33 @@ function drawGrowthRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 
   const textX = bar.x + bar.w + 2;
   const avail = panel.x + panel.cols - 1 - textX;
-  const word = growthWord(g);
-  const tone = g.terminal ? VALUE : MUTED;
-  if (avail > 0) buf.text(textX, y, word.slice(0, avail), tone, null);
+  if (avail <= 0) return;
+
+  if (state.pet.stage === 'apex') {
+    drawRebornButton(ctx, textX, y, avail);
+    return;
+  }
+  const label = STAGE_LABEL[state.pet.stage];
+  const secs = ctx.live?.secsToMolt;
+  const text = secs != null ? `${label} ${DOT} ${fmtCountdown(secs)}` : label;
+  buf.text(textX, y, text.slice(0, avail), VALUE, null);
 }
 
-/** The one abstract state word for the Growth row (no stage/count/next-form leak). */
-function growthWord(g: ReturnType<typeof growthProgress>): string {
-  if (g.incubating) return 'incubating';
-  if (g.terminal) return 'fully grown';
-  if (g.matured) return 'cresting';
-  return 'maturing';
+/**
+ * The Apex "Reborn Now" button on the Growth row: a clickable control that forces
+ * an early rebirth. Shows a countdown to the automatic weekly rebirth
+ * (`ctx.live.secsToRebirth`); once armed (a non-S first press, see shell-input) it
+ * flips to a caution-tinted "Confirm Rebirth?" prompt. Registers the
+ * `pet:reborn-now` hit region so a mouse click triggers the same flow as Enter.
+ */
+function drawRebornButton(ctx: RenderContext, x: number, y: number, avail: number): void {
+  const { buf } = ctx;
+  const armed = ctx.ui.rebornArmed === true;
+  const secs = ctx.live?.secsToRebirth;
+  const cd = !armed && secs != null ? ` ${DOT} ${fmtCountdown(secs)}` : '';
+  const text = `${armed ? 'Confirm Rebirth?' : 'Reborn Now'}${cd}`.slice(0, avail);
+  buf.text(x, y, text, armed ? WARN : REBORN, null);
+  ctx.hits.add('pet:reborn-now', x, y, [...text].length, 1);
 }
 
 /**
@@ -332,11 +381,13 @@ function drawOddsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const parts = oddsParts(odds);
   drawPartsClipped(buf, parts, { x, y, avail });
 
-  // A muted "rolls at next molt" hint, right-aligned whenever it geometrically
-  // fits (the gap check below is the real guard — no redundant NARROW gate, which
-  // hid the hint on chrome columns where it actually fit).
-  if (odds) {
-    const hint = 'rolls at next molt';
+  // A muted "Next roll N" countdown to the molt that fires the next grade roll,
+  // right-aligned whenever it geometrically fits. Present only live (the host's
+  // `secsToMolt`); golden frames omit it. null secs (idle, no scheduled molt) and
+  // the S cap (odds === null) both drop the countdown.
+  const secs = ctx.live?.secsToMolt;
+  if (odds && secs != null) {
+    const hint = `Next roll ${fmtCountdown(secs)}`;
     const hintX = panel.x + panel.cols - hint.length - 1;
     if (hintX > x + partsLen(parts) + 1) buf.text(hintX, y, hint, MUTED, null);
   }

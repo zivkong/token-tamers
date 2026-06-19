@@ -30,6 +30,12 @@ export interface PageUiState {
   selected: number;
   /** List scroll offset (top visible row). */
   scroll: number;
+  /**
+   * Pet page: the Apex "Reborn Now" button is armed for confirmation — a non-S
+   * pet's first press warns (it can still grade up) and arms; a second press fires
+   * the rebirth. Cleared on confirm or when leaving the page.
+   */
+  rebornArmed?: boolean;
   /** Dex: which House sky is shown (index into DEX_HOUSES). */
   house?: number;
   /** Dex-detail: the species being inspected (set when drilling in from the Dex). */
@@ -142,6 +148,14 @@ export interface LiveStats {
    * it; the panel then falls back to the published base odds from GameState.
    */
   nextGrade?: GradeOddsPreview | null;
+  /**
+   * Seconds until the next molt-window close — the live growth / "next roll"
+   * countdown. `null` when no molt is scheduled (subscription policy, pet idle);
+   * undefined when the host can't compute it (the row then omits the countdown).
+   */
+  secsToMolt?: number | null;
+  /** Seconds until the next weekly rebirth — the Apex "Reborn Now" countdown. */
+  secsToRebirth?: number;
 }
 
 export interface RenderContext {

@@ -12,7 +12,13 @@
  * data. No wall clock, no Math.random, no I/O, no imports outside core.
  */
 
-import { deriveCycleEvents, eggHatchMolts, unconsumedEvents } from '../cycle';
+import {
+  deriveCycleEvents,
+  effectiveWeekAnchor,
+  eggHatchMolts,
+  unconsumedEvents,
+  weekStartFor,
+} from '../cycle';
 import {
   classifyRhythm,
   computeWindowSignals,
@@ -158,6 +164,18 @@ class GameEngine implements Engine {
 
   setSelectedTrinkets(ids: string[]): void {
     this.state_.selectedTrinkets = ids.filter((id) => this.state_.trinketsUnlocked.includes(id));
+  }
+
+  /** Force an early rebirth (Apex "Reborn Now"); see the Engine interface for the contract. */
+  rebornNow(now: number): GameEffect[] {
+    const effects: GameEffect[] = [];
+    if (this.state_.pet.stage === 'egg') return effects;
+    const all = [...this.buffer].sort((a, b) => a.ts - b.ts || cmpStr(a.adapter, b.adapter));
+    const at = Math.max(now, this.state_.simulatedTo);
+    const weekStart = weekStartFor(at, effectiveWeekAnchor(all, this.config.cycle.weekAnchor));
+    this.replayRebirth({ type: 'rebirth', at, weekStart, weekEnd: at }, all, effects);
+    this.state_.simulatedTo = at;
+    return effects;
   }
 
   pendingEvents(): UsageEvent[] {

@@ -26,7 +26,7 @@ import {
 import { setSubcellMode, type SubcellName } from './render/sprite';
 import type { ColorMode } from './terminal/ansi';
 import { handleBattleKey } from './pages/battle';
-import { flash } from './shell-effects';
+import { applyEffects, flash } from './shell-effects';
 import type { PageId } from './pages/types';
 import type { InputDeps, ShellHost, ShellRuntime } from './shell';
 
@@ -54,6 +54,7 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
   if (handleBattleKey(rt, host, name)) return;
   const navTarget = PAGE_HOTKEYS[name];
   if (navTarget) {
+    if (navTarget !== 'pet') disarmReborn(rt);
     if (navTarget === 'dex') focusDexOnPet(rt, host);
     rt.page = navTarget;
     return;
@@ -78,15 +79,54 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
       else adjustSetting(rt, +1);
       return;
     case 'enter':
-      if (rt.page === 'dex') openDexDetail(rt, host);
-      else if (rt.page === 'unlockables') toggleUnlock(rt, host);
+      handleEnter(rt, host);
       return;
     case 'escape':
-      if (rt.page === 'dex-detail') rt.page = 'dex';
+      handleEscape(rt);
       return;
     default:
       return;
   }
+}
+
+/** Enter on the active page: drill into Dex, equip a collectible, or arm/confirm a rebirth. */
+function handleEnter(rt: ShellRuntime, host: ShellHost): void {
+  if (rt.page === 'dex') openDexDetail(rt, host);
+  else if (rt.page === 'unlockables') toggleUnlock(rt, host);
+  else if (rt.page === 'pet') tryReborn(rt, host);
+}
+
+/** Escape: leave the Dex detail view, or disarm a pending Apex rebirth. */
+function handleEscape(rt: ShellRuntime): void {
+  if (rt.page === 'dex-detail') rt.page = 'dex';
+  else if (rt.page === 'pet') disarmReborn(rt);
+}
+
+/**
+ * The Apex "Reborn Now" flow (Enter on the Pet page, or a click on the button). An
+ * S-grade pet — or one already armed by a prior press — rebirths immediately; a
+ * non-S pet's first press warns it can still grade up and arms the button, so a
+ * second press confirms. A no-op off the Pet page or below Apex. Returns true when
+ * it handled the action.
+ */
+/** Clear the Apex "Reborn Now" armed state (guarded for the partial test runtimes). */
+function disarmReborn(rt: ShellRuntime): void {
+  if (rt.ui.pet) rt.ui.pet.rebornArmed = false;
+}
+
+function tryReborn(rt: ShellRuntime, host: ShellHost): boolean {
+  if (rt.page !== 'pet' || !host.rebornNow) return false;
+  const pet = host.getState().pet;
+  if (pet.stage !== 'apex') return false;
+  const ui = rt.ui.pet;
+  if (pet.grade === 'S' || ui.rebornArmed) {
+    ui.rebornArmed = false;
+    applyEffects(rt, host.rebornNow());
+    return true;
+  }
+  ui.rebornArmed = true;
+  flash(rt, '⚠ Apex can still improve its grade — press again to confirm rebirth');
+  return true;
 }
 
 /** The minimal render-context shape the Dex node builder reads (pack + state). */
@@ -338,6 +378,11 @@ function handleRegionClick(
     rt.ui.battle.selected = Number(region.slice('battle:pick:'.length)) || 0;
     return true;
   }
+  if (region === 'pet:reborn-now') {
+    // Click the Apex button: same warn-then-confirm flow as Enter (mouse parity).
+    tryReborn(rt, host);
+    return true;
+  }
   if (region.startsWith('unlock:item:')) {
     // Select the clicked collectible, then equip/unequip it (mouse parity).
     rt.ui.unlockables.selected = Number(region.slice('unlock:item:'.length)) || 0;
@@ -357,6 +402,7 @@ function activate(rt: ShellRuntime, host: ShellHost, id: PageId | 'quit'): void 
     rt.quit = true;
     return;
   }
+  if (id !== 'pet') disarmReborn(rt);
   if (id === 'dex') focusDexOnPet(rt, host);
   rt.page = id;
 }

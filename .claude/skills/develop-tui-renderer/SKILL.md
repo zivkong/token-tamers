@@ -76,13 +76,15 @@ title, completion?})` draws a left-aligned `icon Title` (Title-Case), an optiona
   unlocked/total, Feats shows earned/total, top-right. The full `CompletionBreakdown` flows `ShellHost.completion()` →
   `RenderContext.completion`. Settings has no completion (nothing to track); the pet page has NO
   completion meter.
-- **Evolution-mystery rule (amended):** the pet screen must NOT show the stage word, molt count,
-  the next form, or "N to next evolution" — _what_ it becomes and _when_ stays a surprise. The ONE
-  permitted cue is the **"Grow" vitals row**: an abstract maturation meter (fill + a single word —
-  `maturing`/`cresting`/`fully grown`/`incubating`) driven by `core.growthProgress(state)`, which
-  is deliberately spoiler-free (fill frac + flags only, never stage/count/next-form). It shows
-  _that_ the pet is progressing, nothing more. Stage/molt still drive the engine and show in
-  achievements/Archive; keep the `calibrating` cue (data readiness, not evolution).
+- **Evolution-mystery rule (amended):** the **"Grow" vitals row** now NAMES the current stage
+  (`Mote`/`Sprite`/`Rookie`/`Evolved`/`Prime`/`Apex`) and counts down to the next molt
+  (`Evolved · 4h 59m`) beside its maturation bar (fill via `core.growthProgress(state)`). The
+  mystery now covers ONLY the next FORM/branch — never the target species. The countdown is the live
+  `ctx.live.secsToMolt` (`nextMoltCloseAt`); golden frames (no `live`) show the stage name
+  alone. At **Apex** the row becomes the clickable **"Reborn Now"** button (`Reborn Now · 2d 4h`,
+  `secsToRebirth`/`nextRebirthAt`) → `host.rebornNow()` forces an early rebirth, with a
+  warn-then-confirm guard (`ui.rebornArmed` → caution `Confirm Rebirth?`) when grade ≠ S; the
+  `pet:reborn-now` hit region gives mouse parity. Keep the `calibrating` cue (data readiness).
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
@@ -104,20 +106,27 @@ bg)` so it renders on the band background.
   tokens fill toward `VITALITY_FULL_TOKENS`=200M, SINGLE-tinted, `+N% molt` = real `vitalityBonus`
   preview; token counts only), **Diet** (the
   ALWAYS-FULL House-share bar — composition not progress — + a House-name legend), **Grow** (the
-  ABSTRACT maturation cue: `drawMeter` filled to `growthProgress(state).frac` in a neutral teal
-  `GROWTH_FILL` — off BOTH the grade and House ladders — + one state word, NEVER stage/count/next
-  form; deterministic from state so it needs no `ctx.live`. 4-char label "Grow" to clear the bar
-  gutter), **Odds** (the
-  LIVE current→next grade forecast only: `from → to NN%`, grade-tinted via `GRADE_ACCENT`, ` (capped)`
-  at the A→S ceiling, `S ★ apex` at the top). Food, Diet and Grow share ONE bar geometry (`barGeom`) so
-  they line up at every width; the Food/Grow bars use `drawMeter` (single tint), the Diet bar
-  `drawSegmentedMeter` at 100% fill (House tints). The Odds number comes from `ctx.live.nextGrade`
-  (the host's `gradeOdds(state, pending)` — core owns the math, shared with the engine's roll), and
-  falls back to the published base odds (`gradeOdds(state)`) when there's no live readout so golden
-  frames stay deterministic. `LiveStats` flows `ShellHost.liveStats()` → `FrameInput.live` →
-  `RenderContext.live`; the cli derives it from the open window (`engine.pendingEvents()`), the
-  `eventTokens`/`eventEssence` helpers, the baselines, and `gradeOdds`. Undefined in golden tests →
-  Food shows an empty/awaiting state and Odds shows the base-odds fallback (frames stay
+  maturation row: `drawMeter` filled to `growthProgress(state).frac` in a neutral teal `GROWTH_FILL`
+  — off BOTH the grade and House ladders — labelled with the CURRENT stage name (`STAGE_LABEL`) + the
+  `ctx.live.secsToMolt` countdown (`Stage · 4h 59m`); the next FORM/branch is never named. At Apex
+  the row is instead the **"Reborn Now" button** (`drawRebornButton`, warm `REBORN` accent, the
+  `secsToRebirth` countdown; `WARN`-tinted `Confirm Rebirth?` when `ui.rebornArmed`) and registers
+  the `pet:reborn-now` hit region. The bar fill needs no `ctx.live`; only the countdowns/button
+  label do, so golden frames show the stage name / "Reborn Now" alone), **Odds** (the
+  LIVE current→next grade forecast: `from → to NN%`, grade-tinted via `GRADE_ACCENT`, ` (capped)`
+  at the A→S ceiling, `S ★ apex` at the top, plus a right-aligned `Next roll <countdown>` to the
+  molt that fires it — `ctx.live.secsToMolt`, dropped at the S cap / when idle / in golden frames;
+  this REPLACED the old static `rolls at next molt` hint). Food, Diet and Grow share ONE bar geometry
+  (`barGeom`) so they line up at every width; the Food/Grow bars use `drawMeter` (single tint), the
+  Diet bar `drawSegmentedMeter` at 100% fill (House tints). The Odds number comes from
+  `ctx.live.nextGrade` (the host's `gradeOdds(state, pending)` — core owns the math, shared with the
+  engine's roll), and falls back to the published base odds (`gradeOdds(state)`) when there's no live
+  readout so golden frames stay deterministic. `LiveStats` flows `ShellHost.liveStats()` →
+  `FrameInput.live` → `RenderContext.live`; the cli derives it from the open window
+  (`engine.pendingEvents()`), the `eventTokens`/`eventEssence` helpers, the baselines, `gradeOdds`,
+  and the pure `nextMoltCloseAt`/`nextRebirthAt` forecasts (turned into `secsToMolt`/
+  `secsToRebirth` against the wall clock). Undefined in golden tests → Food shows an empty/awaiting
+  state, the countdowns are omitted, and Odds shows the base-odds fallback (frames stay
   deterministic). Completion is per-page (NOT in this panel).
 - Cells are ~1:2 w:h. The **sub-cell compositor** (`render/sprite.ts`) packs each cell at the
   active density — **octant 2×4** (default, 4× half-block, Unicode 16 `render/octant-table.ts`),

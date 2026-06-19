@@ -223,8 +223,13 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   `STAGE_MATURITY` molts (sprite 1, rookie 2, evolved 3, prime 4) AND clearing any
   `STAGE_GATE` (prime→apex needs grade ≥ B) — not one stage per molt. Tracked by
   `pet.stageMolts` (deterministic; SCHEMA_VERSION 2, cli migrates). The Pet page's
-  abstract "Grow" vitals row surfaces it via `growthProgress` WITHOUT leaking
-  stage/count/next-form (evolution-mystery rule). See `engine/maturity.ts`.
+  "Grow" vitals row names the CURRENT stage + counts down to the next molt
+  (`Evolved · 4h 59m`, fill via `growthProgress`); the next FORM/branch stays hidden
+  (amended evolution-mystery rule). At Apex it becomes the "Reborn Now" button —
+  `Engine.rebornNow` forces an early rebirth (player action, no RNG, weekly clock
+  unchanged), warn-then-confirm when grade ≠ S. Molt/rebirth countdowns come from
+  `nextMoltCloseAt`/`nextRebirthAt` (pure forecasts) via `live.secsTo*`. See
+  `engine/maturity.ts`, `cycle/index.ts`.
 - **Houses (identity ONLY; mixed-provenance, NOT provider brands):** each House blends
   makers by theme, never all-Western/all-anything. Aether `claude-*`+`minimax*` WIS ·
   Cipher `gpt-*`/`o*`+`glm*`+`mimo*` PWR · Flux `gemini-*`+`qwen*`+`kimi*` SPD · Forge
