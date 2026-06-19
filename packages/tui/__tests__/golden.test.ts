@@ -90,6 +90,23 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
+  it('keeps the equipped trinket on the pet scene at every frame, not just the play dwell', () => {
+    const equipped = makeState({
+      habitatsUnlocked: ['terminal-den'],
+      selectedHabitat: 'terminal-den',
+      trinketsUnlocked: ['bouncy-ball'],
+      selectedTrinkets: ['bouncy-ball'],
+    });
+    const bare = makeState({ habitatsUnlocked: ['terminal-den'], selectedHabitat: 'terminal-den' });
+    // Spread frames across several wander nodes: under the old play-gated draw,
+    // most of these are non-play frames where the toy was absent. Persistent now.
+    for (const frame of [0, 13, 27, 41, 67, 95]) {
+      const withToy = renderFrameToString(100, 30, input({ page: 'pet', state: equipped, frame }));
+      const without = renderFrameToString(100, 30, input({ page: 'pet', state: bare, frame }));
+      expect(withToy).not.toBe(without);
+    }
+  });
+
   it('renders the dex page', () => {
     const out = renderFrameToString(100, 30, input({ page: 'dex' }));
     // The Aether sky, its House tabs, the owned Wisp star, and the Mote anchor.

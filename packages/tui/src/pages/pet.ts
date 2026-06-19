@@ -388,10 +388,10 @@ function drawWanderingPet(ctx: RenderContext, sprite: SpriteDef, scene: SceneRec
   // The egg is pre-hatch and legless: keep it stationary (no wander/hop/play).
   const w = petPlacement(frame, geo, pet.stage !== 'egg');
 
-  // Trinket drawn at its floor anchor during the play segment.
-  if (w.playing) {
-    drawPlayTrinket(ctx, w.trinketX, geo, scale);
-  }
+  // The equipped trinket sits permanently at its floor anchor (drawn before the
+  // pet so the pet passes in front of it as it wanders). The pet's `play` dwell
+  // still animates it batting at the toy when it pauses nearby.
+  drawTrinket(ctx, geo, scene, scale);
 
   const tint = houseTint(pet.house);
   const accent = findSpecies(ctx.pack, pet.speciesId)?.accent;
@@ -428,11 +428,16 @@ function sceneFloorRow(scene: SceneRect): number {
   return scene.y + Math.floor((SCENE_FLOOR_PX * scene.rows) / HABITAT_PX_H);
 }
 
-/** Draw the selected trinket at the floor anchor beside the play spot. */
-function drawPlayTrinket(
+/**
+ * Draw the equipped trinket permanently at a fixed floor anchor. The horizontal
+ * anchor comes from the habitat's first authored trinket slot (the slot x-spread
+ * is still valid); the slot y is stale 48px-era data, so the toy is always
+ * bottom-aligned on the scene floor instead.
+ */
+function drawTrinket(
   ctx: RenderContext,
-  trinketX: number,
   geo: WanderGeometry,
+  scene: SceneRect,
   scale: number,
 ): void {
   const { buf, state, pack, mode, frame } = ctx;
@@ -447,9 +452,13 @@ function drawPlayTrinket(
   const rows = Math.max(1, Math.round(subcellRows(sprite.height) * scale));
   // Bottom-align the trinket on the same floor line as the pet's feet.
   const ty = geo.floorY - (rows - 1);
+  // Anchor px (0..127) from the first slot, mapped into scene cells and centered.
+  const habitat = findHabitat(pack, state.selectedHabitat);
+  const slotPx = habitat?.trinketSlots[0]?.x ?? 96;
+  const tx = scene.x + Math.round((slotPx * scene.cols) / HABITAT_COLS) - Math.floor(cols / 2);
   const pal = buildPalette('#9aa0b5', 'B', frame);
   drawSprite(buf, sprite, pal, {
-    x: trinketX,
+    x: tx,
     y: ty,
     destW: cols,
     destH: rows,

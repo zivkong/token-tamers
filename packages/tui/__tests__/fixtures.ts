@@ -27,6 +27,22 @@ export const TEST_SPRITE: SpriteDef = {
   fps: 4,
 };
 
+/** A trinket sprite so the pet scene can render an equipped toy in tests. */
+export const TEST_TRINKET_SPRITE: SpriteDef = {
+  id: 'trinket-bouncy-ball',
+  width: 4,
+  height: 4,
+  frames: [
+    [
+      [0, 4, 4, 0],
+      [4, 5, 5, 4],
+      [4, 5, 5, 4],
+      [0, 4, 4, 0],
+    ],
+  ],
+  fps: 2,
+};
+
 const WISP: SpeciesDef = {
   id: 'wisp',
   num: 1,
@@ -80,7 +96,7 @@ export function makePack(): ContentPack {
         id: 'terminal-den',
         name: 'Terminal Den',
         spriteId: 'habitat-terminal-den',
-        trinketSlots: [],
+        trinketSlots: [{ x: 96, y: 38 }],
       },
       { id: 'meadow', name: 'Meadow', spriteId: 'habitat-meadow', trinketSlots: [] },
     ],
@@ -88,7 +104,7 @@ export function makePack(): ContentPack {
       { id: 'bouncy-ball', name: 'Bouncy Ball', spriteId: 'trinket-bouncy-ball' },
       { id: 'cushion', name: 'Cushion', spriteId: 'trinket-cushion' },
     ],
-    sprites: [TEST_SPRITE],
+    sprites: [TEST_SPRITE, TEST_TRINKET_SPRITE],
     dexTotal: 6,
     battle: {
       version: 2,
