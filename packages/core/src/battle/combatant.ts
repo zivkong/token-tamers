@@ -57,6 +57,9 @@ export function combatantFromDecoded(decoded: DecodedDna, name: string): Combata
     stage: decoded.stage,
     stats: { ...decoded.stats },
     traits: [...decoded.traits],
+    // The pasted code's maker's-mark — display only, the engine never reads it.
+    owner: decoded.tamer || undefined,
+    ownerTitle: decoded.title || undefined,
   };
 }
 

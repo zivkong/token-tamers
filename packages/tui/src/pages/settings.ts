@@ -12,9 +12,16 @@
  * mutation + persistence (update mode → settings.json, cycle → config.json).
  */
 
+import { sanitizeTamerName, TAMER_NAME_MAX } from '@token-tamers/core';
 import type { ColorMode, Rgb } from '../terminal/ansi';
 import { drawPageFooter, drawPageHeader, pageBodyBottom } from '../components';
 import type { RenderContext, SettingsState } from './types';
+
+/** The title options the player can wear: "none" first, then each earned title. */
+const NO_TITLE = '— none';
+function titleOptions(state: SettingsState): string[] {
+  return [NO_TITLE, ...state.earnedTitles];
+}
 
 const TEXT: Rgb = { r: 214, g: 220, b: 234 };
 const DIM: Rgb = { r: 96, g: 100, b: 120 };
@@ -39,12 +46,41 @@ export function anchorFieldShown(state: SettingsState): boolean {
 }
 
 /**
- * Number of editable fields: the update mode (0) and the cycle policy (1) are
- * always present; the subscription anchor (2) appears only when subscription is
- * active with more than one adapter.
+ * Selection index of the Tamer-name field. The identity fields (name, then title)
+ * sit AFTER the cycle block, so the name index slides by one when the optional
+ * subscription anchor field is showing.
+ */
+export function nameFieldIndex(state: SettingsState): number {
+  return anchorFieldShown(state) ? 3 : 2;
+}
+
+/** Selection index of the Tamer-title field (immediately after the name). */
+export function titleFieldIndex(state: SettingsState): number {
+  return nameFieldIndex(state) + 1;
+}
+
+/**
+ * Number of editable fields: update mode (0) + cycle policy (1) are always present;
+ * the subscription anchor (2) appears only under subscription with >1 adapter; the
+ * Tamer name + title always follow.
  */
 export function settingsFieldCount(state: SettingsState): number {
-  return anchorFieldShown(state) ? 3 : 2;
+  return (anchorFieldShown(state) ? 3 : 2) + 2;
+}
+
+/** True when the Tamer-name field is the one currently focused. */
+export function isNameFieldSelected(state: SettingsState): boolean {
+  return state.selected === nameFieldIndex(state);
+}
+
+/** Append a printable char to the handle (capped); used while editing the name. */
+export function appendNameChar(state: SettingsState, ch: string): void {
+  state.tamerName = sanitizeTamerName(state.tamerName + ch, TAMER_NAME_MAX);
+}
+
+/** Delete the last char of the handle; used while editing the name. */
+export function backspaceName(state: SettingsState): void {
+  state.tamerName = state.tamerName.slice(0, -1);
 }
 
 /** Wrap a value to the next/previous entry in its option list. */
@@ -88,6 +124,15 @@ export function cycleSelectedField(state: SettingsState, delta: number): void {
   if (state.selected === ANCHOR_FIELD_INDEX && anchorFieldShown(state)) {
     const ids = state.adapters.map((a) => a.provider);
     state.anchorAdapter = nextValue(ids, state.anchorAdapter, delta);
+    return;
+  }
+  // Title field: cycle through "none" + the earned titles. (The name field is
+  // text-edited by typing, not cycled, so ←→ is a no-op there.)
+  if (state.selected === titleFieldIndex(state)) {
+    const opts = titleOptions(state);
+    const current = state.tamerTitle || NO_TITLE;
+    const next = nextValue(opts, current, delta);
+    state.tamerTitle = next === NO_TITLE ? '' : next;
   }
 }
 
@@ -138,13 +183,71 @@ export function renderSettingsPage(ctx: RenderContext): void {
   // Pet-global cycle clock — editable: policy (▸ anchor when subscription).
   y = drawCycleFields(ctx, y);
 
+  // Tamer identity — your handle (text-edit) + the title you wear (cycle earned).
+  y = drawTamerFields(ctx, y, row);
+
   // Read-only adapter list (data sources only; managed by `tt init`).
   y += 1;
   drawAdapters(ctx, row);
 
-  // Standard footer: the editing-controls hint. The nav legend is intentionally
-  // gone — the global "── Menu ──" buttons below already provide page navigation.
-  drawPageFooter(ctx, '↑↓ select   ←→ change   ·   changes apply on restart');
+  // Standard footer: the editing-controls hint (the name field has its own typing
+  // mode). The nav legend is intentionally gone — the global "── Menu ──" buttons
+  // below already provide page navigation.
+  drawPageFooter(
+    ctx,
+    ctx.settings?.editingName
+      ? 'type your handle   ·   Enter done   ·   Esc cancel'
+      : '↑↓ select   ←→ change   ·   Enter edit name   ·   changes apply on restart',
+  );
+}
+
+/**
+ * Draw the Tamer identity fields: the handle (a text-edit field — Enter toggles
+ * typing, see shell-input) and the worn title (cycle through earned titles).
+ * Read-only fallback to static `info` when there is no live settings state.
+ */
+function drawTamerFields(
+  ctx: RenderContext,
+  y: number,
+  row: (label: string, value: string, valueFg?: Rgb) => void,
+): number {
+  const { settings, info } = ctx;
+  if (!settings) {
+    row('Tamer', info?.tamer || 'Anonymous Tamer', info?.tamer ? TEXT : DIM);
+    row('Title', info?.tamerTitle || UNKNOWN, DIM);
+    return y + 2;
+  }
+  drawNameField(ctx, y, settings);
+  const titleY = y + 1;
+  drawEditableField(ctx, titleY, {
+    index: titleFieldIndex(settings),
+    label: 'Title',
+    value: settings.tamerTitle || NO_TITLE,
+  });
+  return titleY + 1;
+}
+
+/** Draw the editable Tamer-name field: the handle text + a caret while editing. */
+function drawNameField(ctx: RenderContext, y: number, settings: SettingsState): void {
+  const { buf, hits, layout } = ctx;
+  const { canvasX, canvasCols } = layout;
+  if (y >= pageBodyBottom(layout)) return;
+  const idx = nameFieldIndex(settings);
+  const selected = settings.selected === idx;
+  const editing = selected && settings.editingName;
+  if (selected) {
+    for (let x = 1; x < canvasCols - 1; x++) {
+      buf.set(canvasX + x, y, { ch: ' ', fg: null, bg: SELECT_BG });
+    }
+  }
+  const bg = selected ? SELECT_BG : null;
+  const name = settings.tamerName;
+  const shown = editing ? `${name}_` : name || '— anonymous';
+  const fg = editing ? VALUE_SELECTED : name ? TEXT : DIM;
+  buf.text(canvasX + 1, y, selected ? '›' : ' ', VALUE_SELECTED, bg);
+  buf.text(canvasX + 3, y, 'Tamer', LABEL, bg);
+  buf.text(canvasX + 13, y, shown, fg, bg);
+  hits.add(`settings:field:${idx}`, canvasX + 1, y, canvasCols - 2, 1);
 }
 
 /**

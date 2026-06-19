@@ -16,7 +16,9 @@ import { adapters as allAdapters, type ProviderAdapter } from '@token-tamers/ada
 import { contentPackV1 } from '@token-tamers/content';
 import {
   createEngine,
+  sanitizeTamerName,
   SCHEMA_VERSION,
+  TAMER_NAME_MAX,
   type AdapterConfig,
   type ColorPreference,
   type CycleConfig,
@@ -53,6 +55,7 @@ import {
   parseAnchorChoice,
   formatColorQuestion,
   formatPathQuestion,
+  formatTamerQuestion,
   formatUpdateQuestion,
   parseColorChoice,
   parseUpdateChoice,
@@ -66,6 +69,7 @@ import {
   renderAdapterEnabled,
   renderCycleChoice,
   renderCustomPathSet,
+  renderTamerChoice,
   renderColorChoice,
   renderUpdateChoice,
   renderNoAdapters,
@@ -149,6 +153,9 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   const enabled: string[] = [];
   let settingsDirty = false;
   let cycle: CycleConfig = { policy: 'static', weekAnchor: nextMondayLocal(now()) };
+  // Seed from any existing handle so re-init preserves it (and the value is read
+  // as the prompt default below, never a dead initializer).
+  let tamer = loadConfig()?.tamer ?? '';
 
   try {
     out(renderBanner(styled));
@@ -166,6 +173,11 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     }
 
     out(renderStepHeader(2, 3, 'Preferences', styled));
+
+    // The Tamer handle — stamped into every DNA code this install breeds and shown
+    // on the Battle VS screen. Preserved across re-init (Enter / `--yes` keeps it).
+    tamer = sanitizeTamerName(await ask(formatTamerQuestion(tamer, styled), tamer), TAMER_NAME_MAX);
+    out(renderTamerChoice(tamer, styled));
 
     // ONE cycle clock for the pet (never per adapter), grouped with the other
     // preferences. Ask only when at least one adapter is enabled; the week anchor
@@ -207,12 +219,17 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
 
   // Preserve an existing install's salt across re-init (so its House spread stays
   // stable); only a genuine first init mints a fresh one.
-  const salt = loadConfig()?.salt ?? randomSalt();
+  const prior = loadConfig();
+  const salt = prior?.salt ?? randomSalt();
   const config: UserConfig = {
     schemaVersion: SCHEMA_VERSION,
     cycle,
     adapters: adapterConfigs,
     salt,
+    // Identity: the chosen handle (or '' = anonymous); keep any wearable title the
+    // player already selected (init only edits the handle).
+    tamer,
+    tamerTitle: prior?.tamerTitle,
   };
   saveConfig(config);
 

@@ -126,4 +126,53 @@ describe('DNA codec', () => {
     expect(d.grade).toBe('A');
     expect(d.house).toBe('aether');
   });
+
+  describe('tamer maker’s-mark (reserved ext area)', () => {
+    it('round-trips the tamer handle and title alongside every field', () => {
+      const code = encodeDna(snap(), { speciesNum: 14, tamer: 'Vela', title: 'Apex Tamer' });
+      const d = decodeDna(code);
+      expect(d.sigValid).toBe(true);
+      expect(d.tamer).toBe('Vela');
+      expect(d.title).toBe('Apex Tamer');
+      // The pet fields still decode unchanged with a mark present.
+      expect(d.grade).toBe('A');
+      expect(d.stats).toEqual(snap().stats);
+    });
+
+    it('omitting the tamer is byte-identical to an empty tamer (no ext data)', () => {
+      const bare = encodeDna(snap(), { speciesNum: 14 });
+      const empty = encodeDna(snap(), { speciesNum: 14, tamer: '', title: '' });
+      expect(empty).toBe(bare);
+      const d = decodeDna(bare);
+      expect(d.tamer).toBe('');
+      expect(d.title).toBe('');
+    });
+
+    it('sanitizes + caps the handle (printable ASCII, ≤ 16 chars)', () => {
+      const d = decodeDna(
+        encodeDna(snap(), {
+          speciesNum: 14,
+          tamer: '  Drako 🐉 the Boundless Wanderer  ',
+        }),
+      );
+      // Non-ASCII stripped, leading space trimmed, capped to 16 chars.
+      expect(d.tamer.length).toBeLessThanOrEqual(16);
+      expect(d.tamer).toMatch(/^[\x20-\x7e]+$/);
+      expect(d.tamer.startsWith('Drako')).toBe(true);
+      expect(d.tamer).not.toContain('🐉');
+    });
+
+    it('still detects tampering when a mark is present, and never throws', () => {
+      const code = encodeDna(snap(), { speciesNum: 14, tamer: 'Vela' });
+      const ch = code[5] === 'A' ? 'B' : 'A';
+      expect(() => decodeDna(code.slice(0, 5) + ch + code.slice(6))).not.toThrow();
+      expect(decodeDna(code.slice(0, 5) + ch + code.slice(6)).sigValid).toBe(false);
+    });
+
+    it('locks the byte layout of a tamer-stamped code (golden — append only)', () => {
+      expect(
+        encodeDna(snap({ grade: 'S' }), { speciesNum: 14, tamer: 'Vela', title: 'Apex Tamer' }),
+      ).toMatchSnapshot();
+    });
+  });
 });

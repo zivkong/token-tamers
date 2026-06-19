@@ -62,6 +62,12 @@ export interface ShellOptions {
   anchorAdapter?: string;
   /** Initial opt-in update mode ('off' | 'notify' | 'auto'); defaults to 'off'. */
   updateMode?: string;
+  /** Initial Tamer handle ('' = anonymous). */
+  tamerName?: string;
+  /** Initial worn title ('' = none). */
+  tamerTitle?: string;
+  /** Titles the player has earned and may wear (cycled in Settings). */
+  earnedTitles?: string[];
   /** Initial page to open on; defaults to 'pet'. `tt battle` opens on 'battle'. */
   initialPage?: PageId;
   /** A battle to play back immediately (set by `tt battle <code>`); undefined ⇒ picker. */
@@ -77,6 +83,11 @@ export interface ShellOptions {
    * pledge holds until the player opts in here.
    */
   onUpdateModeChange?: (mode: string) => void;
+  /**
+   * Persist the edited Tamer identity (handle + worn title). Called on each change;
+   * the host writes config.json (the new handle stamps codes bred next launch).
+   */
+  onTamerChange?: (name: string, title: string) => void;
   // --- additive testing/IO hooks (all optional; defaults wire real stdio) ---
   /** Injected clock; defaults to Date.now. Single time source for the loop. */
   now?: () => number;
@@ -119,6 +130,8 @@ export interface ShellRuntime {
   onCycleChange?: (policy: string, anchorAdapter: string) => void;
   /** Persist hook for the opt-in update-mode edit (from options). */
   onUpdateModeChange?: (mode: string) => void;
+  /** Persist hook for the Tamer identity edit (from options). */
+  onTamerChange?: (name: string, title: string) => void;
   /** The loaded battle to play back on the Battle page (undefined ⇒ opponent picker). */
   battle?: BattleView;
 }
@@ -167,6 +180,10 @@ function initialSettings(options: ShellOptions): SettingsState {
     cyclePolicy: options.cyclePolicy ?? 'static',
     anchorAdapter: options.anchorAdapter ?? '',
     adapters: copy,
+    tamerName: options.tamerName ?? '',
+    tamerTitle: options.tamerTitle ?? '',
+    earnedTitles: options.earnedTitles ?? [],
+    editingName: false,
     selected: 0,
   };
 }
@@ -197,6 +214,7 @@ export async function runShell(options: ShellOptions): Promise<void> {
     settings: initialSettings(options),
     onCycleChange: options.onCycleChange,
     onUpdateModeChange: options.onUpdateModeChange,
+    onTamerChange: options.onTamerChange,
     battle: options.initialBattle,
   };
 

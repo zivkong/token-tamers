@@ -24,6 +24,7 @@ import {
   dexCommand,
   battleCommand,
   completeCommand,
+  tamerCommand,
   adaptersCommand,
   watchCommand,
   runShellCommand,
@@ -94,6 +95,8 @@ export async function dispatch(
       );
     case 'complete':
       return guarded(() => completeCommand(out));
+    case 'tamer':
+      return guarded(() => tamerCommand(parsed.rest, out));
     case 'adapters':
       await adaptersCommand(out);
       return 0;

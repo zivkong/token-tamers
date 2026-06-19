@@ -12,7 +12,15 @@ import {
   type PageId,
   type ShellInfo,
 } from '@token-tamers/tui';
-import type { ColorPreference, SettingsFile, UpdateMode, UserConfig } from '@token-tamers/core';
+import {
+  earnedTitles,
+  sanitizeTamerName,
+  type ColorPreference,
+  type SettingsFile,
+  type UpdateMode,
+  type UserConfig,
+} from '@token-tamers/core';
+import { contentPackV1 } from '@token-tamers/content';
 import { catchUp, NotInitializedError, type CatchUpResult } from '../services/catchup';
 import { resolveSubcellMode } from '../services/subcell';
 import { createShellHost } from '../services/shell-host';
@@ -49,6 +57,8 @@ function buildShellInfo(config: UserConfig): ShellInfo {
     runtime: `node ${process.version}`,
     fps: config.render?.fps ?? DEFAULT_FPS,
     dataDir: tildePath(dataDir()),
+    tamer: config.tamer ?? '',
+    tamerTitle: config.tamerTitle ?? '',
   };
 }
 
@@ -85,6 +95,15 @@ function persistCycle(config: UserConfig, policy: string, anchorAdapter: string)
  */
 function persistUpdateMode(settings: SettingsFile, mode: string): void {
   saveSettings({ ...settings, update: { mode: mode as UpdateMode } });
+}
+
+/**
+ * Persist the edited Tamer identity back to config.json: the handle (sanitized +
+ * capped, the same rule the DNA codec applies) and the chosen wearable title.
+ * Cosmetic/identity only; the running session keeps its current values.
+ */
+function persistTamer(config: UserConfig, name: string, title: string): void {
+  saveConfig({ ...config, tamer: sanitizeTamerName(name), tamerTitle: title || undefined });
 }
 
 /** Options for launching the interactive shell from an already-caught-up engine. */
@@ -127,8 +146,12 @@ export async function launchShell(caught: CatchUpResult, opts: LaunchShellOption
       cyclePolicy: config.cycle.policy,
       anchorAdapter: config.cycle.anchorAdapter ?? '',
       updateMode: settings.update?.mode ?? 'off',
+      tamerName: config.tamer ?? '',
+      tamerTitle: config.tamerTitle ?? '',
+      earnedTitles: earnedTitles(engine.state(), contentPackV1),
       onCycleChange: (policy, anchorAdapter) => persistCycle(config, policy, anchorAdapter),
       onUpdateModeChange: (mode) => persistUpdateMode(settings, mode),
+      onTamerChange: (name, title) => persistTamer(config, name, title),
       initialPage: opts.initialPage,
       initialBattle: opts.initialBattle,
     });

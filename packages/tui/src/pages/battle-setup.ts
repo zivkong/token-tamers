@@ -1,21 +1,13 @@
 /**
- * Battle SETUP (the pre-fight screen). The Battle page shows this whenever no
- * battle is loaded. The player picks a FIGHTER on the left — the live pet (if
- * Evolved) or any battle-ready Dex record — and an OPPONENT on the right, either
- * by pasting a friend's DNA code OR by picking one of their own Dex records. So a
- * sealed live pet never blocks battling when a retired pet is battle-ready.
+ * Battle SETUP (the pre-fight screen), shown whenever no battle is loaded. Pick a
+ * FIGHTER on the left (the live pet if Evolved, or any battle-ready Dex record) and
+ * an OPPONENT on the right — a pasted friend's DNA code or one of your Dex records.
  *
- * Two opponent sources, two self-mirror rules (design §11), judged against the
- * CHOSEN fighter's species:
- *  - A pasted code is ANOTHER player: it decodes to a foreign combatant
- *    (`speciesId: ''`), so a same-species match is allowed.
- *  - A Dex record is the player's OWN: a same-species pick is a self-mirror and
- *    is blocked; pick a different species instead.
- *
- * The simulation runs ONCE here (on confirm) and is then played back by the
- * arena renderer in `battle.ts` — never re-simulated at render time. Decoding a
- * pasted code for the live PREVIEW is pure/deterministic, so frames stay
- * golden-testable.
+ * Self-mirror rules (design §11), judged against the chosen fighter's species: a
+ * pasted code is ANOTHER player (foreign `speciesId: ''`) so a same-species match
+ * is allowed; a Dex record is your OWN, so a same-species pick is blocked. The
+ * simulation runs ONCE on confirm and is played back by `battle.ts` — decoding a
+ * pasted code for the live PREVIEW is pure, so frames stay golden-testable.
  */
 
 import {
@@ -38,7 +30,7 @@ import {
   GRADE_ACCENT,
   GRADE_BADGE,
 } from '../render/sprite';
-import { findSprite, houseTint } from '../helpers/lookup';
+import { findSprite, houseTint, ownerLabel } from '../helpers/lookup';
 import { QMARK_TILE, LOCKED_PALETTE } from '../render/tiles';
 import { flash, type FlashTarget } from '../shell-effects';
 import {
@@ -112,29 +104,20 @@ export function drawSetup(ctx: RenderContext, bodyY: number): void {
   drawPortrait(ctx, opp, { x: right.x, y: portraitY, w: right.w, rows: portraitRows }, true);
   drawVS(ctx, x0 + mid, portraitY + Math.floor(portraitRows / 2));
 
-  // Identity (name/grade + house/stats) centered under each portrait, after a gap row.
+  // Identity (name/grade + house/stats + owner) centered under each portrait. Your
+  // own handle fills your side; a pasted code carries the opponent's own mark.
   const idY = portraitY + portraitRows + 1;
-  drawIdentity(
-    ctx,
-    fighter,
-    { x: left.x, y: idY, w: left.w },
-    fighters.length ? undefined : 'No ready fighter',
-  );
-  drawIdentity(ctx, opp, { x: right.x, y: idY, w: right.w }, opp ? undefined : '? choose opponent');
+  const you = tamerOf(ctx);
+  const lf = fighters.length ? undefined : 'No ready fighter';
+  const of = opp ? undefined : '? choose opponent';
+  drawIdentity(ctx, fighter, { x: left.x, y: idY, w: left.w }, lf, you);
+  drawIdentity(ctx, opp, { x: right.x, y: idY, w: right.w }, of, you);
 
-  // Bottom band: your roster (left) + the opponent's TABBED source (right). The
-  // opponent has two tabs — "Paste code" and "From Dex" — and only the ACTIVE
-  // tab's content shows beneath them, so the paste field and the Dex list never
-  // collide. The active tab follows focus (input→paste, list→dex); with neither
-  // focused it reflects whether a code is in the field.
-  const oppTab: OppTab =
-    focus === 'list'
-      ? 'dex'
-      : focus === 'input'
-        ? 'paste'
-        : (ui.input ?? '').trim()
-          ? 'paste'
-          : 'dex';
+  // Bottom band: your roster (left) + the opponent's TABBED source (right). Only the
+  // active tab's content shows (paste field or Dex list); it follows focus, else
+  // whether a code is typed.
+  const typed = (ui.input ?? '').trim() ? 'paste' : 'dex';
+  const oppTab: OppTab = focus === 'list' ? 'dex' : focus === 'input' ? 'paste' : typed;
   // A blank gap row (idY + 2) separates the identity from the bottom containers.
   const boxTop = idY + 3;
   const boxBottom = bottom - 1; // last drawable row (content must stay < pageBodyBottom)
@@ -237,12 +220,22 @@ function drawPortrait(
   });
 }
 
-/** Centered identity under a portrait: name + grade, then House + raw stats. */
+/** The player's own Tamer mark (handle + worn title) for their side of the VS. */
+function tamerOf(ctx: RenderContext): { name: string; title: string } {
+  return { name: ctx.info?.tamer ?? '', title: ctx.info?.tamerTitle ?? '' };
+}
+
+/**
+ * Centered identity under a portrait: name + grade, House + raw stats, then the
+ * owning Tamer (handle + worn title). The owner is the maker's-mark decoded from a
+ * pasted code; for your own pet/record it falls back to your own handle (`you`).
+ */
 function drawIdentity(
   ctx: RenderContext,
   c: Combatant | null,
   box: { x: number; y: number; w: number },
   hint: string | undefined,
+  you?: { name: string; title: string },
 ): void {
   const { buf } = ctx;
   if (!c) {
@@ -253,6 +246,9 @@ function drawIdentity(
   const s = c.stats;
   const sub = `${titleCase(c.house)} · P${s.pwr} S${s.spd} W${s.wis} G${s.grt}`;
   centerText(buf, { x: box.x, w: box.w, y: box.y + 1 }, sub, DIM);
+  // Owner line: a pasted code's own mark, else your own handle (your pet/record).
+  const mark = ownerLabel(c, you?.name ?? '', you?.title ?? '');
+  if (mark) centerText(buf, { x: box.x, w: box.w, y: box.y + 2 }, mark, VS_COLOR);
 }
 
 /** The gold "VS" splash between the two portraits. */

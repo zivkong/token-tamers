@@ -368,6 +368,15 @@ export interface Combatant {
   stage: Stage;
   stats: Stats;
   traits: TraitId[];
+  /**
+   * The originating tamer's handle + earned title, for display ONLY (e.g. "Vela's
+   * Aether Drake" on the VS screen). Populated from a pasted code's maker's-mark;
+   * undefined for your own pet/records (the UI fills in your own handle). The
+   * battle simulation NEVER reads these — it stays f(stats, house, traits, grade,
+   * stage, ruleset), so determinism is unaffected (invariant 1/5).
+   */
+  owner?: string;
+  ownerTitle?: string;
 }
 
 /** One House-vs-House multiplier on the type wheel (content-tunable; §11). */
@@ -711,6 +720,15 @@ export interface UserConfig {
    * hatch (see `EngineConfig.salt` / `ContentPack.houseBias`). Cosmetic only.
    */
   salt?: number;
+  /**
+   * The player's Tamer handle, stamped into every DNA code this install breeds
+   * (the maker's-mark) and shown on the Battle VS screen. Optional like `salt` —
+   * absent on a pre-tamer install (renders "Anonymous Tamer"). Cosmetic/identity
+   * only; never affects mechanics (invariant 3).
+   */
+  tamer?: string;
+  /** The earned title the player chose to wear, '' / absent for none. */
+  tamerTitle?: string;
 }
 
 // ---------------------------------------------------------------------------

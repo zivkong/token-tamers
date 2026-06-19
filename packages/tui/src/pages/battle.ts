@@ -41,7 +41,7 @@ import {
   GRADE_ACCENT,
   GRADE_BADGE,
 } from '../render/sprite';
-import { findSprite, houseColor, houseTint } from '../helpers/lookup';
+import { findSprite, houseColor, houseTint, ownerLabel } from '../helpers/lookup';
 import type { FlashTarget } from '../shell-effects';
 import { drawSetup, handleSetupKey } from './battle-setup';
 import type { BattleView, PageId, PageUiState, RenderContext } from './types';
@@ -258,6 +258,9 @@ function drawCombatantColumn(
     color: TEXT,
     maxCols: avail - 2,
   });
+  // Owner mark: a pasted code's own Tamer, else your own handle (your pet/record).
+  const mark = ownerLabel(c, ctx.info?.tamer ?? '', ctx.info?.tamerTitle ?? '');
+  if (mark) clipText(buf, { x: tx, y: col.topY + 2, text: mark, color: DIM, maxCols: avail });
   // Meter + inline HP must fit `avail`; shrink the meter so the HP readout never
   // spills past the column (into the other combatant or the menu rail).
   const frac = hp.max > 0 ? hp.cur / hp.max : 0;

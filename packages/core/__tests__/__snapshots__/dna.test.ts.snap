@@ -3,3 +3,5 @@
 exports[`DNA codec > locks the byte layout forever (golden codes — never edit, only append) 1`] = `"TTX1-P9H8-8ANN-G6V4-4D4T-WAXV-E50K-8GDM-6PBE-G2NB-T"`;
 
 exports[`DNA codec > locks the byte layout forever (golden codes — never edit, only append) 2`] = `"TTX1-B372-67K6-76C3-G9BW-9873-M2K4-RHRC-8WBE"`;
+
+exports[`DNA codec > tamer maker’s-mark (reserved ext area) > locks the byte layout of a tamer-stamped code (golden — append only) 1`] = `"TTX1-P486-YMS3-YZCX-ZF14-KMC8-TA95-KT2D-GSVH-XF0C-ZPRM-3237-FA0S-01VG-QAYM-36A5-H40"`;

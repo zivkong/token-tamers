@@ -138,6 +138,13 @@ export function renderCycleChoice(
 // Display step
 // ---------------------------------------------------------------------------
 
+/** Confirm the chosen Tamer handle (or that it stays anonymous). */
+export function renderTamerChoice(name: string, styled: boolean): string {
+  const shown = name || '— anonymous';
+  if (!styled) return `  Tamer: ${shown}.\n`;
+  return `  ${dim(`tamer · ${shown}`, styled)}\n`;
+}
+
 export function renderColorChoice(pref: string, changed: boolean, styled: boolean): string {
   if (!styled) {
     return changed ? `  Color set to ${pref} (applies next launch).\n` : `  Color: ${pref}.\n`;

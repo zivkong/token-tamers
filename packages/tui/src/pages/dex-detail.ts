@@ -173,6 +173,14 @@ function drawSpriteAndMeta(
     null,
   );
 
+  // Attribution — these are YOUR records, so they carry your Tamer mark (the same
+  // handle stamped into the DNA codes below). Only shown once a handle is set.
+  const tamer = ctx.info?.tamer;
+  if (tamer) {
+    const title = ctx.info?.tamerTitle ? `, ${ctx.info.tamerTitle}` : '';
+    buf.text(mx, bodyY + 2, `Tamed by ${tamer}${title}`, DIM, null);
+  }
+
   // Readiness banner — driven purely by the best record's stage.
   if (isBattleReady(best)) {
     buf.text(mx, bodyY + 3, '✦ Battle-ready  ·  Graft-ready', READY, null);
@@ -194,7 +202,12 @@ function drawRecordCard(ctx: RenderContext, snap: DexSnapshot, idx: number, y: n
   buf.text(x + 51, y, isoDate(snap.recordedAt), DIM, null);
 
   const speciesNum = findSpecies(pack, snap.speciesId)?.num ?? 0;
-  const code = encodeDna(snap, { speciesNum });
+  // Stamp the player's maker's-mark so a shared/copied code carries who bred it.
+  const code = encodeDna(snap, {
+    speciesNum,
+    tamer: ctx.info?.tamer,
+    title: ctx.info?.tamerTitle,
+  });
   const label = `DNA ${code}`;
   buf.text(x + 5, y + 1, label, DNA, null);
   // Click-to-copy: a ⧉ affordance + a hit region over the code copy the (compact) code.
