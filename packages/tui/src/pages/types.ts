@@ -56,6 +56,8 @@ export interface BattleView {
   cursor: number;
   /** Whether playback auto-advances each frame. */
   playing: boolean;
+  /** Battle seed nonce; 0 for the first/canonical fight, bumped on each rematch. */
+  nonce?: number;
 }
 
 /**

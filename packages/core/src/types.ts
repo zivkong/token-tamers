@@ -391,6 +391,41 @@ export interface TraitProc {
 }
 
 /**
+ * One stat-derived combat-mechanic chance (§11). The chance is
+ * `clamp(base + (stat / scale) * perPoint, 0, cap)`, where `stat` is the governing
+ * EFFECTIVE stat (so grade flows in via the grade stat-floor — invariant 3, never a
+ * model id). Which stat governs which mechanic is fixed game design (encoded in the
+ * engine); ONLY these tuning numbers are content data (invariant 9).
+ */
+export interface MechanicTuning {
+  /** Floor chance before the stat term (0..1). */
+  base: number;
+  /** Chance gained per unit of `stat / scale`. */
+  perPoint: number;
+  /** Stat divisor that normalizes the governing stat into the chance term (> 0). */
+  scale: number;
+  /** Hard cap on the resulting chance (0..1) — keeps grade an edge, never a runaway. */
+  cap: number;
+}
+
+/**
+ * Stat-derived combat mechanics (§11), all OPTIONAL: a ruleset without `mechanics`
+ * runs the classic trade-blows fight (so older rulesets/replays are byte-identical).
+ * Each mechanic rolls against the seeded battle RNG, so a fixed matchup still replays
+ * forever; per-rematch variety comes from the battle `nonce` (see {@link BattleResult}).
+ */
+export interface BattleMechanics {
+  /** Defender evades the hit entirely (no damage). Governed by SPD advantage (def.spd − atk.spd). */
+  dodge: MechanicTuning;
+  /** Attacker lands a critical hit, damage × `multiplier`. Governed by attacker WIS. */
+  crit: MechanicTuning & { multiplier: number };
+  /** Defender parries, damage × (1 − `reduction`). Governed by defender GRT. */
+  parry: MechanicTuning & { reduction: number };
+  /** Attacker strikes a second time the same turn. Governed by attacker SPD. */
+  doubleStrike: MechanicTuning;
+}
+
+/**
  * The battle ruleset — ALL combat tuning as CONTENT DATA (invariant 9). `version`
  * is the negotiated `rulesetVersion` (§11): two codes battle under the minimum
  * common version so cross-version replays stay reproducible forever.
@@ -404,6 +439,8 @@ export interface BattleRuleset {
   procs: TraitProc[];
   /** Damage variance band, 0..1 — the only stochastic term, drawn from the seeded RNG. */
   variance: number;
+  /** Stat-derived combat mechanics (dodge/crit/parry/double-strike). Omitted ⇒ off (classic fight). */
+  mechanics?: BattleMechanics;
 }
 
 /** Which side of a battle a combatant is on. */
@@ -418,8 +455,8 @@ export interface BattleEvent {
   turn: number;
   /** The attacking side this turn. */
   actor: BattleSide;
-  kind: 'attack' | 'proc' | 'faint';
-  /** Damage dealt by this event (0 for a faint marker). */
+  kind: 'attack' | 'proc' | 'faint' | 'dodge' | 'crit' | 'parry';
+  /** Damage dealt by this event (0 for a faint or a dodge). */
   damage: number;
   /** Defender HP after the event (clamped ≥ 0). */
   hpAfter: number;
@@ -429,8 +466,10 @@ export interface BattleEvent {
 
 /**
  * The deterministic result of a battle: outcome + the full replayable timeline.
- * `outcome = f(combatantA, combatantB, ruleset.version)` (§11) — same inputs ⇒
- * identical result, frame for frame, forever.
+ * `outcome = f(combatantA, combatantB, ruleset.version, nonce)` (§11) — same inputs ⇒
+ * identical result, frame for frame, forever. The canonical/shared battle uses
+ * `nonce = 0` (so any holder of both codes reproduces it); a local rematch bumps the
+ * nonce to reseed for variety without breaking the shared replay.
  */
 export interface BattleResult {
   /** The ruleset version this battle was resolved under. */

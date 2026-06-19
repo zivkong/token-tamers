@@ -36,7 +36,12 @@ function fnv1a(text: string): number {
  * Deterministic 32-bit seed for a battle between `a` and `b` under `version`.
  * Side A and side B are ordered (a then b), so swapping sides is a distinct —
  * but still reproducible — battle (turn order/variance depend on the seed).
+ *
+ * `nonce` (default 0) reseeds the same matchup for a fresh-but-still-deterministic
+ * rematch: a shared/canonical battle uses 0 (so both codes reproduce it forever),
+ * while a local "fight again" bumps it for variety. It folds into the same hash, so
+ * `(a, b, version, nonce)` ⇒ one fixed timeline.
  */
-export function battleSeed(a: Combatant, b: Combatant, version: number): number {
-  return fnv1a(`${version}|${canonical(a)}|${canonical(b)}`);
+export function battleSeed(a: Combatant, b: Combatant, version: number, nonce = 0): number {
+  return fnv1a(`${version}|${canonical(a)}|${canonical(b)}|${nonce}`);
 }

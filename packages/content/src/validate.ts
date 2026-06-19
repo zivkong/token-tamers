@@ -218,6 +218,38 @@ function checkBattleRuleset(pack: ContentPack): string[] {
       errors.push(`Battle proc multiplier must be finite and > 0, got ${p.multiplier}`);
     }
   }
+  if (b.mechanics) errors.push(...checkBattleMechanics(b.mechanics));
+  return errors;
+}
+
+/** Validate the optional stat-derived combat mechanics (dodge/crit/parry/double-strike). */
+function checkBattleMechanics(m: NonNullable<ContentPack['battle']['mechanics']>): string[] {
+  const errors: string[] = [];
+  const tune = (
+    t: { base: number; perPoint: number; scale: number; cap: number },
+    name: string,
+  ) => {
+    for (const [k, v] of [
+      ['base', t.base],
+      ['perPoint', t.perPoint],
+      ['cap', t.cap],
+    ] as const) {
+      if (!(v >= 0 && v <= 1))
+        errors.push(`Battle mechanic ${name}.${k} must be within 0..1, got ${v}`);
+    }
+    if (!(t.scale > 0) || !Number.isFinite(t.scale))
+      errors.push(`Battle mechanic ${name}.scale must be finite and > 0, got ${t.scale}`);
+  };
+  tune(m.dodge, 'dodge');
+  tune(m.crit, 'crit');
+  tune(m.parry, 'parry');
+  tune(m.doubleStrike, 'doubleStrike');
+  if (!(m.crit.multiplier >= 1) || !Number.isFinite(m.crit.multiplier))
+    errors.push(
+      `Battle mechanic crit.multiplier must be finite and >= 1, got ${m.crit.multiplier}`,
+    );
+  if (!(m.parry.reduction >= 0 && m.parry.reduction <= 1))
+    errors.push(`Battle mechanic parry.reduction must be within 0..1, got ${m.parry.reduction}`);
   return errors;
 }
 

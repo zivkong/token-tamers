@@ -157,7 +157,7 @@ export function makePack(): ContentPack {
     sprites: [],
     dexTotal: 20,
     battle: {
-      version: 1,
+      version: 2,
       wheel: [
         { attacker: 'aether', defender: 'cipher', multiplier: 1.25 },
         { attacker: 'cipher', defender: 'flux', multiplier: 1.25 },
@@ -173,6 +173,12 @@ export function makePack(): ContentPack {
         { trait: 'deepdiver', counters: 'swarm', multiplier: 1.3 },
       ],
       variance: 0.15,
+      mechanics: {
+        dodge: { base: 0.03, perPoint: 0.5, scale: 100, cap: 0.25 },
+        crit: { base: 0.05, perPoint: 0.25, scale: 100, cap: 0.3, multiplier: 1.6 },
+        parry: { base: 0.04, perPoint: 0.2, scale: 100, cap: 0.2, reduction: 0.5 },
+        doubleStrike: { base: 0, perPoint: 0.15, scale: 100, cap: 0.15 },
+      },
     },
   };
 }

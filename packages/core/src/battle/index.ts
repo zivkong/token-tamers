@@ -7,6 +7,7 @@ export {
   effectiveStats,
   sameSpecies,
 } from './combatant';
+export { mechanicChance } from './mechanics';
 export { resolveProcs, type ProcResult } from './procs';
 export { battleSeed } from './seed';
 export { simulateBattle } from './simulate';
