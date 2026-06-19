@@ -22,6 +22,12 @@ const FOREIGN_WISP: DexSnapshot = {
   reason: 'molt',
 };
 const FOREIGN_WISP_CODE = encodeDna(FOREIGN_WISP, { speciesNum: 1 });
+/** Same foreign wisp, but stamped with another player's Tamer maker's-mark. */
+const FOREIGN_WISP_TAMER_CODE = encodeDna(FOREIGN_WISP, {
+  speciesNum: 1,
+  tamer: 'Nyx',
+  title: 'Collector',
+});
 
 /** A deterministic, fully-played battle for the arena golden frames. */
 function makeBattleView(): BattleView {
@@ -67,6 +73,10 @@ const TEST_SETTINGS: SettingsState = {
   cyclePolicy: 'subscription',
   anchorAdapter: 'claude-code',
   adapters: [{ provider: 'claude-code' }, { provider: 'codex' }],
+  tamerName: 'Vela',
+  tamerTitle: 'Apex Tamer',
+  earnedTitles: ['Apex Tamer', 'Collector'],
+  editingName: false,
   selected: 2,
 };
 
@@ -248,6 +258,23 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
+  it('shows the Tamer maker’s-mark from a pasted code, plus your own handle', () => {
+    const state = makeState({ pet: makePet({ stage: 'evolved' }) });
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'battle',
+        state,
+        info: { ...TEST_INFO, tamer: 'Vela', tamerTitle: 'Apex Tamer' },
+        ui: { selected: 0, scroll: 0, focus: 'input', input: FOREIGN_WISP_TAMER_CODE },
+      }),
+    );
+    expect(out).toContain('Nyx · Collector'); // the opponent's mark, decoded from the code
+    expect(out).toContain('Vela · Apex Tamer'); // your own handle under your fighter
+    expect(out).toMatchSnapshot();
+  });
+
   it('renders the battle arena at the start of playback', () => {
     const view = makeBattleView();
     const out = renderFrameToString(100, 30, input({ page: 'battle', battle: view }));
@@ -278,6 +305,21 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toContain('subscription');
     expect(out).toContain('change');
     expect(out).not.toContain('zero network');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the settings page editing the Tamer name (caret + typing footer)', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'settings',
+        info: TEST_INFO,
+        settings: { ...TEST_SETTINGS, selected: 3, editingName: true },
+      }),
+    );
+    expect(out).toContain('Vela_'); // the caret shown while editing the handle
+    expect(out).toContain('Enter done');
     expect(out).toMatchSnapshot();
   });
 

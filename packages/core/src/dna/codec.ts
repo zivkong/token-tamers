@@ -63,6 +63,59 @@ import {
 /** Visible format version (the `TTX<v>` prefix). Append-only field layout. */
 export const DNA_SCHEMA_VERSION = 1;
 
+/**
+ * Caps for the tamer maker's-mark carried in the reserved ext area. Kept small so
+ * a shared code stays a short license-key token (each char is one varint byte).
+ * ponytail: ASCII-only handles; widen to a Unicode codec only if players ask.
+ */
+export const TAMER_NAME_MAX = 16;
+export const TAMER_TITLE_MAX = 24;
+
+/** Strip to printable ASCII, trim, and cap — the single rule for tamer name/title. */
+export function sanitizeTamerName(raw: string, max: number = TAMER_NAME_MAX): string {
+  return raw
+    .replace(/[^\x20-\x7e]/g, '')
+    .trim()
+    .slice(0, max);
+}
+
+/** Encode a (sanitized) tamer string to a flat list of byte values for the ext area. */
+function tamerToBytes(s: string | undefined, max: number): number[] {
+  const clean = sanitizeTamerName(s ?? '', max);
+  return [...clean].map((ch) => ch.charCodeAt(0) & 0xff);
+}
+
+/** Decode a byte-value list back to an ASCII string (bounds-safe; never throws). */
+function bytesToTamer(bytes: number[]): string {
+  return bytes.map((b) => String.fromCharCode(b & 0xff)).join('');
+}
+
+/**
+ * Build the reserved-ext payload: the tamer maker's-mark. Layout is positional and
+ * APPEND-ONLY — `[nameLen, ...nameBytes, titleLen, ...titleBytes]` — so an older
+ * decoder that knows only the name still reads it, and any future field appends
+ * after the title (skipped by `extLen`). Returns [] (→ extLen 0, byte-identical to
+ * a code with no tamer) when both are empty.
+ */
+function buildExt(tamer: string | undefined, title: string | undefined): number[] {
+  const name = tamerToBytes(tamer, TAMER_NAME_MAX);
+  const ttl = tamerToBytes(title, TAMER_TITLE_MAX);
+  if (name.length === 0 && ttl.length === 0) return [];
+  return [name.length, ...name, ttl.length, ...ttl];
+}
+
+/** Parse the reserved-ext payload back to the tamer mark (bounds-safe). */
+function parseExt(ext: number[]): { tamer: string; title: string } {
+  if (ext.length === 0) return { tamer: '', title: '' };
+  let i = 0;
+  const nameLen = ext[i++] ?? 0;
+  const name = ext.slice(i, i + nameLen);
+  i += nameLen;
+  const titleLen = ext[i++] ?? 0;
+  const title = ext.slice(i, i + titleLen);
+  return { tamer: bytesToTamer(name), title: bytesToTamer(title) };
+}
+
 export interface DecodedDna {
   /** Payload format version (read from the decoded bytes). */
   schema: number;
@@ -83,6 +136,13 @@ export interface DecodedDna {
   sigValid: boolean;
   /** Indices the local registry could not resolve (newer content) → dormant. */
   unknown: { traits: number[]; mutations: number[] };
+  /**
+   * The breeder's maker's-mark carried in the code: the originating tamer's handle
+   * and earned title ('' when the code carries none). Display/lineage only — never
+   * a battle input (invariant 1). The DONOR tamer for future grafting lineage.
+   */
+  tamer: string;
+  title: string;
 }
 
 const CODE_RE = /^TTX(\d+)-([0-9A-Za-z-]+)$/;
@@ -92,12 +152,21 @@ function writeList(out: number[], indices: number[]): void {
   for (const i of indices) writeVarint(out, i);
 }
 
+/** Options for {@link encodeDna}. The tamer mark is optional (omit → no ext data). */
+export interface EncodeOptions {
+  speciesNum: number;
+  /** The breeder's handle to stamp into the code (sanitized + capped). */
+  tamer?: string;
+  /** The breeder's earned title to stamp alongside the handle. */
+  title?: string;
+}
+
 /** Build the flat varint payload for a snapshot (pre-tag, pre-whitening). */
-function buildPayload(snap: DexSnapshot, speciesNum: number): number[] {
+function buildPayload(snap: DexSnapshot, opts: EncodeOptions): number[] {
   const p: number[] = [];
   writeVarint(p, DNA_SCHEMA_VERSION);
   writeVarint(p, snap.contentVersion);
-  writeVarint(p, speciesNum);
+  writeVarint(p, opts.speciesNum);
   writeVarint(p, Math.max(0, codeIndex(GRADE_CODES, snap.grade)));
   writeVarint(p, Math.max(0, codeIndex(STAGE_CODES, snap.stage)));
   writeVarint(p, Math.max(0, codeIndex(HOUSE_CODES, snap.house)));
@@ -116,13 +185,21 @@ function buildPayload(snap: DexSnapshot, speciesNum: number): number[] {
     p,
     snap.mutations.map((m) => codeIndex(MUTATION_CODES, m)).filter((i) => i >= 0),
   );
-  writeVarint(p, 0); // reserved extension length (future TLV data appends here)
+  // Reserved ext area: the tamer maker's-mark. extLen counts the varints that
+  // follow; an older decoder reads-and-skips them, so this stays parse-forever.
+  const ext = buildExt(opts.tamer, opts.title);
+  writeVarint(p, ext.length);
+  for (const v of ext) writeVarint(p, v);
   return p;
 }
 
-/** Encode a snapshot to a DNA code. `speciesNum` is the pack's species number. */
-export function encodeDna(snap: DexSnapshot, opts: { speciesNum: number }): string {
-  const p = buildPayload(snap, opts.speciesNum);
+/**
+ * Encode a snapshot to a DNA code. `speciesNum` is the pack's species number; the
+ * optional `tamer`/`title` stamp the breeder's mark into the reserved ext area
+ * (omit both → a code byte-identical to the pre-tamer format).
+ */
+export function encodeDna(snap: DexSnapshot, opts: EncodeOptions): string {
+  const p = buildPayload(snap, opts);
   const tag = fnv32(p);
   const ks = keystream(tag, p.length);
   const body = [
@@ -187,6 +264,8 @@ function emptyDecode(): DecodedDna {
     generation: 0,
     sigValid: false,
     unknown: { traits: [], mutations: [] },
+    tamer: '',
+    title: '',
   };
 }
 
@@ -222,7 +301,9 @@ export function decodeDna(code: string): DecodedDna {
   const traitRead = readTraitList(r);
   const mutationRead = readMutationList(r);
   const extLen = readVarint(r);
-  for (let i = 0; i < extLen; i++) readVarint(r); // skip reserved/unknown TLV records
+  const ext: number[] = [];
+  for (let i = 0; i < extLen; i++) ext.push(readVarint(r));
+  const mark = parseExt(ext);
 
   return {
     schema,
@@ -239,5 +320,7 @@ export function decodeDna(code: string): DecodedDna {
     generation,
     sigValid,
     unknown: { traits: traitRead.unknown, mutations: mutationRead.unknown },
+    tamer: mark.tamer,
+    title: mark.title,
   };
 }

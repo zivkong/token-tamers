@@ -3,6 +3,7 @@ export { statusCommand } from './status';
 export { dexCommand } from './dex';
 export { battleCommand, type BattleOptions } from './battle';
 export { completeCommand } from './complete';
+export { tamerCommand } from './tamer';
 export { adaptersCommand } from './adapters';
 export { watchCommand } from './watch';
 export { runShellCommand } from './shell';

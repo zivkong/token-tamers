@@ -15,7 +15,15 @@ import { computeLayout } from './render/layout';
 import { menuButtonY, packMenu } from './render/menu';
 import { buildHouseNodes, houseNodeCount, DEX_HOUSES } from './pages/dex';
 import { buildUnlockItems } from './pages/unlockables';
-import { cycleSelectedField, isUpdateFieldSelected, settingsFieldCount } from './pages/settings';
+import {
+  appendNameChar,
+  backspaceName,
+  cycleSelectedField,
+  isNameFieldSelected,
+  isUpdateFieldSelected,
+  settingsFieldCount,
+  titleFieldIndex,
+} from './pages/settings';
 import { handleBattleKey } from './pages/battle';
 import { flash } from './shell-effects';
 import type { PageId } from './pages/types';
@@ -37,6 +45,9 @@ const PAGE_HOTKEYS: Record<string, PageId> = {
 };
 
 function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
+  // Tamer-name text entry owns ALL keys while editing (so digits/q type instead
+  // of triggering hotkeys), so it must run before any global handler.
+  if (handleNameEntryKey(rt, name)) return;
   // Battle-page nav (scrub/play/pick) is owned by the battle module; global
   // hotkeys below still win (they aren't battle-nav names), so order is safe.
   if (handleBattleKey(rt, host, name)) return;
@@ -142,19 +153,61 @@ function toggleUnlock(rt: ShellRuntime, host: ShellHost): void {
   else host.setTrinket?.(next);
 }
 
+/** True for a single non-control printable character (the key name IS the char). */
+function isPrintable(name: string): boolean {
+  return name.length === 1 && name >= ' ' && name !== '\x7f';
+}
+
+/**
+ * Tamer-name text entry on the Settings page. Enter on the name field toggles edit
+ * mode; while editing, printable keys build the handle, Backspace deletes, and
+ * Enter/Esc commit it (persisting via onTamerChange). Returns true when the key
+ * was consumed — while editing it swallows EVERY key so typing never triggers a
+ * global hotkey (digits, q, etc.).
+ */
+function handleNameEntryKey(rt: ShellRuntime, name: string): boolean {
+  if (rt.page !== 'settings') return false;
+  const s = rt.settings;
+  if (!s.editingName) {
+    if (name === 'enter' && isNameFieldSelected(s)) {
+      s.editingName = true;
+      return true;
+    }
+    return false;
+  }
+  if (name === 'enter' || name === 'escape') {
+    s.editingName = false;
+    rt.onTamerChange?.(s.tamerName, s.tamerTitle);
+    return true;
+  }
+  if (name === 'backspace') {
+    backspaceName(s);
+    return true;
+  }
+  if (isPrintable(name)) appendNameChar(s, name);
+  return true; // swallow all other keys while editing
+}
+
 /** Cycle the focused Settings field and persist (no-op off the Settings page). */
 function adjustSetting(rt: ShellRuntime, delta: number): void {
   if (rt.page !== 'settings') return;
-  // The update-mode field persists to settings.json; the cycle fields to config.json.
-  const updateField = isUpdateFieldSelected(rt.settings);
-  cycleSelectedField(rt.settings, delta);
+  const s = rt.settings;
+  // The name field is text-edited (Enter + typing), not cycled — ←→ is a no-op.
+  if (isNameFieldSelected(s)) return;
+  const updateField = isUpdateFieldSelected(s);
+  const titleField = s.selected === titleFieldIndex(s);
+  cycleSelectedField(s, delta);
+  // Persist to the right store: update mode → settings.json; tamer → config.json
+  // (identity); cycle/anchor → config.json.
   if (updateField) {
-    rt.onUpdateModeChange?.(rt.settings.updateMode);
+    rt.onUpdateModeChange?.(s.updateMode);
+  } else if (titleField) {
+    rt.onTamerChange?.(s.tamerName, s.tamerTitle);
   } else {
     // The anchor is only meaningful under subscription; persist '' for static so a
     // remembered anchor (kept in-memory for round-trips) never lands in config.json.
-    const anchor = rt.settings.cyclePolicy === 'subscription' ? rt.settings.anchorAdapter : '';
-    rt.onCycleChange?.(rt.settings.cyclePolicy, anchor);
+    const anchor = s.cyclePolicy === 'subscription' ? s.anchorAdapter : '';
+    rt.onCycleChange?.(s.cyclePolicy, anchor);
   }
 }
 

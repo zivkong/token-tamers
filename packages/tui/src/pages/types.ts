@@ -87,6 +87,10 @@ export interface ShellInfo {
   updateMode?: string;
   /** A newer version tag seen on the last opt-in check, if any (e.g. 'v1.3.0'). */
   updateAvailable?: string;
+  /** The player's Tamer handle ('' = anonymous). Stamped on the codes you breed. */
+  tamer?: string;
+  /** The earned title the player is wearing ('' = none). */
+  tamerTitle?: string;
 }
 
 /**
@@ -109,6 +113,14 @@ export interface SettingsState {
   anchorAdapter: string;
   /** Configured adapters (read-only display). */
   adapters: AdapterInfo[];
+  /** The player's Tamer handle (text-editable in place; '' = anonymous). */
+  tamerName: string;
+  /** The earned title the player is wearing ('' = none). */
+  tamerTitle: string;
+  /** Titles the player has earned and may wear (cycle through these + none). */
+  earnedTitles: string[];
+  /** Whether the Tamer-name field is in text-edit mode (typing appends/deletes). */
+  editingName: boolean;
   selected: number;
 }
 

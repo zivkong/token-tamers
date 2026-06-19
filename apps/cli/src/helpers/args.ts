@@ -24,6 +24,7 @@ export const KNOWN_COMMANDS = new Set([
   'adapters',
   'update',
   'statusline',
+  'tamer',
   'shell',
 ]);
 
@@ -39,6 +40,7 @@ Commands:
   dex         List discovered species.
   battle      Battle your pet vs an Archive record or a DNA code (tt battle [code]).
   complete    Completion meter breakdown.
+  tamer       Show or set your Tamer handle (tt tamer [name]).
   adapters    Adapter detection + paths.
   update      Check GitHub for a newer tt and update (opt-in; off by default).
   statusline  Capture real 5h/weekly reset times from a Claude Code statusLine

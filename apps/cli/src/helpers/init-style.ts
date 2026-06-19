@@ -147,6 +147,17 @@ export function formatPathQuestion(displayName: string, styled: boolean): string
   return `  ${dim('↳', styled)} Path to ${bold(displayName, styled)} data ${dim('(Enter to skip)', styled)}: `;
 }
 
+/**
+ * The Tamer-name question. The handle is stamped into every DNA code this install
+ * breeds (the maker's-mark) and shown on the Battle VS screen. Enter keeps the
+ * current handle (or skips on a first init).
+ */
+export function formatTamerQuestion(current: string, styled: boolean): string {
+  const hint = current ? `[${current}]` : '(Enter to skip)';
+  if (!styled) return `  Tamer name — your handle, stamped on every pet you breed. ${hint} `;
+  return `  Tamer name — ${dim('your handle, stamped on every pet you breed.', styled)} ${dim(hint, styled)} `;
+}
+
 /** Format the color-preference question, highlighting the current choice. */
 export function formatColorQuestion(current: ColorPreference, styled: boolean): string {
   if (!styled) {

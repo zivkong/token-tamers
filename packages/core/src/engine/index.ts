@@ -86,6 +86,7 @@ export { hasFullWeekBaseline, seedBaselinesFromHistory } from './baseline';
 export { BATTLE_READY_STAGE, growthProgress, requiredMaturity, stageMature } from './maturity';
 export { isBattleReady, isGraftReady, type GrowthProgress } from './maturity';
 export { matchModelRule } from './houses';
+export { earnedTitles } from './tamer';
 
 class GameEngine implements Engine {
   private readonly pack: ContentPack;

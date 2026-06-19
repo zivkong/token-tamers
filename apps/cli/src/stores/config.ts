@@ -48,7 +48,17 @@ function migrateConfig(raw: UserConfig & { adapters: LegacyAdapter[] }): UserCon
   const adapters = (raw.adapters ?? []).map((a) => ({ provider: a.provider, paths: a.paths }));
   const cycle = raw.cycle ?? synthesizeCycle(raw.adapters ?? []);
   const salt = raw.salt ?? randomSalt();
-  return { schemaVersion: SCHEMA_VERSION, cycle, adapters, render: raw.render, salt };
+  // `tamer`/`tamerTitle` are optional identity fields (like `salt`): carry them
+  // through untouched — absent on a pre-tamer config (renders "Anonymous Tamer").
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    cycle,
+    adapters,
+    render: raw.render,
+    salt,
+    tamer: raw.tamer,
+    tamerTitle: raw.tamerTitle,
+  };
 }
 
 /** Derive a pet-global CycleConfig from legacy per-adapter cycle fields. */

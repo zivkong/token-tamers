@@ -28,6 +28,7 @@ export {
   BATTLE_READY_STAGE,
   bestSpeciesRecords,
   createEngine,
+  earnedTitles,
   GRADE_STAT_FLOOR,
   GRADE_STAT_FLOOR_CAP,
   GRAFT_GRADE_BONUS_CAP,
@@ -69,9 +70,13 @@ export {
   MUTATION_CODES,
   PATTERN_CODES,
   RHYTHM_CODES,
+  sanitizeTamerName,
   STAGE_CODES,
+  TAMER_NAME_MAX,
+  TAMER_TITLE_MAX,
   TRAIT_CODES,
   type DecodedDna,
+  type EncodeOptions,
 } from './dna';
 
 // Battle engine — re-exported via battle/index barrel.

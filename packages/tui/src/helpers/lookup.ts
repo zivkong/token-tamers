@@ -52,3 +52,19 @@ export function houseTint(house: House): string {
 export function houseColor(house: House): Rgb {
   return hexToRgb(HOUSE_ACCENT[house]);
 }
+
+/**
+ * The Tamer maker's-mark to show for a combatant: its OWN decoded owner (from a
+ * pasted code), else the viewer's own handle (`fbName`/`fbTitle`, for your pet or
+ * Dex record). Returns '' when there is no handle to show.
+ */
+export function ownerLabel(
+  c: { owner?: string; ownerTitle?: string },
+  fbName: string,
+  fbTitle: string,
+): string {
+  const name = c.owner ?? fbName;
+  const title = c.owner ? (c.ownerTitle ?? '') : fbTitle;
+  if (!name) return '';
+  return title ? `${name} · ${title}` : name;
+}
