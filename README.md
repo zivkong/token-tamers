@@ -16,7 +16,7 @@ monster evolves.**
 </div>
 
 <p align="center">
-  <img src="docs/assets/readme-shell.gif" alt="The Token Tamers shell: an S-grade Aurelion shimmering over the Rooftop Night habitat, with the clickable menu and completion meter" width="780">
+  <img src="docs/assets/readme-shell.webp" alt="The Token Tamers shell: an S-grade Aurelion shimmering over the Rooftop Night habitat, beside its live vitals panel and the clickable menu rail" width="820">
 </p>
 
 <div align="center">
@@ -81,6 +81,12 @@ then every section below is an optional rabbit hole. Pop them open when you're c
             lineage carries 30–70% forward, forever
 ```
 
+<p align="center">
+  <img src="docs/assets/shell-tour.webp" alt="A tour of the shell: the Pet page, the Dex constellation, the Loot collection, the Feats list, and the Battle VS screen" width="760">
+</p>
+
+<div align="center"><sub>The whole shell, clickable: <strong>Pet · Dex · Loot · Feats · Battle · Settings</strong>.</sub></div>
+
 <details>
 <summary><strong>🐣 Molts &amp; Rebirth — the heartbeat</strong></summary>
 
@@ -91,9 +97,10 @@ Two clocks drive everything:
 - **Molt** = the close of a **5-hour session window**. This is the big moment — your pet may
   evolve a stage, roll a new trait, mutate, or grade up. Eggs skip the wait and **fast-hatch
   ~10 minutes** after your first usage.
-- **Rebirth** = the **weekly boundary**. Your current pet retires into the **Archive**, and a
-  fresh egg takes its place. Rebirth _never_ evolves — it's a new generation, carrying
-  **30–70% of the bloodline's stats forward** (deeper lineage → more carry-over).
+- **Rebirth** = the **weekly boundary**. Your current pet retires into your **Dex records**
+  (its best lives live on, viewable in the Dex), and a fresh egg takes its place. Rebirth
+  _never_ evolves — it's a new generation, carrying **30–70% of the bloodline's stats
+  forward** (deeper lineage → more carry-over).
 
 Stop coding for a week? Your pet curls into a cocoon — **Dormant, never dead** — and wakes the
 moment you return. Generation 14 will be waiting.
@@ -101,6 +108,10 @@ moment you return. Generation 14 will be waiting.
 Stages climb at a deliberate ~5-day pace, not one-per-molt:
 **egg → sprite → rookie → evolved → prime → apex.** The path branches on _how_ you work, and
 the next form is always a surprise — the game never spoils your evolution.
+
+Hit **Apex** and the Pet page sprouts a **`[ Reborn Now ]`** button — kick off the next
+generation early instead of waiting for the week to turn (a confirm pop-up reminds you a
+non-S Apex can still roll a higher grade if you wait).
 
 </details>
 
@@ -176,12 +187,38 @@ No two devs raise the same creature. Your habits _are_ the gameplay.
 Every pet can be exported as a shareable **DNA code** — and battles are **deterministic**:
 same two codes, same outcome, every time, fully offline.
 
-- Open the **Battle** page, then paste a **friend's code** or pick one of your own Dex records — or run `tt battle [code]`.
-- Fight your own records, or paste a friend's code to throw down across machines.
+- Open the **Battle** page (or run `tt battle [code]`): pick your fighter — your **live pet**
+  or a battle-ready **Dex record** — then face a **friend's pasted code** or one of your own
+  Dex records.
 - The ruleset is a **House type-wheel** with **trait procs** — pure strategy, zero RNG-fishing.
-- A pet must be at least **Evolved** to step in the ring.
+- A pet must be at least **Evolved** to step in the ring (you can't pit your pet against your
+  own record of the _same_ species — that match only opens against another player's code).
+
+<p align="center">
+  <img src="docs/assets/battle-vs.png" alt="The Battle setup screen: your S-grade Aurelion facing an opponent, with a roster picker and a paste-a-code box" width="640">
+</p>
 
 Social play is just humans swapping text. No servers, no accounts, no network.
+
+</details>
+
+<details>
+<summary><strong>🏞️ Loot, Feats &amp; the Dex — collect, decorate, show off</strong></summary>
+
+<br>
+
+- 🏞️ **Loot** — your habitats and trinkets. Equip a backdrop and accessories on your pet;
+  what you've earned shows, the rest stays a teaser until you unlock it.
+- 🏅 **Feats** — your achievements. Earned ones show in full; locked ones are masked **`???`**
+  with their description left as a how-to hint.
+- 📖 **Dex** — a per-House **constellation** of stars: every species you've raised glows in
+  its best grade, the unseen stay dim `?` points. Drill into any star for the **Dex detail**
+  view — its sprite, a **battle/graft-readiness** banner, and each record's stats plus its
+  shareable **DNA code**.
+
+<p align="center">
+  <img src="docs/assets/dex-constellation.png" alt="The Dex page: the Aether House drawn as a constellation of species-stars, with Aurelion focused and its sprite in the side rail" width="640">
+</p>
 
 </details>
 
@@ -212,19 +249,18 @@ is always reachable now**; the bar simply rises when the next Season drops.
 
 ## 🕹️ Commands
 
-The shell (`tt` with no args) is home base — Pet, Dex, Archive, and Settings, all clickable.
-Everything also has a one-shot command for your scripts and statusline:
+The shell (`tt` with no args) is home base — Pet, Dex, Loot, Feats, Battle, and Settings, all
+clickable. Everything also has a one-shot command for your scripts and statusline:
 
-| Command       | What it does                                           |
-| ------------- | ------------------------------------------------------ |
-| `tt`          | The clickable shell: Pet, Dex, Archive, Settings pages |
-| `tt watch`    | Slim live view                                         |
-| `tt status`   | One-line status — drop it in your prompt / statusline  |
-| `tt dex`      | Collection progress, "???" silhouettes included        |
-| `tt archive`  | Hall of Fame: your best record per species             |
-| `tt battle`   | Battle a pet vs an Archive record or a pasted DNA code |
-| `tt complete` | The completion meter, your % toward 100                |
-| `tt adapters` | Adapter health, paths, warnings                        |
+| Command       | What it does                                                       |
+| ------------- | ------------------------------------------------------------------ |
+| `tt`          | The clickable shell: Pet, Dex, Loot, Feats, Battle, Settings pages |
+| `tt watch`    | Slim live view                                                     |
+| `tt status`   | One-line status — drop it in your prompt / statusline              |
+| `tt dex`      | Collection progress, "???" silhouettes included                    |
+| `tt battle`   | Battle a pet vs a Dex record or a pasted DNA code                  |
+| `tt complete` | The completion meter, your % toward 100                            |
+| `tt adapters` | Adapter health, paths, warnings                                    |
 
 Everything honors `--no-color` and degrades gracefully: **truecolor → 256 → 8 → ASCII**.
 
@@ -392,11 +428,11 @@ The full design reference lives under [`docs/design/`](docs/design/).
 
 - [x] **Season 0 — Genesis · shipped:** Claude Code + OpenCode adapters · evolution engine
       (all five house lines — Aether · Cipher · Flux · Forge · Wild, egg → Apex, 56 species) ·
-      traits, patterns, mutations · grade rolls · rebirth + lineage · the Archive · clickable
-      TUI · 12 habitats, 6 trinkets, 44 achievements · shareable DNA codes · deterministic
-      **battles** (the Battle page: paste a code or pick a Dex record, or `tt battle`; House type wheel, trait procs)
-- [ ] **Season 0 — Genesis · building:** the **collect-and-decorate** loop (`tt deco`, equip
-      habitats & trinkets)
+      traits, patterns, mutations · grade rolls · rebirth + lineage · clickable TUI with the
+      Dex constellation + Dex detail records · the **Loot** page (15 habitats, 12 trinkets,
+      equip/unequip) · the **Feats** page (60 achievements) · shareable DNA codes ·
+      deterministic **battles** (the Battle page: paste a code or pick a Dex record, or
+      `tt battle`; House type wheel, trait procs)
 - [ ] **Season 1 — Crossbreed:** **DNA export/apply** (paste codes to friends) · DNA
       **grafting** · hybrid lines (Aether×Flux, Forge×Cipher) · fusion pools 🤫 · cross-provider
       Chimera forms

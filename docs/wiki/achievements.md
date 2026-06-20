@@ -1,7 +1,7 @@
 # Achievements
 
 Achievements are Token Tamers' record of everything your work has accomplished — every
-first, every milestone, every quiet week that paid off. There are **44** of them, and
+first, every milestone, every quiet week that paid off. There are **60** of them, and
 none ask anything of you beyond coding the way you already do. Many hand back a
 **reward**: a [trinket](trinkets.md), a [habitat](unlockables.md), or a **title**.
 
@@ -85,21 +85,52 @@ completion meter — collecting them is most of the long game.
 ## Habitat unlocks
 
 These nine achievements each hand you a new place for your pet to live — see
-[Unlockables](unlockables.md) for the habitats themselves.
+[Unlockables](unlockables.md) for the habitats themselves. Three more habitats are unlocked
+through [Token tribute](#token-tribute) and [Battle valor](#battle-valor) achievements below.
 
 | Achievement           | Earned by                        | Habitat unlocked |
 | --------------------- | -------------------------------- | ---------------- |
 | **Shore Leave**       | Earn a vacation spot             | _Beach Cove_     |
 | **Into the Green**    | Earn a quiet glade               | _Forest Glade_   |
 | **Summit Reached**    | Grow strong enough for the peaks | _Snowpeak_       |
-| **Into the Dusk**     | Endure five generations          | _Desert Dunes_   |
+| **Into the Dusk**     | Reach the **3rd** generation     | _Desert Dunes_   |
 | **Red Horizon**       | Reach **Grade A**                | _Crimson Mars_   |
 | **Ice Moon**          | Fill **10%** of the Dex          | _Europa Ice_     |
 | **Moonwalker**        | Reach the **7th** generation     | _Lunar Base_     |
 | **Between the Stars** | Fill **25%** of the Dex          | _Nebula Drift_   |
 | **Warp Speed**        | Reach the **10th** generation    | _Starship Deck_  |
 
+## Token tribute
+
+These ten achievements track the lifetime tokens your pet has been fed across all generations.
+
+| Achievement                     | Earned by                        | Reward                                             |
+| ------------------------------- | -------------------------------- | -------------------------------------------------- |
+| **First Million**               | Feed 1 million lifetime tokens   | Trinket: _Gold Coin_                               |
+| **Big Spender**                 | Feed 10 million lifetime tokens  | —                                                  |
+| **Token Magnate**               | Feed 100 million lifetime tokens | Title: _Magnate_                                   |
+| **Billion-Token Bond**          | Feed 1 billion lifetime tokens   | Title: _Token Sovereign_ + Habitat: _Gilded Vault_ |
+| **Five-Billion Furnace**        | Feed 5 billion lifetime tokens   | —                                                  |
+| **Ten-Billion Club**            | Feed 10 billion lifetime tokens  | Trinket: _Gem Hoard_                               |
+| **Fifty-Billion Forge**         | Feed 50 billion lifetime tokens  | —                                                  |
+| **Hundred-Billion Heavyweight** | Feed 100 billion lifetime tokens | Title: _Token Tycoon_ + Trinket: _Crown_           |
+| **Half a Trillion**             | Feed 500 billion lifetime tokens | —                                                  |
+| **Trillion-Token Titan**        | Feed 1 trillion lifetime tokens  | Title: _Token Titan_ + Habitat: _Astral Throne_    |
+
+## Battle valor
+
+These six achievements are earned through the [Battle](battles.md) arena — they track wins, streaks, and time served.
+
+| Achievement          | Earned by                      | Reward                                         |
+| -------------------- | ------------------------------ | ---------------------------------------------- |
+| **First Blood**      | Win your first battle          | Trinket: _Laurel Wreath_                       |
+| **Contender**        | Win 10 battles                 | —                                              |
+| **Champion**         | Win 50 battles                 | Title: _Champion_ + Habitat: _Grand Coliseum_  |
+| **Unbroken**         | Win 5 battles in a row         | Title: _Undefeated_ + Trinket: _Champion Belt_ |
+| **Seasoned Fighter** | Play 25 battles (win or lose)  | Trinket: _Crossed Swords_                      |
+| **Coliseum Veteran** | Play 100 battles (win or lose) | Title: _Arena Veteran_                         |
+
 ## See also
 
 - [Trinkets](trinkets.md) · [Unlockables](unlockables.md) — what the rewards are
-- [Grades & the Archive](grades-and-archive.md) · [Game Guide](game-guide.md)
+- [Grades & Records](grades-and-archive.md) · [Game Guide](game-guide.md)

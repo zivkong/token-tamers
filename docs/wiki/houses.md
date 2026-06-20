@@ -22,13 +22,13 @@ Each House is also a **Creature Kingdom** — its pets are a distinct kind of an
 recognize from silhouette alone. That's pure looks: the kingdom never changes power, only the
 shape your pet wears.
 
-| House      | Diet (model families)¹              | Kingdom (creatures)     | Theme             | Stat lean | Status       |
-| ---------- | ----------------------------------- | ----------------------- | ----------------- | --------- | ------------ |
-| **Aether** | `claude-*` · `minimax*`             | 🌤 Sky Court (flyers)   | ethereal / mind   | WIS       | Shipped (M1) |
-| **Cipher** | `gpt-*`/`o*` · `glm*` · `mimo*`     | ⛰ Crag Beasts (ground) | glyph / geometry  | PWR       | Shipped (M1) |
-| **Flux**   | `gemini-*` · `qwen*` · `kimi*`      | 🌊 Tide Runners (swift) | light / current   | SPD       | Shipped      |
-| **Forge**  | `llama*` · `mistral*` · `deepseek*` | 🔥 Iron Brood (robots)  | metal / ember     | GRT       | Shipped      |
-| **Wild**   | anything unmapped                   | 🌱 The Bloom (plants)   | feral / overgrown | neutral   | Shipped      |
+| House      | Diet (model families)¹              | Kingdom (creatures)       | Theme             | Stat lean | Status       |
+| ---------- | ----------------------------------- | ------------------------- | ----------------- | --------- | ------------ |
+| **Aether** | `claude-*` · `minimax*`             | 🌤 Sky Court (flyers)     | ethereal / mind   | WIS       | Shipped (M1) |
+| **Cipher** | `gpt-*`/`o*` · `glm*` · `mimo*`     | ⛰ Crag Beasts (ground)   | glyph / geometry  | PWR       | Shipped (M1) |
+| **Flux**   | `gemini-*` · `qwen*` · `kimi*`      | 🌊 Tide Runners (aquatic) | light / current   | SPD       | Shipped      |
+| **Forge**  | `llama*` · `mistral*` · `deepseek*` | 🔥 Iron Brood (robots)    | metal / ember     | GRT       | Shipped      |
+| **Wild**   | anything unmapped                   | 🌱 The Bloom (plants)     | feral / overgrown | neutral   | Shipped      |
 
 **The Kingdoms.** Aether's **Sky Court** are winged sky-creatures that never touch the ground —
 floating moth-sages and sky-mantas trailing veils of light. Cipher's **Crag Beasts** are heavy
@@ -55,18 +55,18 @@ so there's no blank silhouette anymore; an unmapped model simply grows a feral p
 **About "stat lean."** Every pet gets the same fixed stat budget across PWR / SPD /
 WIS / GRT — the lean only changes how that one budget is _distributed_. An Aether pet
 leans into WIS; a Cipher pet leans into PWR; the totals match. It's flavor, not
-advantage (see [Grades & the Archive](grades-and-archive.md) for what actually moves a
+advantage (see [Grades & Records](grades-and-archive.md) for what actually moves a
 pet's quality).
 
 ## How your House is chosen — the Diet
 
-Your pet doesn't pick a House once and freeze. It eats your real model usage over its
-life, and the running mix is the **Diet** bar on the pet screen (an always-full bar
-split into colored House shares, e.g. `Aether 72% · Cipher 28%`). The Diet:
+Your pet's House is locked at its first true molt — the Diet bar then shows the running mix of everything it has eaten since. It is an always-full bar split into colored House shares, e.g. `Aether 72% · Cipher 28%`. The Diet:
 
 - **commits the egg to a House** at its first true molt, by the window's dominant gene;
-- **tints the pet** and **steers which species line it grows into** as the mix drifts;
+- **tints the pet** with the House colors of every model family you have used;
 - **never** touches stats, grades, or speed — it is identity only.
+
+**A cosmetic spread keeps things diverse.** When your pet hatches, the game picks a House from your dominant gene's family — but there is roughly a 50/50 chance it branches you into a _different_ House instead (chosen deterministically for your install). This spreads teams that share a single model across all five Houses so not every colleague ends up with the same creature kingdom. It is purely cosmetic: your stats, grades, and speed are identical regardless of which House was chosen. If your pet ended up somewhere unexpected, that's why — and it's intentional.
 
 Code mostly with `claude-*` or `minimax*` and your pet lives an Aether life; lean into
 `gpt-*`/`o*`, `glm*`, or `mimo*` and Cipher's geometry takes over. Because each House blends
@@ -94,4 +94,4 @@ the meantime your unmapped models grow a real creature instead of a blank silhou
 
 - [Game Guide](game-guide.md) — the vitals panel, where the Diet bar lives
 - [Species](species.md) — the lineage shape each House grows along
-- [Grades & the Archive](grades-and-archive.md) — what actually determines pet quality
+- [Grades & Records](grades-and-archive.md) — what actually determines pet quality

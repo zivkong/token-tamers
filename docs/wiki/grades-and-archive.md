@@ -1,4 +1,4 @@
-# Grades & the Archive
+# Grades & Records
 
 ## The grade roll (transparent by design)
 
@@ -43,11 +43,7 @@ molt, every evolution, and at rebirth. So if a Murmur was a **C** the first time
 the next, the Dex automatically keeps the **A** (and the C as a runner-up) — you never lose
 your best.
 
-Each row in the Dex list is colored by that species' **highest grade** (★ S gold · ◆ A violet
-· ● B green · ○ C grey), with its House dot for identity. **Click a discovered species** (or
-press Enter) to open its detail page: a big portrait tinted to its best grade, its readiness
-banner, and up to three record cards — each showing the stats, the date, a shareable **DNA
-code**, and the record's graft strength. Press **Esc** to go back.
+The Dex is a **constellation sky**, one per House (pan with ←→). Each species is a **glow-dot star**: owned species glow in their best grade colour (★ S gold · ◆ A violet · ● B green · ○ C grey); undiscovered ones are dim "?" points. Use ↑↓ to walk the stars; the focus rail on the right shows the selected star's sprite and identity. **Press ⏎ or click a discovered star** to open its detail page: a large sprite tinted to its best grade, its readiness banner, and up to three record cards — each showing the stats, generation, the date, a shareable **DNA code**, and the record's graft tier. Press **Esc** to go back.
 
 ### DNA codes
 
@@ -67,14 +63,6 @@ stage — about halfway up the growth climb. Younger records still show their DN
 hatchlings. When grafting arrives, a stronger donor grade will nudge the result a little more
 (an **S** gives the biggest, but still gently capped, boost; a **C** gives nothing).
 
-## The Archive
+## Your hall of fame
 
-The **Archive** is the hall-of-fame view of your Dex — your single best life per species (final
-grade + final stats), drawn straight from your Dex records. Run `tt archive`, or open the
-Archive page in the shell.
-
-```
- ◆ TOKEN TAMERS ARCHIVE — 12/56 unlocked · Season 0 ◆
- #001 Wisp        [B]  PWR 40 SPD 38 WIS 61 GRT 41   gen 2
- #061 ???         [—]  a later Season's gene — update to awaken
-```
+Every time your pet molts, evolves, or is reborn, that life's peak is automatically saved in the **Dex detail page** for that species. Each species keeps its **top 3 distinct lives**, ranked by grade then total stats — so your best runs are always there when you open the Dex, with no separate command needed. There is no `tt archive` command; the Dex is your living record book.

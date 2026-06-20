@@ -7,17 +7,19 @@ AI coding-agent usage. Start here:
 
 - [Getting Started](getting-started.md) — install, `tt init`, the cycle choice, troubleshooting
 - [Game Guide](game-guide.md) — lifecycle, Houses, stages, traits, patterns, Dormancy
-- [Grades & the Archive](grades-and-archive.md) — the C→B→A→S roll system, records, odds
+- [Grades & Records](grades-and-archive.md) — the C→B→A→S roll system, Dex records, odds
 - [Battles](battles.md) — fight your pets by DNA code; the House wheel and the fairness guarantee
+- [Dex & DNA Codes](species.md) — the per-House star constellation, drill-in species records, and shareable DNA codes
 - [Architecture](architecture.md) — adapters → engine → TUI, determinism, content packs
 
 ### Reference
 
 - [Houses](houses.md) — the five Houses, your Diet, and why model choice is identity only
 - [Species](species.md) — the lineage shape, stage track, and Dex discovery (no spoilers)
-- [Achievements](achievements.md) — all 44 milestones and their rewards
-- [Trinkets](trinkets.md) — the six collectible habitat keepsakes
+- [Achievements](achievements.md) — all 60 milestones and their rewards
+- [Trinkets](trinkets.md) — the twelve collectible habitat keepsakes
 - [Unlockables](unlockables.md) — habitats, titles, and the completionist meter
+- [Loot & Feats](unlockables.md) — equip habitats and trinkets (Loot, hotkey 3); view earned achievements and locked hints (Feats, hotkey 4)
 
 ## The pledges
 

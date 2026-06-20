@@ -82,21 +82,16 @@ statusLine command, so pick one:
 
 ## Settings & version
 
-Open `tt` and press **4** (or click **⚙ Settings**) to see what's in effect: the version
-number, your runtime, the active color mode and fps, where your data lives
+Open `tt` and press **6** (or click **⚙ Settings**) to see what's in effect: the version
+number, the current Season, where your data lives
 (`~/.tokentamers/`), the opt-in update mode, and your configured adapters (read-only). The
-editable fields — press **↑↓** to focus and **←→** to change — are the **Updates** mode
-(`off ▸ notify ▸ auto`; see below), the pet-global **Cycle** policy (subscription/static), and,
-when you're on subscription with more than one adapter, the **Anchor** adapter. The update mode
-saves to `~/.tokentamers/settings.json` and the cycle to `config.json`; both apply the next time
-you launch `tt` (the cycle reshapes molt windows, so it never shifts mid-session under your pet).
+editable fields — press **↑↓** to focus and **←→** to change — include your **Tamer** handle (stamped into every DNA code you share) and earned **Title** (Identity section, saved to `config.json`); your **Color** and **Sprites** density (Display section, saved to `settings.json`, apply live); the pet-global **Cycle** policy (subscription/static) and, when on subscription with more than one adapter, the **Anchor** adapter (Cycle section, saved to `config.json`); and the **Updates** mode (`off ▸ notify ▸ auto`; see below, saved to `settings.json`). The cycle reshapes molt windows, so it never shifts mid-session under your pet.
 Adding or removing an agent, or changing scan paths, is still done by re-running `tt init`. You
 can also print the version non-interactively with `tt --version`.
 
 Token Tamers reads **no environment variables** — every preference lives in a file under
 `~/.tokentamers/`. `settings.json` (hand-editable, created on demand) holds your `color`
-choice (`auto` · `truecolor` · `256` · `8` · `none`; the `--no-color` flag always wins) and
-`adapterRoots`, which override where an adapter scans if your agent stores logs somewhere
+choice (`auto` · `truecolor` · `256` · `8` · `none`; the `--no-color` flag always wins), your `subcell` sprite density (`auto` · `octant` · `sextant` · `half`; `auto` defaults to the universally-safe `half` — octant/sextant are explicit opt-in), and `adapterRoots`, which override where an adapter scans if your agent stores logs somewhere
 non-standard — e.g. `{"adapterRoots": {"claude-code": ["/custom/path"]}}`. The data
 directory itself is always `~/.tokentamers`.
 
@@ -135,9 +130,7 @@ You can set the mode three ways, all starting from `off`:
 
 - **During `tt init`** — the Preferences step asks once ("Updates — off keeps the game fully
   offline"); just press Enter to stay off.
-- **On the Settings page** — press **4**, highlight the **Updates** row, and press **←/→** to
-  cycle `off ▸ notify ▸ auto` (it's the first editable row; the cycle-clock fields follow it,
-  and the adapter list below is read-only).
+- **On the Settings page** — press **6**, highlight the **Updates** row (the last editable section; Identity and Display fields appear above it, then Cycle), and press **←/→** to cycle `off ▸ notify ▸ auto`. The adapter list below is read-only.
 - **By hand** — edit `update.mode` in `~/.tokentamers/settings.json`.
 
 Either UI just records your choice; it takes effect on the next launch, and turning it on is the

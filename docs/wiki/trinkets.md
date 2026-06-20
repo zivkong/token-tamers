@@ -9,7 +9,11 @@ Trinkets count toward the **completionist North Star** — collecting all of the
 of 100% completion (alongside the Dex, achievements, and habitats), weighted into the
 overall meter. See [Achievements](achievements.md) and [Unlockables](unlockables.md).
 
-## The six trinkets
+## The twelve trinkets
+
+Trinkets are grouped by what you're doing when you earn them.
+
+### Grade & trait milestones
 
 | Trinket          | How you earn it                                     | Achievement           |
 | ---------------- | --------------------------------------------------- | --------------------- |
@@ -20,14 +24,29 @@ overall meter. See [Achievements](achievements.md) and [Unlockables](unlockables
 | **Gift Box**     | Earn the **Polyhost** trait for the first time      | _Bridge Builder_      |
 | **Trophy Shelf** | Your pet's grade reaches **S** — the legendary tier | _Legendary Grade_     |
 
+### Token tribute
+
+| Trinket       | How you earn it                        | Achievement                   |
+| ------------- | -------------------------------------- | ----------------------------- |
+| **Gold Coin** | Feed your lineage **1 million tokens** | _First Million_               |
+| **Gem Hoard** | Reach **10 billion** lifetime tokens   | _Ten-Billion Club_            |
+| **Crown**     | Reach **100 billion** lifetime tokens  | _Hundred-Billion Heavyweight_ |
+
+### Battle glory
+
+| Trinket            | How you earn it                           | Achievement        |
+| ------------------ | ----------------------------------------- | ------------------ |
+| **Laurel Wreath**  | Win your **first battle**                 | _First Blood_      |
+| **Champion Belt**  | Win **5 battles in a row** without a loss | _Unbroken_         |
+| **Crossed Swords** | Fight **25 battles**, win or lose         | _Seasoned Fighter_ |
+
 Every trinket is tied to a milestone you reach through real work — there's no shop and
 nothing is bought. And because nothing in Token Tamers is permanently missable, a
 trinket you haven't earned yet is simply still ahead of you.
 
 ## Placing trinkets
 
-Open **Settings** (or the habitat view) to drop unlocked trinkets into your current
-habitat's slots. Different habitats offer different slot layouts, so the same
+Open the **Loot** page (hotkey **3** in the shell) and switch to the **Trinkets** tab to drop unlocked trinkets into your current habitat's slots. Different habitats offer different slot layouts, so the same
 collection can be staged in a new way each time you switch scenery — see
 [Unlockables](unlockables.md) for the full habitat list.
 
@@ -35,4 +54,4 @@ collection can be staged in a new way each time you switch scenery — see
 
 - [Unlockables](unlockables.md) — habitats and titles
 - [Achievements](achievements.md) — the full list of milestones and their rewards
-- [Grades & the Archive](grades-and-archive.md) — how the grade-tier trinkets are earned
+- [Grades & Records](grades-and-archive.md) — how the grade-tier trinkets are earned

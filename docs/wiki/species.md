@@ -27,7 +27,7 @@ Egg (Mote) → Sprite → Rookie → Evolved → Prime → Apex
   spans roughly **five active days**. The final step into **Apex** also needs your pet
   to have reached **grade ≥ B** — Apex is an earned good week, not a default. (Apex is
   the stage; the grade is separate — an Apex pet can be B, A, or _S_. See
-  [Grades & the Archive](grades-and-archive.md).)
+  [Grades & Records](grades-and-archive.md).)
 
 You'll never see an "evolves in N molts" countdown — only the abstract **Grow** bar,
 which fills as your pet matures and resets when it evolves.
@@ -81,8 +81,7 @@ all read as one kind of animal growing up (and keep a signature feature from hat
 
 Each line is fed by a _mix_ of model makers grouped by theme, not one brand — see
 [Houses](houses.md) for the full map, the creature kingdoms, and how your model usage picks
-which line you grow. (Forms get bigger and more detailed each stage, from a 12px egg up to a
-32px Apex — but the _names_ stay yours to discover.)
+which line you grow. (Forms get bigger and more detailed each stage, from a 16 px egg up to a 36 px Apex — but the _names_ stay yours to discover.) The in-game **Dex** presents each House line as a constellation of glow-dot stars; discovered species glow in their best grade, unseen ones sit as dim `?` points. Tap any star to open the **Dex detail page**: a full portrait, a battle-readiness banner, and up to three record cards — each showing stats, the exact date, and a shareable **DNA code** (a `TTX…` token you can paste to challenge someone to a battle).
 
 ## Pattern overlays — the special forms
 
@@ -117,5 +116,5 @@ or future content pack awakens it without ever invalidating an old record.
 
 ## See also
 
-- [Houses](houses.md) · [Game Guide](game-guide.md) · [Grades & the Archive](grades-and-archive.md)
+- [Houses](houses.md) · [Game Guide](game-guide.md) · [Grades & Records](grades-and-archive.md)
 - [Achievements](achievements.md) — the completionist checklist that tracks your Dex

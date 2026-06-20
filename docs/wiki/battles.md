@@ -1,7 +1,7 @@
 # Battles
 
-Battles let you pit the pet you've raised against another — your own past life from the
-[Archive](grades-and-archive.md), or a friend's pet from a [DNA code](grades-and-archive.md)
+Battles let you pit the pet you've raised against another — your own past life from your
+[Dex records](grades-and-archive.md), or a friend's pet from a [DNA code](grades-and-archive.md)
 they pasted you. They are pure spectacle: a battle **never changes your pet, its grade, or
 your Dex**. Nothing is at stake but bragging rights, so battle as often as you like.
 
@@ -20,14 +20,17 @@ the matchup, never from which model fed it.
 
 ## How to battle
 
-- **From the Archive:** open the **Archive** page, select a record, and press **`b`** to send
-  your live pet against it.
-- **From the command line:** `tt battle` fights your pet against your best Archive record;
-  `tt battle <CODE>` fights it against a pasted DNA code. In a terminal it opens the animated
-  view; piped or with `--text` it prints a short summary instead.
+- **From the shell:** press **`5`** (or click **Battle** in the nav) to open the Battle page — a VS
+  setup screen where you pick your fighter (your live pet or any battle-ready Dex record) on the
+  left and your opponent on the right: either a pasted DNA code from a friend, or one of your own
+  Dex records of a different species. Press **Enter** (or click **Fight**) to start.
+- **From the command line:** `tt battle` on a TTY opens the Battle setup screen (same as
+  pressing `5` in the shell); `tt battle <CODE>` goes straight to the arena against that DNA code.
+  Piped or with `--text`, both print a deterministic text summary instead of the animated view.
 
-In the battle view: **Enter** plays / pauses (and replays once it's over), **←/→** step
-through the fight one blow at a time, and **Esc** backs out.
+In the arena: **Enter** plays / pauses (and rewinds-then-replays once it's over), **←/→** step
+through the fight one blow at a time, **r** rematches with a fresh roll (same fighters, different
+outcome — variety without fishing), and **Esc** backs out to the setup screen.
 
 > **Readiness gate.** Both sides must have reached the **Evolved** stage to battle. A younger
 > pet (or a code for one) shows as _sealed_ until it matures — the same gate that guards DNA
@@ -64,10 +67,17 @@ data and may be tuned between Seasons.)
 
 ### Grade
 
-A pet's [grade](grades-and-archive.md) gives a small, capped **stat-floor** in battle — an
+A pet's [grade](grades-and-archive.md#the-grade-roll-transparent-by-design) gives a small, capped **stat-floor** in battle — an
 **S**-grade pet fights at about +5% effective stats. This is battle-only: it never adds to the
 pet's recorded, equal-budget stats (horizontal evolution holds — different builds, never better
 builds), and it's based on grade, never on the model.
+
+### Feats
+
+Battles earn **Feats** — the same achievement system as the rest of the game. Wins, win
+streaks, and total fights played each have their own Feat. Your battle record (played / won /
+best streak) is tracked across every session and is the only thing that changes; the pet's
+stats, grade, and Dex records are untouched.
 
 ## Replays & versions
 

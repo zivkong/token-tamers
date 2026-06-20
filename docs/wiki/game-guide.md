@@ -7,7 +7,7 @@
   for a 5-h window close. Every later molt obeys the 5-h cycle.
 - **Molt = the 5-hour session window close.** The moment a pet can change stage,
   roll a trait, mutate, evolve, or attempt a grade-up.
-- **Rebirth = the week boundary.** Ascension, Archive record, inheritance roll, new
+- **Rebirth = the week boundary.** Dex record captured, inheritance roll, new
   egg. Rebirth never evolves the pet — its final form is whatever it became at the
   week's last molt.
 
@@ -54,8 +54,8 @@ top-to-bottom as **now → life → growth → next**:
 ```
  Food   ▕█████▒▒▒▒▒▒▒▏  84.2M / 200M   +6% molt ↑
  Diet   ▕███████▒▒▒▒▒▏  Aether 72% · Cipher 28%
- Grow   ▕████▒▒▒▒▒▒▒▒▏  maturing
- Odds   B → A 18%                       rolls at next molt
+ Grow   ▕████▒▒▒▒▒▒▒▒▏  Rookie · Molt 4h 59m
+ Odds   B → A 18%  · Reborn 6d 23h
 ```
 
 The Food, Diet and Grow bars are the **same width** at every terminal size, so they line up — but
@@ -76,17 +76,22 @@ This is **identity only**: it tints the pet and steers which species line it gro
 above.)
 
 **Grow — how close it is to its _next_ form.** A bar that fills as your pet matures through its
-current stage and **resets** each time it evolves, with one word for where it stands: `maturing`
-while it climbs, `cresting` when it's matured and on the verge, `fully grown` once it reaches Apex,
-or `incubating` while it's still an egg. It deliberately stops there — no stage name, no countdown,
-no hint of _what_ comes next — so the evolution itself stays a surprise. It's just a friendly sign
-that your pet really is growing, even on a quiet week.
+current stage and **resets** each time it evolves. The label beside it names the current stage and
+counts down to the next molt — e.g. `Rookie · Molt 4h 59m` — so you always know where you stand
+and when the next change can happen. At Apex-S, when there's nothing left to roll, it settles to
+`Apex · max grade`. What the bar deliberately doesn't reveal is _what form comes next_ — the branch
+your pet takes stays a surprise until it evolves.
 
 **Odds — your _next_ grade roll.** The single live chance for the **current → next** grade,
 the only jump that can fire at the next molt, e.g. `B → A 18%`. The grade letters are colored
 by the grade ladder (C grey · B green · A violet · S gold). The number moves with your
 activity _and_ your Food bonus, so you always see the exact odds before they roll — no hidden
-math, no pity. Once a pet reaches the top it reads `S ★ apex — no further rolls`.
+math, no pity. Beside the odds, a muted `· Reborn 6d 23h` deadline counts down to the automatic
+weekly rebirth. Once at S grade it reads `S ★ apex — no further rolls`.
+
+At **Apex** stage the rebirth deadline becomes a clickable **`[ Reborn Now · … ]`** button — press
+it (or click) to force an early rebirth before the week is up. A confirm modal opens first; if your
+pet hasn't reached S yet, it clearly warns you the grade can still roll higher.
 
 ## Traits (rolled once per molt, up to ~5 slots)
 
@@ -102,3 +107,18 @@ traits → **Prism** · Polyhost+Switcher → **Chimera**.
 
 A week of zero usage sends the pet into a cocoon — not death. It wakes when you
 return, and surviving Dormancy is itself an achievement.
+
+## The shell at a glance
+
+The interactive shell (`tt` with no args) has six pages, selectable by the hotkeys in the bottom menu bar:
+
+| Key | Page     | What you'll find                                                              |
+| --- | -------- | ----------------------------------------------------------------------------- |
+| `1` | Pet      | Your live pet, stats, and the four-row vitals panel                           |
+| `2` | Dex      | Your per-House species constellation + detail records                         |
+| `3` | Loot     | Habitats and trinkets — browse and equip your collection                      |
+| `4` | Feats    | Achievements — earned ones shown, locked ones masked `???` with a how-to hint |
+| `5` | Battle   | Pick a fighter and challenge a DNA code or your own Dex                       |
+| `6` | Settings | Cycle mode, color, sub-cell density                                           |
+
+Press `q` or `Ctrl-C` to quit.
