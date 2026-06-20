@@ -415,16 +415,17 @@ describe('golden frames (100x30, no-color)', () => {
           baselineEssence: 24_300,
           windowsObserved: 6,
           nextGrade: { from: 'C', to: 'B', chance: 0.33, capped: false },
-          secsToMolt: 17_940, // 4h 59m
-          secsToRebirth: 187_200,
+          secsToMolt: 17_952, // 4h 59m 12s — the countdown ticks down to the second
+          secsToRebirth: 187_752,
         },
       }),
     );
-    // The Grow row now names the live stage (default pet is a sprite) + counts down.
+    // The Grow row now names the live stage (default pet is a sprite) + counts down
+    // to the second (so the readout visibly ticks).
     expect(out).toContain('Sprite');
-    expect(out).toContain('4h 59m');
-    // The Odds row's "Next roll" countdown replaces the old "rolls at next molt".
-    expect(out).toContain('Next roll');
+    expect(out).toContain('4h 59m 12s');
+    // The Odds row's live "Next roll" countdown replaces the old "rolls at next molt".
+    expect(out).toContain('Next roll 4h 59m 12s');
     expect(out).not.toContain('rolls at next molt');
     expect(out).toMatchSnapshot();
   });
@@ -442,13 +443,13 @@ describe('golden frames (100x30, no-color)', () => {
           baselineEssence: 24_300,
           windowsObserved: 12,
           nextGrade: { from: 'A', to: 'S', chance: 0.06, capped: true },
-          secsToMolt: 13_080, // 3h 38m — still rolls toward S at Apex
-          secsToRebirth: 187_200, // 2d 4h
+          secsToMolt: 13_092, // 3h 38m 12s — still rolls toward S at Apex
+          secsToRebirth: 187_752, // 2d 4h 9m 12s
         },
       }),
     );
     expect(out).toContain('Reborn Now');
-    expect(out).toContain('2d 4h');
+    expect(out).toContain('2d 4h 9m 12s');
     expect(out).toMatchSnapshot();
   });
 
@@ -466,8 +467,8 @@ describe('golden frames (100x30, no-color)', () => {
           baselineEssence: 24_300,
           windowsObserved: 12,
           nextGrade: { from: 'A', to: 'S', chance: 0.06, capped: true },
-          secsToMolt: 13_080,
-          secsToRebirth: 187_200,
+          secsToMolt: 13_092,
+          secsToRebirth: 187_752,
         },
       }),
     );

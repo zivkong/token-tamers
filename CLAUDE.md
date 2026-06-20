@@ -224,7 +224,7 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   `STAGE_GATE` (prime→apex needs grade ≥ B) — not one stage per molt. Tracked by
   `pet.stageMolts` (deterministic; SCHEMA_VERSION 2, cli migrates). The Pet page's
   "Grow" vitals row names the CURRENT stage + counts down to the next molt
-  (`Evolved · 4h 59m`, fill via `growthProgress`); the next FORM/branch stays hidden
+  (`Evolved · 4h 59m 12s`, fill via `growthProgress`); the next FORM/branch stays hidden
   (amended evolution-mystery rule). At Apex it becomes the "Reborn Now" button —
   `Engine.rebornNow` forces an early rebirth (player action, no RNG, weekly clock
   unchanged), warn-then-confirm when grade ≠ S. Molt/rebirth countdowns come from

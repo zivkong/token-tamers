@@ -78,10 +78,10 @@ title, completion?})` draws a left-aligned `icon Title` (Title-Case), an optiona
   completion meter.
 - **Evolution-mystery rule (amended):** the **"Grow" vitals row** now NAMES the current stage
   (`Mote`/`Sprite`/`Rookie`/`Evolved`/`Prime`/`Apex`) and counts down to the next molt
-  (`Evolved · 4h 59m`) beside its maturation bar (fill via `core.growthProgress(state)`). The
+  (`Evolved · 4h 59m 12s`) beside its maturation bar (fill via `core.growthProgress(state)`). The
   mystery now covers ONLY the next FORM/branch — never the target species. The countdown is the live
   `ctx.live.secsToMolt` (`nextMoltCloseAt`); golden frames (no `live`) show the stage name
-  alone. At **Apex** the row becomes the clickable **"Reborn Now"** button (`Reborn Now · 2d 4h`,
+  alone. At **Apex** the row becomes the clickable **"Reborn Now"** button (`Reborn Now · 2d 4h 9m 12s`,
   `secsToRebirth`/`nextRebirthAt`) → `host.rebornNow()` forces an early rebirth, with a
   warn-then-confirm guard (`ui.rebornArmed` → caution `Confirm Rebirth?`) when grade ≠ S; the
   `pet:reborn-now` hit region gives mouse parity. Keep the `calibrating` cue (data readiness).
@@ -108,7 +108,7 @@ bg)` so it renders on the band background.
   ALWAYS-FULL House-share bar — composition not progress — + a House-name legend), **Grow** (the
   maturation row: `drawMeter` filled to `growthProgress(state).frac` in a neutral teal `GROWTH_FILL`
   — off BOTH the grade and House ladders — labelled with the CURRENT stage name (`STAGE_LABEL`) + the
-  `ctx.live.secsToMolt` countdown (`Stage · 4h 59m`); the next FORM/branch is never named. At Apex
+  `ctx.live.secsToMolt` countdown (`Stage · 4h 59m 12s`); the next FORM/branch is never named. At Apex
   the row is instead the **"Reborn Now" button** (`drawRebornButton`, warm `REBORN` accent, the
   `secsToRebirth` countdown; `WARN`-tinted `Confirm Rebirth?` when `ui.rebornArmed`) and registers
   the `pet:reborn-now` hit region. The bar fill needs no `ctx.live`; only the countdowns/button

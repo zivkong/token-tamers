@@ -6,8 +6,8 @@
  *
  *   Food   ▕████▒▒▒▒▒▒▒▒▏ 84.2M / 200M  +6% molt ↑
  *   Diet   ▕██████▒▒▒▒▒▒▏ Aether 72% · Cipher 28%
- *   Grow   ▕████▒▒▒▒▒▒▒▒▏ Evolved · 4h 59m
- *   Odds   B → A 38%                       Next roll 4h 59m
+ *   Grow   ▕████▒▒▒▒▒▒▒▒▏ Evolved · 4h 59m 12s
+ *   Odds   B → A 38%                    Next roll 4h 59m 12s
  *
  * The three bars share ONE geometry (`barGeom`) so Food, Diet and Growth line up
  * at every width. They read as distinct motions: Food GROWS toward the 200M
@@ -70,16 +70,23 @@ const STAGE_LABEL: Record<Stage, string> = {
 /** Mid dot between a stage/button label and its countdown (by codepoint to survive encoding). */
 const DOT = String.fromCodePoint(0x00b7);
 
-/** Compact two-unit countdown: 187200→'2d 4h', 17940→'4h 59m', 158→'2m 38s', 9→'9s'. */
+/**
+ * Live countdown ticking down to the SECOND (the host recomputes `secsTo*` every
+ * frame, so this updates each second). Leading zero units are dropped, but seconds
+ * are always shown so the readout visibly ticks: 187752→'2d 4h 9m 12s',
+ * 17952→'4h 59m 12s', 158→'2m 38s', 9→'9s'.
+ */
 function fmtCountdown(secs: number): string {
   const s = Math.max(0, Math.floor(secs));
   const d = Math.floor(s / 86400);
   const h = Math.floor((s % 86400) / 3600);
   const m = Math.floor((s % 3600) / 60);
-  if (d > 0) return `${d}d ${h}h`;
-  if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m ${s % 60}s`;
-  return `${s % 60}s`;
+  const parts: string[] = [];
+  if (d > 0) parts.push(`${d}d`);
+  if (d > 0 || h > 0) parts.push(`${h}h`);
+  if (d > 0 || h > 0 || m > 0) parts.push(`${m}m`);
+  parts.push(`${s % 60}s`);
+  return parts.join(' ');
 }
 
 /** → between grades on the Odds row (by codepoint to survive encoding). */
