@@ -13,6 +13,7 @@ export {
   type DividerOptions,
 } from './divider';
 export { drawMarquee, type MarqueeOptions } from './marquee';
+export { drawModal } from './modal';
 export {
   drawPageHeader,
   drawPageFooter,

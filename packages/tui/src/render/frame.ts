@@ -14,7 +14,7 @@ import { FrameBuffer } from './buffer';
 import { HitRegistry } from './hit';
 import { computeLayout, tooSmallMessage, type Layout } from './layout';
 import { MENU_PAD_X, MENU_X, menuButtonY, packMenu, type MenuButton } from './menu';
-import { drawDivider, drawVDivider } from '../components';
+import { drawDivider, drawVDivider, drawModal } from '../components';
 import { renderPetPage } from '../pages/pet';
 import { renderDexPage } from '../pages/dex';
 import { renderDexDetailPage } from '../pages/dex-detail';
@@ -26,6 +26,7 @@ import type {
   BattleView,
   CompletionBreakdown,
   LiveStats,
+  ModalView,
   PageId,
   PageUiState,
   RenderContext,
@@ -63,6 +64,8 @@ export interface FrameInput {
   live?: LiveStats;
   /** The loaded battle to play back on the Battle page (optional). */
   battle?: BattleView;
+  /** An open modal dialog to overlay on top of everything (optional). */
+  modal?: ModalView;
 }
 
 /**
@@ -134,6 +137,10 @@ export function renderFrame(buf: FrameBuffer, hits: HitRegistry, input: FrameInp
   }
 
   drawMenu(buf, hits, layout, input.page);
+
+  // A modal overlays EVERYTHING (page + menu) — drawn last so it sits on top, and
+  // its hit regions register after the page's so a click resolves to the modal.
+  if (input.modal) drawModal(ctx, input.modal);
   return layout;
 }
 

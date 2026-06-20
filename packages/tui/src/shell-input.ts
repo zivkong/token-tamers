@@ -27,10 +27,17 @@ import { setSubcellMode, type SubcellName } from './render/sprite';
 import type { ColorMode } from './terminal/ansi';
 import { handleBattleKey } from './pages/battle';
 import { applyEffects, flash } from './shell-effects';
+import { handleModalEvent, openConfirmModal } from './shell-modal';
 import type { PageId } from './pages/types';
 import type { InputDeps, ShellHost, ShellRuntime } from './shell';
 
 export function handleEvent(rt: ShellRuntime, ev: InputEvent, deps: InputDeps): void {
+  // An open modal is, well, modal — it captures ALL input until dismissed (only
+  // ctrl-c still quits), so nothing on the page behind it reacts.
+  if (rt.modal) {
+    handleModalEvent(rt, ev, deps);
+    return;
+  }
   if (ev.type === 'key') handleKey(rt, ev.name, deps.host);
   else handleMouse(rt, ev, deps);
 }
@@ -54,7 +61,6 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
   if (handleBattleKey(rt, host, name)) return;
   const navTarget = PAGE_HOTKEYS[name];
   if (navTarget) {
-    if (navTarget !== 'pet') disarmReborn(rt);
     if (navTarget === 'dex') focusDexOnPet(rt, host);
     rt.page = navTarget;
     return;
@@ -89,43 +95,46 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
   }
 }
 
-/** Enter on the active page: drill into Dex, equip a collectible, or arm/confirm a rebirth. */
+/** Enter on the active page: drill into Dex, equip a collectible, or open the reborn modal. */
 function handleEnter(rt: ShellRuntime, host: ShellHost): void {
   if (rt.page === 'dex') openDexDetail(rt, host);
   else if (rt.page === 'unlockables') toggleUnlock(rt, host);
   else if (rt.page === 'pet') tryReborn(rt, host);
 }
 
-/** Escape: leave the Dex detail view, or disarm a pending Apex rebirth. */
+/** Escape: leave the Dex detail view (no-op elsewhere; an open modal owns its own Esc). */
 function handleEscape(rt: ShellRuntime): void {
   if (rt.page === 'dex-detail') rt.page = 'dex';
-  else if (rt.page === 'pet') disarmReborn(rt);
 }
 
 /**
- * The Apex "Reborn Now" flow (Enter on the Pet page, or a click on the button). An
- * S-grade pet — or one already armed by a prior press — rebirths immediately; a
- * non-S pet's first press warns it can still grade up and arms the button, so a
- * second press confirms. A no-op off the Pet page or below Apex. Returns true when
- * it handled the action.
+ * The Apex "Reborn Now" flow (Enter on the Pet page, or a click on the button):
+ * opens a confirm modal. When the grade isn't yet S the modal CLEARLY warns that
+ * the pet can still roll a higher grade and that reborning forfeits those rolls.
+ * A no-op off the Pet page or below Apex. Returns true when it handled the action.
  */
-/** Clear the Apex "Reborn Now" armed state (guarded for the partial test runtimes). */
-function disarmReborn(rt: ShellRuntime): void {
-  if (rt.ui.pet) rt.ui.pet.rebornArmed = false;
-}
-
 function tryReborn(rt: ShellRuntime, host: ShellHost): boolean {
   if (rt.page !== 'pet' || !host.rebornNow) return false;
   const pet = host.getState().pet;
   if (pet.stage !== 'apex') return false;
-  const ui = rt.ui.pet;
-  if (pet.grade === 'S' || ui.rebornArmed) {
-    ui.rebornArmed = false;
-    applyEffects(rt, host.rebornNow());
-    return true;
-  }
-  ui.rebornArmed = true;
-  flash(rt, '⚠ Apex can still improve its grade — press again to confirm rebirth');
+  const reborn = host.rebornNow;
+  const canImprove = pet.grade !== 'S';
+  openConfirmModal(rt, {
+    title: 'Reborn this Apex now?',
+    lines: canImprove
+      ? [
+          `Grade ${pet.grade} can STILL roll higher.`,
+          `Every molt re-rolls toward S while it lives —`,
+          `reborn now and you give up that chance.`,
+          ``,
+          `This archives the pet and hatches a fresh egg.`,
+        ]
+      : [`Grade S — already the top grade.`, ``, `This archives the pet and hatches a fresh egg.`],
+    confirmLabel: 'Reborn now',
+    cancelLabel: canImprove ? 'Keep rolling' : 'Cancel',
+    tone: canImprove ? 'warning' : 'info',
+    onConfirm: () => applyEffects(rt, reborn()),
+  });
   return true;
 }
 
@@ -402,7 +411,6 @@ function activate(rt: ShellRuntime, host: ShellHost, id: PageId | 'quit'): void 
     rt.quit = true;
     return;
   }
-  if (id !== 'pet') disarmReborn(rt);
   if (id === 'dex') focusDexOnPet(rt, host);
   rt.page = id;
 }

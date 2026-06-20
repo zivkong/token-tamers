@@ -481,26 +481,34 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('shows the armed "Confirm Reborn?" prompt for a non-S Apex', () => {
+  it('overlays the reborn confirm modal with the grade-roll warning (non-S Apex)', () => {
     const out = renderFrameToString(
       100,
       30,
       input({
         page: 'pet',
         state: makeState({ pet: makePet({ stage: 'apex', grade: 'A' }) }),
-        ui: { selected: 0, scroll: 0, rebornArmed: true },
-        live: {
-          windowTokens: 0,
-          windowEssence: 0,
-          baselineEssence: 24_300,
-          windowsObserved: 12,
-          nextGrade: { from: 'A', to: 'S', chance: 0.06, capped: true },
-          secsToMolt: 13_092,
-          secsToRebirth: 187_752,
+        modal: {
+          title: 'Reborn this Apex now?',
+          lines: [
+            'Grade A can STILL roll higher.',
+            'Every molt re-rolls toward S while it lives —',
+            'reborn now and you give up that chance.',
+            '',
+            'This archives the pet and hatches a fresh egg.',
+          ],
+          confirmLabel: 'Reborn now',
+          cancelLabel: 'Keep rolling',
+          tone: 'warning',
+          focus: 'cancel',
         },
       }),
     );
-    expect(out).toContain('[ Confirm Reborn? ]');
+    // The modal CLEARLY warns the grade can still improve, with both buttons.
+    expect(out).toContain('Reborn this Apex now?');
+    expect(out).toContain('Grade A can STILL roll higher.');
+    expect(out).toContain('[ Reborn now ]');
+    expect(out).toContain('[ Keep rolling ]');
     expect(out).toMatchSnapshot();
   });
 

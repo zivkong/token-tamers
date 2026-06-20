@@ -30,12 +30,6 @@ export interface PageUiState {
   selected: number;
   /** List scroll offset (top visible row). */
   scroll: number;
-  /**
-   * Pet page: the Apex "Reborn Now" button is armed for confirmation — a non-S
-   * pet's first press warns (it can still grade up) and arms; a second press fires
-   * the rebirth. Cleared on confirm or when leaving the page.
-   */
-  rebornArmed?: boolean;
   /** Dex: which House sky is shown (index into DEX_HOUSES). */
   house?: number;
   /** Dex-detail: the species being inspected (set when drilling in from the Dex). */
@@ -156,6 +150,29 @@ export interface LiveStats {
   secsToMolt?: number | null;
   /** Seconds until the next weekly rebirth — the Apex "Reborn Now" countdown. */
   secsToRebirth?: number;
+}
+
+/** Visual emphasis for a modal dialog: a neutral confirm vs a caution warning. */
+export type ModalTone = 'info' | 'warning';
+
+/**
+ * Render-only description of an open modal dialog (a centered confirm pop-up).
+ * Pure data so `components/modal.drawModal` is golden-frame testable; the action
+ * to run on confirm lives on the shell runtime, never in this render view.
+ */
+export interface ModalView {
+  /** Heading line, tone-colored. */
+  title: string;
+  /** Body message lines, drawn one per row (already split for the layout). */
+  lines: string[];
+  /** Confirm button label (the affirmative / destructive action). */
+  confirmLabel: string;
+  /** Cancel button label (the safe dismiss). */
+  cancelLabel: string;
+  /** Accent: `warning` tints the title/confirm in caution colors. */
+  tone: ModalTone;
+  /** Which button currently has keyboard focus. */
+  focus: 'confirm' | 'cancel';
 }
 
 export interface RenderContext {

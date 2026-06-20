@@ -57,8 +57,6 @@ const FOOD_FILL: Rgb = { r: 240, g: 196, b: 80 };
 const GROWTH_FILL: Rgb = { r: 96, g: 200, b: 178 };
 /** Apex "Reborn Now" button accent (warm amber UI chrome — off the grade/House ladders). */
 const REBORN: Rgb = { r: 240, g: 176, b: 96 };
-/** Armed-confirm / warning accent for the Reborn button (a caution red, UI chrome only). */
-const WARN: Rgb = { r: 232, g: 116, b: 116 };
 
 /** Stage → player-facing name shown on the Growth row (egg = the design's "Mote"). */
 const STAGE_LABEL: Record<Stage, string> = {
@@ -398,21 +396,19 @@ function drawOddsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 
 /**
  * The Apex "Reborn Now" button, drawn INLINE on the Odds row after the grade odds:
- * a clickable control that forces an early rebirth. Shows the countdown to the
- * automatic weekly rebirth (`ctx.live.secsToRebirth`) so the player sees the wait
- * they're skipping; once armed (a non-S first press — see shell-input) it flips to
- * a caution-tinted `[ Confirm Reborn? ]`. Registers the `pet:reborn-now` hit region
- * so a click triggers the same warn/confirm flow as Enter. `x` is the cell right
- * after the odds; the leading `· ` separates it from them.
+ * a clickable control that opens the reborn CONFIRM MODAL (see shell-input's
+ * `tryReborn` — a non-S pet gets a clear "can still roll a higher grade" warning).
+ * Shows the countdown to the automatic weekly rebirth (`ctx.live.secsToRebirth`) so
+ * the player sees the wait they're skipping. Registers the `pet:reborn-now` hit
+ * region so a click opens the same modal as Enter. `x` is the cell right after the
+ * odds; the leading `· ` separates it from them.
  */
 function drawRebornButton(ctx: RenderContext, x: number, y: number, avail: number): void {
   const { buf } = ctx;
-  const armed = ctx.ui.rebornArmed === true;
   const secs = ctx.live?.secsToRebirth;
-  const cd = !armed && secs != null ? ` ${DOT} ${fmtCountdown(secs)}` : '';
-  const label = armed ? 'Confirm Reborn?' : `Reborn Now${cd}`;
-  const text = ` ${DOT} [ ${label} ]`.slice(0, avail);
-  buf.text(x, y, text, armed ? WARN : REBORN, null);
+  const cd = secs != null ? ` ${DOT} ${fmtCountdown(secs)}` : '';
+  const text = ` ${DOT} [ Reborn Now${cd} ]`.slice(0, avail);
+  buf.text(x, y, text, REBORN, null);
   ctx.hits.add('pet:reborn-now', x, y, [...text].length, 1);
 }
 

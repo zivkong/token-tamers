@@ -581,9 +581,13 @@ Two lifecycle countdowns live on FIXED rows so they never jump between states:
   (`ctx.live.secsToRebirth` → `nextRebirthAt`), the deadline for the grade to keep rolling up before
   the pet auto-re-eggs (replaces the old static `rolls at next molt` hint; omitted with no live
   readout / in golden frames). At **Apex** that reborn countdown becomes the clickable
-  **`[ Reborn Now · 2d 4h 9m 12s ]` button**: pressing it forces an early rebirth, with a
-  warn-then-confirm guard when the grade isn't yet S (the button flips to a caution
-  `[ Confirm Reborn? ]`; a second press confirms; an S-grade Apex rebirths on the first press).
+  **`[ Reborn Now · 2d 4h 9m 12s ]` button**: pressing it (Enter or click) opens a **confirm modal**
+  — a centered pop-up that overlays the page (the reusable `components/modal.ts`; opened via the
+  shell's `openConfirmModal`). When the grade isn't yet S the modal CLEARLY warns that the Apex can
+  still roll a higher grade and that reborning forfeits those rolls (caution `warning` tone, Confirm
+  / "Keep rolling"); an S-grade Apex gets a plain confirm. Confirm runs `Engine.rebornNow`; Cancel /
+  Esc dismisses. Focus defaults to Cancel so a stray Enter never reborns. The modal is a reusable
+  primitive for any confirm/cancel decision (`drawModal` + `openConfirmModal`).
 
 The Grow molt countdown and the Odds reborn countdown are therefore two DISTINCT, fixed-row timers.
 Keep the `calibrating` cue (data readiness, not evolution).

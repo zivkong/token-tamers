@@ -53,7 +53,7 @@ describe('mouse interaction parity', () => {
   });
 });
 
-describe('Apex "Reborn Now" flow', () => {
+describe('Apex "Reborn Now" confirm modal', () => {
   function apexHost(grade: 'A' | 'S', calls: { n: number }): Partial<ShellHost> {
     return {
       getState: () => makeState({ pet: makePet({ stage: 'apex', grade }) }),
@@ -72,34 +72,71 @@ describe('Apex "Reborn Now" flow', () => {
       ui: { pet: { selected: 0, scroll: 0 } },
     } as unknown as ShellRuntime;
   }
-  const armed = (rt: ShellRuntime): boolean | undefined =>
-    (rt.ui as Record<string, { rebornArmed?: boolean }>).pet?.rebornArmed;
+  const modalOf = (rt: ShellRuntime) =>
+    (rt as unknown as { modal?: { view: { tone: string; lines: string[]; focus: string } } }).modal
+      ?.view;
 
-  it('warns then confirms for a non-S Apex (two Enter presses)', () => {
+  it('opens a WARNING modal (not an instant rebirth) for a non-S Apex', () => {
+    const calls = { n: 0 };
+    const rt = petRt();
+    handleEvent(rt, key('enter'), deps(new HitRegistry(), apexHost('A', calls)));
+    expect(calls.n).toBe(0); // nothing happens until the player confirms
+    const m = modalOf(rt);
+    expect(m?.tone).toBe('warning');
+    expect(m?.focus).toBe('cancel'); // safe default — Enter would cancel
+    expect(m?.lines.join(' ')).toContain('roll higher'); // clear grade-roll warning
+  });
+
+  it('confirms via the modal (focus → confirm, Enter) and clears it', () => {
     const calls = { n: 0 };
     const rt = petRt();
     const d = deps(new HitRegistry(), apexHost('A', calls));
-    handleEvent(rt, key('enter'), d);
-    expect(calls.n).toBe(0); // first press only warns + arms
-    expect(armed(rt)).toBe(true);
-    expect(rt.flash).toContain('improve');
-    handleEvent(rt, key('enter'), d);
-    expect(calls.n).toBe(1); // second press fires the rebirth
-    expect(armed(rt)).toBe(false);
-  });
-
-  it('rebirths immediately for an S-grade Apex (one Enter press)', () => {
-    const calls = { n: 0 };
-    handleEvent(petRt(), key('enter'), deps(new HitRegistry(), apexHost('S', calls)));
+    handleEvent(rt, key('enter'), d); // open
+    handleEvent(rt, key('right'), d); // move focus Cancel → Confirm
+    handleEvent(rt, key('enter'), d); // activate Confirm
     expect(calls.n).toBe(1);
+    expect(modalOf(rt)).toBeUndefined();
   });
 
-  it('fires the same flow from a click on the button (mouse parity)', () => {
+  it("the 'y' shortcut confirms; Esc cancels without reborning", () => {
+    const yes = { n: 0 };
+    const rtY = petRt();
+    const dY = deps(new HitRegistry(), apexHost('A', yes));
+    handleEvent(rtY, key('enter'), dY);
+    handleEvent(rtY, key('y'), dY);
+    expect(yes.n).toBe(1);
+
+    const no = { n: 0 };
+    const rtN = petRt();
+    const dN = deps(new HitRegistry(), apexHost('A', no));
+    handleEvent(rtN, key('enter'), dN);
+    handleEvent(rtN, key('escape'), dN);
+    expect(no.n).toBe(0);
+    expect(modalOf(rtN)).toBeUndefined();
+  });
+
+  it('an S Apex still confirms via a modal, but with no grade warning', () => {
+    const calls = { n: 0 };
+    const rt = petRt();
+    handleEvent(rt, key('enter'), deps(new HitRegistry(), apexHost('S', calls)));
+    expect(calls.n).toBe(0);
+    expect(modalOf(rt)?.tone).toBe('info');
+    expect(modalOf(rt)?.lines.join(' ')).not.toContain('roll higher');
+  });
+
+  it('opens from a click on the button, then confirms from a click on Confirm', () => {
     const calls = { n: 0 };
     const hits = new HitRegistry();
     hits.add('pet:reborn-now', 0, 6, 20, 1);
-    handleEvent(petRt(), press(3, 7), deps(hits, apexHost('S', calls))); // cx=2, cy=6
+    const rt = petRt();
+    const d = deps(hits, apexHost('A', calls));
+    handleEvent(rt, press(3, 7), d); // cx=2, cy=6 → opens the modal
+    expect(calls.n).toBe(0);
+    expect(modalOf(rt)).toBeDefined();
+    hits.add('modal:confirm', 10, 12, 14, 1); // the rendered Confirm button region
+    handleEvent(rt, press(12, 13), d); // cx=11, cy=12 → inside Confirm
     expect(calls.n).toBe(1);
+    expect(modalOf(rt)).toBeUndefined();
   });
 });
 

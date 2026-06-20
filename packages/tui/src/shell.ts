@@ -18,6 +18,7 @@ import type {
   BattleView,
   CompletionBreakdown,
   LiveStats,
+  ModalView,
   PageId,
   PageUiState,
   ShellInfo,
@@ -130,6 +131,16 @@ export interface InputSource {
 const FRAME_MS = 1000 / 30;
 const ADVANCE_MS = 1000;
 
+/**
+ * An open modal dialog: the render-only `view` (drawn by `drawModal`) plus the
+ * action to run when the player confirms. The input layer toggles `view.focus`,
+ * dispatches `onConfirm` on confirm, and clears `rt.modal` on either outcome.
+ */
+export interface ModalState {
+  view: ModalView;
+  onConfirm: () => void;
+}
+
 /** Mutable shell runtime. Exported for the input handlers in `shell-input.ts`. */
 export interface ShellRuntime {
   page: PageId;
@@ -138,6 +149,8 @@ export interface ShellRuntime {
   flash: string | null;
   flashUntilFrame: number;
   quit: boolean;
+  /** An open modal dialog (confirm pop-up), or undefined when none is showing. */
+  modal?: ModalState;
   /** Static build/config facts for the Settings page (from options). */
   info?: ShellInfo;
   /** Live, editable adapter state for the Settings page. */
@@ -345,6 +358,7 @@ function renderOnce(
     settings: rt.settings,
     live: host.liveStats?.(),
     battle: rt.battle,
+    modal: rt.modal?.view,
   };
   renderFrame(buf, hits, input);
   buf.flush(writer);

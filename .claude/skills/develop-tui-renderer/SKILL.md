@@ -84,9 +84,10 @@ title, completion?})` draws a left-aligned `icon Title` (Title-Case), an optiona
   the stage name alone. Mystery now covers ONLY the next FORM/branch — never the target species. The
   **"Odds" row** carries the **REBORN (7-day) countdown** (`C › B 25% · Reborn 6d 23h`,
   `secsToRebirth`/`nextRebirthAt`); at **Apex** it becomes the clickable **`[ Reborn Now · … ]`**
-  button → `host.rebornNow()` forces an early rebirth, warn-then-confirm (`ui.rebornArmed` → caution
-  `[ Confirm Reborn? ]`) when grade ≠ S, `pet:reborn-now` hit region for mouse parity. The two
-  countdowns never swap rows. Keep the `calibrating` cue (data readiness).
+  button (`pet:reborn-now` hit region) that opens the **reusable confirm modal** (`components/modal.ts`,
+  driven by `shell-modal.ts`); for a non-S Apex the modal CLEARLY warns the grade can still roll
+  higher before confirming `host.rebornNow()`. The two countdowns never swap rows. Keep the
+  `calibrating` cue (data readiness).
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
@@ -117,9 +118,9 @@ bg)` so it renders on the band background.
   at the A→S ceiling, `S ★ apex` at the top, then INLINE the REBORN affordance after the odds:
   normally a muted `· Reborn <countdown>` (`ctx.live.secsToRebirth`, the deadline for the grade to
   keep rolling; replaced the old `rolls at next molt` hint), but at **Apex** the clickable
-  `· [ Reborn Now · … ]` button (`drawRebornButton`, warm `REBORN` accent → `WARN`-tinted
-  `[ Confirm Reborn? ]` when `ui.rebornArmed`; `pet:reborn-now` hit region, always shown at Apex
-  since the action is always available). The two countdowns sit on FIXED rows and never swap).
+  `· [ Reborn Now · … ]` button (`drawRebornButton`, warm `REBORN` accent; `pet:reborn-now` hit
+  region, always shown at Apex since the action is always available) that opens the reborn confirm
+  modal. The two countdowns sit on FIXED rows and never swap).
   Food, Diet and Grow share ONE bar geometry
   (`barGeom`) so they line up at every width; the Food/Grow bars use `drawMeter` (single tint), the
   Diet bar `drawSegmentedMeter` at 100% fill (House tints). The Odds number comes from
@@ -237,9 +238,21 @@ under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, 
 `page.ts` (the standard full-screen page scaffold — `drawPageHeader`/`drawPageFooter`/
 `PAGE_HEADER_ROWS`, `clampScroll`, used by Dex/Loot/Feats/Settings); and `meter.ts` — the ONE progress bar:
 `drawMeter` (filled `█` + a clearly-visible `▒` track), `drawSegmentedMeter` (filled portion split
-into colored slices, e.g. the diet-tinted food), and `drawCompletionHeader`; and `marquee.ts`
+into colored slices, e.g. the diet-tinted food), and `drawCompletionHeader`; `marquee.ts`
 (`drawMarquee` — a frame-counter-driven scrolling ticker, golden-frame safe; used by the Pet
-page's opt-in update notice). Reuse these — don't hand-roll rules/bars/headers/tickers.
+page's opt-in update notice); and `modal.ts` (`drawModal` — a centered confirm/cancel pop-up that
+overlays the page, drawn LAST in the frame, registering `modal:confirm`/`modal:cancel` hit regions).
+Reuse these — don't hand-roll rules/bars/headers/tickers/dialogs.
+
+- **Modal dialogs (reusable confirm pop-up).** For ANY confirm/cancel decision, open one via the
+  shell's `openConfirmModal(rt, { title, lines, confirmLabel?, cancelLabel?, tone?, onConfirm })`
+  (`shell-modal.ts`) — never hand-roll a bespoke prompt. The render-only `ModalView` (`pages/types`)
+  flows `ShellRuntime.modal.view` → `FrameInput.modal` → `drawModal`, while the `onConfirm` closure
+  stays on the runtime (off the render path, so `drawModal` stays golden-frame pure). While a modal
+  is open the shell routes ALL input to `shell-modal.handleModalEvent` (←/→/Tab move focus, Enter
+  activates the focused button, `y`/`n`/Esc shortcut, ctrl-c still quits, clicks resolve only the two
+  buttons) — the page behind it is frozen. Focus defaults to **Cancel** so a destructive action is
+  never one stray Enter away; pass `tone: 'warning'` for a caution-tinted confirm.
 
 ## Dex constellation → detail navigation (single-level drill-in)
 

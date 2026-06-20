@@ -96,10 +96,11 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   append-only registry) · `battle/` (the pure battle engine: `simulate`, `wheel`,
   `procs`, `combatant`, `seed` — consumes `ContentPack.battle` read-only)
 - `packages/tui/src/` — `terminal/` (ansi, input) · `render/` (buffer, sprite,
-  layout, hit, frame, menu) · `components/` (shared UI: divider, meter — one
-  standardized look) · `pages/` (incl. `dex-detail` — the per-species record view —
-  and `battle` — the split-pane battle playback + opponent picker)
-  · `helpers/` (status, lookup) · `shell.ts` + `shell-io.ts` (stdio/terminal wiring)
+  layout, hit, frame, menu) · `components/` (shared UI: divider, meter, marquee,
+  `modal` — the reusable confirm pop-up — one standardized look) · `pages/` (incl.
+  `dex-detail` — the per-species record view — and `battle` — the split-pane battle
+  playback + opponent picker) · `helpers/` (status, lookup) · `shell.ts` +
+  `shell-io.ts` (stdio/terminal wiring) + `shell-input.ts`/`shell-modal.ts` (input routing)
 - `packages/adapters/src/` — `index.ts` (contracts + registry) · `helpers/`
   (jsonl incremental reading, shared by future adapters) · `<provider>/`
   (index = detect/scan, parse = record→UsageEvent)
@@ -229,9 +230,11 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
   amended evolution-mystery rule), and the **Odds** row carries the REBORN (7-day)
   countdown beside the grade forecast (`C › B 25% · Reborn 6d 23h`). At Apex the Odds
   reborn countdown becomes the clickable `[ Reborn Now · … ]` button — `Engine.rebornNow`
-  forces an early rebirth (player action, no RNG, weekly clock unchanged), warn-then-confirm
-  (`[ Confirm Reborn? ]`) when grade ≠ S. Countdowns come from `nextMoltCloseAt`/`nextRebirthAt`
-  (pure forecasts) via `live.secsTo*`. See `engine/maturity.ts`, `cycle/index.ts`.
+  forces an early rebirth (player action, no RNG, weekly clock unchanged). Pressing it opens a
+  **reusable confirm modal** (`components/modal.ts` + `shell-modal.ts` `openConfirmModal`); for a
+  non-S Apex the modal CLEARLY warns the grade can still roll higher. Countdowns come from
+  `nextMoltCloseAt`/`nextRebirthAt` (pure forecasts) via `live.secsTo*`. See `engine/maturity.ts`,
+  `cycle/index.ts`.
 - **Houses (identity ONLY; mixed-provenance, NOT provider brands):** each House blends
   makers by theme, never all-Western/all-anything. Aether `claude-*`+`minimax*` WIS ·
   Cipher `gpt-*`/`o*`+`glm*`+`mimo*` PWR · Flux `gemini-*`+`qwen*`+`kimi*` SPD · Forge
