@@ -235,6 +235,10 @@ stdio/terminal wiring, split out to keep `shell.ts` under the line ceiling), `st
 **dex-detail**, **unlockables** (the Loot page), **achievements** (the Feats page), settings, **battle**), `lookup.ts`
 (pack helpers). Shared UI lives
 under `components/`: `divider.ts` (`drawDivider` — ALL-CAPS BOLD label, rule, gap-after);
+`tabs.ts` (`drawTabStrip` — the centered `‹ A  B  C ›` category selector shared by the Dex
+House skies, the Loot Habitats/Trinkets tabs, and the Feats category tabs: active tab bold in
+an accent, one click region per visible tab `<prefix>:<i>`, ←→ to switch — the page owns the
+filtered list + selection clamp; `ui.tab` holds the active index);
 `page.ts` (the standard full-screen page scaffold — `drawPageHeader`/`drawPageFooter`/
 `PAGE_HEADER_ROWS`, `clampScroll`, used by Dex/Loot/Feats/Settings); and `meter.ts` — the ONE progress bar:
 `drawMeter` (filled `█` + a clearly-visible `▒` track), `drawSegmentedMeter` (filled portion split

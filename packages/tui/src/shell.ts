@@ -207,8 +207,8 @@ function freshUi(): Record<PageId, PageUiState> {
     pet: { selected: 0, scroll: 0 },
     dex: { selected: 0, scroll: 0, house: 0 },
     'dex-detail': { selected: 0, scroll: 0, speciesId: null },
-    unlockables: { selected: 0, scroll: 0 },
-    achievements: { selected: 0, scroll: 0 },
+    unlockables: { selected: 0, scroll: 0, tab: 0 },
+    achievements: { selected: 0, scroll: 0, tab: 0 },
     settings: { selected: 0, scroll: 0 },
     battle: { selected: 0, scroll: 0, input: '', focus: 'input', fighterSel: 0 },
   };

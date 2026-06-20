@@ -247,6 +247,12 @@ export interface AchievementDef {
   name: string;
   description: string;
   condition: AchievementCondition;
+  /**
+   * Display grouping for the Feats page tabs (e.g. 'ascension', 'warpath'). A
+   * pure content taxonomy — never touches mechanics. Omitted ⇒ the catch-all
+   * "Sundry" tab. The ordered tab names live in the TUI (see FEAT_CATEGORIES).
+   */
+  category?: string;
   /** A single reward — the common case. */
   reward?: AchievementReward;
   /**

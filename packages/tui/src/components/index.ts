@@ -14,6 +14,7 @@ export {
 } from './divider';
 export { drawMarquee, type MarqueeOptions } from './marquee';
 export { drawModal } from './modal';
+export { drawTabStrip, type TabStripOptions } from './tabs';
 export {
   drawPageHeader,
   drawPageFooter,

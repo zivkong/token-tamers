@@ -88,9 +88,12 @@ Every fork needs a `default` branch so evaluation never dead-ends. Pattern varia
 
 ## Achievements, habitats, trinkets (declarative, model-neutral, all re-earnable)
 
-- Achievements: `{id, name, condition, reward?|rewards?}` — conditions are typed
-  `AchievementCondition`s; evaluated at molt/rebirth (and battle Feats at
-  `Engine.recordBattle`); never require network, purchases, or a specific model.
+- Achievements: `{id, name, condition, category?, reward?|rewards?}` — conditions are
+  typed `AchievementCondition`s; evaluated at molt/rebirth (and battle Feats at
+  `Engine.recordBattle`); never require network, purchases, or a specific model. The
+  `category` id (e.g. `ascension`, `warpath`) buckets a Feat into a player-facing TAB on
+  the Feats page (creative names + order live in the TUI `FEAT_CATEGORIES`; untagged ⇒
+  the "Sundry" tab) — pure display taxonomy, never a mechanic.
   Season 0 ships 60 of the ~120 long-term target. Categories: lineage, evolution,
   traits, rhythm, grades, token-spending (`lifetime_tokens`), battle-record
   (`battles_won`/`battles_played`/`battle_streak`), social (M2), collection meta, calendar.

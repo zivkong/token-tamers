@@ -487,6 +487,17 @@ Achievements are the formal layer that couples progression to the habitat & trin
 
 ### Achievement categories — v1 target ~120 achievements (design baseline §14)
 
+> **Feats page tabs (player-facing).** Each achievement carries a content `category`
+> id; the Feats page groups them into TABS (`←→` switches, like the Dex's House skies)
+> with creative names. Season 0's six tabs — **Ascension** (stages climbed + grade
+> milestones) · **Bloodline** (lineage, dormancy, House mastery) · **Instincts** (traits +
+> locked patterns) · **Wanderlust** (Dex coverage + habitats earned) · **Tribute**
+> (lifetime-token offerings) · **Warpath** (battle valor). The Loot page tabs the same
+> way: **Habitats** / **Trinkets**. The ordered tab names live in the TUI
+> (`pages/achievements.ts` `FEAT_CATEGORIES`); content only tags the `category`. An
+> untagged Feat falls to a catch-all **Sundry** tab. The conceptual groupings below feed
+> these tabs.
+
 **Lineage:**
 
 - Generations reached

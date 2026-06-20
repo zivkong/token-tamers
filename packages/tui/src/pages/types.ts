@@ -32,6 +32,8 @@ export interface PageUiState {
   scroll: number;
   /** Dex: which House sky is shown (index into DEX_HOUSES). */
   house?: number;
+  /** Loot/Feats: which category tab is active (index into the page's tab list). */
+  tab?: number;
   /** Dex-detail: the species being inspected (set when drilling in from the Dex). */
   speciesId?: string | null;
   /** Battle setup: the pasted-DNA-code buffer (the opponent code being typed). */

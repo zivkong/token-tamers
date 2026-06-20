@@ -3,414 +3,812 @@
     "id": "first-molt",
     "name": "First Molt",
     "description": "Your Mote completed its first molt and took its true form.",
-    "condition": { "type": "stage_reached", "stage": "sprite" }
+    "condition": {
+      "type": "stage_reached",
+      "stage": "sprite"
+    },
+    "category": "ascension"
   },
   {
     "id": "reached-rookie",
     "name": "Rookie Steps",
     "description": "Evolved into a Rookie stage for the first time.",
-    "condition": { "type": "stage_reached", "stage": "rookie" }
+    "condition": {
+      "type": "stage_reached",
+      "stage": "rookie"
+    },
+    "category": "ascension"
   },
   {
     "id": "reached-evolved",
     "name": "True Form Emerging",
     "description": "Evolved into the Evolved stage for the first time.",
-    "condition": { "type": "stage_reached", "stage": "evolved" }
+    "condition": {
+      "type": "stage_reached",
+      "stage": "evolved"
+    },
+    "category": "ascension"
   },
   {
     "id": "reached-prime",
     "name": "Prime Ascension",
     "description": "Evolved into the Prime stage for the first time.",
-    "condition": { "type": "stage_reached", "stage": "prime" }
+    "condition": {
+      "type": "stage_reached",
+      "stage": "prime"
+    },
+    "category": "ascension"
   },
   {
     "id": "reached-apex",
     "name": "Apex Achieved",
     "description": "Evolved into the Apex stage — the pinnacle of your lineage.",
-    "condition": { "type": "stage_reached", "stage": "apex" },
-    "reward": { "kind": "title", "id": "apex-tamer", "name": "Apex Tamer" }
+    "condition": {
+      "type": "stage_reached",
+      "stage": "apex"
+    },
+    "category": "ascension",
+    "reward": {
+      "kind": "title",
+      "id": "apex-tamer",
+      "name": "Apex Tamer"
+    }
   },
   {
     "id": "first-grade-b",
     "name": "Showing Promise",
     "description": "Your pet's grade reached B for the first time.",
-    "condition": { "type": "grade_reached", "grade": "B" },
-    "reward": { "kind": "trinket", "id": "bouncy-ball" }
+    "condition": {
+      "type": "grade_reached",
+      "grade": "B"
+    },
+    "category": "ascension",
+    "reward": {
+      "kind": "trinket",
+      "id": "bouncy-ball"
+    }
   },
   {
     "id": "first-grade-a",
     "name": "Exceptional Quality",
     "description": "Your pet's grade reached A — a rare achievement.",
-    "condition": { "type": "grade_reached", "grade": "A" },
-    "reward": { "kind": "trinket", "id": "lava-lamp" }
+    "condition": {
+      "type": "grade_reached",
+      "grade": "A"
+    },
+    "category": "ascension",
+    "reward": {
+      "kind": "trinket",
+      "id": "lava-lamp"
+    }
   },
   {
     "id": "first-grade-s",
     "name": "Legendary Grade",
     "description": "Your pet achieved S grade — truly extraordinary.",
-    "condition": { "type": "grade_reached", "grade": "S" },
-    "reward": { "kind": "trinket", "id": "trophy-shelf" }
+    "condition": {
+      "type": "grade_reached",
+      "grade": "S"
+    },
+    "category": "ascension",
+    "reward": {
+      "kind": "trinket",
+      "id": "trophy-shelf"
+    }
   },
   {
     "id": "trait-marathoner",
     "name": "The Long Haul",
     "description": "Earned the Marathoner trait for the first time.",
-    "condition": { "type": "trait_earned", "trait": "marathoner", "count": 1 },
-    "reward": { "kind": "trinket", "id": "cushion" }
+    "condition": {
+      "type": "trait_earned",
+      "trait": "marathoner",
+      "count": 1
+    },
+    "category": "instincts",
+    "reward": {
+      "kind": "trinket",
+      "id": "cushion"
+    }
   },
   {
     "id": "trait-sprinter",
     "name": "Burst and Rest",
     "description": "Earned the Sprinter trait for the first time.",
-    "condition": { "type": "trait_earned", "trait": "sprinter", "count": 1 }
+    "condition": {
+      "type": "trait_earned",
+      "trait": "sprinter",
+      "count": 1
+    },
+    "category": "instincts"
   },
   {
     "id": "trait-polyglot",
     "name": "Many Tongues",
     "description": "Earned the Polyglot trait for the first time.",
-    "condition": { "type": "trait_earned", "trait": "polyglot", "count": 1 }
+    "condition": {
+      "type": "trait_earned",
+      "trait": "polyglot",
+      "count": 1
+    },
+    "category": "instincts"
   },
   {
     "id": "trait-nightshade",
     "name": "Child of Midnight",
     "description": "Earned the Nightshade trait for the first time.",
-    "condition": { "type": "trait_earned", "trait": "nightshade", "count": 1 }
+    "condition": {
+      "type": "trait_earned",
+      "trait": "nightshade",
+      "count": 1
+    },
+    "category": "instincts"
   },
   {
     "id": "trait-daybreaker",
     "name": "Early Riser",
     "description": "Earned the Daybreaker trait for the first time.",
-    "condition": { "type": "trait_earned", "trait": "daybreaker", "count": 1 }
+    "condition": {
+      "type": "trait_earned",
+      "trait": "daybreaker",
+      "count": 1
+    },
+    "category": "instincts"
   },
   {
     "id": "trait-switcher",
     "name": "Model Curious",
     "description": "Earned the Switcher trait for the first time.",
-    "condition": { "type": "trait_earned", "trait": "switcher", "count": 1 }
+    "condition": {
+      "type": "trait_earned",
+      "trait": "switcher",
+      "count": 1
+    },
+    "category": "instincts"
   },
   {
     "id": "trait-deepdiver",
     "name": "Depth of Focus",
     "description": "Earned the Deepdiver trait for the first time.",
-    "condition": { "type": "trait_earned", "trait": "deepdiver", "count": 1 }
+    "condition": {
+      "type": "trait_earned",
+      "trait": "deepdiver",
+      "count": 1
+    },
+    "category": "instincts"
   },
   {
     "id": "trait-swarm",
     "name": "Many Are One",
     "description": "Earned the Swarm trait for the first time.",
-    "condition": { "type": "trait_earned", "trait": "swarm", "count": 1 }
+    "condition": {
+      "type": "trait_earned",
+      "trait": "swarm",
+      "count": 1
+    },
+    "category": "instincts"
   },
   {
     "id": "trait-polyhost",
     "name": "Bridge Builder",
     "description": "Earned the Polyhost trait for the first time.",
-    "condition": { "type": "trait_earned", "trait": "polyhost", "count": 1 },
-    "reward": { "kind": "trinket", "id": "gift-box" }
+    "condition": {
+      "type": "trait_earned",
+      "trait": "polyhost",
+      "count": 1
+    },
+    "category": "instincts",
+    "reward": {
+      "kind": "trinket",
+      "id": "gift-box"
+    }
   },
   {
     "id": "pattern-vigil",
     "name": "Watcher of the Night",
     "description": "Locked the Vigil pattern — Marathoner and Nightshade combined.",
-    "condition": { "type": "pattern_first", "pattern": "vigil" },
-    "reward": { "kind": "habitat", "id": "rooftop-night" }
+    "condition": {
+      "type": "pattern_first",
+      "pattern": "vigil"
+    },
+    "category": "instincts",
+    "reward": {
+      "kind": "habitat",
+      "id": "rooftop-night"
+    }
   },
   {
     "id": "pattern-tempest",
     "name": "Eye of the Storm",
     "description": "Locked the Tempest pattern — Sprinter and Swarm combined.",
-    "condition": { "type": "pattern_first", "pattern": "tempest" }
+    "condition": {
+      "type": "pattern_first",
+      "pattern": "tempest"
+    },
+    "category": "instincts"
   },
   {
     "id": "pattern-prism",
     "name": "Spectrum Complete",
     "description": "Locked the Prism pattern — four distinct traits in one pet.",
-    "condition": { "type": "pattern_first", "pattern": "prism" },
-    "reward": { "kind": "habitat", "id": "meadow" }
+    "condition": {
+      "type": "pattern_first",
+      "pattern": "prism"
+    },
+    "category": "instincts",
+    "reward": {
+      "kind": "habitat",
+      "id": "meadow"
+    }
   },
   {
     "id": "pattern-chimera",
     "name": "Between Worlds",
     "description": "Locked the Chimera pattern — Polyhost and Switcher combined.",
-    "condition": { "type": "pattern_first", "pattern": "chimera" }
+    "condition": {
+      "type": "pattern_first",
+      "pattern": "chimera"
+    },
+    "category": "instincts"
   },
   {
     "id": "generation-2",
     "name": "Second Generation",
     "description": "Raised your second generation of pets through rebirth.",
-    "condition": { "type": "generation", "count": 2 }
+    "condition": {
+      "type": "generation",
+      "count": 2
+    },
+    "category": "bloodline"
   },
   {
     "id": "generation-5",
     "name": "Lineage Begins",
     "description": "Reached the fifth generation — your lineage has real depth.",
-    "condition": { "type": "generation", "count": 5 },
-    "reward": { "kind": "title", "id": "lineage-keeper", "name": "Lineage Keeper" }
+    "condition": {
+      "type": "generation",
+      "count": 5
+    },
+    "category": "bloodline",
+    "reward": {
+      "kind": "title",
+      "id": "lineage-keeper",
+      "name": "Lineage Keeper"
+    }
   },
   {
     "id": "generation-10",
     "name": "Ancient Line",
     "description": "Ten generations of rebirth — your lineage is truly ancient.",
-    "condition": { "type": "generation", "count": 10 },
-    "reward": { "kind": "title", "id": "ancient-tamer", "name": "Ancient Tamer" }
+    "condition": {
+      "type": "generation",
+      "count": 10
+    },
+    "category": "bloodline",
+    "reward": {
+      "kind": "title",
+      "id": "ancient-tamer",
+      "name": "Ancient Tamer"
+    }
   },
   {
     "id": "dormant-survived",
     "name": "Through the Cocoon",
     "description": "Survived a week of dormancy — your pet endured the silence and emerged.",
-    "condition": { "type": "dormant_survived" },
-    "reward": { "kind": "title", "id": "dormant-survivor", "name": "Survivor" }
+    "condition": {
+      "type": "dormant_survived"
+    },
+    "category": "bloodline",
+    "reward": {
+      "kind": "title",
+      "id": "dormant-survivor",
+      "name": "Survivor"
+    }
   },
   {
     "id": "molt-count-10",
     "name": "Seasoned Molter",
     "description": "Accumulated 10 molts across all lifetimes.",
-    "condition": { "type": "molt_count_lifetime", "count": 10 }
+    "condition": {
+      "type": "molt_count_lifetime",
+      "count": 10
+    },
+    "category": "bloodline"
   },
   {
     "id": "molt-count-50",
     "name": "Master of Change",
     "description": "Accumulated 50 molts across all lifetimes — a dedication to growth.",
-    "condition": { "type": "molt_count_lifetime", "count": 50 },
-    "reward": { "kind": "title", "id": "master-of-change", "name": "Master of Change" }
+    "condition": {
+      "type": "molt_count_lifetime",
+      "count": 50
+    },
+    "category": "bloodline",
+    "reward": {
+      "kind": "title",
+      "id": "master-of-change",
+      "name": "Master of Change"
+    }
   },
   {
     "id": "dex-25-percent",
     "name": "Quarter Collection",
     "description": "Filled 25% of the Dex — you have seen much, but there is more.",
-    "condition": { "type": "dex_percent", "percent": 25 }
+    "condition": {
+      "type": "dex_percent",
+      "percent": 25
+    },
+    "category": "wanderlust"
   },
   {
     "id": "dex-50-percent",
     "name": "Halfway There",
     "description": "Filled 50% of the Dex — the collection is taking real shape.",
-    "condition": { "type": "dex_percent", "percent": 50 },
-    "reward": { "kind": "title", "id": "collector", "name": "Collector" }
+    "condition": {
+      "type": "dex_percent",
+      "percent": 50
+    },
+    "category": "wanderlust",
+    "reward": {
+      "kind": "title",
+      "id": "collector",
+      "name": "Collector"
+    }
   },
   {
     "id": "distinct-traits-5-one-life",
     "name": "Kaleidoscope",
     "description": "Earned 5 distinct traits in a single lifetime — a truly diverse pet.",
-    "condition": { "type": "distinct_traits_one_life", "count": 5 },
-    "reward": { "kind": "trinket", "id": "bonsai" }
+    "condition": {
+      "type": "distinct_traits_one_life",
+      "count": 5
+    },
+    "category": "instincts",
+    "reward": {
+      "kind": "trinket",
+      "id": "bonsai"
+    }
   },
   {
     "id": "house-apex-aether",
     "name": "Aether Mastery",
     "description": "Reached the Apex stage with a full Aether lineage.",
-    "condition": { "type": "house_apex", "house": "aether" },
-    "reward": { "kind": "title", "id": "aether-master", "name": "Aether Master" }
+    "condition": {
+      "type": "house_apex",
+      "house": "aether"
+    },
+    "category": "bloodline",
+    "reward": {
+      "kind": "title",
+      "id": "aether-master",
+      "name": "Aether Master"
+    }
   },
   {
     "id": "house-apex-cipher",
     "name": "Cipher Mastery",
     "description": "Reached the Apex stage with a full Cipher lineage.",
-    "condition": { "type": "house_apex", "house": "cipher" },
-    "reward": { "kind": "title", "id": "cipher-master", "name": "Cipher Master" }
+    "condition": {
+      "type": "house_apex",
+      "house": "cipher"
+    },
+    "category": "bloodline",
+    "reward": {
+      "kind": "title",
+      "id": "cipher-master",
+      "name": "Cipher Master"
+    }
   },
   {
     "id": "house-apex-flux",
     "name": "Flux Mastery",
     "description": "Reached the Apex stage with a full Flux lineage.",
-    "condition": { "type": "house_apex", "house": "flux" },
-    "reward": { "kind": "title", "id": "flux-master", "name": "Flux Master" }
+    "condition": {
+      "type": "house_apex",
+      "house": "flux"
+    },
+    "category": "bloodline",
+    "reward": {
+      "kind": "title",
+      "id": "flux-master",
+      "name": "Flux Master"
+    }
   },
   {
     "id": "house-apex-forge",
     "name": "Forge Mastery",
     "description": "Reached the Apex stage with a full Forge lineage.",
-    "condition": { "type": "house_apex", "house": "forge" },
-    "reward": { "kind": "title", "id": "forge-master", "name": "Forge Master" }
+    "condition": {
+      "type": "house_apex",
+      "house": "forge"
+    },
+    "category": "bloodline",
+    "reward": {
+      "kind": "title",
+      "id": "forge-master",
+      "name": "Forge Master"
+    }
   },
   {
     "id": "house-apex-wild",
     "name": "Bloom Mastery",
     "description": "Reached the Apex stage with a full Wild (Bloom) lineage.",
-    "condition": { "type": "house_apex", "house": "wild" },
-    "reward": { "kind": "title", "id": "bloom-master", "name": "Bloom Master" }
+    "condition": {
+      "type": "house_apex",
+      "house": "wild"
+    },
+    "category": "bloodline",
+    "reward": {
+      "kind": "title",
+      "id": "bloom-master",
+      "name": "Bloom Master"
+    }
   },
   {
     "id": "habitat-beach-cove-unlock",
     "name": "Shore Leave",
     "description": "Earned a vacation spot — the Beach Cove is yours.",
-    "condition": { "type": "stage_reached", "stage": "rookie" },
-    "reward": { "kind": "habitat", "id": "beach-cove" }
+    "condition": {
+      "type": "stage_reached",
+      "stage": "rookie"
+    },
+    "category": "wanderlust",
+    "reward": {
+      "kind": "habitat",
+      "id": "beach-cove"
+    }
   },
   {
     "id": "habitat-forest-glade-unlock",
     "name": "Into the Green",
     "description": "Your pet has earned a quiet glade to wander.",
-    "condition": { "type": "molt_count_lifetime", "count": 3 },
-    "reward": { "kind": "habitat", "id": "forest-glade" }
+    "condition": {
+      "type": "molt_count_lifetime",
+      "count": 3
+    },
+    "category": "wanderlust",
+    "reward": {
+      "kind": "habitat",
+      "id": "forest-glade"
+    }
   },
   {
     "id": "habitat-snowpeak-unlock",
     "name": "Summit Reached",
     "description": "Your lineage has grown strong enough for the high peaks.",
-    "condition": { "type": "stage_reached", "stage": "evolved" },
-    "reward": { "kind": "habitat", "id": "snowpeak" }
+    "condition": {
+      "type": "stage_reached",
+      "stage": "evolved"
+    },
+    "category": "wanderlust",
+    "reward": {
+      "kind": "habitat",
+      "id": "snowpeak"
+    }
   },
   {
     "id": "habitat-desert-dunes-unlock",
     "name": "Into the Dusk",
-    "description": "Endured five generations — the desert dunes beckon.",
-    "condition": { "type": "generation", "count": 3 },
-    "reward": { "kind": "habitat", "id": "desert-dunes" }
+    "description": "Endured three generations — the desert dunes beckon.",
+    "condition": {
+      "type": "generation",
+      "count": 3
+    },
+    "category": "wanderlust",
+    "reward": {
+      "kind": "habitat",
+      "id": "desert-dunes"
+    }
   },
   {
     "id": "habitat-crimson-mars-unlock",
     "name": "Red Horizon",
     "description": "Reached Grade A — your pet has earned an alien sky.",
-    "condition": { "type": "grade_reached", "grade": "A" },
-    "reward": { "kind": "habitat", "id": "crimson-mars" }
+    "condition": {
+      "type": "grade_reached",
+      "grade": "A"
+    },
+    "category": "wanderlust",
+    "reward": {
+      "kind": "habitat",
+      "id": "crimson-mars"
+    }
   },
   {
     "id": "habitat-europa-ice-unlock",
     "name": "Ice Moon",
     "description": "Filled 10% of the Dex — Europa's frozen plains await.",
-    "condition": { "type": "dex_percent", "percent": 10 },
-    "reward": { "kind": "habitat", "id": "europa-ice" }
+    "condition": {
+      "type": "dex_percent",
+      "percent": 10
+    },
+    "category": "wanderlust",
+    "reward": {
+      "kind": "habitat",
+      "id": "europa-ice"
+    }
   },
   {
     "id": "habitat-lunar-base-unlock",
     "name": "Moonwalker",
     "description": "Your lineage spans 7 generations — a lunar base is constructed.",
-    "condition": { "type": "generation", "count": 7 },
-    "reward": { "kind": "habitat", "id": "lunar-base" }
+    "condition": {
+      "type": "generation",
+      "count": 7
+    },
+    "category": "wanderlust",
+    "reward": {
+      "kind": "habitat",
+      "id": "lunar-base"
+    }
   },
   {
     "id": "habitat-nebula-drift-unlock",
     "name": "Between the Stars",
     "description": "Filled 25% of the Dex — the nebula opens its drifting corridors.",
-    "condition": { "type": "dex_percent", "percent": 25 },
-    "reward": { "kind": "habitat", "id": "nebula-drift" }
+    "condition": {
+      "type": "dex_percent",
+      "percent": 25
+    },
+    "category": "wanderlust",
+    "reward": {
+      "kind": "habitat",
+      "id": "nebula-drift"
+    }
   },
   {
     "id": "habitat-starship-deck-unlock",
     "name": "Warp Speed",
     "description": "Ten generations of rebirth — you command the observation deck.",
-    "condition": { "type": "generation", "count": 10 },
-    "reward": { "kind": "habitat", "id": "starship-deck" }
+    "condition": {
+      "type": "generation",
+      "count": 10
+    },
+    "category": "wanderlust",
+    "reward": {
+      "kind": "habitat",
+      "id": "starship-deck"
+    }
   },
   {
     "id": "tokens-1m",
     "name": "First Million",
     "description": "Fed your lineage 1 million tokens of real coding work.",
-    "condition": { "type": "lifetime_tokens", "tokens": 1000000 },
-    "reward": { "kind": "trinket", "id": "gold-coin" }
+    "condition": {
+      "type": "lifetime_tokens",
+      "tokens": 1000000
+    },
+    "category": "tribute",
+    "reward": {
+      "kind": "trinket",
+      "id": "gold-coin"
+    }
   },
   {
     "id": "tokens-10m",
     "name": "Big Spender",
     "description": "Poured 10 million tokens of usage into your pet.",
-    "condition": { "type": "lifetime_tokens", "tokens": 10000000 }
+    "condition": {
+      "type": "lifetime_tokens",
+      "tokens": 10000000
+    },
+    "category": "tribute"
   },
   {
     "id": "tokens-100m",
     "name": "Token Magnate",
     "description": "Channeled 100 million tokens through your lineage.",
-    "condition": { "type": "lifetime_tokens", "tokens": 100000000 },
-    "reward": { "kind": "title", "id": "token-magnate", "name": "Magnate" }
+    "condition": {
+      "type": "lifetime_tokens",
+      "tokens": 100000000
+    },
+    "category": "tribute",
+    "reward": {
+      "kind": "title",
+      "id": "token-magnate",
+      "name": "Magnate"
+    }
   },
   {
     "id": "tokens-1b",
     "name": "Billion-Token Bond",
     "description": "One billion tokens of shared work — an unbreakable bond.",
-    "condition": { "type": "lifetime_tokens", "tokens": 1000000000 },
+    "condition": {
+      "type": "lifetime_tokens",
+      "tokens": 1000000000
+    },
+    "category": "tribute",
     "rewards": [
-      { "kind": "title", "id": "token-sovereign", "name": "Token Sovereign" },
-      { "kind": "habitat", "id": "gilded-vault" }
+      {
+        "kind": "title",
+        "id": "token-sovereign",
+        "name": "Token Sovereign"
+      },
+      {
+        "kind": "habitat",
+        "id": "gilded-vault"
+      }
     ]
   },
   {
     "id": "tokens-5b",
     "name": "Five-Billion Furnace",
     "description": "Five billion tokens burned raising your lineage.",
-    "condition": { "type": "lifetime_tokens", "tokens": 5000000000 }
+    "condition": {
+      "type": "lifetime_tokens",
+      "tokens": 5000000000
+    },
+    "category": "tribute"
   },
   {
     "id": "tokens-10b",
     "name": "Ten-Billion Club",
     "description": "Ten billion tokens of real work — rarefied air.",
-    "condition": { "type": "lifetime_tokens", "tokens": 10000000000 },
-    "reward": { "kind": "trinket", "id": "gem-hoard" }
+    "condition": {
+      "type": "lifetime_tokens",
+      "tokens": 10000000000
+    },
+    "category": "tribute",
+    "reward": {
+      "kind": "trinket",
+      "id": "gem-hoard"
+    }
   },
   {
     "id": "tokens-50b",
     "name": "Fifty-Billion Forge",
     "description": "Fifty billion tokens poured into your pets.",
-    "condition": { "type": "lifetime_tokens", "tokens": 50000000000 }
+    "condition": {
+      "type": "lifetime_tokens",
+      "tokens": 50000000000
+    },
+    "category": "tribute"
   },
   {
     "id": "tokens-100b",
     "name": "Hundred-Billion Heavyweight",
     "description": "One hundred billion tokens — a true heavyweight.",
-    "condition": { "type": "lifetime_tokens", "tokens": 100000000000 },
+    "condition": {
+      "type": "lifetime_tokens",
+      "tokens": 100000000000
+    },
+    "category": "tribute",
     "rewards": [
-      { "kind": "title", "id": "token-tycoon", "name": "Token Tycoon" },
-      { "kind": "trinket", "id": "crown" }
+      {
+        "kind": "title",
+        "id": "token-tycoon",
+        "name": "Token Tycoon"
+      },
+      {
+        "kind": "trinket",
+        "id": "crown"
+      }
     ]
   },
   {
     "id": "tokens-500b",
     "name": "Half a Trillion",
     "description": "Half a trillion tokens of shared work behind you.",
-    "condition": { "type": "lifetime_tokens", "tokens": 500000000000 }
+    "condition": {
+      "type": "lifetime_tokens",
+      "tokens": 500000000000
+    },
+    "category": "tribute"
   },
   {
     "id": "tokens-1t",
     "name": "Trillion-Token Titan",
     "description": "One trillion tokens. There is no greater bond.",
-    "condition": { "type": "lifetime_tokens", "tokens": 1000000000000 },
+    "condition": {
+      "type": "lifetime_tokens",
+      "tokens": 1000000000000
+    },
+    "category": "tribute",
     "rewards": [
-      { "kind": "title", "id": "token-titan", "name": "Token Titan" },
-      { "kind": "habitat", "id": "astral-throne" }
+      {
+        "kind": "title",
+        "id": "token-titan",
+        "name": "Token Titan"
+      },
+      {
+        "kind": "habitat",
+        "id": "astral-throne"
+      }
     ]
   },
   {
     "id": "battle-first-win",
     "name": "First Blood",
     "description": "Won your first battle.",
-    "condition": { "type": "battles_won", "count": 1 },
-    "reward": { "kind": "trinket", "id": "laurel-wreath" }
+    "condition": {
+      "type": "battles_won",
+      "count": 1
+    },
+    "category": "warpath",
+    "reward": {
+      "kind": "trinket",
+      "id": "laurel-wreath"
+    }
   },
   {
     "id": "battle-won-10",
     "name": "Contender",
     "description": "Won 10 battles.",
-    "condition": { "type": "battles_won", "count": 10 }
+    "condition": {
+      "type": "battles_won",
+      "count": 10
+    },
+    "category": "warpath"
   },
   {
     "id": "battle-won-50",
     "name": "Champion",
     "description": "Won 50 battles — a true champion of the arena.",
-    "condition": { "type": "battles_won", "count": 50 },
+    "condition": {
+      "type": "battles_won",
+      "count": 50
+    },
+    "category": "warpath",
     "rewards": [
-      { "kind": "title", "id": "arena-champion", "name": "Champion" },
-      { "kind": "habitat", "id": "grand-coliseum" }
+      {
+        "kind": "title",
+        "id": "arena-champion",
+        "name": "Champion"
+      },
+      {
+        "kind": "habitat",
+        "id": "grand-coliseum"
+      }
     ]
   },
   {
     "id": "battle-streak-5",
     "name": "Unbroken",
     "description": "Won 5 battles in a row without a loss.",
-    "condition": { "type": "battle_streak", "count": 5 },
+    "condition": {
+      "type": "battle_streak",
+      "count": 5
+    },
+    "category": "warpath",
     "rewards": [
-      { "kind": "title", "id": "undefeated", "name": "Undefeated" },
-      { "kind": "trinket", "id": "champion-belt" }
+      {
+        "kind": "title",
+        "id": "undefeated",
+        "name": "Undefeated"
+      },
+      {
+        "kind": "trinket",
+        "id": "champion-belt"
+      }
     ]
   },
   {
     "id": "battle-played-25",
     "name": "Seasoned Fighter",
     "description": "Fought 25 battles, win or lose.",
-    "condition": { "type": "battles_played", "count": 25 },
-    "reward": { "kind": "trinket", "id": "crossed-swords" }
+    "condition": {
+      "type": "battles_played",
+      "count": 25
+    },
+    "category": "warpath",
+    "reward": {
+      "kind": "trinket",
+      "id": "crossed-swords"
+    }
   },
   {
     "id": "battle-played-100",
     "name": "Coliseum Veteran",
     "description": "Stepped into the arena 100 times.",
-    "condition": { "type": "battles_played", "count": 100 },
-    "reward": { "kind": "title", "id": "arena-veteran", "name": "Arena Veteran" }
+    "condition": {
+      "type": "battles_played",
+      "count": 100
+    },
+    "category": "warpath",
+    "reward": {
+      "kind": "title",
+      "id": "arena-veteran",
+      "name": "Arena Veteran"
+    }
   }
 ]

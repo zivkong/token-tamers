@@ -165,9 +165,27 @@ describe('golden frames (100x30, no-color)', () => {
     });
     const out = renderFrameToString(100, 30, input({ page: 'unlockables', state }));
     expect(out).toContain('Loot');
+    expect(out).toContain('Habitats'); // the active tab
+    expect(out).toContain('Trinkets'); // the other tab
     expect(out).toContain('Terminal Den');
     expect(out).toContain('equipped');
     expect(out).toContain('???'); // locked rows hide their name, no hint
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the Loot Trinkets tab (tab switch filters to trinkets)', () => {
+    const state = makeState({
+      trinketsUnlocked: ['bouncy-ball'],
+      selectedTrinkets: ['bouncy-ball'],
+    });
+    const out = renderFrameToString(
+      100,
+      30,
+      input({ page: 'unlockables', state, ui: { selected: 0, scroll: 0, tab: 1 } }),
+    );
+    expect(out).toContain('Bouncy Ball'); // a trinket, unlocked
+    expect(out).toContain('equipped');
+    expect(out).not.toContain('Terminal Den'); // habitats are on the other tab
     expect(out).toMatchSnapshot();
   });
 
@@ -175,9 +193,23 @@ describe('golden frames (100x30, no-color)', () => {
     const state = makeState({ achievementsEarned: { 'first-molt': 5000 } });
     const out = renderFrameToString(100, 30, input({ page: 'achievements', state }));
     expect(out).toContain('Feats');
+    expect(out).toContain('Ascension'); // the active category tab
+    expect(out).toContain('Warpath'); // a second category tab exists
     expect(out).toContain('First Molt'); // earned: name revealed
     expect(out).toContain('Reach grade B.'); // locked: description serves as the hint
     expect(out).toContain('???'); // locked: name hidden
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders a switched Feat category tab (Warpath filters the list)', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({ page: 'achievements', ui: { selected: 0, scroll: 0, tab: 1 } }),
+    );
+    expect(out).toContain('Warpath');
+    expect(out).toContain('Win a battle.'); // the warpath Feat's how-to hint
+    expect(out).not.toContain('Completed your first molt.'); // ascension Feat hidden
     expect(out).toMatchSnapshot();
   });
 

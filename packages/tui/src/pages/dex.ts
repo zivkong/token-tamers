@@ -10,7 +10,7 @@
  * scaffold. Pure given (state, pack, ui, frame) so golden frames stay stable.
  */
 
-import { drawPageFooter, drawPageHeader, pageBodyBottom } from '../components';
+import { drawPageFooter, drawPageHeader, drawTabStrip, pageBodyBottom } from '../components';
 import { houseColor } from '../helpers/lookup';
 import { GRADE_ORDER, type Grade, type House, type Stage } from '@token-tamers/core';
 import type { RenderContext } from './types';
@@ -19,7 +19,6 @@ import { renderFocusRail, renderSky, RAIL_MIN_COLS, type Rect } from './dex-sky'
 /** Canonical House order across the Dex skies (Wild last — it holds the Mote). */
 export const DEX_HOUSES: House[] = ['aether', 'cipher', 'flux', 'forge', 'wild'];
 
-const TAB_DIM = { r: 110, g: 116, b: 138 };
 const STAGE_TIER: Record<Stage, number> = {
   egg: 0,
   sprite: 1,
@@ -129,30 +128,9 @@ export function houseNodeCount(ctx: RenderContext, houseIndex: number): number {
   return buildHouseNodes(ctx, houseIndex).length;
 }
 
-/** Blank columns between adjacent House labels (so the tabs don't run together). */
-const TAB_GAP = 3;
-
-/** Draw the centered, clickable House selector strip; returns nothing. */
-function drawHouseTabs(ctx: RenderContext, y: number, active: number): void {
-  const { buf, hits, layout } = ctx;
-  const labels = DEX_HOUSES.map((h) => h[0]!.toUpperCase() + h.slice(1));
-  // Width: '‹ ' + labels joined by TAB_GAP spaces + ' ›'.
-  const labelsWidth = labels.reduce((w, l) => w + l.length, 0) + TAB_GAP * (labels.length - 1);
-  const width = 2 + labelsWidth + 2;
-  let x = layout.canvasX + Math.max(1, Math.floor((layout.canvasCols - width) / 2));
-  buf.text(x, y, '‹', TAB_DIM, null);
-  x += 2;
-  const tabsRight = layout.canvasX + layout.canvasCols;
-  labels.forEach((label, i) => {
-    if (i === active) buf.textBold(x, y, label, houseColor(DEX_HOUSES[i]!), null);
-    else buf.text(x, y, label, TAB_DIM, null);
-    // Skip a tab that ran off the canvas (the fixed-width bar on a sub-min width)
-    // so no dead/misroutable hit lands off-screen. Keyboard ←→ still reaches every House.
-    if (x + label.length <= tabsRight) hits.add(`dex:house:${i}`, x, y, label.length, 1);
-    // A wider gap between labels; a single space before the closing '›'.
-    x += label.length + (i < labels.length - 1 ? TAB_GAP : 1);
-  });
-  buf.text(x, y, '›', TAB_DIM, null);
+/** The House tab labels (Title-Case), in canonical Dex order. */
+function houseTabLabels(): string[] {
+  return DEX_HOUSES.map((h) => h[0]!.toUpperCase() + h.slice(1));
 }
 
 export function renderDexPage(ctx: RenderContext): void {
@@ -171,7 +149,12 @@ export function renderDexPage(ctx: RenderContext): void {
     title: 'Dex',
     completion: { count: `${ownedTotal}/${pack.dexTotal}`, pct: ctx.completion.dex },
   });
-  drawHouseTabs(ctx, bodyY, houseIndex);
+  drawTabStrip(ctx, bodyY, {
+    labels: houseTabLabels(),
+    active: houseIndex,
+    activeColor: houseColor(house),
+    hitPrefix: 'dex:house',
+  });
 
   const skyTop = bodyY + 2;
   const bodyBottom = pageBodyBottom(layout);

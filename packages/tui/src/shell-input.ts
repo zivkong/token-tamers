@@ -14,7 +14,8 @@ import { defaultSizeSafe } from './shell-io';
 import { computeLayout } from './render/layout';
 import { menuButtonY, packMenu } from './render/menu';
 import { buildHouseNodes, houseNodeCount, DEX_HOUSES } from './pages/dex';
-import { buildUnlockItems } from './pages/unlockables';
+import { clampLootTab, LOOT_TABS, unlockItemsForTab } from './pages/unlockables';
+import { achievementsInCategory, clampFeatTab, featCategories } from './pages/achievements';
 import {
   appendNameChar,
   backspaceName,
@@ -77,12 +78,10 @@ function handleKey(rt: ShellRuntime, name: string, host: ShellHost): void {
       moveSelection(rt, host, +1);
       return;
     case 'left':
-      if (rt.page === 'dex') panHouse(rt, -1);
-      else adjustSetting(rt, -1);
+      if (!panTab(rt, host, -1)) adjustSetting(rt, -1);
       return;
     case 'right':
-      if (rt.page === 'dex') panHouse(rt, +1);
-      else adjustSetting(rt, +1);
+      if (!panTab(rt, host, +1)) adjustSetting(rt, +1);
       return;
     case 'enter':
       handleEnter(rt, host);
@@ -170,12 +169,36 @@ function focusDexOnPet(rt: ShellRuntime, host: ShellHost): void {
   rt.ui.dex.selected = idx >= 0 ? idx : 0;
 }
 
-/** Pan to the previous/next House sky (wraps), resetting the star selection. */
-function panHouse(rt: ShellRuntime, delta: number): void {
-  const n = DEX_HOUSES.length;
-  const cur = rt.ui.dex.house ?? 0;
-  rt.ui.dex.house = (((cur + delta) % n) + n) % n;
-  rt.ui.dex.selected = 0;
+/** Wrap an index into [0, n). */
+function wrap(i: number, n: number): number {
+  return n > 0 ? ((i % n) + n) % n : 0;
+}
+
+/**
+ * ←→ on a TABBED page (Dex Houses, Loot kinds, Feat categories): switch tab,
+ * wrapping, and reset the list selection/scroll. Returns true when the active
+ * page is tabbed (so the caller doesn't also treat ←→ as a Settings edit).
+ */
+function panTab(rt: ShellRuntime, host: ShellHost, delta: number): boolean {
+  if (rt.page === 'dex') {
+    rt.ui.dex.house = wrap((rt.ui.dex.house ?? 0) + delta, DEX_HOUSES.length);
+    rt.ui.dex.selected = 0;
+    return true;
+  }
+  if (rt.page === 'achievements') {
+    const n = featCategories(host.pack).length;
+    rt.ui.achievements.tab = wrap(clampFeatTab(host.pack, rt.ui.achievements.tab) + delta, n);
+    rt.ui.achievements.selected = 0;
+    rt.ui.achievements.scroll = 0;
+    return true;
+  }
+  if (rt.page === 'unlockables') {
+    rt.ui.unlockables.tab = wrap(clampLootTab(rt.ui.unlockables.tab) + delta, LOOT_TABS.length);
+    rt.ui.unlockables.selected = 0;
+    rt.ui.unlockables.scroll = 0;
+    return true;
+  }
+  return false;
 }
 
 /** Drill into the Dex detail view for the currently selected (discovered) star. */
@@ -195,7 +218,7 @@ function openDexDetail(rt: ShellRuntime, host: ShellHost): void {
  * clears that slot. Locked items are ignored. The host persists the change.
  */
 function toggleUnlock(rt: ShellRuntime, host: ShellHost): void {
-  const items = buildUnlockItems(host.pack, host.getState());
+  const items = unlockItemsForTab(host.pack, host.getState(), rt.ui.unlockables.tab ?? 0);
   const item = items[rt.ui.unlockables.selected];
   if (!item || !item.unlocked) return;
   const next = item.active ? '' : item.id;
@@ -365,6 +388,23 @@ function handleRegionClick(
     openDexDetail(rt, host);
     return true;
   }
+  if (handleBattleRegion(rt, region)) return true;
+  if (handleCollectionRegion(rt, host, region)) return true;
+  if (region === 'pet:reborn-now') {
+    // Click the Apex button: same warn-then-confirm flow as Enter (mouse parity).
+    tryReborn(rt, host);
+    return true;
+  }
+  if (region.startsWith('settings:field:')) {
+    // Click a field to focus it (←→ then changes the value) — mouse parity.
+    rt.settings.selected = Number(region.slice('settings:field:'.length)) || 0;
+    return true;
+  }
+  return false;
+}
+
+/** Battle-setup region clicks (fighter/opponent picker + source tabs). */
+function handleBattleRegion(rt: ShellRuntime, region: string): boolean {
   if (region === 'battle:input' || region === 'battle:tab:input') {
     // Click the paste field or its tab to focus it (then type/paste a code).
     rt.ui.battle.focus = 'input';
@@ -376,31 +416,39 @@ function handleRegionClick(
     return true;
   }
   if (region.startsWith('battle:fighter:')) {
-    // Click a candidate row to field it as YOUR fighter (left side) — mouse parity.
     rt.ui.battle.focus = 'fighter';
     rt.ui.battle.fighterSel = Number(region.slice('battle:fighter:'.length)) || 0;
     return true;
   }
   if (region.startsWith('battle:pick:')) {
-    // Click a Dex row to select it as the opponent (Enter then fights) — mouse parity.
     rt.ui.battle.focus = 'list';
     rt.ui.battle.selected = Number(region.slice('battle:pick:'.length)) || 0;
     return true;
   }
-  if (region === 'pet:reborn-now') {
-    // Click the Apex button: same warn-then-confirm flow as Enter (mouse parity).
-    tryReborn(rt, host);
+  return false;
+}
+
+/** Loot/Feats category-tab + collectible-row clicks (mouse parity with ←→ / ⏎). */
+function handleCollectionRegion(rt: ShellRuntime, host: ShellHost, region: string): boolean {
+  if (region.startsWith('loot:tab:')) {
+    rt.ui.unlockables.tab = clampLootTab(Number(region.slice('loot:tab:'.length)) || 0);
+    rt.ui.unlockables.selected = 0;
+    rt.ui.unlockables.scroll = 0;
+    return true;
+  }
+  if (region.startsWith('feats:tab:')) {
+    rt.ui.achievements.tab = clampFeatTab(
+      host.pack,
+      Number(region.slice('feats:tab:'.length)) || 0,
+    );
+    rt.ui.achievements.selected = 0;
+    rt.ui.achievements.scroll = 0;
     return true;
   }
   if (region.startsWith('unlock:item:')) {
-    // Select the clicked collectible, then equip/unequip it (mouse parity).
+    // Select the clicked collectible (within the active tab), then equip/unequip it.
     rt.ui.unlockables.selected = Number(region.slice('unlock:item:'.length)) || 0;
     toggleUnlock(rt, host);
-    return true;
-  }
-  if (region.startsWith('settings:field:')) {
-    // Click a field to focus it (←→ then changes the value) — mouse parity.
-    rt.settings.selected = Number(region.slice('settings:field:'.length)) || 0;
     return true;
   }
   return false;
@@ -442,12 +490,15 @@ function moveSelection(rt: ShellRuntime, host: ShellHost, delta: number): void {
     return;
   }
   if (rt.page === 'unlockables') {
-    const max = buildUnlockItems(host.pack, host.getState()).length - 1;
+    const len = unlockItemsForTab(host.pack, host.getState(), rt.ui.unlockables.tab ?? 0).length;
+    const max = len - 1;
     rt.ui.unlockables.selected = Math.max(0, Math.min(max, rt.ui.unlockables.selected + delta));
     return;
   }
   if (rt.page === 'achievements') {
-    const max = host.pack.achievements.length - 1;
+    const cats = featCategories(host.pack);
+    const cat = cats[clampFeatTab(host.pack, rt.ui.achievements.tab)]!;
+    const max = achievementsInCategory(host.pack, cat.id).length - 1;
     rt.ui.achievements.selected = Math.max(0, Math.min(max, rt.ui.achievements.selected + delta));
   }
 }

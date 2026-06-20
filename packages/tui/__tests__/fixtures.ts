@@ -82,13 +82,22 @@ export function makePack(): ContentPack {
         name: 'First Molt',
         description: 'Completed your first molt.',
         condition: { type: 'stage_reached', stage: 'sprite' },
+        category: 'ascension',
       },
       {
         id: 'grade-b',
         name: 'Showing Promise',
         description: 'Reach grade B.',
         condition: { type: 'grade_reached', grade: 'B' },
+        category: 'ascension',
         reward: { kind: 'trinket', id: 'bouncy-ball' },
+      },
+      {
+        id: 'first-win',
+        name: 'First Blood',
+        description: 'Win a battle.',
+        condition: { type: 'battles_won', count: 1 },
+        category: 'warpath',
       },
     ],
     habitats: [
