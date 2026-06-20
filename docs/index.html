@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Token Tamers: a terminal pet raised by your AI coding-agent usage</title>
+    <meta
+      name="description"
+      content="A fully idle, fully offline terminal virtual pet for developers, a tamagotchi-style creature raised passively by your real AI coding-agent usage (Claude Code, OpenCode). Zero network. You ship code; your monster evolves."
+    />
+    <link rel="canonical" href="https://github.com/zivkong/token-tamers" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E%F0%9F%90%B2%3C/text%3E%3C/svg%3E"
+    />
+
+    <!-- Open Graph / social cards -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Token Tamers: your work raises a monster, literally" />
+    <meta
+      property="og:description"
+      content="A fully idle, fully offline terminal virtual pet, raised passively by your real AI coding-agent usage. No clicks, no chores, no API calls."
+    />
+    <meta
+      property="og:image"
+      content="https://zivkong.github.io/token-tamers/assets/social-card.png"
+    />
+    <meta property="og:url" content="https://zivkong.github.io/token-tamers/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Token Tamers: a terminal pet raised by your AI coding-agent usage"
+    />
+    <meta
+      name="twitter:description"
+      content="Fully idle, fully offline terminal virtual pet for developers. Zero network. You ship code; your monster evolves."
+    />
+    <meta
+      name="twitter:image"
+      content="https://zivkong.github.io/token-tamers/assets/social-card.png"
+    />
+
+    <style>
+      :root {
+        --bg: #0a0d14;
+        --panel: #131826;
+        --panel-2: #0e131f;
+        --border: #242c3e;
+        --ink: #eef2fb;
+        --muted: #aeb8cc;
+        --gold: #f4c95d; /* grade-S signature: the page's primary accent */
+        --green: #6fe39b; /* the Bloom / "alive" accent */
+        --glow: #f4c95d33;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          16px/1.65 ui-monospace,
+          'SF Mono',
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          'Liberation Mono',
+          monospace;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+      a {
+        color: var(--gold);
+        text-decoration: none;
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0 22px;
+      }
+
+      /* ---- hero ---- */
+      header {
+        position: relative;
+        text-align: center;
+        padding: 84px 22px 36px;
+      }
+      header::before {
+        content: '';
+        position: absolute;
+        inset: -10% 0 auto 0;
+        height: 420px;
+        z-index: 0;
+        background: radial-gradient(60% 70% at 50% 0, var(--glow), transparent 70%);
+        pointer-events: none;
+      }
+      header > * {
+        position: relative;
+        z-index: 1;
+      }
+      h1 {
+        font-size: clamp(42px, 8.5vw, 78px);
+        margin: 0;
+        letter-spacing: -3px;
+        text-wrap: balance;
+        line-height: 1.02;
+      }
+      h1 .em {
+        color: var(--gold);
+      }
+      .tag {
+        color: var(--green);
+        font-size: clamp(16px, 3.2vw, 21px);
+        margin: 14px 0 10px;
+      }
+      .tag em {
+        color: var(--ink);
+        font-style: italic;
+      }
+      .sub {
+        color: var(--muted);
+        max-width: 600px;
+        margin: 0 auto 30px;
+        text-wrap: pretty;
+      }
+      .sub b {
+        color: var(--ink);
+      }
+      .cta {
+        display: inline-flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .btn {
+        display: inline-block;
+        padding: 12px 22px;
+        border-radius: 9px;
+        font-weight: 700;
+        border: 1px solid var(--border);
+        transition:
+          transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+          border-color 0.18s,
+          background 0.18s;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+      .btn.primary {
+        background: var(--gold);
+        color: #20160a;
+        border-color: var(--gold);
+      }
+      .btn.primary:hover {
+        box-shadow: 0 8px 28px var(--glow);
+      }
+      .btn.ghost {
+        background: var(--panel);
+        color: var(--ink);
+      }
+      .btn.ghost:hover {
+        border-color: var(--gold);
+      }
+
+      .frame {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        display: block;
+        box-shadow: 0 24px 70px #0008;
+        background: var(--panel-2);
+      }
+      .hero-shot {
+        margin: 40px 0 8px;
+      }
+
+      /* ---- install ---- */
+      .install {
+        background: #05070c;
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        padding: 15px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 26px auto 6px;
+        max-width: 760px;
+        box-shadow: inset 0 0 0 1px #ffffff08;
+      }
+      .install .dollar {
+        color: var(--green);
+      }
+      .install code {
+        color: var(--ink);
+        word-break: break-all;
+        flex: 1;
+        font-size: 13.5px;
+      }
+      .copy {
+        cursor: pointer;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        color: var(--ink);
+        border-radius: 7px;
+        padding: 8px 14px;
+        font: inherit;
+        font-size: 13px;
+        white-space: nowrap;
+        transition: border-color 0.15s;
+      }
+      .copy:hover {
+        border-color: var(--green);
+      }
+      .fine {
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0 0 8px;
+      }
+
+      /* ---- feature rows (screenshot-led, alternating) ---- */
+      section {
+        padding: 40px 0;
+      }
+      .eyebrow {
+        color: var(--green);
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin: 0 0 30px;
+        text-align: center;
+      }
+      .feature {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 38px;
+        align-items: center;
+        margin: 40px 0;
+      }
+      .feature.flip .txt {
+        order: 2;
+      }
+      .feature h2 {
+        font-size: clamp(24px, 4vw, 32px);
+        margin: 0 0 12px;
+        letter-spacing: -1px;
+        text-wrap: balance;
+      }
+      .feature p {
+        color: var(--muted);
+        margin: 0;
+        text-wrap: pretty;
+      }
+      .feature .kbd {
+        color: var(--gold);
+      }
+
+      /* ---- pledges ---- */
+      .pledges {
+        background: linear-gradient(180deg, var(--panel), var(--panel-2));
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 26px 30px;
+      }
+      .pledges h2 {
+        margin: 0 0 14px;
+        font-size: 22px;
+      }
+      .pledges ol {
+        margin: 0;
+        padding-left: 1.1em;
+      }
+      .pledges li {
+        margin: 10px 0;
+        color: var(--muted);
+      }
+      .pledges b {
+        color: var(--green);
+      }
+      .pledges code {
+        color: var(--gold);
+      }
+
+      /* ---- close ---- */
+      .close {
+        text-align: center;
+        padding: 64px 22px;
+      }
+      .close h2 {
+        font-size: clamp(28px, 6vw, 44px);
+        letter-spacing: -2px;
+        margin: 0 0 22px;
+      }
+      footer {
+        text-align: center;
+        color: var(--muted);
+        padding: 0 22px 60px;
+        font-size: 13px;
+      }
+      footer a {
+        color: var(--muted);
+        text-decoration: underline;
+      }
+      footer .tm {
+        display: block;
+        opacity: 0.6;
+        margin-top: 12px;
+        font-size: 12px;
+      }
+
+      @media (max-width: 720px) {
+        .feature,
+        .feature.flip {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        .feature .txt,
+        .feature.flip .txt {
+          order: 2;
+        }
+        .feature .frame {
+          order: 1;
+        }
+      }
+
+      /* motion enhances an already-visible default; only when the user allows it */
+      @media (prefers-reduced-motion: no-preference) {
+        .reveal {
+          opacity: 0;
+          transform: translateY(20px);
+          animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .d1 {
+          animation-delay: 0.08s;
+        }
+        .d2 {
+          animation-delay: 0.16s;
+        }
+        .d3 {
+          animation-delay: 0.24s;
+        }
+        @keyframes rise {
+          to {
+            opacity: 1;
+            transform: none;
+          }
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 class="reveal">🐲 Token <span class="em">Tamers</span></h1>
+      <p class="tag reveal d1">Your work raises a monster. <em>Literally.</em></p>
+      <p class="sub reveal d1">
+        A fully idle, fully offline <b>terminal virtual pet</b> for developers, a tamagotchi-style
+        creature raised passively by your real AI coding-agent usage. No clicks. No chores. No API
+        calls. <b>You ship code; your monster evolves.</b>
+      </p>
+      <div class="cta reveal d2">
+        <a class="btn primary" href="https://github.com/zivkong/token-tamers">⭐ Star on GitHub</a>
+        <a class="btn ghost" href="#install">Install</a>
+        <a class="btn ghost" href="https://github.com/zivkong/token-tamers/wiki">Wiki</a>
+        <a class="btn ghost" href="https://github.com/zivkong/token-tamers/discussions">Discuss</a>
+      </div>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <img
+          class="frame hero-shot reveal d3"
+          src="assets/readme-shell.webp"
+          width="980"
+          alt="The Token Tamers shell: an S-grade creature shimmering over a rooftop-night habitat, beside its live vitals panel and the clickable menu rail"
+        />
+
+        <div id="install" class="install">
+          <span class="dollar">$</span>
+          <code id="cmd"
+            >curl -fsSL https://github.com/zivkong/token-tamers/releases/latest/download/install.sh
+            | sh</code
+          >
+          <button
+            class="copy"
+            onclick="
+              navigator.clipboard.writeText(document.getElementById('cmd').textContent).then(() => {
+                this.textContent = '✓ copied';
+                setTimeout(() => (this.textContent = 'copy'), 1500);
+              })
+            "
+          >
+            copy
+          </button>
+        </div>
+        <p class="fine">No Node, no sudo, no signup. Works over SSH. macOS · Linux · Windows.</p>
+      </div>
+
+      <section class="wrap">
+        <p class="eyebrow">It reads your logs, never spends your tokens</p>
+
+        <div class="feature">
+          <div class="txt">
+            <h2>A whole Dex worth completing</h2>
+            <p>
+              Your coding rhythm shapes the creature: five Houses, six stages, grades C through S.
+              Every species you raise lights up its star in a per-House constellation. The
+              collection is the long game.
+            </p>
+          </div>
+          <img
+            class="frame"
+            src="assets/dex-constellation.png"
+            width="560"
+            alt="The Dex rendered as a per-House constellation of glowing stars, each a species you've raised"
+          />
+        </div>
+
+        <div class="feature flip">
+          <div class="txt">
+            <h2>Battle by pasting a DNA code</h2>
+            <p>
+              Every pet exports to a shareable DNA code. Drop a friend's code into the terminal and
+              fight, deterministically, with a House type-wheel and trait procs. No server, no
+              accounts, no network.
+            </p>
+          </div>
+          <img
+            class="frame"
+            src="assets/battle-vs.png"
+            width="560"
+            alt="A split-pane Token Tamers battle playing out in the terminal between two creatures"
+          />
+        </div>
+
+        <div class="feature">
+          <div class="txt">
+            <h2>Loot, Feats and a living shell</h2>
+            <p>
+              Unlock habitats and trinkets, equip your pet's home, and chase 60 Feats toward 100%.
+              It all lives in a clickable <span class="kbd">tt</span> shell that runs at 30&nbsp;fps
+              on under 2% CPU.
+            </p>
+          </div>
+          <img
+            class="frame"
+            src="assets/shell-tour.webp"
+            width="560"
+            alt="A tour of the Token Tamers shell: pet vitals, the menu rail, and page navigation"
+          />
+        </div>
+      </section>
+
+      <section class="wrap">
+        <div class="pledges">
+          <h2>The three pledges</h2>
+          <ol>
+            <li>
+              <b>Read-only.</b> Never calls an AI API, never spends your tokens or quota. It only
+              reads the local logs your agent already writes.
+            </li>
+            <li>
+              <b>Zero network.</b> No network code, enforced by CI. The lone exception is an opt-in,
+              off-by-default updater that fetches releases from GitHub and sends nothing.
+            </li>
+            <li>
+              <b>Fully local.</b> Your data stays in <code>~/.tokentamers</code>. Social features
+              work entirely by pasting DNA codes, no server.
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <div class="close">
+        <h2>Your egg is waiting.</h2>
+        <a class="btn primary" href="https://github.com/zivkong/token-tamers/releases/latest"
+          >Get Token Tamers</a
+        >
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        Open source · MIT · built AI-native ·
+        <a href="https://github.com/zivkong/token-tamers">github.com/zivkong/token-tamers</a>
+      </p>
+      <span class="tm"
+        >Tamagotchi is a registered trademark of Bandai Co., Ltd. Token Tamers is an independent
+        project, not affiliated with or endorsed by Bandai.</span
+      >
+    </footer>
+  </body>
+</html>

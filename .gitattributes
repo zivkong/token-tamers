@@ -1,0 +1,6 @@
+# Keep generated graphify artifacts out of GitHub's language detection (Linguist).
+# Without this, graph.html/json made the repo show as "HTML" instead of TypeScript.
+graphify-out/** linguist-generated=true
+
+# Treat docs as documentation, not code, in the language bar.
+docs/** linguist-documentation=true

@@ -41,3 +41,6 @@ graphify-out/.needs_update
 graphify-out/cache/
 graphify-out/GRAPH_REPORT.md
 graphify-out/cost.json
+
+# graphify viz (generated, 1.7MB — skews GitHub language detection)
+graphify-out/graph.html

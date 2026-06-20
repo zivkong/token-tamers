@@ -760,9 +760,9 @@
     "semantic_hash": "48329cb80029320599b8da09d40cda56"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/README.md": {
-    "mtime": 1781967986.5819523,
-    "ast_hash": "a1097b115b4e664e017473c5b2c861f8",
-    "semantic_hash": "a1097b115b4e664e017473c5b2c861f8"
+    "mtime": 1781997575.4109645,
+    "ast_hash": "4bd6ccdc0c433a2e226b3fc0685bb94c",
+    "semantic_hash": "4bd6ccdc0c433a2e226b3fc0685bb94c"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/SECURITY.md": {
     "mtime": 1781274573.760253,
@@ -1300,9 +1300,9 @@
     "semantic_hash": "5d8bec675487d97858f8a2302385062d"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/.impeccable/hook.cache.json": {
-    "mtime": 1781969302.243214,
-    "ast_hash": "c034e371239bd64482b21a92144e56b1",
-    "semantic_hash": "c034e371239bd64482b21a92144e56b1"
+    "mtime": 1781999351.518234,
+    "ast_hash": "774956e44bfa5c83cbb4cafcb4cb37e2",
+    "semantic_hash": "774956e44bfa5c83cbb4cafcb4cb37e2"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/core/src/engine/reconcile.ts": {
     "mtime": 1781737579.5190418,
@@ -1428,5 +1428,15 @@
     "mtime": 1781967783.5988305,
     "ast_hash": "4374bb531cd3e8c9c854eda5ce230da4",
     "semantic_hash": "4374bb531cd3e8c9c854eda5ce230da4"
+  },
+  "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/docs/index.html": {
+    "mtime": 1781999529.0544536,
+    "ast_hash": "883fea5bc97222289986a03790493456",
+    "semantic_hash": "883fea5bc97222289986a03790493456"
+  },
+  "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/docs/assets/social-card.png": {
+    "mtime": 1781999308.4599361,
+    "ast_hash": "45e87ff7a1d33f2fefec256906c4d017",
+    "semantic_hash": "45e87ff7a1d33f2fefec256906c4d017"
   }
 }

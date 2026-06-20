@@ -4,9 +4,9 @@
 
 ### Your work raises a monster. _Literally._ Whatever agent you use.
 
-A fully idle, fully offline **terminal virtual pet** for developers — raised passively by
-your real AI coding-agent usage. No clicks. No chores. No API calls. **You ship code; your
-monster evolves.**
+A fully idle, fully offline **terminal virtual pet** for developers — a tamagotchi-style
+creature raised passively by your real AI coding-agent usage. No clicks. No chores. No API
+calls. **You ship code; your monster evolves.**
 
 [![Release](https://img.shields.io/github/v/release/zivkong/token-tamers?label=release)](https://github.com/zivkong/token-tamers/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -457,5 +457,7 @@ walks you from `git clone` to your first PR. Your agent will feel right at home.
 **[MIT](LICENSE)** © 2026 Ziv Kong
 
 ⭐ Star the repo — then go write some code. Your egg is counting on you. 🥚
+
+<sub>Tamagotchi is a registered trademark of Bandai Co., Ltd. Token Tamers is an independent project, not affiliated with, sponsored by, or endorsed by Bandai. The term is used only to describe the virtual-pet genre.</sub>
 
 </div>
