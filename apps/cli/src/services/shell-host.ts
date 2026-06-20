@@ -9,13 +9,11 @@
 
 import { contentPackV1 } from '@token-tamers/content';
 import {
-  createEngine,
   eventEssence,
   gradeOdds,
   nextMoltCloseAt,
   nextRebirthAt,
   type Engine,
-  type EngineConfig,
   type GameEffect,
   type GameState,
   type UsageEvent,
@@ -162,14 +160,4 @@ function computeLiveStats(pending: readonly UsageEvent[], state: GameState): Liv
   // the Odds row tracks Food/activity live (null at the S cap). Core owns the math.
   const nextGrade = gradeOdds(state, pending);
   return { windowTokens, windowEssence, baselineEssence, windowsObserved, nextGrade };
-}
-
-/** Re-create an engine from a saved state for the shell (used after catchUp). */
-export function engineFromState(config: UserConfig, state: GameState): Engine {
-  const engineConfig: EngineConfig = {
-    adapters: config.adapters,
-    cycle: config.cycle,
-    salt: config.salt,
-  };
-  return createEngine(contentPackV1, engineConfig, state);
 }

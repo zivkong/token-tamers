@@ -160,9 +160,9 @@
     "semantic_hash": "05f6234483e7c45e1ce289fe73068ce5"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/apps/cli/src/services/shell-host.ts": {
-    "mtime": 1781940274.0469992,
-    "ast_hash": "7db2cf3943d4521f1d9e2d607a47165e",
-    "semantic_hash": "7db2cf3943d4521f1d9e2d607a47165e"
+    "mtime": 1781969264.0689812,
+    "ast_hash": "4f3a2f949c318e51c4d13a0ff43b583d",
+    "semantic_hash": "4f3a2f949c318e51c4d13a0ff43b583d"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/apps/cli/src/stores/atomic.ts": {
     "mtime": 1781365412.2378767,
@@ -175,14 +175,14 @@
     "semantic_hash": "12996ea5e54c1c707c59e70c8e7f1060"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/apps/cli/src/stores/config.ts": {
-    "mtime": 1781890575.3723345,
-    "ast_hash": "139733dc6d3e40971d62d007e5b4d00e",
-    "semantic_hash": "139733dc6d3e40971d62d007e5b4d00e"
+    "mtime": 1781969289.4971402,
+    "ast_hash": "9dde3a3840bfe8adab053c918eea1483",
+    "semantic_hash": "9dde3a3840bfe8adab053c918eea1483"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/apps/cli/src/stores/index.ts": {
-    "mtime": 1781748620.3084826,
-    "ast_hash": "20b056f85a4303744c1121eb01caa766",
-    "semantic_hash": "20b056f85a4303744c1121eb01caa766"
+    "mtime": 1781969302.1987505,
+    "ast_hash": "85735f9925669360ba8acd23962e6ce8",
+    "semantic_hash": "85735f9925669360ba8acd23962e6ce8"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/apps/cli/src/stores/state.ts": {
     "mtime": 1781940155.3379762,
@@ -569,11 +569,6 @@
     "ast_hash": "ed88afe3e8fb3c21fcf4c78ccdaebcb1",
     "semantic_hash": "ed88afe3e8fb3c21fcf4c78ccdaebcb1"
   },
-  "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/tui/src/helpers/index.ts": {
-    "mtime": 1781273614.982244,
-    "ast_hash": "58e79d2b026a516d2aba71e61ea5be62",
-    "semantic_hash": "58e79d2b026a516d2aba71e61ea5be62"
-  },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/tui/src/helpers/lookup.ts": {
     "mtime": 1781890575.3764565,
     "ast_hash": "4762c5995f9f71290d737b2486559954",
@@ -619,11 +614,6 @@
     "ast_hash": "416aba77024ee164538310628e38b987",
     "semantic_hash": "416aba77024ee164538310628e38b987"
   },
-  "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/tui/src/render/index.ts": {
-    "mtime": 1781273585.093748,
-    "ast_hash": "66c38bf31f0640b3f4f4b16981441a2b",
-    "semantic_hash": "66c38bf31f0640b3f4f4b16981441a2b"
-  },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/tui/src/render/layout.ts": {
     "mtime": 1781792328.15756,
     "ast_hash": "78706866f0b5ebb4f7f47df2d1348fa8",
@@ -643,11 +633,6 @@
     "mtime": 1781892329.1274345,
     "ast_hash": "960a477ece12da9073faa57a6766633d",
     "semantic_hash": "960a477ece12da9073faa57a6766633d"
-  },
-  "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/tui/src/terminal/index.ts": {
-    "mtime": 1781273470.6517417,
-    "ast_hash": "4fc5909cd664bc24b8b9fd6e0939d52d",
-    "semantic_hash": "4fc5909cd664bc24b8b9fd6e0939d52d"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/tui/src/terminal/input.ts": {
     "mtime": 1781273467.8698614,
@@ -1315,9 +1300,9 @@
     "semantic_hash": "5d8bec675487d97858f8a2302385062d"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/.impeccable/hook.cache.json": {
-    "mtime": 1781967986.626333,
-    "ast_hash": "0b0345d1f22800d5731470cd92903d1d",
-    "semantic_hash": "0b0345d1f22800d5731470cd92903d1d"
+    "mtime": 1781969302.243214,
+    "ast_hash": "c034e371239bd64482b21a92144e56b1",
+    "semantic_hash": "c034e371239bd64482b21a92144e56b1"
   },
   "/Users/zivkong/Documents/Claude/Projects/Token Tamers/repositories/token-tamers/packages/core/src/engine/reconcile.ts": {
     "mtime": 1781737579.5190418,

@@ -1,5 +1,5 @@
 export { dataDir, pathFor, readJsonOrNull, writeJsonAtomic, setDataDirForTesting } from './atomic';
-export { CONFIG_FILE, loadConfig, saveConfig, configExists, randomSalt } from './config';
+export { CONFIG_FILE, loadConfig, saveConfig, randomSalt } from './config';
 export {
   SETTINGS_FILE,
   SETTINGS_SCHEMA_VERSION,

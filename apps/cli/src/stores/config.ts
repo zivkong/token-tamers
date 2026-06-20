@@ -2,9 +2,8 @@
  * Persistence for UserConfig (config.json).
  */
 
-import fs from 'node:fs';
 import { SCHEMA_VERSION, type CycleConfig, type UserConfig } from '@token-tamers/core';
-import { pathFor, readJsonOrNull, writeJsonAtomic } from './atomic';
+import { readJsonOrNull, writeJsonAtomic } from './atomic';
 
 export const CONFIG_FILE = 'config.json';
 
@@ -73,8 +72,4 @@ function synthesizeCycle(adapters: readonly LegacyAdapter[]): CycleConfig {
 
 export function saveConfig(config: UserConfig): void {
   writeJsonAtomic(CONFIG_FILE, config);
-}
-
-export function configExists(): boolean {
-  return fs.existsSync(pathFor(CONFIG_FILE));
 }
