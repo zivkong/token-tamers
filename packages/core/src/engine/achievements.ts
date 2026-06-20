@@ -6,6 +6,7 @@ import {
   STAGE_ORDER,
   type AchievementCondition,
   type AchievementDef,
+  type AchievementReward,
   type ContentPack,
   type GameEffect,
   type GameState,
@@ -15,6 +16,16 @@ import {
   type TraitId,
 } from '../types';
 import { gradeAtLeast } from './grades';
+
+/**
+ * The reward list for an achievement: `rewards` if present (supersedes), else the
+ * single `reward`, else none. The ONE place reward access is normalized — every
+ * consumer (grant, titles, validation, UI) reads through this.
+ */
+export function achievementRewards(def: AchievementDef): AchievementReward[] {
+  if (def.rewards && def.rewards.length > 0) return def.rewards;
+  return def.reward ? [def.reward] : [];
+}
 
 export function reachedStage(current: Stage, target: Stage): boolean {
   return STAGE_ORDER.indexOf(current) >= STAGE_ORDER.indexOf(target);
@@ -59,10 +70,12 @@ export function evaluateAchievements(
   }
 }
 
-/** Unlock an earned achievement's habitat/trinket reward (auto-equips first habitat). */
+/** Unlock every habitat/trinket an earned achievement grants (auto-equips first habitat). */
 function grantReward(state: GameState, def: AchievementDef, effects: GameEffect[]): void {
-  const reward = def.reward;
-  if (!reward) return;
+  for (const reward of achievementRewards(def)) grantOne(state, reward, effects);
+}
+
+function grantOne(state: GameState, reward: AchievementReward, effects: GameEffect[]): void {
   if (reward.kind === 'habitat' && !state.habitatsUnlocked.includes(reward.id)) {
     state.habitatsUnlocked.push(reward.id);
     if (state.selectedHabitat === '') state.selectedHabitat = reward.id;
@@ -114,6 +127,25 @@ export function achievementConditionMet(
       return (state.dexOwned.length / (ctx.dexTotal || 1)) * 100 >= c.percent;
     case 'distinct_traits_one_life':
       return new Set(pet.traits).size >= c.count;
+    default:
+      return tallyConditionMet(c, state);
+  }
+}
+
+/**
+ * Token-spending & battle-record conditions (the SCHEMA_VERSION-5 tally Feats),
+ * split out to keep {@link achievementConditionMet} under the complexity ceiling.
+ */
+function tallyConditionMet(c: AchievementCondition, state: GameState): boolean {
+  switch (c.type) {
+    case 'lifetime_tokens':
+      return (state.lifetimeTokens ?? 0) >= c.tokens;
+    case 'battles_won':
+      return (state.battleRecord?.won ?? 0) >= c.count;
+    case 'battles_played':
+      return (state.battleRecord?.played ?? 0) >= c.count;
+    case 'battle_streak':
+      return (state.battleRecord?.bestStreak ?? 0) >= c.count;
     default:
       return false;
   }

@@ -11,7 +11,10 @@ import type { Grade } from '../types';
 // `weekAnchor`) to a single pet-global `UserConfig.cycle` (CycleConfig). Old
 // config.json migrates forward by synthesizing `cycle` from the legacy adapters
 // and slimming each adapter to `{ provider, paths }` (see the cli config store).
-export const SCHEMA_VERSION = 4;
+// v5: added `state.lifetimeTokens` (event-derived) + `state.battleRecord`
+// (player-action tally) powering the token-spending & battle-record Feats. Old
+// saves default both to zero (see the cli state store).
+export const SCHEMA_VERSION = 5;
 
 /** Max historical snapshots kept per species in the Dex record store. */
 export const MAX_DEX_RECORDS = 3;

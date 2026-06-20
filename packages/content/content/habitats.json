@@ -334,5 +334,89 @@
       { "x": 68, "y": 32 },
       { "x": 48, "y": 36 }
     ]
+  },
+  {
+    "id": "gilded-vault",
+    "name": "Gilded Vault",
+    "spriteId": "habitat-gilded-vault",
+    "palette": [
+      "#1a1206",
+      "#2a1e0e",
+      "#3a2c16",
+      "#241a0c",
+      "#4a3a1a",
+      "#6a5226",
+      "#8a6a20",
+      "#b8902c",
+      "#e0b040",
+      "#f4cc54",
+      "#ffe680",
+      "#d04040",
+      "#40a0d0",
+      "#fff4c0",
+      "#ffffff"
+    ],
+    "tint": "#e0b040",
+    "trinketSlots": [
+      { "x": 30, "y": 30 },
+      { "x": 64, "y": 32 },
+      { "x": 98, "y": 30 }
+    ]
+  },
+  {
+    "id": "astral-throne",
+    "name": "Astral Throne",
+    "spriteId": "habitat-astral-throne",
+    "palette": [
+      "#05030f",
+      "#140a28",
+      "#2a1450",
+      "#5a2080",
+      "#a040a0",
+      "#3080a0",
+      "#3a2e50",
+      "#6a6088",
+      "#a0a0c0",
+      "#9a7424",
+      "#e0b040",
+      "#ffd860",
+      "#e0e0ff",
+      "#fff8e0",
+      "#ffffff"
+    ],
+    "tint": "#7030a0",
+    "trinketSlots": [
+      { "x": 34, "y": 30 },
+      { "x": 64, "y": 34 },
+      { "x": 94, "y": 30 }
+    ]
+  },
+  {
+    "id": "grand-coliseum",
+    "name": "Grand Coliseum",
+    "spriteId": "habitat-grand-coliseum",
+    "palette": [
+      "#1a1810",
+      "#4a4030",
+      "#6a5e44",
+      "#8a7c5c",
+      "#b0a078",
+      "#9a7434",
+      "#c69a4c",
+      "#e0bc70",
+      "#2a6098",
+      "#4a90c8",
+      "#80b8e0",
+      "#c03030",
+      "#e0b040",
+      "#f0e8d0",
+      "#ffffff"
+    ],
+    "tint": "#c69a4c",
+    "trinketSlots": [
+      { "x": 30, "y": 30 },
+      { "x": 64, "y": 32 },
+      { "x": 98, "y": 30 }
+    ]
   }
 ]

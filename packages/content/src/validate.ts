@@ -4,7 +4,7 @@
  * Each function checks one concern and returns an array of error strings.
  * validatePack() is the public entry point — it concatenates all results.
  */
-import type { ContentPack, House, TraitId } from '@token-tamers/core';
+import { achievementRewards, type ContentPack, type House, type TraitId } from '@token-tamers/core';
 
 const HOUSES: readonly House[] = ['aether', 'cipher', 'flux', 'forge', 'wild'];
 const TRAIT_IDS: readonly TraitId[] = [
@@ -136,12 +136,13 @@ function checkAchievementRewards(pack: ContentPack): string[] {
   const trinketIds = new Set(pack.trinkets.map((t) => t.id));
 
   for (const a of pack.achievements) {
-    if (!a.reward) continue;
-    if (a.reward.kind === 'habitat' && !habitatIds.has(a.reward.id)) {
-      errors.push(`Achievement ${a.id} rewards unknown habitat: ${a.reward.id}`);
-    }
-    if (a.reward.kind === 'trinket' && !trinketIds.has(a.reward.id)) {
-      errors.push(`Achievement ${a.id} rewards unknown trinket: ${a.reward.id}`);
+    for (const reward of achievementRewards(a)) {
+      if (reward.kind === 'habitat' && !habitatIds.has(reward.id)) {
+        errors.push(`Achievement ${a.id} rewards unknown habitat: ${reward.id}`);
+      }
+      if (reward.kind === 'trinket' && !trinketIds.has(reward.id)) {
+        errors.push(`Achievement ${a.id} rewards unknown trinket: ${reward.id}`);
+      }
     }
   }
   return errors;

@@ -193,6 +193,8 @@ export function makeState(overrides: Partial<GameState> = {}): GameState {
     rngState: 12345,
     simulatedTo: 10000,
     lineage: [],
+    lifetimeTokens: 0,
+    battleRecord: { played: 0, won: 0, streak: 0, bestStreak: 0 },
     ...overrides,
   };
 }

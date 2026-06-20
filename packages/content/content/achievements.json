@@ -290,5 +290,127 @@
     "description": "Ten generations of rebirth — you command the observation deck.",
     "condition": { "type": "generation", "count": 10 },
     "reward": { "kind": "habitat", "id": "starship-deck" }
+  },
+  {
+    "id": "tokens-1m",
+    "name": "First Million",
+    "description": "Fed your lineage 1 million tokens of real coding work.",
+    "condition": { "type": "lifetime_tokens", "tokens": 1000000 },
+    "reward": { "kind": "trinket", "id": "gold-coin" }
+  },
+  {
+    "id": "tokens-10m",
+    "name": "Big Spender",
+    "description": "Poured 10 million tokens of usage into your pet.",
+    "condition": { "type": "lifetime_tokens", "tokens": 10000000 }
+  },
+  {
+    "id": "tokens-100m",
+    "name": "Token Magnate",
+    "description": "Channeled 100 million tokens through your lineage.",
+    "condition": { "type": "lifetime_tokens", "tokens": 100000000 },
+    "reward": { "kind": "title", "id": "token-magnate", "name": "Magnate" }
+  },
+  {
+    "id": "tokens-1b",
+    "name": "Billion-Token Bond",
+    "description": "One billion tokens of shared work — an unbreakable bond.",
+    "condition": { "type": "lifetime_tokens", "tokens": 1000000000 },
+    "rewards": [
+      { "kind": "title", "id": "token-sovereign", "name": "Token Sovereign" },
+      { "kind": "habitat", "id": "gilded-vault" }
+    ]
+  },
+  {
+    "id": "tokens-5b",
+    "name": "Five-Billion Furnace",
+    "description": "Five billion tokens burned raising your lineage.",
+    "condition": { "type": "lifetime_tokens", "tokens": 5000000000 }
+  },
+  {
+    "id": "tokens-10b",
+    "name": "Ten-Billion Club",
+    "description": "Ten billion tokens of real work — rarefied air.",
+    "condition": { "type": "lifetime_tokens", "tokens": 10000000000 },
+    "reward": { "kind": "trinket", "id": "gem-hoard" }
+  },
+  {
+    "id": "tokens-50b",
+    "name": "Fifty-Billion Forge",
+    "description": "Fifty billion tokens poured into your pets.",
+    "condition": { "type": "lifetime_tokens", "tokens": 50000000000 }
+  },
+  {
+    "id": "tokens-100b",
+    "name": "Hundred-Billion Heavyweight",
+    "description": "One hundred billion tokens — a true heavyweight.",
+    "condition": { "type": "lifetime_tokens", "tokens": 100000000000 },
+    "rewards": [
+      { "kind": "title", "id": "token-tycoon", "name": "Token Tycoon" },
+      { "kind": "trinket", "id": "crown" }
+    ]
+  },
+  {
+    "id": "tokens-500b",
+    "name": "Half a Trillion",
+    "description": "Half a trillion tokens of shared work behind you.",
+    "condition": { "type": "lifetime_tokens", "tokens": 500000000000 }
+  },
+  {
+    "id": "tokens-1t",
+    "name": "Trillion-Token Titan",
+    "description": "One trillion tokens. There is no greater bond.",
+    "condition": { "type": "lifetime_tokens", "tokens": 1000000000000 },
+    "rewards": [
+      { "kind": "title", "id": "token-titan", "name": "Token Titan" },
+      { "kind": "habitat", "id": "astral-throne" }
+    ]
+  },
+  {
+    "id": "battle-first-win",
+    "name": "First Blood",
+    "description": "Won your first battle.",
+    "condition": { "type": "battles_won", "count": 1 },
+    "reward": { "kind": "trinket", "id": "laurel-wreath" }
+  },
+  {
+    "id": "battle-won-10",
+    "name": "Contender",
+    "description": "Won 10 battles.",
+    "condition": { "type": "battles_won", "count": 10 }
+  },
+  {
+    "id": "battle-won-50",
+    "name": "Champion",
+    "description": "Won 50 battles — a true champion of the arena.",
+    "condition": { "type": "battles_won", "count": 50 },
+    "rewards": [
+      { "kind": "title", "id": "arena-champion", "name": "Champion" },
+      { "kind": "habitat", "id": "grand-coliseum" }
+    ]
+  },
+  {
+    "id": "battle-streak-5",
+    "name": "Unbroken",
+    "description": "Won 5 battles in a row without a loss.",
+    "condition": { "type": "battle_streak", "count": 5 },
+    "rewards": [
+      { "kind": "title", "id": "undefeated", "name": "Undefeated" },
+      { "kind": "trinket", "id": "champion-belt" }
+    ]
+  },
+  {
+    "id": "battle-played-25",
+    "name": "Seasoned Fighter",
+    "description": "Fought 25 battles, win or lose.",
+    "condition": { "type": "battles_played", "count": 25 },
+    "reward": { "kind": "trinket", "id": "crossed-swords" }
+  },
+  {
+    "id": "battle-played-100",
+    "name": "Coliseum Veteran",
+    "description": "Stepped into the arena 100 times.",
+    "condition": { "type": "battles_played", "count": 100 },
+    "reward": { "kind": "title", "id": "arena-veteran", "name": "Arena Veteran" }
   }
 ]

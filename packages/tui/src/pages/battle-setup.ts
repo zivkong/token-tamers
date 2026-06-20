@@ -466,6 +466,8 @@ export function confirmBattle(rt: SetupShell, host: BattleHost): void {
   }
   if (res.warn) flash(rt, res.warn);
   const result = simulateBattle(fighter, res.opp, host.pack.battle);
+  // Tally the fought battle (drives the battle Feats); the player is the left fighter.
+  host.recordBattle?.(result, 'a');
   rt.battle = { left: fighter, right: res.opp, result, cursor: 0, playing: true };
 }
 

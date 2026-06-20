@@ -33,6 +33,7 @@ export {
 
 // Engine — re-exported via engine/index barrel.
 export {
+  achievementRewards,
   BATTLE_READY_STAGE,
   bestSpeciesRecords,
   createEngine,

@@ -112,6 +112,10 @@ export function createShellHost(config: UserConfig, engine: Engine): ShellHostHa
       savePending(engine.pendingEvents());
       return effects;
     },
+    recordBattle(result, playerSide): void {
+      engine.recordBattle(result, playerSide, Date.now());
+      saveState(engine.state());
+    },
   };
 
   return {

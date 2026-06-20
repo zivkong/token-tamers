@@ -17,6 +17,7 @@ import {
   isBattleReady,
   sameSpecies,
   simulateBattle,
+  type BattleResult,
   type BattleSide,
   type Combatant,
   type ContentPack,
@@ -329,6 +330,9 @@ export interface BattleShell {
 export interface BattleHost {
   pack: ContentPack;
   getState(): GameState;
+  /** Record a fought battle into the lifetime tally (drives battle Feats). Optional
+   * so golden tests can use a read-only stub host. */
+  recordBattle?(result: BattleResult, playerSide: BattleSide): void;
 }
 
 /** Advance auto-playback one step every {@link BATTLE_STEP_FRAMES} frames. */
@@ -385,6 +389,8 @@ export function handleBattleKey(
 export function rematch(view: BattleView, host: BattleHost): BattleView {
   const nonce = (view.nonce ?? 0) + 1;
   const result = simulateBattle(view.left, view.right, host.pack.battle, nonce);
+  // A rematch is a fresh fought battle; the player is always the left fighter (side 'a').
+  host.recordBattle?.(result, 'a');
   return { left: view.left, right: view.right, result, cursor: 0, playing: true, nonce };
 }
 

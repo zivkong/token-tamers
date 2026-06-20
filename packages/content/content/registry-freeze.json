@@ -119,7 +119,23 @@
     "trait-polyhost",
     "trait-sprinter",
     "trait-swarm",
-    "trait-switcher"
+    "trait-switcher",
+    "tokens-1m",
+    "tokens-10m",
+    "tokens-100m",
+    "tokens-1b",
+    "tokens-5b",
+    "tokens-10b",
+    "tokens-50b",
+    "tokens-100b",
+    "tokens-500b",
+    "tokens-1t",
+    "battle-first-win",
+    "battle-won-10",
+    "battle-won-50",
+    "battle-streak-5",
+    "battle-played-25",
+    "battle-played-100"
   ],
   "habitats": [
     "beach-cove",
@@ -133,7 +149,10 @@
     "rooftop-night",
     "snowpeak",
     "starship-deck",
-    "terminal-den"
+    "terminal-den",
+    "gilded-vault",
+    "astral-throne",
+    "grand-coliseum"
   ],
   "trinkets": [
     "bonsai",
@@ -141,7 +160,13 @@
     "cushion",
     "gift-box",
     "lava-lamp",
-    "trophy-shelf"
+    "trophy-shelf",
+    "gold-coin",
+    "gem-hoard",
+    "crown",
+    "laurel-wreath",
+    "champion-belt",
+    "crossed-swords"
   ],
   "reservedFusionSpecies": [
     "aelstrom",

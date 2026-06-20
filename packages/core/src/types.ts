@@ -224,7 +224,15 @@ export type AchievementCondition =
   | { type: 'dormant_survived' }
   | { type: 'house_apex'; house: House }
   | { type: 'dex_percent'; percent: number }
-  | { type: 'distinct_traits_one_life'; count: number };
+  | { type: 'distinct_traits_one_life'; count: number }
+  /** Lifetime raw tokens accumulated across all closed windows (≥ `tokens`). */
+  | { type: 'lifetime_tokens'; tokens: number }
+  /** Battles won, lifetime (≥ `count`). */
+  | { type: 'battles_won'; count: number }
+  /** Battles fought, win or lose, lifetime (≥ `count`). */
+  | { type: 'battles_played'; count: number }
+  /** Best win streak reached (≥ `count`). */
+  | { type: 'battle_streak'; count: number };
 
 export type AchievementReward =
   | { kind: 'habitat'; id: string }
@@ -239,7 +247,15 @@ export interface AchievementDef {
   name: string;
   description: string;
   condition: AchievementCondition;
+  /** A single reward — the common case. */
   reward?: AchievementReward;
+  /**
+   * Multiple rewards, for a Feat generous enough to grant several things at once
+   * (e.g. a hard milestone giving a title AND a special habitat). When present it
+   * SUPERSEDES `reward` — use one or the other, never both. Read everywhere via
+   * {@link achievementRewards}.
+   */
+  rewards?: AchievementReward[];
 }
 
 export interface HabitatDef {
@@ -580,6 +596,22 @@ export interface AdapterBaseline {
   windowsObserved: number;
 }
 
+/**
+ * Lifetime battle tally (player-action state, like equipped trinkets — NOT
+ * event-derived, so it persists in the save and survives replay). A win is the
+ * player's fighter taking a battle; a draw counts as played but breaks no streak.
+ */
+export interface BattleRecord {
+  /** Battles fought (win, loss, or draw). */
+  played: number;
+  /** Battles won. */
+  won: number;
+  /** Current consecutive-win streak (reset by a loss; a draw leaves it). */
+  streak: number;
+  /** Best streak ever reached. */
+  bestStreak: number;
+}
+
 export interface GameState {
   schemaVersion: number;
   pet: PetState;
@@ -604,6 +636,13 @@ export interface GameState {
   /** High-water mark: engine has consumed all events with ts <= this. */
   simulatedTo: number;
   lineage: Array<{ speciesId: string; grade: Grade; generation: number }>;
+  /**
+   * Lifetime raw tokens summed across every closed 5-h window (event-derived,
+   * deterministic — accumulated at each molt). Drives the token-spending Feats.
+   */
+  lifetimeTokens: number;
+  /** Lifetime battle tally (player-action state). Drives the battle-record Feats. */
+  battleRecord: BattleRecord;
 }
 
 /** Discrete things that happened during an engine advance — drives UI/cutscenes. */
@@ -702,6 +741,14 @@ export interface Engine {
    * egg gets the remainder of the current week. A no-op on a pre-hatch egg.
    */
   rebornNow(now: number): GameEffect[];
+  /**
+   * Record a fought battle into the lifetime tally and award any newly-met
+   * battle Feats (a player action, like {@link rebornNow}: kept out of
+   * `advanceTo`, consumes no RNG, uses `now` only as the achievement timestamp).
+   * `playerSide` is the side the player's fighter occupied (always 'a' today).
+   * Returns the GameEffects (newly-earned achievements) for the UI banner.
+   */
+  recordBattle(result: BattleResult, playerSide: BattleSide, now: number): GameEffect[];
   /** Completion meter, 0..100 with per-page breakdown. */
   completion(): {
     overall: number;

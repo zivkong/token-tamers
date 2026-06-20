@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { SCHEMA_VERSION } from '@token-tamers/core';
 import { loadState } from '../src/stores/state';
 import { setDataDirForTesting } from '../src/stores';
 
@@ -87,7 +88,7 @@ describe('v2 → v3 dex-records migration + auto-repair', () => {
   it('back-fills dexRecords from the archive and bumps schemaVersion to current', () => {
     writeState(V2_STATE);
     const st = loadState()!;
-    expect(st.schemaVersion).toBe(4);
+    expect(st.schemaVersion).toBe(SCHEMA_VERSION);
     expect(st.dexRecords).toHaveLength(1);
     const rec = st.dexRecords[0]!;
     expect(rec.speciesId).toBe('ember');

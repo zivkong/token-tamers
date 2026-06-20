@@ -9,15 +9,20 @@
  */
 
 import type { ContentPack, GameState } from '../types';
+import { achievementRewards } from './achievements';
+
+// Re-exported here so the engine barrel exposes it alongside earnedTitles (both
+// are achievement-reward helpers and ship together).
+export { achievementRewards } from './achievements';
 
 /** The title names the player has earned, in pack (stable) order, de-duplicated. */
 export function earnedTitles(state: GameState, pack: ContentPack): string[] {
   const out: string[] = [];
   for (const ach of pack.achievements) {
-    const reward = ach.reward;
-    if (reward?.kind !== 'title') continue;
     if (state.achievementsEarned[ach.id] === undefined) continue;
-    if (!out.includes(reward.name)) out.push(reward.name);
+    for (const reward of achievementRewards(ach)) {
+      if (reward.kind === 'title' && !out.includes(reward.name)) out.push(reward.name);
+    }
   }
   return out;
 }

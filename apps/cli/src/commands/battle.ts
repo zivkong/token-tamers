@@ -23,6 +23,7 @@ import {
 import { contentPackV1 } from '@token-tamers/content';
 import { hpAt, opponentCombatant, playerCombatant, type BattleView } from '@token-tamers/tui';
 import { catchUp } from '../services/catchup';
+import { saveState } from '../stores';
 import { launchShell } from './shell';
 
 type Out = (s: string) => void;
@@ -120,6 +121,9 @@ export async function battleCommand(
   if (!right) return;
 
   const result = simulateBattle(left, right, pack.battle);
+  // Tally the fought battle (drives the battle Feats); the player is the left fighter.
+  caught.engine.recordBattle(result, 'a', now());
+  saveState(caught.engine.state());
   if (interactive) {
     const initialBattle: BattleView = { left, right, result, cursor: 0, playing: true };
     await launchShell(caught, { noColor: opts.noColor, initialPage: 'battle', initialBattle });

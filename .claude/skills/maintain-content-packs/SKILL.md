@@ -88,17 +88,23 @@ Every fork needs a `default` branch so evaluation never dead-ends. Pattern varia
 
 ## Achievements, habitats, trinkets (declarative, model-neutral, all re-earnable)
 
-- Achievements: `{id, name, condition, reward}` — conditions are typed
-  `AchievementCondition`s; evaluated at molt/rebirth; never require network,
-  purchases, or a specific model. Season 0 ships 44 of the ~120 long-term target. Categories:
-  lineage, evolution, traits, rhythm, grades, social (M2), collection meta, calendar.
-- Habitats: starter set Terminal Den (default), Meadow, Rooftop Night. Unlocks are
-  achievement-driven (pattern firsts → themed habitats like Vigil → Midnight
-  Observatory; House mastery; lineage depth; first S → Gilded Sanctum; Dormant week
-  survived → Cocoon Hollow). 2–3 trinket anchor slots each.
-- Trinkets: cosmetic only — they influence which idle animations play, never stats.
-  Unlocks: trait milestones, molt-count milestones, weather weeks (re-earnable —
-  nothing is ever permanently missable).
+- Achievements: `{id, name, condition, reward?|rewards?}` — conditions are typed
+  `AchievementCondition`s; evaluated at molt/rebirth (and battle Feats at
+  `Engine.recordBattle`); never require network, purchases, or a specific model.
+  Season 0 ships 60 of the ~120 long-term target. Categories: lineage, evolution,
+  traits, rhythm, grades, token-spending (`lifetime_tokens`), battle-record
+  (`battles_won`/`battles_played`/`battle_streak`), social (M2), collection meta, calendar.
+  A Feat grants a single `reward` OR a `rewards[]` array (a hard milestone can give a
+  title AND a special habitat/trinket) — read everywhere via `achievementRewards(def)`.
+- Habitats (15): starter Terminal Den (default), Meadow, Rooftop Night + space/biome
+  unlocks. Unlocks are achievement-driven (pattern firsts → themed habitats; House
+  mastery; lineage depth). The hardest Feats grant showpiece scenes: Gilded Vault (1B
+  tokens), Astral Throne (1T tokens), Grand Coliseum (50 battle wins). 128×96, own a
+  direct 15-hex `palette`; 2–3 trinket anchor slots each.
+- Trinkets (12): cosmetic only — they influence which idle animations play, never stats.
+  28×28, render with a fixed neutral tint (design by SHAPE, not color). Unlocks: trait/
+  molt milestones, token tiers (Gold Coin/Gem Hoard/Crown), battle Feats (Laurel Wreath/
+  Champion Belt/Crossed Swords). All re-earnable — nothing is permanently missable.
 - Completion Meter weighting: dex 40% + achievements 40% + habitats 10% + trinkets 10%;
   `dexTotal` drives the Dex denominator and "???" rows. It is the CURRENT Season's obtainable
   roster (Season 0 = `56`), so 100% is reachable within the Season; a new Season raises it.

@@ -78,6 +78,8 @@ function readyState(): GameState {
     rngState: 12345,
     simulatedTo: NOW,
     lineage: [],
+    lifetimeTokens: 0,
+    battleRecord: { played: 0, won: 0, streak: 0, bestStreak: 0 },
   };
 }
 

@@ -75,7 +75,7 @@ to the one content tree (invariants 6–7); the model→House map never affects 
 
 **Goal:** the launch creature game is feature-complete to _play with what you've raised_ — you
 can fight your pets and dress their world. No new content is authored this Season; it makes the
-shipped 56 species / 44 achievements / 12 habitats / 6 trinkets fully _usable_.
+shipped 56 species / 60 achievements / 15 habitats / 12 trinkets fully _usable_.
 
 **Already shipped (the foundation, M1 + M2.1 codec):** five House lines · 56 species · evolution /
 traits / patterns / mutations / monotonic grade rolls · rebirth + lineage · Archive · Dex +

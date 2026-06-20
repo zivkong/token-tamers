@@ -27,7 +27,13 @@ import type {
 import { advanceBattlePlayback } from './pages/battle';
 import { applyEffects } from './shell-effects';
 import { handleEvent } from './shell-input';
-import type { ContentPack, GameEffect, GameState } from '@token-tamers/core';
+import type {
+  BattleResult,
+  BattleSide,
+  ContentPack,
+  GameEffect,
+  GameState,
+} from '@token-tamers/core';
 
 // Re-exported shell host/options contract (kept identical to src/index.ts).
 export interface ShellHost {
@@ -53,6 +59,13 @@ export interface ShellHost {
    * banner). Driven by the Pet page; the weekly clock is unchanged.
    */
   rebornNow?(): GameEffect[];
+  /**
+   * Record a fought battle into the lifetime tally and persist (drives the
+   * battle-record Feats). Driven by the Battle page on each confirmed fight /
+   * rematch; `playerSide` is the side the player's fighter occupied. A no-op in
+   * golden tests (the stub host omits it).
+   */
+  recordBattle?(result: BattleResult, playerSide: BattleSide): void;
 }
 
 export interface ShellOptions {

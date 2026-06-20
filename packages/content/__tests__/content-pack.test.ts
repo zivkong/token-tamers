@@ -338,8 +338,8 @@ describe('content counts', () => {
     expect(contentPackV1.habitats.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('has 6 trinkets', () => {
-    expect(contentPackV1.trinkets).toHaveLength(6);
+  it('has at least 12 trinkets', () => {
+    expect(contentPackV1.trinkets.length).toBeGreaterThanOrEqual(12);
   });
 
   it('terminal-den habitat exists with no unlock condition (default)', () => {

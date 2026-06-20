@@ -33,6 +33,8 @@ import { chance, createRng, nextInt, type Rng } from '../helpers/rng';
 import {
   STAGE_ORDER,
   type ArchiveRecord,
+  type BattleResult,
+  type BattleSide,
   type ContentPack,
   type CycleEvent,
   type DexSnapshot,
@@ -78,7 +80,8 @@ import { tryCaptureSnapshot } from './dex-records';
 import { evolutionGateMet, requiredMaturity } from './maturity';
 import { archiveRecord, scaleStats } from './rebirth';
 import { petSnapshot } from './snapshot';
-import { cloneState, freshPet, initialState } from './state';
+import { recordBattleInto } from './battle-record';
+import { cloneState, ensureStateFields, freshPet, initialState } from './state';
 
 export { SCHEMA_VERSION, VITALITY_FULL_TOKENS, VITALITY_MAX_BONUS } from './constants';
 export { GRAFT_GRADE_BONUS_CAP, GRAFT_POTENCY, GRAFT_STAT_BOOST_CAP } from './constants';
@@ -92,7 +95,7 @@ export { hasFullWeekBaseline, seedBaselinesFromHistory } from './baseline';
 export { BATTLE_READY_STAGE, growthProgress, requiredMaturity, stageMature } from './maturity';
 export { isBattleReady, isGraftReady, type GrowthProgress } from './maturity';
 export { matchModelRule } from './houses';
-export { earnedTitles } from './tamer';
+export { achievementRewards, earnedTitles } from './tamer';
 
 class GameEngine implements Engine {
   private readonly pack: ContentPack;
@@ -104,11 +107,10 @@ class GameEngine implements Engine {
     this.pack = pack;
     this.config = config;
     this.state_ = saved ? cloneState(saved) : initialState(config);
-    // Defensive: a resumed snapshot must carry the arrays the engine now reads
-    // (`dexRecords` is SCHEMA_VERSION 3). The cli store migrates/back-fills it from
-    // `archive` on load; this only guards a snapshot that bypassed that path so
-    // `capture()` never dereferences undefined. Pure, deterministic (no back-fill).
-    if (!Array.isArray(this.state_.dexRecords)) this.state_.dexRecords = [];
+    // Defensive: a resumed snapshot that bypassed cli-store migration must still
+    // carry the SCHEMA_VERSION-added fields the engine reads (dexRecords v3;
+    // lifetimeTokens + battleRecord v5) so it never dereferences undefined.
+    ensureStateFields(this.state_);
   }
 
   ingest(events: UsageEvent[]): void {
@@ -176,6 +178,11 @@ class GameEngine implements Engine {
     this.replayRebirth({ type: 'rebirth', at, weekStart, weekEnd: at }, all, effects);
     this.state_.simulatedTo = at;
     return effects;
+  }
+
+  /** Record a fought battle and award any newly-met battle Feats (see Engine). */
+  recordBattle(result: BattleResult, playerSide: BattleSide, now: number): GameEffect[] {
+    return recordBattleInto(this.state_, this.pack, result, playerSide, now);
   }
 
   pendingEvents(): UsageEvent[] {

@@ -7,6 +7,7 @@ import { statusCommand } from '../src/commands/status';
 import { loadConfig } from '../src/stores/config';
 import { loadState } from '../src/stores/state';
 import { defaultSettings, saveSettings, setDataDirForTesting } from '../src/stores';
+import { SCHEMA_VERSION } from '@token-tamers/core';
 
 /**
  * End-to-end: redirect the data dir to a temp home, point the Claude Code
@@ -102,8 +103,8 @@ describe('tt init --yes -> status (e2e)', () => {
       const state = loadState();
       expect(state).not.toBeNull();
       expect(state?.pet).toBeTruthy();
-      // Fresh init writes the current schema (v4 — pet-global cycle config).
-      expect(state?.schemaVersion).toBe(4);
+      // Fresh init writes the current schema version.
+      expect(state?.schemaVersion).toBe(SCHEMA_VERSION);
       expect(Array.isArray(state?.dexRecords)).toBe(true);
 
       // status output mentions the pet (name/stage/grade fields present).
@@ -144,7 +145,7 @@ describe('tt init --yes -> status (e2e)', () => {
       await statusCommand(() => {}, now);
 
       const upgraded = loadState()!;
-      expect(upgraded.schemaVersion).toBe(4);
+      expect(upgraded.schemaVersion).toBe(SCHEMA_VERSION);
       expect(Array.isArray(upgraded.dexRecords)).toBe(true);
       // The Archive entry was preserved into the new record store.
       expect(upgraded.dexRecords.some((r) => r.speciesId === 'wisp')).toBe(true);

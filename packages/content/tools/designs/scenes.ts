@@ -40,6 +40,9 @@ import {
   dot,
   line,
   thickLine,
+  fillPolygon,
+  diamond,
+  sparkle,
   lcg,
   hashStr,
 } from '../sprite-lib';
@@ -1429,6 +1432,266 @@ function buildStarshipDeck(frame: number): PixelCanvas {
 }
 
 // ---------------------------------------------------------------------------
+// Gilded Vault — a treasure vault, reward for the 1-billion-token Feat.
+// 1=dark, 2=wall dark, 3=wall mid, 4=floor, 5=steel dark, 6=steel, 7=coin shadow,
+// 8=gold mid, 9=gold, 10=bright gold, 11=gold highlight, 12=gem red, 13=gem blue,
+// 14=near-white, 15=glint
+// ---------------------------------------------------------------------------
+
+/** A glittering heap of coins centered on (px,py), radius r — stacked disc rims. */
+function coinPile(c: PixelCanvas, px: number, py: number, r: number, frame: number): void {
+  fillEllipse(c, px, py + 2, r, Math.round(r * 0.4), 7); // base shadow
+  for (let row = 0; row < r; row++) {
+    const w = r - row;
+    const yy = py - row;
+    fillEllipse(c, px, yy, w, Math.max(1, Math.round(w * 0.35)), row % 2 ? 8 : 9);
+    if (row % 2 === 0) for (let x = px - w; x <= px + w; x += 3) dot(c, x, yy, 10);
+  }
+  dot(c, px - Math.round(r / 2), py - r + 1, frame === 1 ? 15 : 11);
+  dot(c, px + Math.round(r / 2), py - Math.round(r / 2), 11);
+}
+
+function buildGildedVault(frame: number): PixelCanvas {
+  const c = PixelCanvas.create(HW, HH);
+
+  // Stone wall with a warm gradient toward the vault glow.
+  fillRect(c, 0, 0, HW - 1, HH - 1, 2);
+  for (let y = 0; y < 24; y++) for (let x = 0; x < HW; x++) c.set(x, y, 1);
+  fillEllipse(c, 64, 40, 52, 34, 3); // soft glow halo behind the door
+
+  // Floor.
+  fillRect(c, 0, 74, HW - 1, HH - 1, 4);
+  for (let x = 0; x < HW; x++) c.set(x, 74, 7);
+
+  // Round vault door on the back wall.
+  fillCircle(c, 64, 40, 27, 6);
+  fillCircle(c, 64, 40, 23, 5);
+  strokeEllipse(c, 64, 40, 27, 27, 1);
+  strokeEllipse(c, 64, 40, 23, 23, 6);
+  // Bolt ring.
+  for (let a = 0; a < 12; a++) {
+    const ang = (a / 12) * Math.PI * 2;
+    const bx = 64 + Math.round(Math.cos(ang) * 25);
+    const by = 40 + Math.round(Math.sin(ang) * 25);
+    dot(c, bx, by, 11);
+  }
+  // Central wheel + spokes.
+  fillCircle(c, 64, 40, 6, 6);
+  strokeEllipse(c, 64, 40, 6, 6, 1);
+  for (let a = 0; a < 4; a++) {
+    const ang = (a / 4) * Math.PI * 2 + (frame === 1 ? 0.3 : 0);
+    line(c, 64, 40, 64 + Math.round(Math.cos(ang) * 9), 40 + Math.round(Math.sin(ang) * 9), 11);
+  }
+  dot(c, 64, 40, 14);
+
+  // Gold bar stack (left).
+  for (let i = 0; i < 3; i++) {
+    const by = 70 - i * 5;
+    const off = i * 2;
+    fillRect(c, 12 + off, by, 30 - off, by + 4, 9);
+    fillRect(c, 12 + off, by, 30 - off, by, 11);
+    fillRect(c, 12 + off, by + 4, 30 - off, by + 4, 7);
+  }
+
+  // Coin piles flanking the floor.
+  coinPile(c, 30, 90, 12, frame);
+  coinPile(c, 100, 92, 14, frame);
+  coinPile(c, 112, 84, 8, frame);
+
+  // Open chest (right) spilling coins, with a couple of gemstones.
+  fillRect(c, 84, 72, 110, 86, 5);
+  fillRect(c, 84, 72, 110, 74, 6);
+  strokeRect(c, 84, 72, 110, 86, 1);
+  fillRect(c, 86, 74, 108, 80, 9);
+  for (let x = 86; x <= 108; x += 3) dot(c, x, 76, 10);
+  dot(c, 92, 78, 12);
+  dot(c, 101, 77, 13);
+  dot(c, 96, 79, frame === 1 ? 15 : 11);
+
+  return c;
+}
+
+// ---------------------------------------------------------------------------
+// Astral Throne — a golden throne adrift in the cosmos. The 1-trillion-token
+// crown jewel. 1=void, 2=deep purple, 3=purple, 4=magenta nebula, 5=pink glow,
+// 6=cyan mist, 7=dais shadow, 8=marble mid, 9=marble light, 10=gold dark,
+// 11=gold, 12=gold bright, 13=star white, 14=near-white, 15=glint
+// ---------------------------------------------------------------------------
+
+function buildAstralThrone(frame: number): PixelCanvas {
+  const c = PixelCanvas.create(HW, HH);
+
+  skyGradient(c, [
+    { until: 24, idx: 1 },
+    { until: 50, idx: 2 },
+    { until: 96, idx: 3 },
+  ]);
+
+  // Distant galaxy swirls.
+  fillEllipse(c, 30, 26, 26, 12, 3);
+  fillEllipse(c, 30, 26, 18, 8, 4);
+  fillEllipse(c, 30, 26, 9, 4, 5);
+  fillEllipse(c, 100, 20, 22, 9, 3);
+  fillEllipse(c, 100, 20, 13, 5, 4);
+
+  // Starfield (twinkles between frames).
+  const rng = lcg(hashStr('habitat-astral-throne'));
+  for (let i = 0; i < 70; i++) {
+    const sx = rng.int(HW);
+    const sy = rng.int(80);
+    if (c.get(sx, sy) <= 4) c.set(sx, sy, rng.chance(0.2) ? 14 : 13);
+  }
+  for (let i = 0; i < 6; i++) {
+    const sx = rng.int(HW);
+    const sy = rng.int(60);
+    if (frame === 1) sparkle(c, sx, sy, 15);
+    else dot(c, sx, sy, 13);
+  }
+
+  // Radiant aura behind the throne (breathes between frames).
+  const ar = frame === 1 ? 40 : 36;
+  strokeEllipse(c, 64, 52, ar, ar - 8, 5);
+  strokeEllipse(c, 64, 52, ar - 6, ar - 13, 6);
+
+  // Floating marble dais.
+  fillEllipse(c, 64, 84, 42, 9, 7);
+  fillEllipse(c, 64, 82, 40, 7, 8);
+  fillEllipse(c, 64, 81, 34, 4, 9);
+
+  // Golden throne.
+  fillRect(c, 54, 30, 74, 78, 10); // backrest slab
+  fillRect(c, 57, 33, 71, 62, 11);
+  fillRect(c, 60, 36, 68, 58, 12);
+  // Crowned finials on the backrest top.
+  fillPolygon(
+    c,
+    [
+      [54, 30],
+      [58, 18],
+      [62, 30],
+    ],
+    11,
+  );
+  fillPolygon(
+    c,
+    [
+      [62, 30],
+      [64, 14],
+      [66, 30],
+    ],
+    12,
+  );
+  fillPolygon(
+    c,
+    [
+      [66, 30],
+      [70, 18],
+      [74, 30],
+    ],
+    11,
+  );
+  dot(c, 64, 14, frame === 1 ? 15 : 14);
+  // Seat + armrests + legs.
+  fillRect(c, 48, 64, 80, 74, 10);
+  fillRect(c, 48, 64, 80, 65, 11);
+  fillRect(c, 48, 60, 52, 76, 11);
+  fillRect(c, 76, 60, 80, 76, 11);
+  fillRect(c, 52, 74, 56, 84, 10);
+  fillRect(c, 72, 74, 76, 84, 10);
+  strokeRect(c, 54, 30, 74, 78, 1);
+  // Inlaid gem.
+  dot(c, 64, 48, 5);
+  dot(c, 64, 47, 13);
+
+  return c;
+}
+
+// ---------------------------------------------------------------------------
+// Grand Coliseum — a sunlit arena, reward for 50 battle wins. 1=arch shadow,
+// 2=stone dark, 3=stone mid, 4=stone light, 5=stone highlight, 6=sand dark,
+// 7=sand, 8=sand light, 9=sky deep, 10=sky, 11=sky light, 12=banner red,
+// 13=banner gold, 14=near-white, 15=glint
+// ---------------------------------------------------------------------------
+
+function buildGrandColiseum(frame: number): PixelCanvas {
+  const c = PixelCanvas.create(HW, HH);
+
+  skyGradient(c, [
+    { until: 14, idx: 9 },
+    { until: 30, idx: 10 },
+    { until: 44, idx: 11 },
+  ]);
+
+  // Two curved tiers of stone arcades across the back.
+  for (const tier of [
+    { y: 30, h: 16, arch: 3 },
+    { y: 46, h: 18, arch: 2 },
+  ] as const) {
+    fillRect(c, 0, tier.y, HW - 1, tier.y + tier.h, tier.arch + 1);
+    fillRect(c, 0, tier.y, HW - 1, tier.y + 1, 5); // lit cornice
+    for (let ax = 6; ax < HW - 8; ax += 18) {
+      // Pillar + arched opening (dark interior).
+      fillRect(c, ax, tier.y + 2, ax + 4, tier.y + tier.h, tier.arch);
+      fillRect(c, ax + 6, tier.y + 4, ax + 14, tier.y + tier.h, 1);
+      const acx = ax + 10;
+      fillEllipse(c, acx, tier.y + 4, 4, 3, 1);
+      strokeEllipse(c, acx, tier.y + 4, 5, 4, tier.arch + 2);
+    }
+  }
+
+  // Hanging banners between the lower arches (wave between frames).
+  for (let bx = 16; bx < HW - 12; bx += 36) {
+    const sway = frame === 1 ? 1 : 0;
+    fillRect(c, bx + sway, 48, bx + 6 + sway, 70, 12);
+    fillRect(c, bx + sway, 48, bx + 6 + sway, 50, 13);
+    fillPolygon(
+      c,
+      [
+        [bx + sway, 70],
+        [bx + 3 + sway, 74],
+        [bx + 6 + sway, 70],
+      ],
+      12,
+    );
+    dot(c, bx + 3 + sway, 58, 13);
+  }
+
+  // Arena sand floor with raked rings.
+  fillRect(c, 0, 64, HW - 1, HH - 1, 7);
+  fillRect(c, 0, 64, HW - 1, 65, 8);
+  for (let r = 10; r < 70; r += 8) strokeEllipse(c, 64, 102, r + 20, Math.round(r / 2), 6);
+  const rng = lcg(hashStr('habitat-grand-coliseum'));
+  for (let i = 0; i < 40; i++) c.set(rng.int(HW), 70 + rng.int(24), 6);
+
+  // Flags along the very top (animated).
+  for (let fx = 10; fx < HW; fx += 24) {
+    line(c, fx, 2, fx, 10, 5);
+    if (frame === 0)
+      fillPolygon(
+        c,
+        [
+          [fx, 2],
+          [fx + 8, 4],
+          [fx, 6],
+        ],
+        12,
+      );
+    else
+      fillPolygon(
+        c,
+        [
+          [fx, 3],
+          [fx + 8, 5],
+          [fx, 7],
+        ],
+        13,
+      );
+  }
+
+  return c;
+}
+
+// ---------------------------------------------------------------------------
 // Habitat builder dispatch
 // ---------------------------------------------------------------------------
 
@@ -1458,6 +1721,12 @@ function buildHabitat(id: string, frame: number): PixelCanvas {
       return buildNebulaDrift(frame);
     case 'habitat-starship-deck':
       return buildStarshipDeck(frame);
+    case 'habitat-gilded-vault':
+      return buildGildedVault(frame);
+    case 'habitat-astral-throne':
+      return buildAstralThrone(frame);
+    case 'habitat-grand-coliseum':
+      return buildGrandColiseum(frame);
     default:
       throw new Error(`Unknown habitat: ${id}`);
   }
@@ -1729,6 +1998,198 @@ function buildTrophyShelf(frame: number): PixelCanvas {
 }
 
 // ---------------------------------------------------------------------------
+// TRINKET: Gold Coin (the 1-million-token Feat) — a big coin that spins.
+// ---------------------------------------------------------------------------
+
+function buildGoldCoin(frame: number): PixelCanvas {
+  const c = PixelCanvas.create(TW, TH);
+  const cx = 14;
+  const cy = 14;
+  fillEllipse(c, cx, 25, 9, 2, 3); // shadow
+
+  const rx = frame === 0 ? 11 : 6; // spin: face -> edge-on
+  fillEllipse(c, cx, cy, rx, 11, 7);
+  fillEllipse(c, cx, cy, Math.max(1, rx - 1), 10, 9);
+  strokeEllipse(c, cx, cy, rx, 11, 1);
+  strokeEllipse(c, cx, cy, Math.max(1, rx - 2), 9, 5);
+  // Embossed star + shine.
+  diamond(c, cx, cy, Math.min(4, rx - 1), 11);
+  dot(c, cx, cy, 13);
+  if (frame === 0) {
+    dot(c, cx - 4, cy - 5, 14);
+    dot(c, cx - 5, cy - 4, 13);
+  } else {
+    dot(c, cx + 1, cy - 6, 14);
+  }
+  return c;
+}
+
+// ---------------------------------------------------------------------------
+// TRINKET: Gem Hoard (the 10-billion-token Feat) — a cluster of cut jewels.
+// ---------------------------------------------------------------------------
+
+function buildGemHoard(frame: number): PixelCanvas {
+  const c = PixelCanvas.create(TW, TH);
+  fillEllipse(c, 14, 23, 12, 3, 3); // pile shadow
+
+  // Side gems.
+  diamond(c, 7, 19, 3, 7);
+  diamond(c, 21, 19, 3, 7);
+  dot(c, 7, 18, 11);
+  dot(c, 21, 18, 11);
+  // Centerpiece gem + facets.
+  diamond(c, 14, 15, 6, 9);
+  line(c, 14, 9, 14, 21, 11);
+  line(c, 9, 15, 19, 15, 5);
+  dot(c, 12, 13, 13);
+  dot(c, 14, 11, 14);
+  // Top gem.
+  diamond(c, 14, 7, 3, 11);
+  // Sparkles flit between frames.
+  if (frame === 0) sparkle(c, 5, 12, 14);
+  else sparkle(c, 23, 11, 14);
+  return c;
+}
+
+// ---------------------------------------------------------------------------
+// TRINKET: Crown (the 100-billion-token Feat, Token Tycoon).
+// ---------------------------------------------------------------------------
+
+function buildCrown(frame: number): PixelCanvas {
+  const c = PixelCanvas.create(TW, TH);
+  // Band.
+  fillRect(c, 4, 16, 24, 21, 9);
+  fillRect(c, 4, 16, 24, 16, 11);
+  fillRect(c, 4, 21, 24, 22, 5);
+  strokeRect(c, 4, 16, 24, 22, 1);
+  // Five spikes.
+  const tips: ReadonlyArray<readonly [number, number]> = [
+    [6, 8],
+    [11, 4],
+    [14, 2],
+    [17, 4],
+    [22, 8],
+  ];
+  for (let i = 0; i < tips.length - 1; i++) {
+    const [ax, ay] = tips[i]!;
+    const [bx] = tips[i + 1]!;
+    fillPolygon(
+      c,
+      [
+        [ax, 16],
+        [Math.round((ax + bx) / 2), Math.min(ay, tips[i + 1]![1])],
+        [bx, 16],
+      ],
+      9,
+    );
+  }
+  for (const [tx, ty] of tips) {
+    fillPolygon(
+      c,
+      [
+        [tx - 2, 16],
+        [tx, ty],
+        [tx + 2, 16],
+      ],
+      11,
+    );
+    dot(c, tx, ty, 13);
+  }
+  // Central jewel (glints).
+  diamond(c, 14, 18, 2, 13);
+  dot(c, 14, 18, frame === 1 ? 14 : 11);
+  dot(c, 9, 18, 7);
+  dot(c, 19, 18, 7);
+  return c;
+}
+
+// ---------------------------------------------------------------------------
+// TRINKET: Laurel Wreath (the first-win Feat) — a ring of victory leaves.
+// ---------------------------------------------------------------------------
+
+function buildLaurelWreath(frame: number): PixelCanvas {
+  const c = PixelCanvas.create(TW, TH);
+  const cx = 14;
+  const cy = 16;
+  const R = 9;
+  // Leaves around the ring, leaving a gap at the very top.
+  // Inner vine ring (the woody stem the leaves sprout from).
+  strokeEllipse(c, cx, cy, R - 2, R - 2, 3);
+  for (let deg = 30; deg <= 330; deg += 22) {
+    if (deg > 250 && deg < 290) continue; // open top
+    const a = (deg * Math.PI) / 180;
+    const x = cx + Math.round(Math.cos(a) * R);
+    const y = cy + Math.round(Math.sin(a) * R);
+    fillEllipse(c, x, y + 1, 2, 1, 5); // leaf underside shadow
+    fillEllipse(c, x, y, 2, 1, deg % 44 === 30 ? 9 : 7);
+    dot(c, x, y, 11);
+  }
+  // Ribbon knot at the bottom.
+  fillEllipse(c, cx, cy + R, 2, 2, 9);
+  dot(c, cx, cy + R, 13);
+  line(c, cx - 1, cy + R + 1, cx - 3, cy + R + 4, 3);
+  line(c, cx + 1, cy + R + 1, cx + 3, cy + R + 4, 3);
+  // A glint drifts across the open top.
+  if (frame === 0) sparkle(c, cx - 4, 5, 14);
+  else sparkle(c, cx + 4, 5, 14);
+  return c;
+}
+
+// ---------------------------------------------------------------------------
+// TRINKET: Champion Belt (the 5-win-streak Feat, Undefeated).
+// ---------------------------------------------------------------------------
+
+function buildChampionBelt(frame: number): PixelCanvas {
+  const c = PixelCanvas.create(TW, TH);
+  // Strap.
+  fillRect(c, 1, 11, 26, 18, 5);
+  fillRect(c, 1, 11, 26, 12, 9);
+  fillRect(c, 1, 17, 26, 18, 2);
+  for (let x = 3; x <= 24; x += 3) {
+    dot(c, x, 12, 3);
+    dot(c, x, 17, 3);
+  }
+  // Side plates.
+  fillEllipse(c, 5, 14, 2, 3, 9);
+  fillEllipse(c, 23, 14, 2, 3, 9);
+  // Big center plate with a star.
+  fillEllipse(c, 14, 14, 7, 7, 9);
+  strokeEllipse(c, 14, 14, 7, 7, 11);
+  fillEllipse(c, 14, 14, 5, 5, 7);
+  diamond(c, 14, 14, 3, 13);
+  dot(c, 14, 14, frame === 1 ? 14 : 11);
+  strokeEllipse(c, 14, 14, 7, 7, 1);
+  return c;
+}
+
+// ---------------------------------------------------------------------------
+// TRINKET: Crossed Swords (the 25-battle Feat).
+// ---------------------------------------------------------------------------
+
+function buildCrossedSwords(frame: number): PixelCanvas {
+  const c = PixelCanvas.create(TW, TH);
+  // Two blades crossing in an X.
+  thickLine(c, 5, 24, 22, 5, 2, 9);
+  thickLine(c, 23, 24, 6, 5, 2, 9);
+  line(c, 6, 23, 21, 6, 13); // edge highlights
+  line(c, 22, 23, 7, 6, 13);
+  // Bright tips.
+  dot(c, 22, 5, 14);
+  dot(c, 6, 5, 14);
+  // Crossguards.
+  thickLine(c, 2, 20, 9, 24, 1, 5);
+  thickLine(c, 26, 20, 19, 24, 1, 5);
+  // Hilts + pommels.
+  fillRect(c, 4, 23, 6, 26, 3);
+  fillRect(c, 22, 23, 24, 26, 3);
+  dot(c, 5, 26, 11);
+  dot(c, 23, 26, 11);
+  // Spark at the crossing.
+  dot(c, 14, 14, frame === 1 ? 14 : 11);
+  return c;
+}
+
+// ---------------------------------------------------------------------------
 // Trinket builder dispatch
 // ---------------------------------------------------------------------------
 
@@ -1746,6 +2207,18 @@ function buildTrinket(id: string, frame: number): PixelCanvas {
       return buildGiftBox(frame);
     case 'trinket-trophy-shelf':
       return buildTrophyShelf(frame);
+    case 'trinket-gold-coin':
+      return buildGoldCoin(frame);
+    case 'trinket-gem-hoard':
+      return buildGemHoard(frame);
+    case 'trinket-crown':
+      return buildCrown(frame);
+    case 'trinket-laurel-wreath':
+      return buildLaurelWreath(frame);
+    case 'trinket-champion-belt':
+      return buildChampionBelt(frame);
+    case 'trinket-crossed-swords':
+      return buildCrossedSwords(frame);
     default:
       throw new Error(`Unknown trinket: ${id}`);
   }
@@ -1769,6 +2242,9 @@ const HABITAT_IDS: readonly string[] = [
   'habitat-lunar-base',
   'habitat-nebula-drift',
   'habitat-starship-deck',
+  'habitat-gilded-vault',
+  'habitat-astral-throne',
+  'habitat-grand-coliseum',
 ];
 
 /** Trinket sprite ids (starter set — additive-only). */
@@ -1779,6 +2255,12 @@ const TRINKET_IDS: readonly string[] = [
   'trinket-bonsai',
   'trinket-gift-box',
   'trinket-trophy-shelf',
+  'trinket-gold-coin',
+  'trinket-gem-hoard',
+  'trinket-crown',
+  'trinket-laurel-wreath',
+  'trinket-champion-belt',
+  'trinket-crossed-swords',
 ];
 
 /** All habitat background sprites (128x96, 2 frames, animated). */

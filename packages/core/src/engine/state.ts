@@ -2,8 +2,24 @@
  * Initial game state construction and state persistence helpers.
  */
 
-import type { EngineConfig, GameState, PetState } from '../types';
+import type { BattleRecord, EngineConfig, GameState, PetState } from '../types';
 import { SCHEMA_VERSION } from './constants';
+
+/** A zeroed battle tally (fresh save / migrated old save). */
+export function freshBattleRecord(): BattleRecord {
+  return { played: 0, won: 0, streak: 0, bestStreak: 0 };
+}
+
+/**
+ * Defensively back-fill SCHEMA_VERSION-added fields on a resumed snapshot that
+ * bypassed the cli store migration (so the engine never dereferences undefined).
+ * Pure and deterministic — no back-fill from history, just safe defaults.
+ */
+export function ensureStateFields(s: GameState): void {
+  if (!Array.isArray(s.dexRecords)) s.dexRecords = [];
+  if (typeof s.lifetimeTokens !== 'number') s.lifetimeTokens = 0;
+  if (!s.battleRecord) s.battleRecord = freshBattleRecord();
+}
 
 export function freshPet(generation: number, hatchedAt: number, calibrating: boolean): PetState {
   return {
@@ -53,6 +69,8 @@ export function initialState(config: EngineConfig): GameState {
     rngState: (rngSeed ^ 0x9e3779b9) >>> 0,
     simulatedTo,
     lineage: [],
+    lifetimeTokens: 0,
+    battleRecord: freshBattleRecord(),
   };
 }
 

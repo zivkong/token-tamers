@@ -6,7 +6,7 @@
  */
 
 import { deriveCycleEvents, WEEK_MS } from '../cycle';
-import { eventEssence } from '../evaluation';
+import { eventEssence, eventTokens } from '../evaluation';
 import type {
   AdapterBaseline,
   AdapterConfig,
@@ -24,14 +24,16 @@ export function baselineMeans(baselines: Record<string, AdapterBaseline>): Recor
 }
 
 /**
- * Fold a closed window's essence into each contributing adapter's own baseline
- * (design §6 — per-adapter self-normalization). Groups the window's events by
- * adapter in deterministic order and applies the running-mean accumulator.
+ * Fold a closed (real, non-hatch) window into the running totals: each adapter's
+ * own normalization baseline (design §6) AND the pet-global lifetime raw-token
+ * tally that drives the token-spending Feats. Called once per real molt — the
+ * single place real-window stats accumulate, so both live here together.
  */
 export function foldWindowBaselines(state: GameState, evs: readonly UsageEvent[]): void {
   const essenceByAdapter = new Map<string, number>();
   for (const ev of evs) {
     essenceByAdapter.set(ev.adapter, (essenceByAdapter.get(ev.adapter) ?? 0) + eventEssence(ev));
+    state.lifetimeTokens += eventTokens(ev);
   }
   for (const [adapter, essence] of essenceByAdapter) updateBaseline(state, adapter, essence);
 }

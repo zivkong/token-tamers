@@ -5,7 +5,7 @@
  * list scoped to the current Season's roster (`pack.achievements`).
  */
 
-import type { AchievementDef, ContentPack } from '@token-tamers/core';
+import { achievementRewards, type AchievementDef, type ContentPack } from '@token-tamers/core';
 import type { Rgb } from '../terminal/ansi';
 import { clampScroll, drawPageFooter, drawPageHeader, pageBodyBottom } from '../components';
 import type { RenderContext } from './types';
@@ -20,14 +20,17 @@ const SELECT_BG: Rgb = { r: 40, g: 48, b: 78 };
 const NAME_X = 4;
 const NAME_W = 22;
 
-/** Human label for what an earned achievement unlocked, or '' for none. */
+/** Human label for what an earned achievement unlocked, or '' for none. Joins
+ *  multiple rewards with ' · ' so a title + habitat both show. */
 function rewardLabel(def: AchievementDef, pack: ContentPack): string {
-  const r = def.reward;
-  if (!r) return '';
-  if (r.kind === 'habitat') return pack.habitats.find((h) => h.id === r.id)?.name ?? r.id;
-  if (r.kind === 'trinket') return pack.trinkets.find((t) => t.id === r.id)?.name ?? r.id;
-  if (r.kind === 'title') return r.name;
-  return r.id;
+  return achievementRewards(def)
+    .map((r) => {
+      if (r.kind === 'habitat') return pack.habitats.find((h) => h.id === r.id)?.name ?? r.id;
+      if (r.kind === 'trinket') return pack.trinkets.find((t) => t.id === r.id)?.name ?? r.id;
+      if (r.kind === 'title') return r.name;
+      return r.id;
+    })
+    .join(' · ');
 }
 
 export function renderAchievementsPage(ctx: RenderContext): void {

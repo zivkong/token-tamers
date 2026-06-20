@@ -30,6 +30,10 @@ export function saveState(state: GameState): void {
  * v2 → v3: `state.dexRecords` (per-species top-3 snapshot store). Seeded from the
  * existing best-per-species `archive` so users keep their best lives; the store is
  * then auto-repaired (clamp invalid enums, default missing arrays, re-rank, cap).
+ *
+ * v4 → v5: `state.lifetimeTokens` (event-derived token tally) + `state.battleRecord`
+ * (player-action battle tally). Old saves start both at zero — no history to recover
+ * (token totals weren't tracked before; no battles were ever recorded).
  */
 function migrateState(state: GameState): GameState {
   if (state.pet && typeof state.pet.stageMolts !== 'number') {
@@ -41,6 +45,8 @@ function migrateState(state: GameState): GameState {
     state.dexRecords = backfillDexRecords(state.archive);
   }
   state.dexRecords = repairDexRecords(state.dexRecords);
+  if (typeof state.lifetimeTokens !== 'number') state.lifetimeTokens = 0;
+  if (!state.battleRecord) state.battleRecord = { played: 0, won: 0, streak: 0, bestStreak: 0 };
   state.schemaVersion = SCHEMA_VERSION;
   return state;
 }

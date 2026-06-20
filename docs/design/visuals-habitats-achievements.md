@@ -518,6 +518,30 @@ Achievements are the formal layer that couples progression to the habitat & trin
   - (Grade gates these achievements — but the goal is the achievement, completing the page, not
     the grade itself)
 
+**Token spending (Season 0):**
+
+- Lifetime raw-token milestones — 1M / 10M / 100M / 1B / 5B / 10B / 50B / 100B / 500B / 1T tokens
+  of real usage fed to the lineage (a long-haul ladder; 1B is reachable, 1T is the apex grind)
+- Condition `lifetime_tokens`, summed across closed 5-h windows (`state.lifetimeTokens`); model-
+  AND adapter-blind, like the rest of the engine (invariant 3). 100M / 1B / 100B / 1T earn titles
+  (Magnate / Token Sovereign / Token Tycoon / Token Titan). Special unlockables reward the grind:
+  Gold Coin trinket (1M), Gem Hoard trinket (10B), Crown trinket (100B), the **Gilded Vault**
+  habitat (1B), and the showpiece **Astral Throne** habitat (1T).
+
+**Battle records (Season 0):**
+
+- Battles won (1 / 10 / 50), best win streak (5), battles fought (25 / 100)
+- Conditions `battles_won` / `battle_streak` / `battles_played` over `state.battleRecord`
+  (a player-action tally, recorded by `Engine.recordBattle` — outside the deterministic
+  `advanceTo`, consumes no RNG). 50-win / streak-5 / 100-fought earn titles
+  (Champion / Undefeated / Arena Veteran). Unlockables: Laurel Wreath trinket (first win),
+  Crossed Swords trinket (25 fought), Champion Belt trinket (streak 5), and the **Grand
+  Coliseum** habitat (50 wins).
+
+**Multiple rewards:** a Feat grants either a single `reward` or a `rewards[]` array — the
+hardest milestones give a title AND a special habitat/trinket. All consumers (grant, titles,
+validation, the Feats UI) read through `achievementRewards(def)`.
+
 **Social:**
 
 - First DNA export / apply / merge

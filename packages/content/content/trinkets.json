@@ -28,5 +28,35 @@
     "id": "trophy-shelf",
     "name": "Trophy Shelf",
     "spriteId": "trinket-trophy-shelf"
+  },
+  {
+    "id": "gold-coin",
+    "name": "Gold Coin",
+    "spriteId": "trinket-gold-coin"
+  },
+  {
+    "id": "gem-hoard",
+    "name": "Gem Hoard",
+    "spriteId": "trinket-gem-hoard"
+  },
+  {
+    "id": "crown",
+    "name": "Crown",
+    "spriteId": "trinket-crown"
+  },
+  {
+    "id": "laurel-wreath",
+    "name": "Laurel Wreath",
+    "spriteId": "trinket-laurel-wreath"
+  },
+  {
+    "id": "champion-belt",
+    "name": "Champion Belt",
+    "spriteId": "trinket-champion-belt"
+  },
+  {
+    "id": "crossed-swords",
+    "name": "Crossed Swords",
+    "spriteId": "trinket-crossed-swords"
   }
 ]
