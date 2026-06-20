@@ -114,9 +114,11 @@ bg)` so it renders on the band background.
   the `pet:reborn-now` hit region. The bar fill needs no `ctx.live`; only the countdowns/button
   label do, so golden frames show the stage name / "Reborn Now" alone), **Odds** (the
   LIVE current→next grade forecast: `from → to NN%`, grade-tinted via `GRADE_ACCENT`, ` (capped)`
-  at the A→S ceiling, `S ★ apex` at the top, plus a right-aligned `Next roll <countdown>` to the
-  molt that fires it — `ctx.live.secsToMolt`, dropped at the S cap / when idle / in golden frames;
-  this REPLACED the old static `rolls at next molt` hint). Food, Diet and Grow share ONE bar geometry
+  at the A→S ceiling, `S ★ apex` at the top, plus an INLINE `Reborn <countdown>` to the next weekly
+  rebirth right after the odds — `ctx.live.secsToRebirth`, the deadline for the grade to keep rolling;
+  dropped at the S cap / when there's no live readout / in golden frames; this REPLACED the old static
+  `rolls at next molt` hint. NB the Grow row's molt countdown (`secsToMolt`) and this Odds reborn
+  countdown are two DISTINCT timers). Food, Diet and Grow share ONE bar geometry
   (`barGeom`) so they line up at every width; the Food/Grow bars use `drawMeter` (single tint), the
   Diet bar `drawSegmentedMeter` at 100% fill (House tints). The Odds number comes from
   `ctx.live.nextGrade` (the host's `gradeOdds(state, pending)` — core owns the math, shared with the

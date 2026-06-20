@@ -403,7 +403,7 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('shows the stage name + next-roll countdown on the Grow/Odds rows', () => {
+  it('shows the stage+molt countdown on Grow and the reborn countdown on Odds', () => {
     const out = renderFrameToString(
       100,
       30,
@@ -415,18 +415,19 @@ describe('golden frames (100x30, no-color)', () => {
           baselineEssence: 24_300,
           windowsObserved: 6,
           nextGrade: { from: 'C', to: 'B', chance: 0.33, capped: false },
-          secsToMolt: 17_952, // 4h 59m 12s — the countdown ticks down to the second
-          secsToRebirth: 187_752,
+          secsToMolt: 17_952, // 4h 59m 12s — the Grow molt countdown, ticks to the second
+          secsToRebirth: 187_752, // 2d 4h 9m 12s — the Odds reborn countdown
         },
       }),
     );
-    // The Grow row now names the live stage (default pet is a sprite) + counts down
-    // to the second (so the readout visibly ticks).
+    // Grow names the live stage (default pet is a sprite) + the MOLT countdown.
     expect(out).toContain('Sprite');
     expect(out).toContain('4h 59m 12s');
-    // The Odds row's live "Next roll" countdown replaces the old "rolls at next molt".
-    expect(out).toContain('Next roll 4h 59m 12s');
+    // Odds shows the next-REBIRTH countdown inline after the grade odds (not the molt),
+    // replacing the old "rolls at next molt" hint.
+    expect(out).toContain('Reborn 2d 4h 9m 12s');
     expect(out).not.toContain('rolls at next molt');
+    expect(out).not.toContain('Next roll');
     expect(out).toMatchSnapshot();
   });
 

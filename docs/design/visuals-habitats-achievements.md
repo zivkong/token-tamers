@@ -574,11 +574,13 @@ it takes** — what the pet _becomes_ is still never shown (the row names the CU
 target species or the branch). At **Apex** the row becomes the clickable **"Reborn Now" button**
 (`Reborn Now · 2d 4h 9m 12s`, `ctx.live.secsToRebirth` → `nextRebirthAt`): pressing it forces an
 early rebirth, with a warn-then-confirm guard when the grade isn't yet S (a non-S Apex still rolls
-toward S at each molt — the button flips to a caution `Confirm Rebirth?` and the **Odds** row's
-`Next roll N` countdown shows when that roll fires; a second press confirms; an S-grade Apex
-rebirths on the first press). The **Odds** row replaces the old static `rolls at next molt` hint
-with the live `Next roll <countdown>` to the same molt (omitted at the S cap / when idle / in golden
-frames). Keep the `calibrating` cue (data readiness, not evolution).
+toward S at each molt — the button flips to a caution `Confirm Rebirth?`; a second press confirms;
+an S-grade Apex rebirths on the first press). The **Odds** row (`from › to NN%`) replaces the old
+static `rolls at next molt` hint with the live **`Reborn <countdown>`** to the next weekly rebirth
+(`ctx.live.secsToRebirth`), shown INLINE right after the odds — the deadline for the grade to keep
+rolling up before the pet re-eggs (omitted at the S cap / when there's no live readout / in golden
+frames). The Grow row's molt countdown and the Odds row's reborn countdown are therefore two
+DISTINCT timers. Keep the `calibrating` cue (data readiness, not evolution).
 
 > Weighting formula: backlog item — see `docs/design/` and GitHub issues.
 

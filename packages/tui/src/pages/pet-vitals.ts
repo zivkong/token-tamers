@@ -7,7 +7,7 @@
  *   Food   ▕████▒▒▒▒▒▒▒▒▏ 84.2M / 200M  +6% molt ↑
  *   Diet   ▕██████▒▒▒▒▒▒▏ Aether 72% · Cipher 28%
  *   Grow   ▕████▒▒▒▒▒▒▒▒▏ Evolved · 4h 59m 12s
- *   Odds   B → A 38%                    Next roll 4h 59m 12s
+ *   Odds   B → A 38% · Reborn 2d 4h 9m 12s
  *
  * The three bars share ONE geometry (`barGeom`) so Food, Diet and Growth line up
  * at every width. They read as distinct motions: Food GROWS toward the 200M
@@ -19,8 +19,10 @@
  * button (counting down to the weekly rebirth). The Odds row shows the live
  * current→next grade forecast (`ctx.live.nextGrade`, computed by the host; see
  * core's `gradeOdds`), grade-tinted, with the published base odds as the
- * deterministic fallback, plus the same molt countdown as "Next roll N". The stage
- * name + timing are only present live (golden frames omit the countdown).
+ * deterministic fallback, followed inline by the `Reborn <countdown>` to the next
+ * weekly rebirth (`ctx.live.secsToRebirth`) — the deadline for the grade to keep
+ * rolling. The Grow stage timing + the Odds reborn countdown are present only live
+ * (golden frames without `live` omit them).
  */
 
 import { mix, type Rgb } from '../terminal/ansi';
@@ -372,11 +374,13 @@ function drawRebornButton(ctx: RenderContext, x: number, y: number, avail: numbe
 }
 
 /**
- * Row 5 — the ODDS forecast: just the LIVE current→next grade roll (the only
- * transition that can actually fire next), grade-tinted. Uses the host's
+ * Row 5 — the ODDS forecast: the LIVE current→next grade roll (the only transition
+ * that can actually fire next), grade-tinted, followed INLINE by a `Reborn
+ * <countdown>` to the next weekly rebirth (`ctx.live.secsToRebirth`) — the deadline
+ * for that roll to still land before the pet re-eggs. Uses the host's
  * `ctx.live.nextGrade`; with no live readout it falls back to the published base
  * odds (`gradeOdds(state)`) so golden frames stay deterministic. At the S cap it
- * shows the apex state instead of a roll.
+ * shows the apex state instead of a roll (and no countdown).
  */
 function drawOddsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf, state } = ctx;
@@ -388,15 +392,18 @@ function drawOddsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const parts = oddsParts(odds);
   drawPartsClipped(buf, parts, { x, y, avail });
 
-  // A muted "Next roll N" countdown to the molt that fires the next grade roll,
-  // right-aligned whenever it geometrically fits. Present only live (the host's
-  // `secsToMolt`); golden frames omit it. null secs (idle, no scheduled molt) and
-  // the S cap (odds === null) both drop the countdown.
-  const secs = ctx.live?.secsToMolt;
+  // A muted `Reborn <countdown>` to the next weekly rebirth, INLINE right after the
+  // odds — the deadline for this grade to still roll up before the pet re-eggs. Live
+  // only (the host's `secsToRebirth`); golden frames without it omit the countdown,
+  // as does the S-cap apex state (odds === null). Clipped to the row's remaining width.
+  const secs = ctx.live?.secsToRebirth;
   if (odds && secs != null) {
-    const hint = `Next roll ${fmtCountdown(secs)}`;
-    const hintX = panel.x + panel.cols - hint.length - 1;
-    if (hintX > x + partsLen(parts) + 1) buf.text(hintX, y, hint, MUTED, null);
+    const used = partsLen(parts);
+    const remaining = avail - used;
+    if (remaining > 0) {
+      const text = ` ${DOT} Reborn ${fmtCountdown(secs)}`;
+      buf.text(x + used, y, text.slice(0, remaining), MUTED, null);
+    }
   }
 }
 
