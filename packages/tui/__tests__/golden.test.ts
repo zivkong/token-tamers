@@ -420,9 +420,9 @@ describe('golden frames (100x30, no-color)', () => {
         },
       }),
     );
-    // Grow names the live stage (default pet is a sprite) + the MOLT countdown.
+    // Grow names the live stage (default pet is a sprite) + the labelled MOLT countdown.
     expect(out).toContain('Sprite');
-    expect(out).toContain('4h 59m 12s');
+    expect(out).toContain('Molt 4h 59m 12s');
     // Odds shows the next-REBIRTH countdown inline after the grade odds (not the molt),
     // replacing the old "rolls at next molt" hint.
     expect(out).toContain('Reborn 2d 4h 9m 12s');
@@ -431,7 +431,7 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('shows the Apex "Reborn Now" button counting down to the weekly rebirth', () => {
+  it('keeps the molt countdown on Grow at Apex and the Reborn Now button on Odds', () => {
     const out = renderFrameToString(
       100,
       30,
@@ -444,17 +444,44 @@ describe('golden frames (100x30, no-color)', () => {
           baselineEssence: 24_300,
           windowsObserved: 12,
           nextGrade: { from: 'A', to: 'S', chance: 0.06, capped: true },
-          secsToMolt: 13_092, // 3h 38m 12s — still rolls toward S at Apex
+          secsToMolt: 13_092, // 3h 38m 12s — Apex still rolls toward S, molt stays visible
           secsToRebirth: 187_752, // 2d 4h 9m 12s
         },
       }),
     );
-    expect(out).toContain('Reborn Now');
-    expect(out).toContain('2d 4h 9m 12s');
+    // Grow keeps the stage + molt countdown even at Apex (the next grade-roll chance).
+    expect(out).toContain('Apex · Molt 3h 38m 12s');
+    // Odds carries the clickable Reborn Now button with the rebirth countdown.
+    expect(out).toContain('[ Reborn Now · 2d 4h 9m 12s ]');
     expect(out).toMatchSnapshot();
   });
 
-  it('shows the armed "Confirm Rebirth?" prompt for a non-S Apex', () => {
+  it('shows "max grade" on Grow for an Apex-S pet (no roll left)', () => {
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'pet',
+        state: makeState({ pet: makePet({ stage: 'apex', grade: 'S' }) }),
+        live: {
+          windowTokens: 0,
+          windowEssence: 0,
+          baselineEssence: 24_300,
+          windowsObserved: 12,
+          nextGrade: null, // S cap — no further rolls
+          secsToMolt: 13_092,
+          secsToRebirth: 187_752,
+        },
+      }),
+    );
+    // No molt countdown at Apex-S (nothing left to roll); the Reborn button still shows.
+    expect(out).toContain('Apex · max grade');
+    expect(out).not.toContain('Molt 3h 38m 12s');
+    expect(out).toContain('[ Reborn Now · 2d 4h 9m 12s ]');
+    expect(out).toMatchSnapshot();
+  });
+
+  it('shows the armed "Confirm Reborn?" prompt for a non-S Apex', () => {
     const out = renderFrameToString(
       100,
       30,
@@ -473,7 +500,7 @@ describe('golden frames (100x30, no-color)', () => {
         },
       }),
     );
-    expect(out).toContain('Confirm Rebirth?');
+    expect(out).toContain('[ Confirm Reborn? ]');
     expect(out).toMatchSnapshot();
   });
 

@@ -565,22 +565,28 @@ game canvas (identity header + scene + VITALS panel), not a standard page.
 
 #### Evolution-mystery rule (amended — Growth row names the stage + counts down; the NEXT form stays hidden)
 
-The "Grow" vitals row now NAMES the current stage (`Mote` · `Sprite` · `Rookie` · `Evolved` ·
-`Prime` · `Apex`) and counts down to the next molt — e.g. `Evolved · 4h 59m 12s` — beside its
-maturation bar (the bar fill still reads the spoiler-free `core.growthProgress(state)`). The
-countdown is the live `ctx.live.secsToMolt` (the host's `nextMoltCloseAt`); golden frames
-(no `live`) show the stage name alone. The mystery now covers only **the NEXT form and which branch
-it takes** — what the pet _becomes_ is still never shown (the row names the CURRENT stage, never the
-target species or the branch). At **Apex** the row becomes the clickable **"Reborn Now" button**
-(`Reborn Now · 2d 4h 9m 12s`, `ctx.live.secsToRebirth` → `nextRebirthAt`): pressing it forces an
-early rebirth, with a warn-then-confirm guard when the grade isn't yet S (a non-S Apex still rolls
-toward S at each molt — the button flips to a caution `Confirm Rebirth?`; a second press confirms;
-an S-grade Apex rebirths on the first press). The **Odds** row (`from › to NN%`) replaces the old
-static `rolls at next molt` hint with the live **`Reborn <countdown>`** to the next weekly rebirth
-(`ctx.live.secsToRebirth`), shown INLINE right after the odds — the deadline for the grade to keep
-rolling up before the pet re-eggs (omitted at the S cap / when there's no live readout / in golden
-frames). The Grow row's molt countdown and the Odds row's reborn countdown are therefore two
-DISTINCT timers. Keep the `calibrating` cue (data readiness, not evolution).
+Two lifecycle countdowns live on FIXED rows so they never jump between states:
+
+- The **"Grow" row** NAMES the current stage (`Mote` · `Sprite` · `Rookie` · `Evolved` · `Prime` ·
+  `Apex`) and carries the **MOLT (5-h) countdown** beside its maturation bar — `Evolved · Molt 4h
+59m 12s` (live `ctx.live.secsToMolt` → `nextMoltCloseAt`; the bar fill still reads the spoiler-free
+  `core.growthProgress(state)`). The molt is when the pet evolves AND rolls its grade, so the
+  countdown **stays visible at Apex** (a non-S Apex is still rolling toward S each molt). Once the
+  pet is a maxed **Apex-S** there is nothing left to roll, so it reads `Apex · max grade`. Golden
+  frames (no `live`) show the stage name alone. The mystery now covers only **the NEXT form and
+  which branch it takes** — what the pet _becomes_ is still never shown (the row names the CURRENT
+  stage, never the target species or branch).
+- The **"Odds" row** (`from › to NN%`, host-computed `ctx.live.nextGrade`) carries the **REBORN
+  (7-day) countdown** beside the grade forecast — `C › B 25% · Reborn 6d 23h`
+  (`ctx.live.secsToRebirth` → `nextRebirthAt`), the deadline for the grade to keep rolling up before
+  the pet auto-re-eggs (replaces the old static `rolls at next molt` hint; omitted with no live
+  readout / in golden frames). At **Apex** that reborn countdown becomes the clickable
+  **`[ Reborn Now · 2d 4h 9m 12s ]` button**: pressing it forces an early rebirth, with a
+  warn-then-confirm guard when the grade isn't yet S (the button flips to a caution
+  `[ Confirm Reborn? ]`; a second press confirms; an S-grade Apex rebirths on the first press).
+
+The Grow molt countdown and the Odds reborn countdown are therefore two DISTINCT, fixed-row timers.
+Keep the `calibrating` cue (data readiness, not evolution).
 
 > Weighting formula: backlog item — see `docs/design/` and GitHub issues.
 

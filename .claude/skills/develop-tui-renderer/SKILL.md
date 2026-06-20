@@ -76,15 +76,17 @@ title, completion?})` draws a left-aligned `icon Title` (Title-Case), an optiona
   unlocked/total, Feats shows earned/total, top-right. The full `CompletionBreakdown` flows `ShellHost.completion()` →
   `RenderContext.completion`. Settings has no completion (nothing to track); the pet page has NO
   completion meter.
-- **Evolution-mystery rule (amended):** the **"Grow" vitals row** now NAMES the current stage
-  (`Mote`/`Sprite`/`Rookie`/`Evolved`/`Prime`/`Apex`) and counts down to the next molt
-  (`Evolved · 4h 59m 12s`) beside its maturation bar (fill via `core.growthProgress(state)`). The
-  mystery now covers ONLY the next FORM/branch — never the target species. The countdown is the live
-  `ctx.live.secsToMolt` (`nextMoltCloseAt`); golden frames (no `live`) show the stage name
-  alone. At **Apex** the row becomes the clickable **"Reborn Now"** button (`Reborn Now · 2d 4h 9m 12s`,
-  `secsToRebirth`/`nextRebirthAt`) → `host.rebornNow()` forces an early rebirth, with a
-  warn-then-confirm guard (`ui.rebornArmed` → caution `Confirm Rebirth?`) when grade ≠ S; the
-  `pet:reborn-now` hit region gives mouse parity. Keep the `calibrating` cue (data readiness).
+- **Evolution-mystery rule (amended) + two fixed-row lifecycle countdowns:** the **"Grow" row**
+  NAMES the current stage (`Mote`/`Sprite`/`Rookie`/`Evolved`/`Prime`/`Apex`) and carries the
+  **MOLT (5-h) countdown** (`Evolved · Molt 4h 59m 12s`, live `ctx.live.secsToMolt`/`nextMoltCloseAt`;
+  bar fill via `core.growthProgress(state)`). The molt rolls grade too, so the countdown STAYS at
+  Apex (the next A→S chance); a maxed Apex-S reads `Apex · max grade`. Golden frames (no `live`) show
+  the stage name alone. Mystery now covers ONLY the next FORM/branch — never the target species. The
+  **"Odds" row** carries the **REBORN (7-day) countdown** (`C › B 25% · Reborn 6d 23h`,
+  `secsToRebirth`/`nextRebirthAt`); at **Apex** it becomes the clickable **`[ Reborn Now · … ]`**
+  button → `host.rebornNow()` forces an early rebirth, warn-then-confirm (`ui.rebornArmed` → caution
+  `[ Confirm Reborn? ]`) when grade ≠ S, `pet:reborn-now` hit region for mouse parity. The two
+  countdowns never swap rows. Keep the `calibrating` cue (data readiness).
 - **Grade display:** on the pet header, grade is the name's styling — the whole name is drawn
   **bold (`buf.textBold`) in `GRADE_ACCENT[grade]`** with a trailing `GRADE_BADGE` symbol; no
   `[B]` text. Bold is a `Cell.bold` attribute (a no-op in `--no-color`/`none` mode).
@@ -107,18 +109,18 @@ bg)` so it renders on the band background.
   preview; token counts only), **Diet** (the
   ALWAYS-FULL House-share bar — composition not progress — + a House-name legend), **Grow** (the
   maturation row: `drawMeter` filled to `growthProgress(state).frac` in a neutral teal `GROWTH_FILL`
-  — off BOTH the grade and House ladders — labelled with the CURRENT stage name (`STAGE_LABEL`) + the
-  `ctx.live.secsToMolt` countdown (`Stage · 4h 59m 12s`); the next FORM/branch is never named. At Apex
-  the row is instead the **"Reborn Now" button** (`drawRebornButton`, warm `REBORN` accent, the
-  `secsToRebirth` countdown; `WARN`-tinted `Confirm Rebirth?` when `ui.rebornArmed`) and registers
-  the `pet:reborn-now` hit region. The bar fill needs no `ctx.live`; only the countdowns/button
-  label do, so golden frames show the stage name / "Reborn Now" alone), **Odds** (the
+  — off BOTH the grade and House ladders — labelled by `growLabel` with the CURRENT stage name
+  (`STAGE_LABEL`) + the MOLT countdown `Stage · Molt 4h 59m 12s` (`ctx.live.secsToMolt`), which STAYS
+  at Apex for the grade roll, or `Apex · max grade` once Apex-S; the next FORM/branch is never named.
+  The bar fill needs no `ctx.live`, so golden frames show the stage name alone), **Odds** (the
   LIVE current→next grade forecast: `from → to NN%`, grade-tinted via `GRADE_ACCENT`, ` (capped)`
-  at the A→S ceiling, `S ★ apex` at the top, plus an INLINE `Reborn <countdown>` to the next weekly
-  rebirth right after the odds — `ctx.live.secsToRebirth`, the deadline for the grade to keep rolling;
-  dropped at the S cap / when there's no live readout / in golden frames; this REPLACED the old static
-  `rolls at next molt` hint. NB the Grow row's molt countdown (`secsToMolt`) and this Odds reborn
-  countdown are two DISTINCT timers). Food, Diet and Grow share ONE bar geometry
+  at the A→S ceiling, `S ★ apex` at the top, then INLINE the REBORN affordance after the odds:
+  normally a muted `· Reborn <countdown>` (`ctx.live.secsToRebirth`, the deadline for the grade to
+  keep rolling; replaced the old `rolls at next molt` hint), but at **Apex** the clickable
+  `· [ Reborn Now · … ]` button (`drawRebornButton`, warm `REBORN` accent → `WARN`-tinted
+  `[ Confirm Reborn? ]` when `ui.rebornArmed`; `pet:reborn-now` hit region, always shown at Apex
+  since the action is always available). The two countdowns sit on FIXED rows and never swap).
+  Food, Diet and Grow share ONE bar geometry
   (`barGeom`) so they line up at every width; the Food/Grow bars use `drawMeter` (single tint), the
   Diet bar `drawSegmentedMeter` at 100% fill (House tints). The Odds number comes from
   `ctx.live.nextGrade` (the host's `gradeOdds(state, pending)` — core owns the math, shared with the

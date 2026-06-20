@@ -6,23 +6,24 @@
  *
  *   Food   ▕████▒▒▒▒▒▒▒▒▏ 84.2M / 200M  +6% molt ↑
  *   Diet   ▕██████▒▒▒▒▒▒▏ Aether 72% · Cipher 28%
- *   Grow   ▕████▒▒▒▒▒▒▒▒▏ Evolved · 4h 59m 12s
- *   Odds   B → A 38% · Reborn 2d 4h 9m 12s
+ *   Grow   ▕████▒▒▒▒▒▒▒▒▏ Evolved · Molt 4h 59m 12s
+ *   Odds   B → A 38% · Reborn 2d 4h 9m 12s          (Apex: [ Reborn Now · … ])
  *
  * The three bars share ONE geometry (`barGeom`) so Food, Diet and Growth line up
  * at every width. They read as distinct motions: Food GROWS toward the 200M
  * vitality cap and resets each window (single tint, owns the `+N% molt` preview);
  * Diet is ALWAYS FULL and only its House-tinted proportions drift over the pet's
  * life; Growth fills toward the next evolution's eligibility and resets each time
- * the pet evolves. The Growth row names the current STAGE and counts down to the
- * next molt (`ctx.live.secsToMolt`); at Apex it becomes the clickable "Reborn Now"
- * button (counting down to the weekly rebirth). The Odds row shows the live
- * current→next grade forecast (`ctx.live.nextGrade`, computed by the host; see
- * core's `gradeOdds`), grade-tinted, with the published base odds as the
- * deterministic fallback, followed inline by the `Reborn <countdown>` to the next
- * weekly rebirth (`ctx.live.secsToRebirth`) — the deadline for the grade to keep
- * rolling. The Grow stage timing + the Odds reborn countdown are present only live
- * (golden frames without `live` omit them).
+ * the pet evolves. The TWO lifecycle countdowns live on fixed rows so they never
+ * jump: the **Grow** row carries the MOLT (5-h) countdown beside the current stage
+ * (`Evolved · Molt 4h 59m`, kept at Apex for the grade roll; `Apex · max grade` once
+ * S), and the **Odds** row carries the REBORN (7-day) countdown beside the grade
+ * forecast (`C › B 25% · Reborn 6d 23h`). At Apex the Odds reborn countdown becomes
+ * the clickable `[ Reborn Now · … ]` button (warn-then-confirm for a non-S pet). The
+ * grade forecast itself is `ctx.live.nextGrade` (host-computed; see core's
+ * `gradeOdds`) with the published base odds as the deterministic fallback. Both
+ * countdowns come from `ctx.live` (`secsToMolt`/`secsToRebirth`), so golden frames
+ * without `live` show the stage name / odds alone.
  */
 
 import { mix, type Rgb } from '../terminal/ansi';
@@ -325,12 +326,13 @@ function drawDietRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 
 /**
  * Row 4 — the GROWTH row: a maturation meter (fills toward the next evolution's
- * eligibility, same geometry as Food/Diet) labelled with the current STAGE and a
- * countdown to the next molt (`Evolved · 4h 59m`). At Apex the row becomes the
- * clickable "Reborn Now" button counting down to the weekly rebirth. The bar fill
- * reads `core.growthProgress(state)` (deterministic); the countdown comes from
- * `ctx.live.secsToMolt`/`secsToRebirth`, so golden frames (no live) show the stage
- * name / button label alone.
+ * eligibility, same geometry as Food/Diet) labelled with the current STAGE and the
+ * live countdown to the next molt — `Evolved · Molt 4h 59m 12s`. The molt is when
+ * the pet evolves AND rolls its grade, so the countdown stays visible at Apex too
+ * (a non-S Apex is still rolling toward S each molt). At Apex-S there is nothing
+ * left to roll, so it reads `Apex · max grade` instead. The bar fill reads
+ * `core.growthProgress(state)` (deterministic); the countdown is `ctx.live.secsToMolt`,
+ * so golden frames (no live) show the stage name alone.
  */
 function drawGrowthRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf, state } = ctx;
@@ -344,43 +346,31 @@ function drawGrowthRow(ctx: RenderContext, panel: SceneRect, y: number): void {
 
   const textX = bar.x + bar.w + 2;
   const avail = panel.x + panel.cols - 1 - textX;
-  if (avail <= 0) return;
-
-  if (state.pet.stage === 'apex') {
-    drawRebornButton(ctx, textX, y, avail);
-    return;
-  }
-  const label = STAGE_LABEL[state.pet.stage];
-  const secs = ctx.live?.secsToMolt;
-  const text = secs != null ? `${label} ${DOT} ${fmtCountdown(secs)}` : label;
-  buf.text(textX, y, text.slice(0, avail), VALUE, null);
+  if (avail > 0) buf.text(textX, y, growLabel(ctx, g).slice(0, avail), VALUE, null);
 }
 
 /**
- * The Apex "Reborn Now" button on the Growth row: a clickable control that forces
- * an early rebirth. Shows a countdown to the automatic weekly rebirth
- * (`ctx.live.secsToRebirth`); once armed (a non-S first press, see shell-input) it
- * flips to a caution-tinted "Confirm Rebirth?" prompt. Registers the
- * `pet:reborn-now` hit region so a mouse click triggers the same flow as Enter.
+ * The Growth row's text: `<Stage> · Molt <countdown>` while a molt can still change
+ * the pet, `<Stage>` alone for the pre-hatch egg or an idle pet (no scheduled molt),
+ * and `Apex · max grade` once the pet is a maxed-out Apex-S (no evolution, no roll).
  */
-function drawRebornButton(ctx: RenderContext, x: number, y: number, avail: number): void {
-  const { buf } = ctx;
-  const armed = ctx.ui.rebornArmed === true;
-  const secs = ctx.live?.secsToRebirth;
-  const cd = !armed && secs != null ? ` ${DOT} ${fmtCountdown(secs)}` : '';
-  const text = `${armed ? 'Confirm Rebirth?' : 'Reborn Now'}${cd}`.slice(0, avail);
-  buf.text(x, y, text, armed ? WARN : REBORN, null);
-  ctx.hits.add('pet:reborn-now', x, y, [...text].length, 1);
+function growLabel(ctx: RenderContext, g: ReturnType<typeof growthProgress>): string {
+  const pet = ctx.state.pet;
+  const name = STAGE_LABEL[pet.stage];
+  if (g.incubating) return name; // egg: hatches on its own bonus checkpoint, not a 5-h molt
+  if (pet.stage === 'apex' && pet.grade === 'S') return `${name} ${DOT} max grade`;
+  const secs = ctx.live?.secsToMolt;
+  return secs != null ? `${name} ${DOT} Molt ${fmtCountdown(secs)}` : name;
 }
 
 /**
  * Row 5 — the ODDS forecast: the LIVE current→next grade roll (the only transition
- * that can actually fire next), grade-tinted, followed INLINE by a `Reborn
- * <countdown>` to the next weekly rebirth (`ctx.live.secsToRebirth`) — the deadline
- * for that roll to still land before the pet re-eggs. Uses the host's
- * `ctx.live.nextGrade`; with no live readout it falls back to the published base
- * odds (`gradeOdds(state)`) so golden frames stay deterministic. At the S cap it
- * shows the apex state instead of a roll (and no countdown).
+ * that can fire next), grade-tinted, followed INLINE by the rebirth affordance:
+ * a muted `Reborn <7d countdown>` deadline normally, OR — once the pet is an Apex —
+ * the clickable `[ Reborn Now · <7d> ]` button that forces an early rebirth (amber;
+ * `[ Confirm Reborn? ]` in caution red once a non-S press has armed it). Both read
+ * `ctx.live.secsToRebirth`; the button always shows at Apex (the action is always
+ * available) while the plain deadline needs the live countdown.
  */
 function drawOddsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const { buf, state } = ctx;
@@ -392,19 +382,38 @@ function drawOddsRow(ctx: RenderContext, panel: SceneRect, y: number): void {
   const parts = oddsParts(odds);
   drawPartsClipped(buf, parts, { x, y, avail });
 
-  // A muted `Reborn <countdown>` to the next weekly rebirth, INLINE right after the
-  // odds — the deadline for this grade to still roll up before the pet re-eggs. Live
-  // only (the host's `secsToRebirth`); golden frames without it omit the countdown,
-  // as does the S-cap apex state (odds === null). Clipped to the row's remaining width.
-  const secs = ctx.live?.secsToRebirth;
-  if (odds && secs != null) {
-    const used = partsLen(parts);
-    const remaining = avail - used;
-    if (remaining > 0) {
-      const text = ` ${DOT} Reborn ${fmtCountdown(secs)}`;
-      buf.text(x + used, y, text.slice(0, remaining), MUTED, null);
-    }
+  const cursor = x + partsLen(parts);
+  const remaining = avail - partsLen(parts);
+  if (remaining <= 0) return;
+  if (state.pet.stage === 'apex') {
+    drawRebornButton(ctx, cursor, y, remaining);
+    return;
   }
+  // Non-Apex: a muted `· Reborn <countdown>` deadline (the pet auto-re-eggs then).
+  const secs = ctx.live?.secsToRebirth;
+  if (secs != null) {
+    buf.text(cursor, y, ` ${DOT} Reborn ${fmtCountdown(secs)}`.slice(0, remaining), MUTED, null);
+  }
+}
+
+/**
+ * The Apex "Reborn Now" button, drawn INLINE on the Odds row after the grade odds:
+ * a clickable control that forces an early rebirth. Shows the countdown to the
+ * automatic weekly rebirth (`ctx.live.secsToRebirth`) so the player sees the wait
+ * they're skipping; once armed (a non-S first press — see shell-input) it flips to
+ * a caution-tinted `[ Confirm Reborn? ]`. Registers the `pet:reborn-now` hit region
+ * so a click triggers the same warn/confirm flow as Enter. `x` is the cell right
+ * after the odds; the leading `· ` separates it from them.
+ */
+function drawRebornButton(ctx: RenderContext, x: number, y: number, avail: number): void {
+  const { buf } = ctx;
+  const armed = ctx.ui.rebornArmed === true;
+  const secs = ctx.live?.secsToRebirth;
+  const cd = !armed && secs != null ? ` ${DOT} ${fmtCountdown(secs)}` : '';
+  const label = armed ? 'Confirm Reborn?' : `Reborn Now${cd}`;
+  const text = ` ${DOT} [ ${label} ]`.slice(0, avail);
+  buf.text(x, y, text, armed ? WARN : REBORN, null);
+  ctx.hits.add('pet:reborn-now', x, y, [...text].length, 1);
 }
 
 /** Build the Odds row as grade-tinted parts: `from → to NN%`, or the apex state. */
