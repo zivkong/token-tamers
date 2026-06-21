@@ -98,8 +98,12 @@ thin barrel `index.ts` per folder; each package's PUBLIC API is its `src/index.t
 - `packages/tui/src/` — `terminal/` (ansi, input) · `render/` (buffer, sprite,
   layout, hit, frame, menu) · `components/` (shared UI: divider, meter, marquee,
   `modal` — the reusable confirm pop-up — one standardized look) · `pages/` (incl.
-  `dex-detail` — the per-species record view — and `battle` — the split-pane battle
-  playback + opponent picker) · `helpers/` (status, lookup) · `shell.ts` +
+  `dex-detail` — the per-species record view — and `battle` — dispatch + opponent
+  picker + arena key controls, the animated playback split into `battle-arena` (the
+  renderer) and `battle-beat` (the pure beat clock: wind-up→impact→drain→settle per
+  event, HP tween, attacker spotlight, lunge/flinch/shake, per-effect banner + damage
+  pops — all a pure fn of `cursor`+`beatFrame`, golden-testable; see
+  `docs/design/battle-playback-redesign.md`)) · `helpers/` (status, lookup) · `shell.ts` +
   `shell-io.ts` (stdio/terminal wiring) + `shell-input.ts`/`shell-modal.ts` (input routing)
 - `packages/adapters/src/` — `index.ts` (contracts + registry) · `helpers/`
   (jsonl incremental reading, shared by future adapters) · `<provider>/`
