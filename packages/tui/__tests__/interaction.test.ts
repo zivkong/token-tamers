@@ -51,6 +51,20 @@ describe('mouse interaction parity', () => {
     handleEvent(rt, press(3, 7), deps(hits)); // cx=2, cy=6
     expect((rt as unknown as { ui: { battle: { selected: number } } }).ui.battle.selected).toBe(1);
   });
+
+  it('wipes the pasted opponent code when the [✕] clear button is clicked', () => {
+    const hits = new HitRegistry();
+    hits.add('battle:clear', 0, 6, 3, 1);
+    const rt = {
+      page: 'battle',
+      battle: undefined,
+      ui: { battle: { selected: 0, scroll: 0, input: 'TTX1-ABCD', focus: 'list' } },
+    } as unknown as ShellRuntime;
+    handleEvent(rt, press(1, 7), deps(hits)); // cx=0, cy=6
+    const ui = (rt as unknown as { ui: { battle: { input: string; focus: string } } }).ui.battle;
+    expect(ui.input).toBe('');
+    expect(ui.focus).toBe('input');
+  });
 });
 
 describe('Apex "Reborn Now" confirm modal', () => {

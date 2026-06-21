@@ -410,6 +410,12 @@ function handleBattleRegion(rt: ShellRuntime, region: string): boolean {
     rt.ui.battle.focus = 'input';
     return true;
   }
+  if (region === 'battle:clear') {
+    // Wipe the pasted code (the [✕] button) and keep the field focused for a re-paste.
+    rt.ui.battle.input = '';
+    rt.ui.battle.focus = 'input';
+    return true;
+  }
   if (region === 'battle:tab:list') {
     // Click the "From Dex" tab to switch the opponent source to your Dex records.
     rt.ui.battle.focus = 'list';

@@ -41,6 +41,7 @@ import {
   type BattleHost,
   type BattleShell,
 } from './battle';
+import { boxTitle, centerText, drawBox, drawVS } from './battle-setup-draw';
 import type { PageUiState, RenderContext } from './types';
 
 const TEXT: Rgb = { r: 214, g: 220, b: 234 };
@@ -48,7 +49,7 @@ const DIM: Rgb = { r: 96, g: 100, b: 120 };
 const READY: Rgb = { r: 74, g: 222, b: 128 };
 const SEL_BG: Rgb = { r: 40, g: 46, b: 64 };
 const VS_COLOR: Rgb = { r: 255, g: 224, b: 130 };
-const BORDER: Rgb = { r: 70, g: 76, b: 96 };
+const RED: Rgb = { r: 248, g: 113, b: 113 };
 
 /** One battle-ready fighter the player can field: a combatant + whether it's the live pet. */
 interface Fighter {
@@ -252,25 +253,6 @@ function drawIdentity(
 }
 
 /** The gold "VS" splash between the two portraits. */
-function drawVS(ctx: RenderContext, midX: number, y: number): void {
-  ctx.buf.textBold(midX - 1, y, 'VS', VS_COLOR, null);
-}
-
-/** Draw `text` horizontally centered within the box rect (at `box.y`), clipped to width. */
-function centerText(
-  buf: RenderContext['buf'],
-  box: { x: number; w: number; y: number },
-  text: string,
-  color: Rgb,
-  bold = false,
-): void {
-  const chars = [...text];
-  const t = chars.length > box.w ? chars.slice(0, box.w).join('') : text;
-  const cx = box.x + Math.max(0, Math.floor((box.w - [...t].length) / 2));
-  if (bold) buf.textBold(cx, box.y, t, color, null);
-  else buf.text(cx, box.y, t, color, null);
-}
-
 /** The fighter candidate rows: grade, name, and a "you" tag for the live pet. */
 function drawFighterList(
   ctx: RenderContext,
@@ -298,35 +280,6 @@ function drawFighterList(
     if (tag && tagX + tag.length <= box.x + box.w) buf.text(tagX, ry, tag, DIM, bg);
     ctx.hits.add(`battle:fighter:${i}`, box.x, ry, Math.max(1, box.w), 1);
   }
-}
-
-/** Draw a single-line box border (the bottom-band container); `focused` brightens it. */
-function drawBox(
-  ctx: RenderContext,
-  box: { x: number; y: number; w: number; h: number },
-  focused: boolean,
-): void {
-  const { buf } = ctx;
-  const { x, y, w, h } = box;
-  if (w < 2 || h < 2) return;
-  const color = focused ? READY : BORDER;
-  const horiz = '─'.repeat(w - 2);
-  buf.text(x, y, `┌${horiz}┐`, color, null);
-  buf.text(x, y + h - 1, `└${horiz}┘`, color, null);
-  for (let r = 1; r < h - 1; r++) {
-    buf.set(x, y + r, { ch: '│', fg: color, bg: null });
-    buf.set(x + w - 1, y + r, { ch: '│', fg: color, bg: null });
-  }
-}
-
-/** Overlay a centered title (padded) onto a box's top border row. */
-function boxTitle(
-  ctx: RenderContext,
-  box: { x: number; w: number; y: number },
-  label: string,
-  focused: boolean,
-): void {
-  centerText(ctx.buf, box, ` ${label} `, focused ? READY : DIM, true);
 }
 
 /**
@@ -365,7 +318,11 @@ function drawOpponentTabs(
   buf.text(x, box.y, ' ›', DIM, null);
 }
 
-/** The single-row bracketed code field (tail-clipped) + a caret; sits in the Paste tab. */
+/**
+ * The single-row bracketed code field (tail-clipped) + a caret; sits in the Paste
+ * tab. A `[✕]` clear button trails the field ONLY while a code is typed — clicking it
+ * wipes the field for a quick re-paste (mouse parity with holding backspace).
+ */
 function drawPasteField(
   ctx: RenderContext,
   box: { x: number; y: number; w: number },
@@ -373,16 +330,22 @@ function drawPasteField(
   value: string,
 ): void {
   const { buf } = ctx;
-  const innerW = Math.max(4, box.w - 2);
+  const clear = value ? ' [✕]' : ''; // ponytail: clear affordance only when there's a code
+  const innerW = Math.max(4, box.w - 2 - clear.length);
   const border = focused ? READY : DIM;
   const caret = focused ? '_' : '';
   const raw = value ? value + caret : focused ? caret : 'TTX… paste a friend’s code';
   const vis = raw.length > innerW ? raw.slice(raw.length - innerW) : raw;
   buf.text(box.x, box.y, '[', border, null);
   buf.text(box.x + 1, box.y, vis.padEnd(innerW).slice(0, innerW), value ? TEXT : DIM, null);
-  buf.text(box.x + 1 + innerW, box.y, ']', border, null);
+  const rb = box.x + 1 + innerW; // the closing bracket column
+  buf.text(rb, box.y, ']', border, null);
   // Click the field to focus it (mouse parity with Tab).
-  ctx.hits.add('battle:input', box.x, box.y, Math.max(1, box.w), 1);
+  ctx.hits.add('battle:input', box.x, box.y, Math.max(1, rb - box.x + 1), 1);
+  if (clear) {
+    buf.text(rb + 1, box.y, clear, RED, null);
+    ctx.hits.add('battle:clear', rb + 2, box.y, 3, 1); // the "[✕]" glyph itself
+  }
 }
 
 /**
