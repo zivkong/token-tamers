@@ -357,7 +357,7 @@ function renderOnce(
   if (rt.flash && rt.frame >= rt.flashUntilFrame) {
     rt.flash = null;
   }
-  if (rt.page === 'battle' && rt.battle) advanceBattlePlayback(rt.battle, rt.frame);
+  if (rt.page === 'battle' && rt.battle) advanceBattlePlayback(rt.battle);
   const input: FrameInput = {
     page: rt.page,
     state: host.getState(),

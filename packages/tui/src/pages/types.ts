@@ -54,8 +54,12 @@ export interface BattleView {
   left: Combatant;
   right: Combatant;
   result: BattleResult;
-  /** Events applied so far, 0..timeline.length (the playback head). */
+  /** Events fully LANDED so far, 0..timeline.length; `tl[cursor]` is mid-beat. */
   cursor: number;
+  /** Frames elapsed in the current event's beat (0..beatLen); drives the animation. */
+  beatFrame?: number;
+  /** Playback speed multiplier (1 default, cycled by `s`): scales every beat length. */
+  speed?: number;
   /** Whether playback auto-advances each frame. */
   playing: boolean;
   /** Battle seed nonce; 0 for the first/canonical fight, bumped on each rematch. */

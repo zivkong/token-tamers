@@ -115,13 +115,7 @@ export { renderUnlockablesPage, buildUnlockItems, type UnlockItem } from './page
 export { renderAchievementsPage } from './pages/achievements';
 export { clampScroll } from './components';
 export { renderSettingsPage } from './pages/settings';
-export {
-  renderBattlePage,
-  playerCombatant,
-  opponentCombatant,
-  hpAt,
-  BATTLE_STEP_FRAMES,
-} from './pages/battle';
+export { renderBattlePage, playerCombatant, opponentCombatant, hpAt } from './pages/battle';
 export type {
   PageId,
   PageUiState,

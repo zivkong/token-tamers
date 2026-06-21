@@ -313,6 +313,18 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toContain('Wisp');
     expect(out).toContain('Ember');
     expect(out).toContain('HP');
+    expect(out).toContain('winds up'); // clean wind-up lead, no blow pre-revealed
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the battle arena mid-beat (impact: hit revealed, HP tweening down)', () => {
+    const base = makeBattleView();
+    // Event 0 has landed; event 1 is animating past impact (beatFrame deep into the
+    // beat) — the blow is revealed, the struck HP bar is mid-drain, the attacker lunges.
+    const view: BattleView = { ...base, cursor: 1, beatFrame: 22, playing: true };
+    const out = renderFrameToString(100, 30, input({ page: 'battle', battle: view }));
+    expect(out).toContain('for'); // the action banner names the resolved blow
+    expect(out).toContain('s 1×'); // the speed readout
     expect(out).toMatchSnapshot();
   });
 
