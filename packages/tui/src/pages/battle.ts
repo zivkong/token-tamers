@@ -139,7 +139,9 @@ export function handleBattleKey(
   if (!view) return handleSetupKey(rt, host, name);
   switch (name) {
     case 'escape':
-      rt.battle = undefined;
+      // Esc closes the log overlay first (if open), else leaves the arena.
+      if (view.showLog) view.showLog = false;
+      else rt.battle = undefined;
       return true;
     case 'up':
     case 'down':
@@ -152,6 +154,9 @@ export function handleBattleKey(
       return true;
     case 's':
       cycleSpeed(view);
+      return true;
+    case 'l':
+      view.showLog = !view.showLog;
       return true;
     case 'enter':
       togglePlay(view);

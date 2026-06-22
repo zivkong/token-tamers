@@ -328,11 +328,41 @@ describe('golden frames (100x30, no-color)', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('renders the battle arena at the end with a winner banner', () => {
+  it('renders the battle arena at the end with the winner flourish', () => {
     const view = makeBattleView();
     const played: BattleView = { ...view, cursor: view.result.timeline.length };
     const out = renderFrameToString(100, 30, input({ page: 'battle', battle: played }));
-    expect(out).toMatch(/wins!|Draw/);
+    expect(out).toMatch(/WINS|Draw/); // centered winner flourish
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders Tamer nameplates in the top corners (facing fighters)', () => {
+    const base = makeBattleView();
+    const view: BattleView = {
+      ...base,
+      left: { ...base.left, owner: undefined }, // falls back to your handle (info.tamer)
+      right: { ...base.right, owner: 'Nyx', ownerTitle: 'Collector' },
+    };
+    const out = renderFrameToString(
+      100,
+      30,
+      input({
+        page: 'battle',
+        battle: view,
+        info: { ...TEST_INFO, tamer: 'Vela', tamerTitle: 'Apex Tamer' },
+      }),
+    );
+    expect(out).toContain('Vela · Apex Tamer'); // your handle, left corner
+    expect(out).toContain('Nyx · Collector'); // opponent handle, right corner
+    expect(out).toMatchSnapshot();
+  });
+
+  it('renders the full-transcript log overlay when toggled (l)', () => {
+    const base = makeBattleView();
+    const view: BattleView = { ...base, cursor: 6, showLog: true };
+    const out = renderFrameToString(100, 30, input({ page: 'battle', battle: view }));
+    expect(out).toContain('BATTLE LOG'); // divider labels render ALL-CAPS
+    expect(out).toContain('Esc  close');
     expect(out).toMatchSnapshot();
   });
 

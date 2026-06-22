@@ -15,11 +15,15 @@ import {
   animHp,
   attackerSide,
   bannerFor,
+  battleDone,
+  battleOutcome,
   beatLen,
   cycleSpeed,
   flinchMag,
   floatTag,
+  logLine,
   lungeMag,
+  ownerCreatureLine,
   shakeMag,
   speedLabel,
 } from '../src/pages/battle-beat';
@@ -200,5 +204,38 @@ describe('per-effect distinctions', () => {
     v.beatFrame = beatLen(v, 0);
     expect(floatTag(v, 'b')).not.toBeNull(); // the defender does
     expect(floatTag(v, 'a')).toBeNull();
+  });
+});
+
+describe('outcome + flourish helpers', () => {
+  it('reports no outcome mid-fight, then win/lose once the fight is over', () => {
+    const v = view([hit({}), hit({ turn: 1 })]);
+    expect(battleDone(v)).toBe(false);
+    expect(battleOutcome(v, 'a')).toBe('none');
+    v.cursor = v.result.timeline.length; // played out; winner is 'a'
+    expect(battleDone(v)).toBe(true);
+    expect(battleOutcome(v, 'a')).toBe('win');
+    expect(battleOutcome(v, 'b')).toBe('lose');
+  });
+
+  it('reports a draw for both sides', () => {
+    const v = view([hit({})], { cursor: 1 });
+    v.result.winner = 'draw';
+    expect(battleOutcome(v, 'a')).toBe('draw');
+    expect(battleOutcome(v, 'b')).toBe('draw');
+  });
+
+  it('ownerCreatureLine prefers the combatant owner, falls back to the handle, else the name', () => {
+    const owned: Combatant = { ...fighter('Drake'), owner: 'Nyx' };
+    expect(ownerCreatureLine(owned, 'Vela')).toBe("Nyx's Drake");
+    expect(ownerCreatureLine(fighter('Drake'), 'Vela')).toBe("Vela's Drake");
+    expect(ownerCreatureLine(fighter('Drake'), '')).toBe('Drake');
+  });
+
+  it('logLine narrates each event kind subject-first', () => {
+    const v = view([hit({})]);
+    expect(logLine(v, hit({ kind: 'crit', damage: 9 }))).toContain('CRITS');
+    expect(logLine(v, hit({ kind: 'dodge' }))).toContain('dodges');
+    expect(logLine(v, hit({ kind: 'faint', damage: 0 }))).toContain('faints');
   });
 });

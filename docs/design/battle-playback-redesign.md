@@ -1,24 +1,29 @@
 # Battle Playback Redesign — the "Active Battle" page
 
-> **Status:** IMPLEMENTED (Season 0, TUI). The arena playback was rebuilt as a phased
-> "beat" animation. Pure _presentation_ rework — no engine change (the battle timeline already
-> carries everything), so it stays golden-frame testable and replay-deterministic (the sim runs
-> once, in the shell). Code: the beat clock + animation math in
-> `packages/tui/src/pages/battle-beat.ts`, the renderer in `battle-arena.ts`, and `battle.ts`
-> slimmed to dispatch + picker + key controls. Tests: `__tests__/battle-beat.test.ts` (per-effect
-> unit coverage) + new golden frames (`start of playback`, `mid-beat`).
+> **Status:** IMPLEMENTED (Season 0, TUI) — including the polish pass. The arena playback was
+> rebuilt as a phased "beat" animation. Pure _presentation_ rework — no engine change (the battle
+> timeline already carries everything), so it stays golden-frame testable and replay-deterministic
+> (the sim runs once, in the shell). Code: the beat clock + animation math in
+> `packages/tui/src/pages/battle-beat.ts`, the renderer in `battle-arena.ts`, the end-of-fight
+> flourish + `l` log overlay in `battle-flourish.ts`, and `battle.ts` slimmed to dispatch + picker +
+> key controls. Tests: `__tests__/battle-beat.test.ts` (per-effect + outcome unit coverage),
+> `battle-setup.test.ts` (the `l`/Esc keys), and golden frames (start / mid-beat / winner flourish /
+> Tamer corners / log overlay).
 >
 > **What shipped vs. this spec.** Landed: the beat clock (slower default, `s` speed cycle 1×/2×/
 > 0.5×, turn-break breath), HP tween, held action banner with a universal wind-up lead, attacker
 > spotlight / defender dim, lunge + flinch + crit/faint screen-shake, per-effect distinctions
 > (crit gold + deeper lunge, dodge "miss" + side-step + no damage, parry steel + chip, proc trait
 > banner, faint), the floating impact tag, a demoted log tail, and the footer speed/round readout.
-> **Adapted:** the floating damage tag holds + fades on a dedicated impact row rather than rising
-> (the combatant block is too tight to rise without hitting the HP bar — §6a). **Deferred (polish,
-> not yet built):** `flipX` opponent facing, Tamer handles promoted to the top corners (still
-> shown via the existing owner mark), the toppled-sprite win flourish (still a winner banner), and
-> the `l`-toggled full-log overlay. The mockups below are the design intent; the deferred items
-> remain future work.
+> The polish pass added: **`flipX` facing** (the fighters meet at the center, the opponent sprite
+> mirrored), **Tamer handles in the top corners** (`VELA ◆ … ◆ DRIFTER`, diamonds pointing inward),
+> the **win flourish** (winner sprite bobs + gold name, loser sprite desaturated + slumped, a
+> centered `★ NAME WINS ★` with the winner's Tamer-creature subtitle), and the **`l` log overlay**
+> (a full-transcript panel; Esc closes it before leaving the arena).
+> **Adapted (TUI-pragmatic):** the floating damage tag holds + fades on a dedicated impact row
+> rather than rising (the combatant block is too tight to rise without hitting the HP bar — §6a);
+> the loser "topple" is a 1-row slump + palette desaturation rather than a rotation (no glyph
+> rotation in a cell grid). Nothing from the proposal remains deferred.
 
 ---
 

@@ -113,4 +113,24 @@ describe('battle arena — rematch (r)', () => {
     expect(handleBattleKey(rt, h, 'r')).toBe(true);
     expect(rt.battle!.nonce).toBe(2); // each press fights again
   });
+
+  it('l toggles the log overlay; Esc closes it first, then leaves the arena', () => {
+    const h = host();
+    const rt = shell(setupUi({ input: WISP_CODE }));
+    confirmBattle(rt, h);
+    expect(rt.battle!.showLog ?? false).toBe(false);
+
+    expect(handleBattleKey(rt, h, 'l')).toBe(true);
+    expect(rt.battle!.showLog).toBe(true); // opened
+    expect(handleBattleKey(rt, h, 'l')).toBe(true);
+    expect(rt.battle!.showLog).toBe(false); // toggled shut
+
+    handleBattleKey(rt, h, 'l'); // open again
+    expect(rt.battle!.showLog).toBe(true);
+    expect(handleBattleKey(rt, h, 'escape')).toBe(true);
+    expect(rt.battle).toBeDefined(); // Esc closed the overlay, did NOT exit
+    expect(rt.battle!.showLog).toBe(false);
+    expect(handleBattleKey(rt, h, 'escape')).toBe(true);
+    expect(rt.battle).toBeUndefined(); // a second Esc leaves the arena
+  });
 });

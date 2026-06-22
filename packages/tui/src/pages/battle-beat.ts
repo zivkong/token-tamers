@@ -9,7 +9,7 @@
  * these helpers; the shell ticks {@link advanceBattlePlayback} once per frame.
  */
 
-import type { BattleSide } from '@token-tamers/core';
+import type { BattleSide, Combatant } from '@token-tamers/core';
 import type { BattleView } from './types';
 
 /** Frames for a plain attack beat at 1× (~1s at 30fps) — ~5× slower than the old snap. */
@@ -215,4 +215,50 @@ export function currentRound(view: BattleView): number {
   const tl = view.result.timeline;
   const last = tl.length ? tl[Math.min(view.cursor, tl.length - 1)!]! : undefined;
   return ((e ?? last)?.turn ?? 0) + 1;
+}
+
+/** Clip a string to `max` cells (never overflows the renderer's columns). */
+export function clipStr(s: string, max: number): string {
+  return [...s].slice(0, Math.max(0, max)).join('');
+}
+
+/** One transcript line for a battle event (the log tail + the `l` overlay share this). */
+export function logLine(
+  view: BattleView,
+  e: { actor: BattleSide; kind: string; damage: number; proc?: string },
+): string {
+  const atk = e.actor === 'a' ? view.left.name : view.right.name;
+  const def = e.actor === 'a' ? view.right.name : view.left.name;
+  if (e.kind === 'faint') return `✖ ${def} faints`;
+  if (e.kind === 'dodge') return `↯ ${def} dodges ${atk}'s strike`;
+  if (e.kind === 'crit') return `✸ ${atk} CRITS ${def} for ${e.damage}`;
+  if (e.kind === 'parry') return `⛊ ${def} parries — ${atk} hits for ${e.damage}`;
+  if (e.kind === 'proc')
+    return `⚡ ${atk} — ${titleCase(e.proc ?? '')}! hits ${def} for ${e.damage}`;
+  return `⚔ ${atk} hits ${def} for ${e.damage}`;
+}
+
+/** "Tamer's Creature" for the win flourish (just the creature when there's no handle). */
+export function ownerCreatureLine(c: Combatant, fbName: string): string {
+  const handle = c.owner ?? fbName;
+  return handle ? `${handle}'s ${c.name}` : c.name;
+}
+
+/** Whether the fight has fully played out (the winner flourish should show). */
+export function battleDone(view: BattleView): boolean {
+  return view.cursor >= view.result.timeline.length;
+}
+
+/**
+ * This side's outcome for the win flourish: `none` until the fight is over, then
+ * `win`/`lose`/`draw` from the result. Drives the winner glow vs. loser dim.
+ */
+export function battleOutcome(
+  view: BattleView,
+  side: BattleSide,
+): 'none' | 'win' | 'lose' | 'draw' {
+  if (!battleDone(view)) return 'none';
+  const w = view.result.winner;
+  if (w === 'draw') return 'draw';
+  return w === side ? 'win' : 'lose';
 }

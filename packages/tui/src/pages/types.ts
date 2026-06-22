@@ -60,6 +60,8 @@ export interface BattleView {
   beatFrame?: number;
   /** Playback speed multiplier (1 default, cycled by `s`): scales every beat length. */
   speed?: number;
+  /** Whether the full-transcript log overlay is open (toggled by `l`). */
+  showLog?: boolean;
   /** Whether playback auto-advances each frame. */
   playing: boolean;
   /** Battle seed nonce; 0 for the first/canonical fight, bumped on each rematch. */
